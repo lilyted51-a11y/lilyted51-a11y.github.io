@@ -134,10 +134,11 @@ G.UI = (() => {
     el.className = 'scr dim'; el.style.zIndex = 65;
     const senders = [...new Set(got.map(g => g.from).filter(Boolean))];
     const title = got.length > 1 ? '¡Has recibido ' + got.length + ' regalos!' : '¡Has recibido un regalo!';
-    el.innerHTML = `<div class="box center" style="width:min(560px,100%)">
+    const many = got.length > 6;
+    el.innerHTML = `<div class="box center" style="width:min(${many ? 720 : 560}px,100%)">
         <h2 class="gold" style="margin-bottom:2px">${title}</h2>
         ${senders.length ? `<p class="sub" style="margin:0 0 10px">De <b translate="no">${senders.map(esc).join(', ')}</b></p>` : ''}
-        <div class="gift-grid"></div>
+        <div class="gift-grid${many ? ' many' : ''}"></div>
         <button class="btn gold" data-ok style="margin-top:12px;min-width:160px">¡Gracias!</button></div>`;
     const grid = el.querySelector('.gift-grid');
     for (const g of got) {
@@ -146,7 +147,8 @@ G.UI = (() => {
       if (g.coins) {
         card.innerHTML = `<div class="gift-coins"><span class="coin"></span></div><b>+${g.coins.toLocaleString()}</b><small>Pokémonedas</small>`;
       } else {
-        card.appendChild(spriteCanvas(g.dex, 120, 96, { scale: 2, lively: true, shiny: !!g.shiny }));
+        card.appendChild(many ? spriteCanvas(g.dex, 84, 66, { scale: 1.4, lively: true, shiny: !!g.shiny })
+                              : spriteCanvas(g.dex, 120, 96, { scale: 2, lively: true, shiny: !!g.shiny }));
         card.insertAdjacentHTML('beforeend', `<b>${esc(g.name)}</b><small>${g.shiny ? 'Shiny' : 'Nº ' + String(g.dex).padStart(3, '0')}</small>`);
       }
       grid.appendChild(card);

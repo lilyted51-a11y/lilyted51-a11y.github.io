@@ -693,7 +693,11 @@ body.touch kbd, body.touch .card .key, body.touch .kbd-hint { display: none !imp
 .set-row .switch { min-width: 58px; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .cust-row { width: 100%; margin-top: 6px; }
-.gift-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 6px; }
+.gift-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 6px; max-height: 58vh; overflow-y: auto; padding: 4px; }
+.gift-grid.many { gap: 8px; }
+.gift-grid.many .gift-card { width: 112px; padding: 6px 4px 6px; }
+.gift-grid.many .gift-card b { font-size: 14px; } .gift-grid.many .gift-card small { font-size: 11px; }
+.gift-grid.many .gift-coins { width: 66px; height: 66px; } .gift-grid.many .gift-coins .coin { transform: scale(2.2); }
 .gift-card { width: 150px; padding: 10px 8px 8px; border-radius: 12px; background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.12);
   display: flex; flex-direction: column; align-items: center; gap: 2px; animation: giftPop .5s cubic-bezier(.2,1.4,.4,1) both; }
 .gift-card.shiny { border-color: #9ae6ff; box-shadow: 0 0 18px rgba(154,230,255,.35); }
