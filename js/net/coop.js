@@ -1,4 +1,4 @@
-/* ============ coop.js — partida cooperativa (hasta 4 jugadores) ============
+/* ============ coop.js — partida cooperativa (hasta 8 jugadores; original 4) ============
  *
  * Quién manda en qué:
  *   ANFITRIÓN   enemigos (aparición, IA, vida, muerte), objetos del suelo,
@@ -23,7 +23,7 @@
  */
 G.Coop = (() => {
   const ANIMS = ['Idle', 'Walk', 'Attack', 'Shoot', 'Charge', 'Hurt', 'Faint'];
-  const COLORS = ['#ffcb3d', '#5fc8ff', '#7ee07a', '#ff8ad8'];
+  const COLORS = ['#ffcb3d', '#5fc8ff', '#7ee07a', '#ff8ad8', '#ff9a4d', '#c47bff', '#5fe0d0', '#ff6b6b'];
   // Mensajes por segundo: 15 por la conexión directa y 3 por el relé de la
   // Realtime Database (apagado: 1 $ el GB).
   const RATE_FAST = 1 / 15, RATE_SLOW = 1 / 3;
@@ -51,8 +51,9 @@ G.Coop = (() => {
 
   // ---------------- escalado de dificultad ----------------
 
-  const scaleRate = n => 1 + 0.75 * Math.max(0, n - 1);
-  const scaleHp = n => 1 + 0.3 * Math.max(0, n - 1);
+  // Hasta 4 como el original; del 5.º al 8.º suben menos (el anfitrión mueve a todos los enemigos).
+  const scaleRate = n => 1 + 0.75 * Math.min(3, Math.max(0, n - 1)) + 0.35 * Math.max(0, n - 4);
+  const scaleHp = n => 1 + 0.3 * Math.min(3, Math.max(0, n - 1)) + 0.15 * Math.max(0, n - 4);
 
   // ---------------- arranque / fin ----------------
 

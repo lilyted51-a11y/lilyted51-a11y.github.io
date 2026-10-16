@@ -142,7 +142,7 @@ service cloud.firestore {
         && d.at == request.time
         && (board.matches('s_.*')
               ? (d.uids.size() == 1 && id == me())
-              : (d.uids.size() >= 2 && d.uids.size() <= 4 && id == d.uids.join('_')))
+              : (d.uids.size() >= 2 && d.uids.size() <= 8 && id == d.uids.join('_')))
         && (resource == null || d.t > resource.data.t);
     }
 
@@ -223,7 +223,7 @@ service cloud.firestore {
         && request.resource.data.by == me()
         && request.resource.data.board is string && request.resource.data.board.size() <= 40
         && request.resource.data.e is string && request.resource.data.e.size() <= 160
-        && request.resource.data.names is list && request.resource.data.names.size() <= 4
+        && request.resource.data.names is list && request.resource.data.names.size() <= 8
         && request.resource.data.t is int
         && request.resource.data.at == request.time
         && rid == request.resource.data.board + '__' + request.resource.data.e + '__' + me();
