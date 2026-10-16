@@ -145,16 +145,24 @@ G.Boost = (() => {
     let snap;
     try { snap = await fb.fs.collection('gifts').doc(fb.uid).collection('items').get(); }
     catch (e) { console.warn('[Boost] regalos:', e.message); return []; }
-    const got = [];
+    const got = [], names = {};
+    const nameOf = async u => {
+      if (!u) return '';
+      if (names[u] === undefined) {
+        try { const p = await fb.fs.collection('profiles').doc(u).get(); names[u] = p.exists ? (p.data().name || '') : ''; } catch (e) { names[u] = ''; }
+      }
+      return names[u];
+    };
     for (const d of snap.docs) {
       const g = d.data() || {};
       const mon = G.DEX_BY[g.dex];
+      const from = await nameOf(g.from);
       if (mon) {
         if (g.shiny) G.DB.grantShiny(g.dex, 'gift'); else G.DB.grant(g.dex, 'gift');
-        got.push({ dex: g.dex, name: mon.name, shiny: !!g.shiny });
+        got.push({ dex: g.dex, name: mon.name, shiny: !!g.shiny, from });
       } else if (g.coins >= 1) {
         G.DB.save.coins = Math.max(0, (G.DB.save.coins || 0) + Math.floor(g.coins));
-        got.push({ coins: Math.floor(g.coins) });
+        got.push({ coins: Math.floor(g.coins), from });
       }
       try { await d.ref.delete(); } catch (e) { /* se volverá a aplicar (no duplica) */ }
     }

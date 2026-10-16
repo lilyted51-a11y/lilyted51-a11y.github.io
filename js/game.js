@@ -968,8 +968,9 @@ G.Flow = {
     G.Boost.load();              // listas de ventajas (config/boost en Firestore)
     // Regalos del administrador: se añaden a la colección y se avisa.
     G.Boost.claimGifts().then(got => {
-      for (const g of got) G.UI.toast(g.coins ? '¡Regalo! +' + g.coins.toLocaleString() + ' Pokémonedas' : (g.shiny ? '¡Regalo! ' + g.name + ' shiny' : '¡Regalo! ' + g.name) + ' ya está en tu Pokédex', 4500);
-      if (got.length) G.UI.refreshCoins();
+      if (!got.length) return;
+      G.UI.refreshCoins();
+      G.UI.showGifts(got);           // pantalla de regalo (sprite, monedas, quién lo envía)
     });
     if (!G.DB.save.partner) G.TestUI.start();
     else this.goMenu();

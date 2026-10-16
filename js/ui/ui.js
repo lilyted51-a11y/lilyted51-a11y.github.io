@@ -123,6 +123,39 @@ G.UI = (() => {
    * las de Google la confirman en la ventana de Google al seguir.
    * Devuelve { pass } o null si se cancela.
    */
+  /**
+   * Copia local: pantalla de regalos recibidos (del administrador). Enseña cada
+   * Pokémon con su sprite (shiny si lo es) y las monedas, y quién lo envía.
+   * got: [{ dex, name, shiny, from } | { coins, from }]
+   */
+  function showGifts(got) {
+    const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const el = document.createElement('section');
+    el.className = 'scr dim'; el.style.zIndex = 65;
+    const senders = [...new Set(got.map(g => g.from).filter(Boolean))];
+    const title = got.length > 1 ? '¡Has recibido ' + got.length + ' regalos!' : '¡Has recibido un regalo!';
+    el.innerHTML = `<div class="box center" style="width:min(560px,100%)">
+        <h2 class="gold" style="margin-bottom:2px">${title}</h2>
+        ${senders.length ? `<p class="sub" style="margin:0 0 10px">De <b translate="no">${senders.map(esc).join(', ')}</b></p>` : ''}
+        <div class="gift-grid"></div>
+        <button class="btn gold" data-ok style="margin-top:12px;min-width:160px">¡Gracias!</button></div>`;
+    const grid = el.querySelector('.gift-grid');
+    for (const g of got) {
+      const card = document.createElement('div');
+      card.className = 'gift-card' + (g.shiny ? ' shiny' : '');
+      if (g.coins) {
+        card.innerHTML = `<div class="gift-coins"><span class="coin"></span></div><b>+${g.coins.toLocaleString()}</b><small>Pokémonedas</small>`;
+      } else {
+        card.appendChild(spriteCanvas(g.dex, 120, 96, { scale: 2, lively: true, shiny: !!g.shiny }));
+        card.insertAdjacentHTML('beforeend', `<b>${esc(g.name)}</b><small>${g.shiny ? 'Shiny' : 'Nº ' + String(g.dex).padStart(3, '0')}</small>`);
+      }
+      grid.appendChild(card);
+    }
+    document.body.appendChild(el);
+    try { G.Audio.sfx(got.some(g => g.shiny) ? 'legend' : 'levelup'); } catch (e) { /* sin audio */ }
+    el.querySelector('[data-ok]').onclick = () => { el.remove(); try { G.Audio.sfx('confirm'); } catch (e) { /* nada */ } };
+  }
+
   /** Pregunta sí/no dentro del juego (en vez del confirm() del navegador). → Promise<boolean> */
   function ask(text, okLabel = 'Aceptar') {
     return new Promise(done => {
@@ -296,6 +329,6 @@ G.UI = (() => {
     return cv;
   }
 
-  return { $, show, hide, hideAll, isOpen, chrome, refreshCoins, toast, typeChips, stars, confirmDelete, ask,
+  return { $, show, hide, hideAll, isOpen, chrome, refreshCoins, toast, typeChips, stars, confirmDelete, ask, showGifts,
            sprite, spriteCanvas, tick, initChrome, soundControls };
 })();
