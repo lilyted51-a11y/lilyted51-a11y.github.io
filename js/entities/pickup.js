@@ -26,6 +26,7 @@ G.Pickups = (() => {
   /** Probabilidad de que un Pokémon normal suelte un ticket del gacha. */
   // Copia local: con G.Boost.on el botín sube (valores de la derecha); si no, el original.
   const boost = () => G.Boost && G.Boost.on;
+  const tq = () => (G.Boost ? G.Boost.k('tickets') : 1);   // ventaja suelta: cantidad de tickets
   const BOSS_T10 = 1 / 3, LEGEND_T10 = 1 / 2;   // prob. de UN ticket ×10 (original)
   const B_BOSS_T10 = 3, B_LEGEND_T10 = 6;       // tickets ×10 seguros (con ventajas)
   const TICKET_RATE = 1 / 400, B_TICKET_RATE = 1 / 20;
@@ -85,11 +86,11 @@ G.Pickups = (() => {
       // Ticket ×10: siempre el legendario de la grieta; un jefe normal, 1 de cada 3 veces.
       // (Hasta el 12-10-2026 el legendario de la grieta daba siempre 2: salían demasiados.)
       if (boost()) { for (let i = 0, n = legend ? B_LEGEND_T10 : B_BOSS_T10; i < n; i++) push(orb('ticket10', x + (i - (n - 1) / 2) * 16, y - 20, 1)); }
-      else if (Math.random() < (legend ? LEGEND_T10 : BOSS_T10)) push(orb('ticket10', x, y - 20, 1));
+      else if (Math.random() < (legend ? LEGEND_T10 : BOSS_T10)) { for (let i = 0, n = tq(); i < n; i++) push(orb('ticket10', x + (i - (n - 1) / 2) * 16, y - 20, 1)); }
       return;
     }
     push(orb(value >= 20 ? 'xpBig' : 'xp', x, y, value));
-    if (Math.random() < (boost() ? B_TICKET_RATE : TICKET_RATE)) push(orb('ticket', x + G.U.rand(-6, 6), y, 1));
+    if (Math.random() < (boost() ? B_TICKET_RATE : TICKET_RATE)) { for (let i = 0, n = boost() ? 1 : tq(); i < n; i++) push(orb('ticket', x + G.U.rand(-6, 6), y, 1)); }
 
     // Drops ocasionales.
     const r = Math.random();

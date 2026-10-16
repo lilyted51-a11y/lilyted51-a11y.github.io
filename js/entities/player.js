@@ -20,7 +20,7 @@ G.Player = class Player {
     this.atkMul = perks.atkMul || 1;
     this.spdMul = perks.spdMul || 1;
     // Copia local: ventajas sólo para las cuentas de G.Boost (se decide al empezar la run).
-    this.boost = G.Boost && G.Boost.on ? G.Boost.POWER : null;
+    this.boost = G.Boost ? G.Boost.power() : null;
     this.cdMul = (perks.cdMul || 1) * (this.boost ? this.boost.cd : 1);
     this.dmgReduce = perks.dmgReduce || 0;
     this.regenFlat = perks.regen || 0;
@@ -90,7 +90,7 @@ G.Player = class Player {
   // ---------------- stats efectivos ----------------
   get atk() {
     const t = G.Game && G.Game.st ? G.Game.st.time : 0;
-    const k = this.boost ? this.boost.atk * (1 + t / 95) : 1;
+    const k = this.boost ? this.boost.atk * (this.boost.grow ? 1 + t / 95 : 1) : 1;
     return this.baseAtk * this.atkMul * (1 + this.buffs.atk.n * this.buffs.atk.amount) * k;
   }
   get spd() {

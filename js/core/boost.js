@@ -18,8 +18,12 @@ G.Boost = (() => {
   ];
   // Personaje: velocidad ×, recarga × (0,4 = 2,5 veces más rápido), daño ×
   // (el daño además crece con el tiempo como la vida de los enemigos).
-  const POWER = { spd: 1.6, cd: 0.4, atk: 40 };
-  let all = new Set(UIDS), bot = new Set(), loadedFor = null;
+  const POWER = { spd: 1.6, cd: 0.4, atk: 40, grow: true };
+  // Ventajas sueltas por cuenta (config/boost.custom[uid]): cada una ×1 (original), ×2, ×3, ×4, ×5 o ×10.
+  //   spd velocidad · atkSpd velocidad de ataque · atk daño · tickets cantidad de tickets · coins monedas al acabar
+  const KEYS = ['spd', 'atkSpd', 'atk', 'tickets', 'coins'];
+  const MULTS = [1, 2, 3, 4, 5, 10];
+  let all = new Set(UIDS), bot = new Set(), custom = {}, loadedFor = null;
 
   function uid() { const fb = G.DB && G.DB.fb; return fb && fb.uid ? fb.uid : null; }
 
@@ -33,6 +37,7 @@ G.Boost = (() => {
       const d = snap.exists ? snap.data() : {};
       all = new Set(UIDS.concat(Array.isArray(d.all) ? d.all : []));
       bot = new Set(Array.isArray(d.bot) ? d.bot : []);
+      custom = d.custom && typeof d.custom === 'object' ? d.custom : {};
     } catch (e) { console.warn('[Boost] sin config/boost:', e.message); }
   }
 
@@ -48,6 +53,41 @@ G.Boost = (() => {
     return out.sort((a, b) => a.name.localeCompare(b.name));
   }
 
+  /** Multiplicador suelto de la cuenta conectada (1 si no tiene, o si tiene "todo"). */
+  function k(key) {
+    const u = uid();
+    if (!u || all.has(u)) return 1;
+    const v = custom[u] && +custom[u][key];
+    return MULTS.includes(v) ? v : 1;
+  }
+  /** Ventajas sueltas de una cuenta (para el panel). */
+  function customOf(u) { return Object.assign({}, custom[u] || {}); }
+
+  /** Qué aplica al personaje: el paquete "todo", las sueltas, o nada (null). */
+  function power() {
+    if (on()) return POWER;
+    const spd = k('spd'), cd = 1 / k('atkSpd'), atk = k('atk');
+    return spd !== 1 || cd !== 1 || atk !== 1 || k('tickets') !== 1 || k('coins') !== 1 ? { spd, cd, atk, grow: false } : null;
+  }
+
+  async function save() {
+    const fb = G.DB.fb;
+    await fb.fs.collection('config').doc('boost').set({
+      all: [...all].filter(x => !UIDS.includes(x)), bot: [...bot], custom
+    });
+  }
+
+  /** Cambia una ventaja suelta de una cuenta (sólo administradores). */
+  async function setCustom(u, key, val) {
+    const fb = G.DB && G.DB.fb;
+    if (!fb || !fb.fs || !UIDS.includes(fb.uid)) throw new Error('Sólo el administrador');
+    if (!KEYS.includes(key) || !MULTS.includes(+val)) throw new Error('Valor no válido');
+    const c = Object.assign({}, custom[u] || {});
+    if (+val === 1) delete c[key]; else c[key] = +val;
+    if (Object.keys(c).length) custom[u] = c; else delete custom[u];
+    await save();
+  }
+
   /** Nivel de una cuenta: 'all' | 'bot' | ''. */
   function level(u) { return UIDS.includes(u) || all.has(u) ? 'all' : bot.has(u) ? 'bot' : ''; }
 
@@ -57,9 +97,7 @@ G.Boost = (() => {
     if (!fb || !fb.fs || !UIDS.includes(fb.uid)) throw new Error('Sólo el administrador');
     all.delete(u); bot.delete(u);
     if (lvl === 'all') all.add(u); else if (lvl === 'bot') bot.add(u);
-    await fb.fs.collection('config').doc('boost').set({
-      all: [...all].filter(x => !UIDS.includes(x)), bot: [...bot]
-    });
+    await save();
   }
 
   // ---------------- regalos: Pokémon enviados por el administrador ----------------
@@ -73,6 +111,17 @@ G.Boost = (() => {
     if (!G.DEX_BY[dex]) throw new Error('Pokémon desconocido');
     await fb.fs.collection('gifts').doc(u).collection('items').add({
       dex, shiny: !!shiny, from: fb.uid, at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+
+  /** Envía Pokémonedas a una cuenta. */
+  async function giftCoins(u, coins) {
+    const fb = G.DB && G.DB.fb;
+    if (!fb || !fb.fs || !UIDS.includes(fb.uid)) throw new Error('Sólo el administrador');
+    coins = Math.floor(+coins);
+    if (!(coins >= 1 && coins <= 1e12)) throw new Error('Cantidad no válida');
+    await fb.fs.collection('gifts').doc(u).collection('items').add({
+      coins, from: fb.uid, at: firebase.firestore.FieldValue.serverTimestamp()
     });
   }
 
@@ -90,6 +139,9 @@ G.Boost = (() => {
       if (mon) {
         if (g.shiny) G.DB.grantShiny(g.dex, 'gift'); else G.DB.grant(g.dex, 'gift');
         got.push({ dex: g.dex, name: mon.name, shiny: !!g.shiny });
+      } else if (g.coins >= 1) {
+        G.DB.save.coins = Math.max(0, (G.DB.save.coins || 0) + Math.floor(g.coins));
+        got.push({ coins: Math.floor(g.coins) });
       }
       try { await d.ref.delete(); } catch (e) { /* se volverá a aplicar (no duplica) */ }
     }
@@ -98,7 +150,7 @@ G.Boost = (() => {
   }
 
   return {
-    UIDS, POWER, load, players, level, set, gift, claimGifts,
+    UIDS, POWER, KEYS, MULTS, load, players, level, set, gift, giftCoins, claimGifts, k, customOf, power, setCustom,
     /** ¿La cuenta conectada administra las listas? */
     get admin() { const u = uid(); return !!u && UIDS.includes(u); },
     /** Todas las ventajas. */

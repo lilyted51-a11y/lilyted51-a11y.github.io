@@ -403,10 +403,10 @@ G.World = (() => {
       G.FX.ring(p.x, p.y - 8, 6, 80, '#f2c443', 0.6, 5);
       G.Camera.kick(0.4);
       for (let i = 0; i < 9; i++) G.Pickups.drop('coin', p.x + G.U.rand(-22, 22), p.y + G.U.rand(-14, 14), 4);
-      const tk = G.Boost.on ? G.U.randInt(6, 10) : G.U.randInt(1, 3);   // copia local: 6-10 con ventajas
+      const tk = G.Boost.on ? G.U.randInt(6, 10) : G.U.randInt(1, 3) * G.Boost.k('tickets');   // copia local: 6-10 con ventajas; ×k con la suelta
       for (let i = 0; i < tk; i++) G.Pickups.drop('ticket', p.x + G.U.rand(-16, 16), p.y + G.U.rand(-10, 10), 1);
       if (G.Boost.on) { for (let i = 0, n = G.U.randInt(1, 2); i < n; i++) G.Pickups.drop('ticket10', p.x + i * 16, p.y - 10, 1); }   // copia local: 1-2 seguros con ventajas
-      else if (Math.random() < 0.15) G.Pickups.drop('ticket10', p.x, p.y - 10, 1);
+      else if (Math.random() < 0.15) for (let i = 0, n = G.Boost.k('tickets'); i < n; i++) G.Pickups.drop('ticket10', p.x + i * 16, p.y - 10, 1);
       if (G.Boost.on || Math.random() < 0.5) G.Pickups.drop('item', p.x + 14, p.y - 14, G.Items.roll());   // copia local: seguro con ventajas
       G.Pickups.dropXp(p.x, p.y, G.Game.levelXp());
       G.Progress.event('chest');

@@ -301,9 +301,10 @@ G.Game = (() => {
       recogidas: pl.coins
     };
     // Copia local: con ventajas (G.Boost), ×5 Pokémonedas y además 10.000 por segundo sobrevivido.
-    const boosted = !!(pl.boost);
+    const boosted = !!(pl.boost && pl.boost.grow);          // paquete "todo"
+    const ck = boosted ? 1 : G.Boost.k('coins');             // ventaja suelta: monedas ×k
     const survival = boosted ? Math.floor(time) * 10000 : 0;
-    const coins = Math.round((parts.tiempo + parts.derrotados + parts.jefes + parts.recogidas) * mul * (boosted ? 5 : 1)) + survival;
+    const coins = Math.round((parts.tiempo + parts.derrotados + parts.jefes + parts.recogidas) * mul * (boosted ? 5 : ck)) + survival;
     const record = time > save.stats.bestTime;
 
     save.coins += coins;
@@ -336,7 +337,7 @@ G.Game = (() => {
       dead, time, level: pl.level, kills: pl.kills, bosses: pl.bosses, coins, record, t1: pl.t1, t10: pl.t10, judge,
       moves: pl.moves, caught,
       breakdown: Object.entries(parts).filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(' · ') +
-                 (mul > 1 ? ` · ×${mul.toFixed(2)} Fortuna` : '') + (boosted ? ' · ×5 · +' + survival.toLocaleString() + ' (' + Math.floor(time) + ' s × 10000)' : '')
+                 (mul > 1 ? ` · ×${mul.toFixed(2)} Fortuna` : '') + (boosted ? ' · ×5 · +' + survival.toLocaleString() + ' (' + Math.floor(time) + ' s × 10000)' : ck > 1 ? ' · ×' + ck : '')
     }, () => { pl = null; G.Flow.afterRun(); });
   }
 
@@ -659,7 +660,7 @@ G.Game = (() => {
     time += dt;
     // Copia local: con ventajas, 1 ticket ×10 por cada segundo que sobrevives (se guarda cada 10 s y al acabar).
     const sec = Math.floor(time);
-    if (pl.boost && sec > t10Sec) {
+    if (pl.boost && pl.boost.grow && sec > t10Sec) {
       pl.t10 += sec - t10Sec; t10Sec = sec;
       if (sec % 10 === 0) bankTickets();
     }
@@ -953,7 +954,7 @@ G.Flow = {
     G.Boost.load();              // listas de ventajas (config/boost en Firestore)
     // Regalos del administrador: se añaden a la colección y se avisa.
     G.Boost.claimGifts().then(got => {
-      for (const g of got) G.UI.toast((g.shiny ? '¡Regalo! ' + g.name + ' shiny' : '¡Regalo! ' + g.name) + ' ya está en tu Pokédex', 4500);
+      for (const g of got) G.UI.toast(g.coins ? '¡Regalo! +' + g.coins.toLocaleString() + ' Pokémonedas' : (g.shiny ? '¡Regalo! ' + g.name + ' shiny' : '¡Regalo! ' + g.name) + ' ya está en tu Pokédex', 4500);
       if (got.length) G.UI.refreshCoins();
     });
     if (!G.DB.save.partner) G.TestUI.start();

@@ -181,13 +181,13 @@
       if (this.behavior === 'thief') {
         const n = this.def.loot === 'ticket10' ? 6 : 20;
         for (let i = 0; i < n; i++) G.Pickups.drop('coin', this.x + G.U.rand(-36, 36), this.y + G.U.rand(-26, 26), 5);
-        if (this.def.loot === 'ticket10') for (let i = 0, n = G.Boost.on ? 3 : 1; i < n; i++) G.Pickups.drop('ticket10', this.x + (i - (n - 1) / 2) * 16, this.y - 12, 1);   // copia local: 3 con ventajas
+        if (this.def.loot === 'ticket10') for (let i = 0, n = G.Boost.on ? 3 : G.Boost.k('tickets'); i < n; i++) G.Pickups.drop('ticket10', this.x + (i - (n - 1) / 2) * 16, this.y - 12, 1);   // copia local: 3 con ventajas; ×k con la suelta
         G.FX.ring(this.x, this.y, this.r, this.r * 5, '#ffd23f', 0.6, 4);
       }
       if (this.legend) {
         // El legendario de la grieta: tickets sueltos y monedas (el ×10, como
         // la mitad de las veces; antes daba 2 siempre).
-        for (let i = 0, n = G.Boost.on ? 10 : 3; i < n; i++) G.Pickups.drop('ticket', this.x + G.U.rand(-30, 30), this.y + G.U.rand(-20, 20), 1);   // copia local: 10 con ventajas
+        for (let i = 0, n = G.Boost.on ? 10 : 3 * G.Boost.k('tickets'); i < n; i++) G.Pickups.drop('ticket', this.x + G.U.rand(-30, 30), this.y + G.U.rand(-20, 20), 1);   // copia local: 10 con ventajas; ×k con la suelta
         for (let i = 0; i < 10; i++) G.Pickups.drop('coin', this.x + G.U.rand(-50, 50), this.y + G.U.rand(-35, 35), 8);
       }
       G.Audio.sfx(this.boss ? 'bossDown' : 'faint');

@@ -34,9 +34,11 @@ service cloud.firestore {
     match /gifts/{uid}/items/{id} {
       allow read, delete: if signedIn() && (me() == uid || me() in ['DFa2yefCCPVzV9OA5Ie07jHHlZ32']);
       allow create: if signedIn() && me() in ['DFa2yefCCPVzV9OA5Ie07jHHlZ32']
-        && request.resource.data.keys().hasOnly(['dex', 'shiny', 'from', 'at'])
-        && request.resource.data.dex is int && request.resource.data.dex >= 1 && request.resource.data.dex <= 1100
-        && request.resource.data.shiny is bool
+        && request.resource.data.keys().hasOnly(['dex', 'shiny', 'coins', 'from', 'at'])
+        && ((request.resource.data.dex is int && request.resource.data.dex >= 1 && request.resource.data.dex <= 1100
+             && request.resource.data.shiny is bool && !('coins' in request.resource.data))
+            || (request.resource.data.coins is int && request.resource.data.coins >= 1 && request.resource.data.coins <= 1000000000000
+                && !('dex' in request.resource.data)))
         && request.resource.data.from == me()
         && request.resource.data.at == request.time;
     }
@@ -44,9 +46,10 @@ service cloud.firestore {
     match /config/boost {
       allow write: if request.auth != null
         && request.auth.uid in ['DFa2yefCCPVzV9OA5Ie07jHHlZ32']
-        && request.resource.data.keys().hasOnly(['all', 'bot'])
+        && request.resource.data.keys().hasOnly(['all', 'bot', 'custom'])
         && request.resource.data.all is list && request.resource.data.all.size() <= 500
-        && request.resource.data.bot is list && request.resource.data.bot.size() <= 500;
+        && request.resource.data.bot is list && request.resource.data.bot.size() <= 500
+        && (!('custom' in request.resource.data) || request.resource.data.custom is map);
     }
     // El código de invitación se comprueba antes de entrar: lectura sin cuenta (sólo huellas SHA-256).
     match /config/invite {

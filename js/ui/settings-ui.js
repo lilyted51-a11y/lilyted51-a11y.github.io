@@ -162,8 +162,15 @@ G.SettingsUI = (() => {
     box.innerHTML = list.map(p => {
       const cur = G.Boost.level(p.uid), own = G.Boost.UIDS.includes(p.uid);
       const chips = LV.map(([v, t]) => `<button class="chip${cur === v ? ' on' : ''}" data-boost="${v}" data-uid="${p.uid}"${own ? ' disabled' : ''}>${t}</button>`).join('');
-      const giftBtn = `<button class="btn small" data-gift="${p.uid}" data-name="${esc(p.name)}">Regalar Pokémon</button>`;
-      return `<div class="set-row"><div class="grow"><b translate="no">${esc(p.name)}</b>${own ? '<small>Administrador: siempre todo.</small>' : ''}</div><div class="chips">${chips}${giftBtn}</div></div>`;
+      const giftBtn = `<button class="btn small" data-gift="${p.uid}" data-name="${esc(p.name)}">Regalar Pokémon</button>`
+        + `<button class="btn small" data-coins="${p.uid}" data-name="${esc(p.name)}">Regalar monedas</button>`;
+      // Ventajas sueltas (no aplican con "Todo"): cada una ×1 (original) … ×10.
+      const LABELS = { spd: 'Velocidad', atkSpd: 'Vel. de ataque', atk: 'Daño', tickets: 'Tickets', coins: 'Monedas' };
+      const c = G.Boost.customOf(p.uid);
+      const sels = cur === 'all' || own ? '' : `<div class="chips cust-row">${G.Boost.KEYS.map(key =>
+        `<label class="cust"><small>${LABELS[key]}</small><select class="field" data-cust="${key}" data-uid="${p.uid}">${G.Boost.MULTS.map(m =>
+          `<option value="${m}"${(c[key] || 1) === m ? ' selected' : ''}>${m === 1 ? 'Original' : '×' + m}</option>`).join('')}</select></label>`).join('')}</div>`;
+      return `<div class="set-row" style="flex-wrap:wrap"><div class="grow"><b translate="no">${esc(p.name)}</b>${own ? '<small>Administrador: siempre todo.</small>' : ''}</div><div class="chips">${chips}${giftBtn}</div>${sels}</div>`;
     }).join('') || '<p class="sub">Todavía no hay otros jugadores.</p>';
     box.querySelectorAll('[data-boost]').forEach(b => {
       b.onclick = async () => {
@@ -171,6 +178,25 @@ G.SettingsUI = (() => {
         try { await G.Boost.set(b.dataset.uid, b.dataset.boost); G.UI.toast('Guardado: se aplica cuando vuelva a entrar'); }
         catch (e) { G.UI.toast('No se pudo guardar: ' + e.message); }
         renderBoostAdmin();
+      };
+    });
+    box.querySelectorAll('select[data-cust]').forEach(sel => {
+      sel.onchange = async () => {
+        sel.disabled = true;
+        try { await G.Boost.setCustom(sel.dataset.uid, sel.dataset.cust, +sel.value); G.UI.toast('Guardado: se aplica cuando vuelva a entrar'); }
+        catch (e) { G.UI.toast('No se pudo guardar: ' + e.message); }
+        renderBoostAdmin();
+      };
+    });
+    box.querySelectorAll('[data-coins]').forEach(b => {
+      b.onclick = async () => {
+        const raw = prompt('Pokémonedas para ' + b.dataset.name + ':', '100000');
+        if (raw == null) return;
+        const n = Math.floor(+String(raw).replace(/[^\d]/g, ''));
+        if (!(n >= 1)) { G.UI.toast('Cantidad no válida'); return; }
+        if (!confirm('¿Regalar ' + n.toLocaleString() + ' Pokémonedas a ' + b.dataset.name + '?')) return;
+        try { await G.Boost.giftCoins(b.dataset.uid, n); G.UI.toast('Enviado a ' + b.dataset.name + ': lo recibe al entrar'); }
+        catch (e) { G.UI.toast('No se pudo enviar: ' + e.message); }
       };
     });
     box.querySelectorAll('[data-gift]').forEach(b => {
