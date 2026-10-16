@@ -318,6 +318,9 @@ class PokeAutoBot {
       if (!best || m.lvl > best.lvl) best = m;
     }
     if (!best) return 150;
+    // 近戰／衝刺：命中要敵人「中心」在招式半徑內 → 站在半徑的 55%，貼著打
+    if (best.kind === 'melee' || best.kind === 'dash') return Math.max(22, (best.radius || 50) * 0.55);
+    if (best.kind === 'aura') return Math.max(24, (best.radius || 60) * 0.5);
     if (best.kind === 'orbit') return 45;
     if (['mine', 'trail', 'turret'].includes(best.kind)) return 120;
     if (best.kind === 'nova') {
@@ -456,6 +459,8 @@ class PokeAutoBot {
     // 真正要打的目標：遊戲目前瞄準的敵人（遠程招式會挑彈道暢通的）；沒有就用最近的
     const tgt = p.target && !p.target.dead && p.target.hp !== undefined ? p.target : nearest;
     const usesShots = (p.slots && p.slots[p.active] || []).some(m => ['projectile', 'beam', 'boomerang', 'cone', 'nova'].includes(m.kind));
+    // 近身型（近戰、衝刺、光環、環繞）：本來就要貼著怪，對一般小怪的「靠近」不扣分，只有真的碰到才算
+    const closeRange = !usesShots && (p.slots && p.slots[p.active] || []).some(m => ['melee', 'dash', 'aura', 'orbit', 'trail'].includes(m.kind));
     const lowHp = hpFrac < 0.35;
     // 血量越少越怕痛
     const danger = hpFrac < 0.5 ? 1 + (0.5 - hpFrac) * 2 : 1;
@@ -513,8 +518,9 @@ class PokeAutoBot {
           const gap = Math.hypot(x - ex, y - ey) - (e.r || 14) - r;
           const big = (e.boss || e.legend || e.judge ? 3 : 1) * (dashing ? 1.6 : 1);
           // 只在快碰到時才怕：近身／範圍招式需要貼近才打得到
-          if (gap < 6) cost += hurt(e.dmg) * (e.boss || e.legend || e.judge ? 1.5 : 1) * w * danger;
-          else cost += 30 * big * w * danger * Math.exp(-gap / 9);
+          const bigE = e.boss || e.legend || e.judge;
+          if (gap < (closeRange && !bigE ? 2 : 6)) cost += hurt(e.dmg) * (bigE ? 1.5 : 1) * w * danger;
+          else cost += 30 * big * w * danger * Math.exp(-gap / (closeRange && !bigE ? 5 : 9)) * (closeRange && !bigE ? 0.5 : 1);
         }
         for (const b of shots) {
           // 子彈這一步走過的線段離我多近（快的子彈一步會跳很遠）
@@ -558,7 +564,7 @@ class PokeAutoBot {
       if (tgt && !rift) {
         // 只有打不到時才靠近；打得到就不用再往前（避免在怪群邊緣來回）
         const dn = Math.hypot(tgt.x - x, tgt.y - y);
-        cost += Math.min(Math.max(0, dn - want), 700) * 0.12;
+        cost += Math.min(Math.max(0, dn - want), 700) * (closeRange ? 0.22 : 0.12);
         // 遠程招式：站在這裡彈道會被牆或石頭擋住 → 不要站這裡，去找打得到的角度
         if (usesShots && dn < 560 && s.clearShot && !s.clearShot(x, y, tgt.x, tgt.y)) cost += 30;
       }
