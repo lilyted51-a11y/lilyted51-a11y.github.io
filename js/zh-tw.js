@@ -747,6 +747,7 @@
   "Es tu compañero": "這是你的夥伴",
   "Elegir de compañero{x}": "選為夥伴{x}",
   "Elegir de compañero": "選為夥伴",
+  "{x} niveles": "{x} 級",
   "Buscar Pokémon: nombre, chino o número": "搜尋寶可夢：中英文名稱或編號",
   "(compañero)": "（夥伴）",
   "(shiny)": "（閃光）",
