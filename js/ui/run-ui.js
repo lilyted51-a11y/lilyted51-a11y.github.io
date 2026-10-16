@@ -232,9 +232,10 @@ G.RunUI = (() => {
     renderBond();
   }
 
-  function showPause(coop = false) {
+  function showPause(coop = false, host = false) {
     G.UI.soundControls($('pause-sound'));
     $('pause-coop').classList.toggle('hidden', !coop);
+    $('pause-coop').textContent = host ? 'Has pausado la partida: todos esperan a que continúes.' : 'Partida en grupo: el juego sigue mientras estás aquí.';
     $('btn-quit').textContent = coop ? 'Salir de la partida' : 'Abandonar run';
     G.UI.show('scr-pause');
   }

@@ -258,6 +258,7 @@
 
     function connText(m, room) {
       if (m.uid === room.host) return 'Anfitrión';
+      if (m.lob === false) return 'En el menú (fuera de la sala)';
       if (!room.isHost) return m.uid === G.Social.uid ? 'Tú' : 'En la sala';
       const mode = G.Net.mode(m.uid);
       return mode === 'direct' ? 'Conectado' : mode === 'relay' ? 'Conectado (por servidor)' : mode === 'failed' ? 'No se pudo conectar (reintentando…)' : 'Conectando…';
@@ -280,7 +281,7 @@
       }
 
       // Las tarjetas sólo se rehacen si cambian los miembros (los sprites no parpadean).
-      const key = MAXR + '#' + ms.map(m => m.uid + ':' + m.dex + ':' + (m.shiny ? 1 : 0)).join('|');
+      const key = MAXR + '#' + ms.map(m => m.uid + ':' + m.dex + ':' + (m.shiny ? 1 : 0) + ':' + (m.lob === false ? 0 : 1)).join('|');
       const box = $('lobby-members');
       // Filas: 4 jugadores en una; de 5 a 10, dos filas (la mitad arriba, redondeando: 5→3+2, 7→4+3, 9→5+4).
       box.style.setProperty('--cols', MAXR <= 4 ? MAXR : Math.ceil(MAXR / 2));
@@ -332,10 +333,12 @@
       btn.classList.toggle('hidden', !room.isHost);
       const connecting = ms.some(m => m.uid !== room.host && G.Net.mode(m.uid) === 'connecting');
       const failed = ms.some(m => m.uid !== room.host && G.Net.mode(m.uid) === 'failed');
-      btn.disabled = !room.isHost || ms.length < 2 || connecting || failed;
+      const away = ms.filter(m => m.uid !== room.host && m.lob === false).map(m => m.name);
+      btn.disabled = !room.isHost || ms.length < 2 || connecting || failed || away.length > 0;
       btn.textContent = 'Empezar partida (' + ms.length + '/' + MAXR + ')';
       $('lobby-note').textContent = !room.isHost ? 'Cuando el anfitrión empiece, entraréis todos a la vez.'
         : ms.length < 2 ? 'Necesitas al menos un amigo en la sala.'
+        : away.length ? 'Esperando a que ' + away.join(', ') + ' vuelva a la sala.'
         : failed ? 'No se puede conectar con algún amigo: su red (o la tuya) no deja jugar en grupo. Probad con otra wifi o datos móviles; se reintenta solo.'
         : connecting ? 'Conectando con tus amigos…' : 'La partida empieza para todos a la vez.';
     }

@@ -34,7 +34,10 @@ G.Game = (() => {
     G.Touch.init(cv);
     // En móvil: al cambiar de app o girarlo en vertical, la partida se pausa.
     document.addEventListener('visibilitychange', () => { if (document.hidden) autoPause(); });
-    G.RunUI.wirePause(() => { state = 'playing'; G.UI.hideAll(); }, quitRun);
+    G.RunUI.wirePause(() => {
+      if (state === 'paused') { if (G.Coop.active && G.Coop.isHost) G.Coop.broadcast(['pz', 0]); state = 'playing'; }
+      G.UI.hideAll();
+    }, quitRun);
     Backdrop.init();
     last = performance.now();
     requestAnimationFrame(loop);
@@ -70,9 +73,16 @@ G.Game = (() => {
   /** Pausa/continúa (tecla Esc o P, o el botón de pausa del móvil). */
   let holdBy = [];                   // grupo: quién está eligiendo fusión (todo parado)
 
+  let pausedByHost = false;          // grupo (invitado): el anfitrión ha pausado para todos
   function togglePause() {
-    // En grupo la pausa no para el juego (los demás siguen jugando).
     if (G.Coop.active) {
+      // Copia local: el ANFITRIÓN sí pausa, y para todos (los invitados quedan "held").
+      if (G.Coop.isHost) {
+        if (state === 'playing') { state = 'paused'; G.RunUI.showPause(true, true); G.Audio.sfx('pause'); G.Coop.broadcast(['pz', 1]); }
+        else if (state === 'paused') { state = 'playing'; G.UI.hideAll(); G.Coop.broadcast(['pz', 0]); }
+        return;
+      }
+      // Invitado: la pausa no para el juego (sólo el menú por encima).
       if (state !== 'playing') return;
       if (G.UI.isOpen('scr-pause')) G.UI.hide('scr-pause');
       else { G.RunUI.showPause(true); G.Audio.sfx('pause'); }
@@ -86,7 +96,7 @@ G.Game = (() => {
 
   /** @param coop  { seed, host, members } para una partida en grupo */
   function startRun(coop = null) {
-    holdBy = []; awayBy = null;
+    holdBy = []; awayBy = null; pausedByHost = false;
     const save = G.DB.save;
     const mon = G.DEX_BY[save.partner];
     const perks = G.Upgrades.perks(G.DB.upgradesOf(mon.dex));
@@ -247,7 +257,18 @@ G.Game = (() => {
         if (!mine && others.length) G.Spawner.say('Pausa: ' + others.join(', ') + ' ' + (others.length > 1 ? 'están eligiendo…' : 'está eligiendo…'), 999, true);
         else if (!others.length) G.Spawner.say(awayBy ? awayText() : '', awayBy ? 999 : 0, true);   // sólo tú: sin aviso viejo
       } else {
-        if (state === 'held' && !awayBy) state = 'playing';
+        if (state === 'held' && !awayBy && !pausedByHost) state = 'playing';
+        G.Spawner.say(awayBy ? awayText() : pausedByHost ? 'Pausa: el anfitrión ha pausado la partida' : '', awayBy || pausedByHost ? 999 : 0, true);
+      }
+    },
+    /** Grupo (invitado): el anfitrión ha pausado (o reanudado) la partida para todos. */
+    hostPause(on) {
+      pausedByHost = !!on;
+      if (pausedByHost) {
+        if (state === 'playing') state = 'held';
+        G.Spawner.say('Pausa: el anfitrión ha pausado la partida', 999, true);
+      } else {
+        if (state === 'held' && !holdBy.length && !awayBy) state = 'playing';
         G.Spawner.say(awayBy ? awayText() : '', awayBy ? 999 : 0, true);
       }
     },
@@ -257,7 +278,7 @@ G.Game = (() => {
       if (awayBy) {
         if (state === 'playing') state = 'held';
         G.Spawner.say(awayText(), 999, true);
-      } else if (!holdBy.length) {
+      } else if (!holdBy.length && !pausedByHost) {
         if (state === 'held') state = 'playing';
         G.Spawner.say('', 0, true);
       }

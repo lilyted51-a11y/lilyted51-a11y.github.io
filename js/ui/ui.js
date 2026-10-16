@@ -14,6 +14,8 @@ G.UI = (() => {
   function show(id, keepMenu = false) {
     for (const s of SCREENS) if (s !== id && !(keepMenu && s === 'scr-menu')) $(s).classList.add('hidden');
     $(id).classList.remove('hidden');
+    // Copia local: en una sala, los demás ven si estás en la sala o por el menú.
+    if (G.Social && G.Social.room && G.Social.setInLobby) G.Social.setInLobby(id === 'scr-lobby');
   }
   function hide(id) { $(id).classList.add('hidden'); }
   function hideAll() { for (const s of SCREENS) $(s).classList.add('hidden'); }
