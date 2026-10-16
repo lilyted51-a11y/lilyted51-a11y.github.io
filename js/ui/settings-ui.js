@@ -157,6 +157,43 @@ G.SettingsUI = (() => {
     }
   }
 
+  /**
+   * Regalo de monedas, dentro del juego: cantidades rápidas + cantidad a mano.
+   * Se dibuja dentro de la pantalla de Ajustes (encima de todo).
+   */
+  function openCoinGift(uid, name) {
+    document.getElementById('coin-gift')?.remove();
+    const QUICK = [100000, 1000000, 10000000, 100000000];
+    const el = document.createElement('div');
+    el.id = 'coin-gift'; el.className = 'scr dim';
+    el.style.zIndex = '60';
+    el.innerHTML = `<div class="box center" style="width:min(420px,100%)">
+        <h3>Regalar monedas a <span class="gold" translate="no">${esc(name)}</span></h3>
+        <div class="chips" style="justify-content:center;margin:10px 0">${QUICK.map(q => `<button class="chip" data-q="${q}">${q.toLocaleString()}</button>`).join('')}</div>
+        <label for="coin-gift-n">Cantidad</label>
+        <input id="coin-gift-n" class="field" inputmode="numeric" maxlength="13" value="100000" style="text-align:center;font-size:18px">
+        <p class="err" id="coin-gift-msg"></p>
+        <div class="row" style="justify-content:center;gap:8px">
+          <button class="btn gold" id="coin-gift-ok">Enviar</button>
+          <button class="btn ghost" id="coin-gift-x">Cancelar</button>
+        </div></div>`;
+    document.body.appendChild(el);
+    const inp = el.querySelector('#coin-gift-n'), msg = el.querySelector('#coin-gift-msg');
+    const amount = () => Math.floor(+String(inp.value).replace(/[^\d]/g, ''));
+    const paint = () => { const n = amount(); el.querySelectorAll('[data-q]').forEach(c => c.classList.toggle('on', +c.dataset.q === n)); };
+    el.querySelectorAll('[data-q]').forEach(c => { c.onclick = () => { inp.value = c.dataset.q; paint(); }; });
+    inp.oninput = paint; paint();
+    setTimeout(() => inp.focus(), 50);
+    el.querySelector('#coin-gift-x').onclick = () => el.remove();
+    el.querySelector('#coin-gift-ok').onclick = async () => {
+      const n = amount();
+      if (!(n >= 1 && n <= 1e12)) { msg.textContent = 'Cantidad no válida'; return; }
+      el.querySelector('#coin-gift-ok').disabled = true;
+      try { await G.Boost.giftCoins(uid, n); el.remove(); G.UI.toast('Enviado a ' + name + ': lo recibe al entrar'); }
+      catch (e) { msg.textContent = 'No se pudo enviar: ' + e.message; el.querySelector('#coin-gift-ok').disabled = false; }
+    };
+  }
+
   async function renderBoostAdmin() {
     const box = $('boost-admin');
     if (!box) return;
@@ -194,19 +231,11 @@ G.SettingsUI = (() => {
       };
     });
     box.querySelectorAll('[data-coins]').forEach(b => {
-      b.onclick = async () => {
-        const raw = prompt('Pokémonedas para ' + b.dataset.name + ':', '100000');
-        if (raw == null) return;
-        const n = Math.floor(+String(raw).replace(/[^\d]/g, ''));
-        if (!(n >= 1)) { G.UI.toast('Cantidad no válida'); return; }
-        if (!confirm('¿Regalar ' + n.toLocaleString() + ' Pokémonedas a ' + b.dataset.name + '?')) return;
-        try { await G.Boost.giftCoins(b.dataset.uid, n); G.UI.toast('Enviado a ' + b.dataset.name + ': lo recibe al entrar'); }
-        catch (e) { G.UI.toast('No se pudo enviar: ' + e.message); }
-      };
+      b.onclick = () => openCoinGift(b.dataset.coins, b.dataset.name);
     });
     box.querySelectorAll('[data-gift]').forEach(b => {
       // Abre la Pokédex en modo regalo: se elige el Pokémon (y shiny o no) con un clic.
-      b.onclick = () => { close(); G.MenuUI.openDexGift({ uid: b.dataset.uid, name: b.dataset.name }); };
+      b.onclick = () => { close(); G.MenuUI.openDexGift({ uid: b.dataset.gift, name: b.dataset.name }); };
     });
   }
 

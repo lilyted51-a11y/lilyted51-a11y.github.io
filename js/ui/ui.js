@@ -123,6 +123,20 @@ G.UI = (() => {
    * las de Google la confirman en la ventana de Google al seguir.
    * Devuelve { pass } o null si se cancela.
    */
+  /** Pregunta sí/no dentro del juego (en vez del confirm() del navegador). → Promise<boolean> */
+  function ask(text, okLabel = 'Aceptar') {
+    return new Promise(done => {
+      const el = document.createElement('section');
+      el.className = 'scr dim'; el.style.zIndex = 70;
+      el.innerHTML = `<div class="box center" style="max-width:380px"><p style="margin:6px 0 14px">${text}</p>
+        <div class="row" style="justify-content:center;gap:8px"><button class="btn gold" data-ok>${okLabel}</button><button class="btn ghost" data-no>Cancelar</button></div></div>`;
+      document.body.appendChild(el);
+      const end = v => { el.remove(); done(v); };
+      el.querySelector('[data-ok]').onclick = () => end(true);
+      el.querySelector('[data-no]').onclick = () => end(false);
+    });
+  }
+
   function confirmDelete() {
     if (!G.DB.nameAccount) return Promise.resolve(confirm(G.T('Se borrarán tu cuenta y toda tu partida, para siempre. ¿Seguro?')) ? { pass: '' } : null);
     return new Promise(done => {
@@ -282,6 +296,6 @@ G.UI = (() => {
     return cv;
   }
 
-  return { $, show, hide, hideAll, isOpen, chrome, refreshCoins, toast, typeChips, stars, confirmDelete,
+  return { $, show, hide, hideAll, isOpen, chrome, refreshCoins, toast, typeChips, stars, confirmDelete, ask,
            sprite, spriteCanvas, tick, initChrome, soundControls };
 })();

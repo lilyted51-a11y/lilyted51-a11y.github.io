@@ -228,7 +228,7 @@ G.MenuUI = (() => {
     });
     const giftBtn = $('dex-gift');
     if (giftBtn) giftBtn.onclick = async () => {
-      if (!confirm('¿Regalar ' + p.name + (viewShiny ? ' shiny' : '') + ' a ' + giftTo.name + '?')) return;
+      if (!await G.UI.ask('¿Regalar <b class="gold" translate="no">' + p.name + (viewShiny ? ' shiny' : '') + '</b> a <b translate="no">' + giftTo.name + '</b>?', 'Regalar')) return;
       giftBtn.disabled = true;
       try { await G.Boost.gift(giftTo.uid, dex, viewShiny); G.UI.toast('Enviado a ' + giftTo.name + ': lo recibe al entrar'); }
       catch (e) { G.UI.toast('No se pudo enviar: ' + e.message); }

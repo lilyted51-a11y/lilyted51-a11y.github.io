@@ -116,6 +116,7 @@ G.Boost = (() => {
     const fb = G.DB && G.DB.fb;
     if (!fb || !fb.fs || !UIDS.includes(fb.uid)) throw new Error('Sólo el administrador');
     if (!G.DEX_BY[dex]) throw new Error('Pokémon desconocido');
+    if (typeof u !== 'string' || u.length < 10) throw new Error('Cuenta no válida');
     await fb.fs.collection('gifts').doc(u).collection('items').add({
       dex, shiny: !!shiny, from: fb.uid, at: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -127,6 +128,7 @@ G.Boost = (() => {
     if (!fb || !fb.fs || !UIDS.includes(fb.uid)) throw new Error('Sólo el administrador');
     coins = Math.floor(+coins);
     if (!(coins >= 1 && coins <= 1e12)) throw new Error('Cantidad no válida');
+    if (typeof u !== 'string' || u.length < 10) throw new Error('Cuenta no válida');
     await fb.fs.collection('gifts').doc(u).collection('items').add({
       coins, from: fb.uid, at: firebase.firestore.FieldValue.serverTimestamp()
     });
