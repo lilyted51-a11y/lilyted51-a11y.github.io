@@ -25,6 +25,12 @@ service cloud.firestore {
     // legal). Lo único que deja a alguien sin ranking es que el admin lo banee
     // (ban = true; el campo viejo "sus" ya no cuenta para nada). El jugador no
     // puede quitarse el baneo: si está, sus guardados tienen que llevarlo.
+    // Copia local: listas de cuentas con ventajas (config/boost). Se editan desde la consola.
+    match /config/{doc} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
     match /saves/{uid} {
       allow read, delete: if signedIn() && me() == uid;
       allow read: if admin();

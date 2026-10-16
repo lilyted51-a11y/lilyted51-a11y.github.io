@@ -603,7 +603,7 @@ G.Game = (() => {
     // Bot local (en/bot.js): sólo con el bot activo se publica el estado, y la
     // partida queda marcada (como con debugTime): no sube al ranking.
     // El bot sólo existe para las cuentas con ventajas.
-    window.__POKE_BOOST__ = !!(G.Boost && G.Boost.on);
+    window.__POKE_BOOST__ = !!(G.Boost && G.Boost.bot);
     if (window.__POKE_BOOST__ && window.__POKE_BOT_ON__ && pl && state !== 'ui' && state !== 'over') {
       tampered = true;
       window.__POKE_STATE__ = { phase: state, player: pl, enemies: G.EnemyMgr.all(),
@@ -949,6 +949,7 @@ G.Flow = {
   toLogin() { G.Audio.music('village'); G.LoginUI.open(); },
   afterLogin() {
     G.Audio.music('village');
+    G.Boost.load();              // listas de ventajas (config/boost en Firestore)
     if (!G.DB.save.partner) G.TestUI.start();
     else this.goMenu();
   },
