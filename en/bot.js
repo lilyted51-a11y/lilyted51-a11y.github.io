@@ -561,9 +561,11 @@ class PokeAutoBot {
         let wt = 0;
         if (o.type === 'spring' && (o.charge === undefined || o.charge > 0.05)) wt = hpFrac < 0.5 ? 40 : hpFrac < 0.85 ? 6 : 0;
         else if (o.type === 'altar') continue;   // 下面另外算
-        else if (o.type === 'bigchest') wt = 12;
+        else if (o.type === 'bigchest') wt = 18;
         if (wt) cost -= wt * 40 / (dd + 20);
       }
+      // 小寶箱（打破有金幣、經驗、有時道具）：走過去，靠近時遊戲會自動瞄它
+      for (const c of (s.chests || [])) cost -= 9 * 40 / (Math.hypot(c.x - x, c.y - y) + 20);
       // 祭壇（25 秒強化：攻擊×2、速度、磁鐵、冷卻）：路線上碰得到就算
       for (const db of altarBest) cost -= 14 * 40 / (db + 20);
 

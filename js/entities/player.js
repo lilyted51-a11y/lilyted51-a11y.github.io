@@ -384,8 +384,14 @@ G.Player = class Player {
             || (ranged ? G.Projectiles.nearestClear(all, this.x, this.y, 520) : null)
             || G.Projectiles.nearest(all, this.x, this.y, 520)
             || G.World.nearestBreakable(this.x, this.y, 200);
-    this.target = tg;
-    if (tg) this.aim = Math.atan2(tg.y - this.y, tg.x - this.x);
+    let tgt = tg;
+    // Copia local, sólo con el bot: un cofre pegado y ningún enemigo cerca → se abre el cofre.
+    if (this.bot && !(tgt && tgt.hurt && G.U.dist(this.x, this.y, tgt.x, tgt.y) < 140)) {
+      const chest = G.World.propsInCircle(this.x, this.y, 80).find(o => o.type === 'chest' && o.solid && o.hp > 0);
+      if (chest) tgt = chest;
+    }
+    this.target = tgt;
+    if (tgt) this.aim = Math.atan2(tgt.y - this.y, tgt.x - this.x);
     else if (this.walking) this.aim = this.moveAngle;
 
     // --- animación: mira al objetivo al atacar, si no a donde camina ---

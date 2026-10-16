@@ -615,14 +615,16 @@ G.Game = (() => {
     // partida queda marcada (como con debugTime): no sube al ranking.
     // El bot sólo existe para las cuentas con ventajas.
     window.__POKE_BOOST__ = !!(G.Boost && G.Boost.bot);
+    if (pl) pl.bot = !!(window.__POKE_BOOST__ && window.__POKE_BOT_ON__);   // el bot prefiere abrir cofres cercanos (Player.update)
     if (window.__POKE_BOOST__ && window.__POKE_BOT_ON__ && pl && state !== 'ui' && state !== 'over') {
       tampered = true;
       window.__POKE_STATE__ = { phase: state, player: pl, enemies: G.EnemyMgr.all(),
         projectiles: G.Projectiles.all().filter(p => p.friendly === false), pickups: G.Pickups.all(),
         hazards: G.Hazards.all, inHazard: G.Hazards.inside, time, rift: G.Rift.rift, inArena: G.Rift.inArena,
-        specials: G.World.specialsNear(pl.x, pl.y, 600),
+        specials: G.World.specialsNear(pl.x, pl.y, 600),   // manantiales, altares, cofres grandes, trampas
+        chests: G.World.propsInCircle(pl.x, pl.y, 520).filter(o => o.type === 'chest'),   // cofres pequeños (se rompen a golpes)
         // Casillas por las que se puede andar (para buscar camino hasta la grieta)
-        TS: G.World.TS, walkable: G.World.walkable,   // manantiales, altares, cofres grandes, trampas
+        TS: G.World.TS, walkable: G.World.walkable,
         // ¿Llega un disparo recto entre dos puntos? (paredes y objetos sólidos)
         clearShot: (x1, y1, x2, y2) => G.World.clearShot(x1, y1, x2, y2, 6),
         // Dónde acabaría el jugador si intenta ir a (x, y): la misma colisión del juego
