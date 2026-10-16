@@ -70,7 +70,7 @@ G.MenuUI = (() => {
 
     const owned = Object.keys(s.owned).filter(d => G.DEX_BY[d]).length;
     const shinies = Object.keys(s.shiny || {}).length;
-    $('menu-dex-count').textContent = `${owned} / ${G.DEX.length}` + (shinies ? ` · ${shinies} shiny` : '');
+    $('menu-dex-count').textContent = `${owned} / ${G.DEX.filter(p => !p.excl).length}` + (shinies ? ` · ${shinies} shiny` : '');
 
     const st = s.stats;
     $('menu-stats').innerHTML =
@@ -131,15 +131,15 @@ G.MenuUI = (() => {
     }
     if (dexSel == null) { dexSel = s.partner; dexGen = G.DEX_BY[s.partner].gen; }
     const owned = Object.keys(s.owned).filter(d => G.DEX_BY[d]).length;
-    $('dex-total').textContent = giftTo ? 'Regalo para ' + giftTo.name : `${owned} / ${G.DEX.length}`;
+    $('dex-total').textContent = giftTo ? 'Regalo para ' + giftTo.name : `${owned} / ${G.DEX.filter(p => !p.excl).length}`;
 
     // Pestañas de generación, con cuántos tienes de cada una.
     const tabs = $('dex-gens');
     tabs.innerHTML = '';
     GEN_NAMES.forEach((name, i) => {
       const g = i + 1;
-      const total = G.DEX.filter(p => p.gen === g).length;
-      const have = G.DEX.filter(p => p.gen === g && s.owned[p.dex]).length;
+      const total = G.DEX.filter(p => p.gen === g && !p.excl).length;
+      const have = G.DEX.filter(p => p.gen === g && !p.excl && s.owned[p.dex]).length;
       const b = document.createElement('button');
       b.className = 'gen-tab' + (g === dexGen ? ' on' : '');
       b.innerHTML = `<b>${name}</b><small>${have}/${total}</small>`;
@@ -169,6 +169,7 @@ G.MenuUI = (() => {
     grid.innerHTML = '';
     let shown = 0;
     for (const p of G.DEX) {
+      if (p.excl && !s.owned[p.dex]) continue;          // exclusivos: sólo quien los tiene
       if (dexQuery ? !dexMatch(p, dexQuery) : p.gen !== dexGen) continue;
       if (dexQuery && ++shown > 80) break;
       const own = giftTo ? true : !!s.owned[p.dex], sh = !!(s.shiny && s.shiny[p.dex]);
@@ -325,8 +326,8 @@ G.MenuUI = (() => {
     tabs.classList.toggle('hidden', !!upgQuery);
     GEN_NAMES.forEach((name, i) => {
       const g = i + 1;
-      const total = G.DEX.filter(p => p.gen === g).length;
-      const have = G.DEX.filter(p => p.gen === g && s.owned[p.dex]).length;
+      const total = G.DEX.filter(p => p.gen === g && !p.excl).length;
+      const have = G.DEX.filter(p => p.gen === g && !p.excl && s.owned[p.dex]).length;
       const b = document.createElement('button');
       b.className = 'gen-tab' + (g === upgGen ? ' on' : '');
       b.innerHTML = `<b>${name}</b><small>${have}/${total}</small>`;

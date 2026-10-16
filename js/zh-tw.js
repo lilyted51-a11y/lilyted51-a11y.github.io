@@ -1655,6 +1655,7 @@
   "Kyogre": "蓋歐卡",
   "Groudon": "固拉多",
   "Rayquaza": "烈空坐",
+  "Mega Rayquaza": "Mega 烈空坐",
   "Jirachi": "基拉祈",
   "Deoxys": "代歐奇希斯",
   "Turtwig": "草苗龜",

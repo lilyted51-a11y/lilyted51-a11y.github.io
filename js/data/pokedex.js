@@ -391,6 +391,7 @@ G.DEX = [
   {"dex":382,"name":"Kyogre","types":["water"],"hp":115,"spd":116,"atk":1.52,"rarity":5,"bst":670,"starter":false,"gen":3,"leg":true},
   {"dex":383,"name":"Groudon","types":["ground"],"hp":115,"spd":116,"atk":1.52,"rarity":5,"bst":670,"starter":false,"gen":3,"leg":true},
   {"dex":384,"name":"Rayquaza","types":["dragon","flying"],"hp":117,"spd":118,"atk":1.52,"rarity":5,"bst":680,"starter":false,"gen":3,"leg":true},
+  {"dex":1384,"name":"Mega Rayquaza","types":["dragon","flying"],"hp":125,"spd":122,"atk":1.70,"rarity":5,"bst":780,"starter":false,"gen":3,"excl":true},   /* copia local: exclusivo (regalo del administrador), sprite SpriteCollab 0384/0001 */
   {"dex":385,"name":"Jirachi","types":["steel","psychic"],"hp":115,"spd":120,"atk":1.25,"rarity":5,"bst":600,"starter":false,"gen":3,"leg":true},
   {"dex":386,"name":"Deoxys","types":["psychic"],"hp":92,"spd":141,"atk":1.52,"rarity":5,"bst":600,"starter":false,"gen":3,"leg":true},
   {"dex":387,"name":"Turtwig","types":["grass"],"hp":95,"spd":91,"atk":1.07,"rarity":1,"bst":318,"starter":true,"gen":4},

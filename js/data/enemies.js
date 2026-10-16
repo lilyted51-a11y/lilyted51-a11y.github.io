@@ -113,7 +113,7 @@ G.Enemies = (() => {
 
   /** Todos los candidatos de un tramo (sin legendarios ni míticos). */
   function candidates(tier) {
-    return G.DEX.filter(p => p.rarity < 5 && p.bst >= tier.bst[0] && p.bst <= tier.bst[1] && G.SPRITE_META[p.dex]);
+    return G.DEX.filter(p => p.rarity < 5 && !p.excl && p.bst >= tier.bst[0] && p.bst <= tier.bst[1] && G.SPRITE_META[p.dex]);
   }
 
   // ---------------- elenco de la run ----------------
@@ -155,8 +155,8 @@ G.Enemies = (() => {
     const used = new Set();
     bosses = BOSS_SLOTS.map(slot => {
       const ok = p => !p.leg && G.SPRITE_META[p.dex] && !used.has(p.dex);
-      let pool = G.DEX.filter(p => ok(p) && p.bst >= slot.bst[0] && p.bst <= slot.bst[1]);
-      if (!pool.length) pool = G.DEX.filter(p => ok(p) && p.bst >= 580);
+      let pool = G.DEX.filter(p => ok(p) && !p.excl && p.bst >= slot.bst[0] && p.bst <= slot.bst[1]);
+      if (!pool.length) pool = G.DEX.filter(p => ok(p) && !p.excl && p.bst >= 580);
       const p = G.U.pick(pool);
       used.add(p.dex);
       return {

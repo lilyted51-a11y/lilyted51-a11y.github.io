@@ -11,7 +11,7 @@ ROOT = os.path.join(os.path.dirname(__file__), '..')
 SITE = 'https://lilyted51-a11y.github.io/'
 TODAY = datetime.date.today().isoformat()
 D = json.load(open(os.path.join(ROOT, 'tools', 'cache', 'gamedata.json'), encoding='utf-8'))
-DEX = D['dex']; BY = {p['dex']: p for p in DEX}
+DEX = [p for p in D['dex'] if not p.get('excl')]; BY = {p['dex']: p for p in DEX}   # los exclusivos no salen en la web
 META = {}
 for m in re.finditer(r'^\s*(\d+): (\{.*\}),?\s*$', open(os.path.join(ROOT, 'js/data/sprites-meta.js'), encoding='utf-8').read(), re.M):
     try: META[int(m.group(1))] = json.loads(m.group(2))
