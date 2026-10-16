@@ -30,6 +30,8 @@ G.GachaUI = (() => {
 
   function refresh() {
     const s = G.DB.save;
+    const sk = $('gacha-skip');
+    if (sk) { sk.checked = !!G.Settings.get('gachaSkip'); sk.onchange = () => G.Settings.set('gachaSkip', sk.checked); }
     const banner = G.Gacha.BANNERS[gen - 1];
     document.querySelectorAll('#gacha-gens .gen-tab').forEach(t => t.classList.toggle('on', +t.dataset.gen === gen));
 
@@ -93,8 +95,10 @@ G.GachaUI = (() => {
     slot.style.display = '';
     fx.classList.remove('hidden');
 
-    // La tragaperras (ui/slots.js) y luego las cartas.
-    await G.Slots.play(slot, res);
+    // La tragaperras (ui/slots.js) y luego las cartas. Con "saltar animación", directo a las cartas.
+    const skip = !!G.Settings.get('gachaSkip');
+    if (skip) slot.style.display = 'none';
+    else await G.Slots.play(slot, res);
     G.Audio.sfx('burst', { rarity: best });
     slot.style.display = 'none';
 
@@ -111,7 +115,7 @@ G.GachaUI = (() => {
       c.insertAdjacentHTML('beforeend', `<b>${r.shiny ? G.Icons.html('shiny', 12) + ' ' : ''}${mon.name}</b><div class="tag">${tag}</div>`);
       out.appendChild(c);
       G.Audio.sfx('reveal', { rarity: r.rarity });
-      await wait(n === 10 ? 150 : 0);
+      if (!skip) await wait(n === 10 ? 150 : 0);
     }
     $('pull-close').classList.remove('hidden');
     busy = false;

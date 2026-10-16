@@ -81,6 +81,7 @@ G.SettingsUI = (() => {
         + choice('quality', [['auto', 'Auto'], ['high', 'Alta'], ['mid', 'Media'], ['low', 'Baja']])
         + section('Pantalla')
         + toggle('dmgNumbers', 'Números de daño', 'Los números que salen al golpear y al recibir daño.')
+        + toggle('minimap', 'Minimapa', 'Radar en la esquina: jefes, legendarios, grieta, cofres grandes, shinies y compañeros.')
         + toggle('calm', 'Menos sacudidas y destellos', 'La cámara tiembla menos y los fogonazos son suaves.')
         + toggle('fps', 'Mostrar FPS', 'Fotogramas por segundo, en la esquina de abajo.')
         + (canFull() ? `<div class="set-row"><div class="grow"><b>Pantalla completa</b><small>Sin barras del navegador.</small></div>

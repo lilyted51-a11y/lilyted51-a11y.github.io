@@ -113,6 +113,34 @@ G.HUD = (() => {
     // ---------- aviso ----------
     // ---------- shinies fuera de pantalla: destello en el borde ----------
     const cam = G.Camera, pulse = 0.6 + Math.sin(performance.now() / 160) * 0.4;
+
+    // ---------- copia local: jefes y legendarios fuera de pantalla: flecha dorada en el borde ----------
+    for (const e of G.EnemyMgr.all()) {
+      if (e.dead || !(e.boss || e.legend)) continue;
+      const sx = (e.x - cam.left()) * cam.scale, sy = (e.y - cam.top()) * cam.scale;
+      if (sx > 0 && sx < w && sy > 0 && sy < h) continue;
+      const M = 34;
+      const ex = G.U.clamp(sx, M, w - M), ey = G.U.clamp(sy, M + 60, h - M - 70);
+      const a = Math.atan2(sy - ey, sx - ex);
+      const dist = Math.round(Math.hypot(e.x - pl.x, e.y - pl.y) / 32);
+      ctx.save();
+      ctx.translate(ex, ey);
+      ctx.fillStyle = e.legend ? '#c47bff' : '#ffcb3d';
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * 28, Math.sin(a) * 28);
+      ctx.lineTo(Math.cos(a + 2.4) * 14, Math.sin(a + 2.4) * 14);
+      ctx.lineTo(Math.cos(a - 2.4) * 14, Math.sin(a - 2.4) * 14);
+      ctx.fill();
+      ctx.beginPath(); ctx.arc(0, 0, 13, 0, 6.2832); ctx.fillStyle = 'rgba(0,0,0,.7)'; ctx.fill();
+      ctx.font = F(800, 9); ctx.textAlign = 'center'; ctx.fillStyle = e.legend ? '#c47bff' : '#ffcb3d';
+      ctx.fillText('BOSS', 0, 3);
+      ctx.font = F(700, 9); ctx.fillStyle = '#fff';
+      ctx.fillText(dist + ' m', 0, 24);
+      ctx.restore();
+    }
+
+    // ---------- copia local: minimapa (radar) ----------
+    if (G.Settings.get('minimap') !== false) drawMinimap(ctx, w, h, pl, touch);
     for (const e of G.EnemyMgr.shinies()) {
       const sx = (e.x - cam.left()) * cam.scale, sy = (e.y - cam.top()) * cam.scale;
       if (sx > 0 && sx < w && sy > 0 && sy < h) continue;
@@ -391,6 +419,57 @@ G.HUD = (() => {
   }
 
   // ---------------- cooperativo ----------------
+
+  /**
+   * Copia local: radar en la esquina superior derecha. Tú en el centro; alrededor
+   * (hasta RANGE px) jefes y legendarios (dorado / morado), la grieta (morado),
+   * cofres grandes (dorado, cuadrado), shinies (celeste) y compañeros (su color).
+   * Lo que queda más lejos se pega al borde del círculo.
+   */
+  function drawMinimap(ctx, w, h, pl, touch) {
+    const R = 54, RANGE = 1500;
+    const cx = w - 16 - R - (touch ? 56 : 0), cy = 56 + R + (G.Weather.current ? 30 : 0);
+    const k = R / RANGE;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.2832);
+    ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.stroke();
+    // Mira: la pantalla visible, aproximada
+    const cam = G.Camera;
+    ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 1;
+    ctx.strokeRect(cx - (w / cam.scale) * k / 2, cy - (h / cam.scale) * k / 2, (w / cam.scale) * k, (h / cam.scale) * k);
+    const put = (x, y, draw) => {
+      let dx = (x - pl.x) * k, dy = (y - pl.y) * k;
+      const d = Math.hypot(dx, dy);
+      if (d > R - 5) { dx *= (R - 5) / d; dy *= (R - 5) / d; }
+      ctx.save(); ctx.translate(cx + dx, cy + dy); draw(d > R - 5); ctx.restore();
+    };
+    const dot = (col, r) => { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 0, r, 0, 6.2832); ctx.fill(); };
+    // Enemigos normales: puntitos rojos tenues (sólo los cercanos)
+    ctx.globalAlpha = 0.55;
+    for (const e of G.EnemyMgr.all()) {
+      if (e.dead || e.boss || e.legend || e.shiny) continue;
+      if (Math.abs(e.x - pl.x) > RANGE || Math.abs(e.y - pl.y) > RANGE) continue;
+      put(e.x, e.y, () => dot('#ff6b6b', 1.5));
+    }
+    ctx.globalAlpha = 1;
+    for (const e of G.EnemyMgr.shinies()) put(e.x, e.y, () => dot('#9ae6ff', 3));
+    for (const o of G.World.specialsNear(pl.x, pl.y, RANGE)) {
+      if (o.type === 'bigchest') put(o.x, o.y, () => { ctx.fillStyle = '#ffcb3d'; ctx.fillRect(-3, -3, 6, 6); });
+      else if (o.type === 'spring') put(o.x, o.y, () => dot('#5fe08a', 2.5));
+    }
+    const rift = G.Rift.rift;
+    if (rift) put(rift.x, rift.y, edge => { dot('#c47bff', edge ? 4 : 5); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke(); });
+    if (G.Coop.active) for (const m of G.Coop.puppets()) put(m.x, m.y, () => { dot(m.tagColor || '#5fc8ff', 3.5); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke(); });
+    const blink = Math.sin(performance.now() / 150) > 0;
+    for (const e of G.EnemyMgr.all()) {
+      if (e.dead || !(e.boss || e.legend)) continue;
+      put(e.x, e.y, () => { dot(e.legend ? '#c47bff' : '#ffcb3d', blink ? 6 : 5); ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.stroke(); });
+    }
+    // Tú
+    dot && (ctx.save(), ctx.translate(cx, cy), dot('#fff', 3), ctx.restore());
+    ctx.restore();
+  }
 
   /**
    * - Vida de cada compañero debajo de la tuya.

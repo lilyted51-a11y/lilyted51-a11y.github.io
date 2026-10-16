@@ -16,7 +16,8 @@
  */
 G.Settings = (() => {
   const KEY = 'ps.settings';
-  const DEF = { quality: 'auto', dmgNumbers: true, calm: false, fps: false, stick: 1, stickMode: 'float', pad: null };
+  const DEF = { quality: 'auto', dmgNumbers: true, calm: false, fps: false, stick: 1, stickMode: 'float', pad: null,
+                gachaSkip: false, minimap: true };   // copia local: saltar animación del gacha · minimapa
   let s = Object.assign({}, DEF);
   try { Object.assign(s, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { /* nada */ }
   const fns = new Set();
