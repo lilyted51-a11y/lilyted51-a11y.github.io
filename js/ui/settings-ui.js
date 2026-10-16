@@ -174,17 +174,8 @@ G.SettingsUI = (() => {
       };
     });
     box.querySelectorAll('[data-gift]').forEach(b => {
-      b.onclick = async () => {
-        const raw = prompt('Pokémon para ' + b.dataset.name + ': número de la Pokédex o nombre en inglés (añade "shiny" para la versión shiny). Ej.: 150, Mewtwo shiny');
-        if (!raw) return;
-        const shiny = /shiny/i.test(raw);
-        const q = raw.replace(/shiny/ig, '').trim().toLowerCase();
-        const mon = /^\d+$/.test(q) ? G.DEX_BY[+q] : G.DEX.find(m => m.name.toLowerCase() === q);
-        if (!mon) { G.UI.toast('No encuentro ese Pokémon'); return; }
-        if (!confirm('¿Regalar ' + mon.name + (shiny ? ' shiny' : '') + ' (#' + mon.dex + ') a ' + b.dataset.name + '?')) return;
-        try { await G.Boost.gift(b.dataset.uid, mon.dex, shiny); G.UI.toast('Enviado: lo recibe al entrar'); }
-        catch (e) { G.UI.toast('No se pudo enviar: ' + e.message); }
-      };
+      // Abre la Pokédex en modo regalo: se elige el Pokémon (y shiny o no) con un clic.
+      b.onclick = () => { close(); G.MenuUI.openDexGift({ uid: b.dataset.uid, name: b.dataset.name }); };
     });
   }
 

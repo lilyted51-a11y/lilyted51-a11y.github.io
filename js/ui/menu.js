@@ -33,6 +33,7 @@ G.MenuUI = (() => {
   // ---------------- menú principal ----------------
 
   function open() {
+    giftTo = null;
     const s = G.DB.save;
     const mon = G.DEX_BY[s.partner];
     const shiny = !!s.partnerShiny && G.DB.ownsShiny(mon.dex);
@@ -101,12 +102,17 @@ G.MenuUI = (() => {
 
   // ---------------- colección ----------------
 
+  // Copia local: modo regalo del administrador (Ajustes > Cuenta > Regalar Pokémon):
+  // la Pokédex enseña todos los Pokémon y el botón envía el elegido a `giftTo`.
+  let giftTo = null;            // { uid, name } | null
+  function openDexGift(target) { giftTo = target; dexFilter = 'all'; dexSel = null; openDex(); }
+
   function openDex() {
     G.UI.show('scr-dex', true);
     const s = G.DB.save;
     if (dexSel == null) { dexSel = s.partner; dexGen = G.DEX_BY[s.partner].gen; }
     const owned = Object.keys(s.owned).filter(d => G.DEX_BY[d]).length;
-    $('dex-total').textContent = `${owned} / ${G.DEX.length}`;
+    $('dex-total').textContent = giftTo ? 'Regalo para ' + giftTo.name : `${owned} / ${G.DEX.length}`;
 
     // Pestañas de generación, con cuántos tienes de cada una.
     const tabs = $('dex-gens');
@@ -144,7 +150,7 @@ G.MenuUI = (() => {
     grid.innerHTML = '';
     for (const p of G.DEX) {
       if (p.gen !== dexGen) continue;
-      const own = !!s.owned[p.dex], sh = !!(s.shiny && s.shiny[p.dex]);
+      const own = giftTo ? true : !!s.owned[p.dex], sh = !!(s.shiny && s.shiny[p.dex]);
       if (dexFilter === 'own' && !own) continue;
       if (dexFilter === 'miss' && own) continue;
       if (dexFilter === 'shiny' && !sh) continue;
@@ -175,9 +181,9 @@ G.MenuUI = (() => {
   function showDetail(dex) {
     const s = G.DB.save;
     const p = G.DEX_BY[dex];
-    const own = !!s.owned[dex];
-    const hasSh = G.DB.ownsShiny(dex);
-    const isPartner = dex === s.partner;
+    const own = giftTo ? true : !!s.owned[dex];
+    const hasSh = giftTo ? true : G.DB.ownsShiny(dex);
+    const isPartner = !giftTo && dex === s.partner;
     if (!hasSh) viewShiny = false;
     else if (isPartner && dex !== showDetail.last) viewShiny = !!s.partnerShiny;
     showDetail.last = dex;
@@ -206,7 +212,9 @@ G.MenuUI = (() => {
         <p style="font-size:14px;margin:10px 0 4px">Empieza con <b class="gold">${G.Moves.BY_ID[G.startMoveOf(dex)].name}</b></p>
         <p class="move-icons" title="Movimientos que puede aprender">
           ${G.Moves.poolFor(p).map(id => `<span title="${G.Moves.BY_ID[id].name}">${G.Icons.html('move:' + id, 16)}</span>`).join('')}</p>
-        ${usingThis
+        ${giftTo
+          ? `<button id="dex-gift" class="btn gold" data-sfx="confirm" style="width:100%">Regalar a ${giftTo.name}${viewShiny ? ' (shiny)' : ''}</button>`
+          : usingThis
           ? '<button class="btn grow" disabled style="width:100%">Es tu compañero</button>'
           : `<button id="dex-pick" class="btn gold" data-sfx="confirm" style="width:100%">Elegir de compañero${viewShiny ? ' (shiny)' : ''}</button>`}
       ` : `<p class="center" style="color:var(--muted)">Aún no lo tienes.<br>Consíguelo en el banner de <b class="gold">${GEN_NAMES[p.gen - 1]}</b>
@@ -218,6 +226,14 @@ G.MenuUI = (() => {
     box.querySelectorAll('.seg button').forEach(b => {
       b.onclick = () => { viewShiny = b.dataset.v === '1'; showDetail(dex); };
     });
+    const giftBtn = $('dex-gift');
+    if (giftBtn) giftBtn.onclick = async () => {
+      if (!confirm('¿Regalar ' + p.name + (viewShiny ? ' shiny' : '') + ' a ' + giftTo.name + '?')) return;
+      giftBtn.disabled = true;
+      try { await G.Boost.gift(giftTo.uid, dex, viewShiny); G.UI.toast('Enviado a ' + giftTo.name + ': lo recibe al entrar'); }
+      catch (e) { G.UI.toast('No se pudo enviar: ' + e.message); }
+      giftBtn.disabled = false;
+    };
     const pick = $('dex-pick');
     if (pick) pick.onclick = () => {
       s.partner = dex;
@@ -359,5 +375,5 @@ G.MenuUI = (() => {
     return el;
   }
 
-  return { init, open, GEN_NAMES };
+  return { init, open, openDexGift, GEN_NAMES };
 })();
