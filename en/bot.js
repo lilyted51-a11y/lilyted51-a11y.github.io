@@ -588,8 +588,17 @@ PokeAutoBot.D8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-
 // 撿東西的價值（heal 依血量另算）
 PokeAutoBot.PICK = { xp: 1.2, xpBig: 2.5, coin: 0.8, magnet: 4, bomb: 2, ticket: 10, ticket10: 16, item: 9 };
 
-// 啟動：遊戲每一幀呼叫 __POKE_BOT_TICK__
+// 啟動：只有遊戲標記為「有特權的帳號」（js/core/boost.js）才建立 bot；
+// 遊戲每一幀會呼叫 __POKE_BOT_TICK__。登出後按鈕會收起來。
 window.addEventListener('DOMContentLoaded', () => {
-  window.myPokeBot = new PokeAutoBot();
-  window.__POKE_BOT_TICK__ = () => window.myPokeBot.update();
+  window.__POKE_BOT_TICK__ = () => {
+    const ok = !!window.__POKE_BOOST__;
+    if (ok && !window.myPokeBot) window.myPokeBot = new PokeAutoBot();
+    const bot = window.myPokeBot;
+    if (!bot) return;
+    const btn = document.getElementById('poke-bot-toggle');
+    if (btn) btn.style.display = ok ? '' : 'none';
+    if (!ok) { bot.releaseAllKeys(); return; }
+    bot.update();
+  };
 });

@@ -300,10 +300,10 @@ G.Game = (() => {
       jefes: pl.bosses * 80,
       recogidas: pl.coins
     };
-    // Copia local: ×5 Pokémonedas al acabar la partida.
-    // Copia local: además, 10.000 Pokémonedas por cada segundo que sobrevives (aparte del ×5).
-    const survival = Math.floor(time) * 10000;
-    const coins = Math.round((parts.tiempo + parts.derrotados + parts.jefes + parts.recogidas) * mul * 5) + survival;
+    // Copia local: con ventajas (G.Boost), ×5 Pokémonedas y además 10.000 por segundo sobrevivido.
+    const boosted = !!(pl.boost);
+    const survival = boosted ? Math.floor(time) * 10000 : 0;
+    const coins = Math.round((parts.tiempo + parts.derrotados + parts.jefes + parts.recogidas) * mul * (boosted ? 5 : 1)) + survival;
     const record = time > save.stats.bestTime;
 
     save.coins += coins;
@@ -336,7 +336,7 @@ G.Game = (() => {
       dead, time, level: pl.level, kills: pl.kills, bosses: pl.bosses, coins, record, t1: pl.t1, t10: pl.t10, judge,
       moves: pl.moves, caught,
       breakdown: Object.entries(parts).filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(' · ') +
-                 (mul > 1 ? ` · ×${mul.toFixed(2)} Fortuna` : '') + ' · ×5 · +' + survival.toLocaleString() + ' (' + Math.floor(time) + ' s × 10000)'
+                 (mul > 1 ? ` · ×${mul.toFixed(2)} Fortuna` : '') + (boosted ? ' · ×5 · +' + survival.toLocaleString() + ' (' + Math.floor(time) + ' s × 10000)' : '')
     }, () => { pl = null; G.Flow.afterRun(); });
   }
 
@@ -351,7 +351,7 @@ G.Game = (() => {
    */
   let runReal = 0, tampered = false;
   function clean() {
-    if (tampered) return false;
+    if (tampered || (pl && pl.boost)) return false;   // con ventajas (G.Boost) no se sube al ranking
     if (time > (performance.now() - runReal) / 1000 + 10) return false;
     for (const k of ['hurt', 'update', 'heal', 'gainXp']) if (Object.prototype.hasOwnProperty.call(pl, k)) return false;
     if (!isFinite(pl.hp) || !isFinite(pl.maxHp) || pl.hp > pl.maxHp + 1 || pl.maxHp > 50000) return false;
@@ -602,7 +602,9 @@ G.Game = (() => {
 
     // Bot local (en/bot.js): sólo con el bot activo se publica el estado, y la
     // partida queda marcada (como con debugTime): no sube al ranking.
-    if (window.__POKE_BOT_ON__ && pl && state !== 'ui' && state !== 'over') {
+    // El bot sólo existe para las cuentas con ventajas.
+    window.__POKE_BOOST__ = !!(G.Boost && G.Boost.on);
+    if (window.__POKE_BOOST__ && window.__POKE_BOT_ON__ && pl && state !== 'ui' && state !== 'over') {
       tampered = true;
       window.__POKE_STATE__ = { phase: state, player: pl, enemies: G.EnemyMgr.all(),
         projectiles: G.Projectiles.all().filter(p => p.friendly === false), pickups: G.Pickups.all(),
@@ -655,9 +657,9 @@ G.Game = (() => {
       return;
     }
     time += dt;
-    // Copia local: 1 ticket ×10 por cada segundo que sobrevives (se guarda cada 10 s y al acabar).
+    // Copia local: con ventajas, 1 ticket ×10 por cada segundo que sobrevives (se guarda cada 10 s y al acabar).
     const sec = Math.floor(time);
-    if (sec > t10Sec) {
+    if (pl.boost && sec > t10Sec) {
       pl.t10 += sec - t10Sec; t10Sec = sec;
       if (sec % 10 === 0) bankTickets();
     }

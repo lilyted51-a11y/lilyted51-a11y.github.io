@@ -24,10 +24,11 @@ G.Pickups = (() => {
     item:     { color: '#ffd23f', glow: '#c08a10', r: 9 }       // value = id del objeto
   };
   /** Probabilidad de que un Pokémon normal suelte un ticket del gacha. */
-  // Copia local: botín aumentado (los valores originales, entre paréntesis). Ver G.LOOT abajo.
-  const BOSS_T10 = 3;                   // tickets ×10 de un jefe normal (original: 1, con prob. 1/3)
-  const LEGEND_T10 = 6;                 // tickets ×10 del legendario de la grieta (original: 1, con prob. 1/2)
-  const TICKET_RATE = 1 / 20;           // ticket de un Pokémon normal (1/400)
+  // Copia local: con G.Boost.on el botín sube (valores de la derecha); si no, el original.
+  const boost = () => G.Boost && G.Boost.on;
+  const BOSS_T10 = 1 / 3, LEGEND_T10 = 1 / 2;   // prob. de UN ticket ×10 (original)
+  const B_BOSS_T10 = 3, B_LEGEND_T10 = 6;       // tickets ×10 seguros (con ventajas)
+  const TICKET_RATE = 1 / 400, B_TICKET_RATE = 1 / 20;
 
   function clear() { list = []; }
   function all() { return list; }
@@ -83,18 +84,20 @@ G.Pickups = (() => {
       push(orb('magnet', x - 24, y, 0));
       // Ticket ×10: siempre el legendario de la grieta; un jefe normal, 1 de cada 3 veces.
       // (Hasta el 12-10-2026 el legendario de la grieta daba siempre 2: salían demasiados.)
-      for (let i = 0, n = legend ? LEGEND_T10 : BOSS_T10; i < n; i++) push(orb('ticket10', x + (i - (n - 1) / 2) * 16, y - 20, 1));
+      if (boost()) { for (let i = 0, n = legend ? B_LEGEND_T10 : B_BOSS_T10; i < n; i++) push(orb('ticket10', x + (i - (n - 1) / 2) * 16, y - 20, 1)); }
+      else if (Math.random() < (legend ? LEGEND_T10 : BOSS_T10)) push(orb('ticket10', x, y - 20, 1));
       return;
     }
     push(orb(value >= 20 ? 'xpBig' : 'xp', x, y, value));
-    if (Math.random() < TICKET_RATE) push(orb('ticket', x + G.U.rand(-6, 6), y, 1));
+    if (Math.random() < (boost() ? B_TICKET_RATE : TICKET_RATE)) push(orb('ticket', x + G.U.rand(-6, 6), y, 1));
 
     // Drops ocasionales.
     const r = Math.random();
-    // (originales: curación 1,2 %, imán 0,8 %, bomba 0,6 %)
-    if (r < 0.05) push(orb('heal', x + G.U.rand(-8, 8), y, 0));
-    else if (r < 0.07) push(orb('magnet', x, y, 0));
-    else if (r < 0.085) push(orb('bomb', x, y, 0));
+    // Con ventajas, el triple de curación, imán y bomba.
+    const k = boost() ? 3 : 1;
+    if (r < 0.012 * k) push(orb('heal', x + G.U.rand(-8, 8), y, 0));
+    else if (r < 0.020 * k) push(orb('magnet', x, y, 0));
+    else if (r < 0.026 * k) push(orb('bomb', x, y, 0));
   }
 
   /** Suelta un objeto suelto: 'heal' | 'magnet' | 'bomb' | 'coin'. */

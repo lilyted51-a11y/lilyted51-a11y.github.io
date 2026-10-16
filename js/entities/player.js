@@ -3,13 +3,6 @@
  * solo y se cambia con 1-4 / Q / E. Cada disparo reproduce la animación de
  * ataque de Mundo Misterioso que le toca (Attack, Shoot o Charge).
  */
-/* Copia local: personaje mucho más fuerte.
- *   spd  velocidad de movimiento ×   cd  recarga ×  (0,4 = 2,5 veces más rápido)
- *   atk  daño × (además crece con el tiempo como la vida de los enemigos,
- *        ver G.Enemies.scale, para seguir matando de un golpe toda la partida)
- */
-G.LOCAL_POWER = { spd: 1.6, cd: 0.4, atk: 40 };
-
 G.Player = class Player {
   /**
    * @param mon   entrada de G.DEX
@@ -26,7 +19,9 @@ G.Player = class Player {
 
     this.atkMul = perks.atkMul || 1;
     this.spdMul = perks.spdMul || 1;
-    this.cdMul = (perks.cdMul || 1) * G.LOCAL_POWER.cd;
+    // Copia local: ventajas sólo para las cuentas de G.Boost (se decide al empezar la run).
+    this.boost = G.Boost && G.Boost.on ? G.Boost.POWER : null;
+    this.cdMul = (perks.cdMul || 1) * (this.boost ? this.boost.cd : 1);
     this.dmgReduce = perks.dmgReduce || 0;
     this.regenFlat = perks.regen || 0;
     this.magnet = 78 * (perks.magnetMul || 1);
@@ -95,10 +90,11 @@ G.Player = class Player {
   // ---------------- stats efectivos ----------------
   get atk() {
     const t = G.Game && G.Game.st ? G.Game.st.time : 0;
-    return this.baseAtk * this.atkMul * (1 + this.buffs.atk.n * this.buffs.atk.amount) * G.LOCAL_POWER.atk * (1 + t / 95);
+    const k = this.boost ? this.boost.atk * (1 + t / 95) : 1;
+    return this.baseAtk * this.atkMul * (1 + this.buffs.atk.n * this.buffs.atk.amount) * k;
   }
   get spd() {
-    const s = this.baseSpd * G.LOCAL_POWER.spd * this.spdMul * (1 + this.buffs.spd.n * this.buffs.spd.amount) * (this.slowT > 0 ? 0.5 : 1);
+    const s = this.baseSpd * (this.boost ? this.boost.spd : 1) * this.spdMul * (1 + this.buffs.spd.n * this.buffs.spd.amount) * (this.slowT > 0 ? 0.5 : 1);
     const w = G.Weather.speedFor(this.mon.types);
     const slow = this.inLiquid ? G.World.liquidEffect(this.mon.types).slow || 1 : 1;
     return s * slow * w;
