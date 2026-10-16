@@ -138,6 +138,7 @@ G.SettingsUI = (() => {
     box.innerHTML = section('Cuenta')
       + `<div class="set-row"><div class="grow"><b>Apodo</b><small>Es único y no se puede cambiar.</small></div><span class="gold" translate="no">${esc(nick)}</span></div>`
       + `<div class="set-row"><div class="grow"><b>Tipo de cuenta</b></div><span>${esc(kind)}</span></div>`
+      + (G.DB.fb && G.DB.fb.uid ? `<div class="set-row"><div class="grow"><b>ID de cuenta</b><small>Pulsa para copiarlo.</small></div><span class="mono" id="set-uid" translate="no" style="cursor:pointer;font-size:12px;user-select:all">${esc(G.DB.fb.uid)}</span></div>` : '')
       + `<div class="set-row"><div class="grow"><b>Partida</b></div><span>${esc(SYNC[st] || st)}</span></div>`
       + `<div class="row wrap" style="gap:8px;margin-top:12px">
            <button class="btn" id="set-logout">Cerrar sesión</button>
@@ -155,6 +156,8 @@ G.SettingsUI = (() => {
     box.querySelectorAll('[data-lang]').forEach(b => { b.onclick = () => { if (b.dataset.lang !== G.I18n.lang) G.I18n.set(b.dataset.lang); }; });
     const lo = $('set-login'); if (lo) lo.onclick = () => { close(); leave(); };
     const out = $('set-logout'); if (out) out.onclick = () => { close(); leave(); };
+    const uidEl = $('set-uid');
+    if (uidEl) uidEl.onclick = () => { try { navigator.clipboard.writeText(uidEl.textContent); G.UI.toast('ID copiado'); } catch (e) { /* sin portapapeles */ } };
     const del = $('set-delete');
     if (del) del.onclick = async () => {
       const ok = await G.UI.confirmDelete();
