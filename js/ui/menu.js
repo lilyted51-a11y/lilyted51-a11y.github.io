@@ -68,8 +68,8 @@ G.MenuUI = (() => {
       };
     });
 
-    const owned = Object.keys(s.owned).filter(d => G.DEX_BY[d]).length;
-    const shinies = Object.keys(s.shiny || {}).length;
+    const owned = Object.keys(s.owned).filter(d => G.DEX_BY[d] && !G.DEX_BY[d].excl).length;
+    const shinies = Object.keys(s.shiny || {}).filter(d => G.DEX_BY[d] && !G.DEX_BY[d].excl).length;
     $('menu-dex-count').textContent = `${owned} / ${G.DEX.filter(p => !p.excl).length}` + (shinies ? ` · ${shinies} shiny` : '');
 
     const st = s.stats;
@@ -130,7 +130,7 @@ G.MenuUI = (() => {
       };
     }
     if (dexSel == null) { dexSel = s.partner; dexGen = G.DEX_BY[s.partner].gen; }
-    const owned = Object.keys(s.owned).filter(d => G.DEX_BY[d]).length;
+    const owned = Object.keys(s.owned).filter(d => G.DEX_BY[d] && !G.DEX_BY[d].excl).length;
     $('dex-total').textContent = giftTo ? 'Regalo para ' + giftTo.name : `${owned} / ${G.DEX.filter(p => !p.excl).length}`;
 
     // Pestañas de generación, con cuántos tienes de cada una.
