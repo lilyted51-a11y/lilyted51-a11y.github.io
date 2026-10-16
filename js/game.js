@@ -211,7 +211,14 @@ G.Game = (() => {
         G.Coop.localPicked();
       }, true);
     },
-    waiting(names) { G.RunUI.setWaiting(names); },
+    waiting(names, secs) { G.RunUI.setWaiting(names, secs); },
+    /** Grupo (#45): se acabó el tiempo de las cartas: te quedas con la primera. */
+    forcePick() { if (state === 'levelup' && G.UI.isOpen('scr-levelup')) G.RunUI.pick(0); },
+    /** Grupo (#45): se acabó el tiempo del objeto o del vínculo: se elige lo primero. */
+    forceChoice() {
+      if (G.UI.isOpen('scr-item')) { const c = document.querySelector('#item-cards .card'); if (c) c.click(); return; }
+      if (G.UI.isOpen('scr-bond')) { G.RunUI.pickBond(0); if (G.UI.isOpen('scr-bond')) G.RunUI.pickBond(0); }
+    },
     resume() {
       G.RunUI.closeLevelUp();
       if (state === 'levelup') { state = holdBy.length ? 'held' : 'playing'; afterLevelUp(); }
@@ -412,6 +419,7 @@ G.Game = (() => {
       G.Spawner.say('¡Vínculo! ' + group.length + ' movimientos a la vez', 2.6, true);
       if (state === 'choice') state = holdBy.length ? 'held' : 'playing';
       if (G.Coop.active) G.Coop.holdEnd();
+      afterLevelUp();                      // objetos que llegaron mientras elegías
     });
   }
 
@@ -442,7 +450,9 @@ G.Game = (() => {
   /** Has cogido un objeto: si no llevas ninguno te lo pones; si no, eliges. */
   function offerItem(id) {
     if (!pl || !G.Items.BY[id]) return;
-    if (state === 'levelup' || G.UI.isOpen('scr-levelup')) { laterItems.push(id); return; }
+    // Con otra elección abierta (cartas, otro objeto, vínculo) se espera: una
+    // pantalla nunca tapa a otra (#45: antes se perdía la primera y nadie podía terminar).
+    if (state === 'levelup' || openItem || ['scr-levelup', 'scr-item', 'scr-bond'].some(G.UI.isOpen)) { laterItems.push(id); return; }
     let mine = false;            // esta elección es la que ha parado el juego
     const take = got => {
       openItem = null;

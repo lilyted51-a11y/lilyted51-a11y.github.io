@@ -78,14 +78,20 @@ G.RunUI = (() => {
   }
 
   /** Cooperativo: quién falta por elegir. */
-  function setWaiting(names) {
+  function setWaiting(names, secs) {
     const me = G.Social.me ? G.Social.me.name : '';
     const others = names.filter(n => n !== me);
     const list = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' y ' + a[a.length - 1] : a[0];
-    $('lvl-wait').textContent = !names.length ? ''
+    const text = !names.length ? ''
       : !others.length ? 'Elige tu carta'
       : names.includes(me) ? 'Faltan por elegir: ' + list([...others, 'tú'])
       : 'Esperando a ' + list(others) + '…';
+    const el = $('lvl-wait');
+    el.textContent = '';
+    if (!text) return;
+    el.appendChild(document.createTextNode(text));
+    // Cuenta atrás (#45): pasado el tiempo, el anfitrión elige por quien falte.
+    if (secs != null) { const s = document.createElement('span'); s.className = 'cd'; s.textContent = ' ⏱ ' + secs + ' s'; el.appendChild(s); }
   }
 
   function closeLevelUp() {

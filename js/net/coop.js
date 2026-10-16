@@ -48,6 +48,11 @@ G.Coop = (() => {
   let levelSeq = 0, levelNow = 1, seenSeq = 0, doneSeq = 0, lastHo = '';
   const STALL_MS = 2500;
   let members = [];
+  // Copia local (#45): nadie se queda esperando para siempre. Si alguien tarda
+  // más de esto en elegir, el anfitrión elige por él (la primera opción).
+  const WAIT_MAX = 20, HOLD_MAX = 25;   // segundos: cartas de nivel · objeto o vínculo
+  let waitSince = 0, lastWaitSec = -1;  // cartas: desde cuándo se espera, último segundo avisado
+  const holdSince = new Map();          // uid -> performance.now() al empezar a elegir
 
   // ---------------- escalado de dificultad ----------------
 
@@ -70,7 +75,7 @@ G.Coop = (() => {
     api = cb;
     members = cfg.members;
     mates.clear();
-    outEv = []; flushT = 0; waiting = new Set(); holds = new Set();
+    outEv = []; flushT = 0; waiting = new Set(); holds = new Set(); holdSince.clear(); waitSince = 0; lastWaitSec = -1;
     hostAway = false; stalled = false; lastHostAt = performance.now();
     levelSeq = 0; levelNow = 1; seenSeq = 0; doneSeq = 0; lastHo = '';
     cfg.members.forEach((m, i) => {
@@ -88,7 +93,7 @@ G.Coop = (() => {
 
   function end() {
     active = false; host = false; local = null;
-    mates.clear(); outEv = []; waiting = new Set(); holds = new Set();
+    mates.clear(); outEv = []; waiting = new Set(); holds = new Set(); holdSince.clear();
   }
 
   /** Te vas de la partida (los demás siguen). */
@@ -202,6 +207,14 @@ G.Coop = (() => {
   function tick(dt) {
     if (!active) return;
     if (host) {
+      // Esperas con límite: cartas de nivel (con cuenta atrás) y objeto/vínculo.
+      const now = performance.now();
+      if (waiting.size) {
+        const left = Math.ceil(WAIT_MAX - (now - waitSince) / 1000);
+        if (left <= 0) forceCards();
+        else if (left !== lastWaitSec) { lastWaitSec = left; sendWaiting(); }
+      }
+      for (const [u, t0] of holdSince) if (now - t0 > HOLD_MAX * 1000) forceHold(u);
       for (const m of mates.values()) {
         if (!m.connected) continue;
         m.flushT -= dt;
@@ -368,7 +381,9 @@ G.Coop = (() => {
       case 'say': G.Spawner.say(ev[1], ev[2]); break;
       case 'heal': if (!local.dead) { local.heal(local.maxHp * ev[1]); G.FX.ring(local.x, local.y, 6, 60, '#5fe08a', 0.4, 3); } break;
       case 'lu': if (!ev[2] || ev[2] > seenSeq) { seenSeq = ev[2] || seenSeq; api.levelStart(ev[1]); } break;
-      case 'lw': api.waiting(ev[1]); break;
+      case 'lw': api.waiting(ev[1], ev[2]); break;
+      case 'lf': api.forcePick && api.forcePick(); break;      // se acabó el tiempo: tu carta se elige sola
+      case 'hf': if (ev[1] === me && api.forceChoice) api.forceChoice(); break;  // ídem con el objeto o el vínculo
       case 'lr': api.resume(); break;
       case 'hp': lastHo = (ev[1] || []).join('|'); api.hold && api.hold(ev[1]); break;
       case 'ha': hostAway = !!ev[1]; updateAway(); break;
@@ -431,6 +446,7 @@ G.Coop = (() => {
     waiting = new Set([me]);
     for (const m of mates.values()) if (m.connected) waiting.add(m.uid);
     levelSeq++; levelNow = level;
+    waitSince = performance.now(); lastWaitSec = -1;
     emit(['lu', level, levelSeq]);
     flushAll();
     api.levelStart(level);
@@ -441,8 +457,23 @@ G.Coop = (() => {
 
   function sendWaiting() {
     const names = [...waiting].map(nameOf);
-    emit(['lw', names]);
-    api.waiting(names);
+    const secs = Math.max(0, Math.ceil(WAIT_MAX - (performance.now() - waitSince) / 1000));
+    emit(['lw', names, secs]);
+    api.waiting(names, secs);
+  }
+
+  /** Anfitrión: se acabó el tiempo de las cartas; cada uno (incluido yo) se queda con la primera. */
+  function forceCards() {
+    emit(['lf']); flushAll();
+    if (api.forcePick && api.inLevelUp && api.inLevelUp()) api.forcePick();   // yo (llama a localPicked)
+    for (const u of [...waiting]) picked(u);                                  // los demás: se sigue sin esperarlos
+  }
+
+  /** Anfitrión: `u` lleva demasiado eligiendo objeto o vínculo. */
+  function forceHold(u) {
+    if (u === me) { if (api.forceChoice) api.forceChoice(); }
+    else { emit(['hf', u]); flushAll(); }
+    holdOff(u);
   }
 
   /** Alguien ha elegido carta (anfitrión). */
@@ -463,12 +494,14 @@ G.Coop = (() => {
   /** Anfitrión: `u` empieza a elegir. */
   function holdOn(u) {
     holds.add(u);
+    if (!holdSince.has(u)) holdSince.set(u, performance.now());
     emit(['hp', holdNames()]); flushAll();
     api.hold && api.hold(holdNames());
   }
 
   /** Anfitrión: `u` ha terminado (o se ha ido). */
   function holdOff(u) {
+    holdSince.delete(u);
     if (!holds.delete(u)) return;
     emit(['hp', holdNames()]); flushAll();
     api.hold && api.hold(holdNames());
