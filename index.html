@@ -196,7 +196,7 @@
         <button class="menu-item" data-go="upgrades">Mejoras<small>Haz más fuerte cada run</small></button>
         <button class="menu-item" data-go="gacha">Gacha<small>9 regiones · Pokémon y shinies</small></button>
         <button class="menu-item" data-go="goals">Misiones<small id="menu-goals-sub">Misiones, logros y perfil</small></button>
-        <button class="menu-item" data-go="friends">Amigos<small id="menu-friends-sub">Juega en grupo, hasta 8</small></button>
+        <button class="menu-item" data-go="friends">Amigos<small id="menu-friends-sub">Juega en grupo, hasta 10</small></button>
         <button class="menu-item" data-go="rank">Ranking<small>Quién aguanta más</small></button>
         <button class="menu-item" data-go="settings">Ajustes<small>Sonido, gráficos, controles y cuenta</small></button>
       </div>
@@ -366,7 +366,7 @@
 <section id="scr-friends" class="scr dim hidden">
   <div class="box wide">
     <div class="row between"><h2>Amigos</h2>
-      <div class="row"><button id="fr-room" class="btn small gold hidden">Ir a la sala</button><button class="btn small ghost" data-back>Volver</button></div></div>
+      <div class="row"><button id="fr-create" class="btn small gold">Crear sala</button><button id="fr-room" class="btn small gold hidden">Ir a la sala</button><button class="btn small ghost" data-back>Volver</button></div></div>
     <p class="sub" id="fr-me"></p>
     <form id="fr-add" class="row" autocomplete="off">
       <input id="fr-name" class="field grow" maxlength="16" spellcheck="false" placeholder="Apodo de tu amigo">
@@ -374,6 +374,9 @@
     </form>
     <p id="fr-msg" class="note"></p>
     <div id="fr-list" class="fr-list"></div>
+    <!-- copia local: salas abiertas (cualquiera puede entrar; con candado, con contraseña) -->
+    <div class="row between" style="margin-top:14px"><h3 style="margin:0">Salas abiertas</h3><button id="fr-rooms-refresh" class="btn small ghost">Actualizar</button></div>
+    <div id="fr-rooms" class="fr-list"></div>
   </div>
 </section>
 
@@ -383,6 +386,11 @@
     <div class="row between"><h2>Sala</h2>
       <div class="row"><button id="lobby-menu" class="btn small ghost">Menú</button><button id="lobby-leave" class="btn small ghost">Salir de la sala</button></div></div>
     <p class="sub" id="lobby-sub"></p>
+    <div class="row" id="lobby-opts" style="gap:10px;margin:6px 0 8px;align-items:center">
+      <label for="lobby-max" style="margin:0">Jugadores</label>
+      <select id="lobby-max" class="field" style="width:auto"></select>
+      <span id="lobby-lock" class="sub" style="margin:0"></span>
+    </div>
     <div id="lobby-members" class="lobby-members"></div>
     <h3 id="lobby-inv-title" style="margin:14px 0 6px">Invitar amigos</h3>
     <div id="lobby-invite" class="fr-list"></div>
@@ -574,7 +582,7 @@
 </section>
 
 <!-- datos generados -->
-<script defer src="js/app.min.js?v=90c58f3c2a"></script>
+<script defer src="js/app.min.js?v=6737f94d81"></script>
 <!-- interfaz en chino tradicional (fuera del bloque: no se empaqueta en app.min.js; va antes que los defer para traducir también el canvas) -->
 <script src="js/zh-tw.js"></script>
 <!-- bot local de juego automático (la partida con el bot activo no sube al ranking) -->

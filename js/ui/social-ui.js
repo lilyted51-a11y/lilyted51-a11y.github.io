@@ -64,7 +64,83 @@
         if (r.ok) $('fr-name').value = '';
       };
       $('fr-room').onclick = () => G.LobbyUI.open();
+      $('fr-create').onclick = () => createRoomDialog();
+      $('fr-rooms-refresh').onclick = () => renderRooms(true);
       G.Social.on(() => { if (G.UI.isOpen('scr-friends')) render(); });
+    }
+
+    /** Pide algo en una cajita del juego: → Promise<string|null>. */
+    function askText(title, opts = {}) {
+      return new Promise(done => {
+        const el = document.createElement('section');
+        el.className = 'scr dim'; el.style.zIndex = 70;
+        el.innerHTML = `<div class="box center" style="width:min(380px,100%)"><h3>${title}</h3>${opts.body || ''}
+          <input id="ask-in" class="field" type="${opts.password ? 'password' : 'text'}" maxlength="32" autocomplete="off" style="text-align:center">
+          <p class="err" id="ask-err"></p>
+          <div class="row" style="justify-content:center;gap:8px"><button class="btn gold" data-ok>${opts.ok || 'Aceptar'}</button><button class="btn ghost" data-no>Cancelar</button></div></div>`;
+        document.body.appendChild(el);
+        const inp = el.querySelector('#ask-in');
+        setTimeout(() => inp.focus(), 50);
+        const end = v => { el.remove(); done(v); };
+        el.querySelector('[data-ok]').onclick = () => end(inp.value);
+        el.querySelector('[data-no]').onclick = () => end(null);
+        inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); end(inp.value); } };
+      });
+    }
+
+    /** Crear sala: aforo (4-10) y contraseña opcional, y a la sala. */
+    function createRoomDialog() {
+      if (G.Social.room) { G.LobbyUI.open(); return; }
+      const el = document.createElement('section');
+      el.className = 'scr dim'; el.style.zIndex = 70;
+      el.innerHTML = `<div class="box center" style="width:min(400px,100%)"><h3>Crear sala</h3>
+        <div class="row" style="justify-content:center;gap:10px;margin:8px 0"><label for="cr-max" style="margin:0">Jugadores</label>
+          <select id="cr-max" class="field" style="width:auto">${[4,5,6,7,8,9,10].map(n => `<option value="${n}"${n === 8 ? ' selected' : ''}>${n}</option>`).join('')}</select></div>
+        <label for="cr-pass">Contraseña (opcional)</label>
+        <input id="cr-pass" class="field" maxlength="32" autocomplete="off" placeholder="Sin contraseña: entra cualquiera" style="text-align:center">
+        <div class="row" style="justify-content:center;gap:8px;margin-top:10px"><button class="btn gold" data-ok>Crear</button><button class="btn ghost" data-no>Cancelar</button></div></div>`;
+      document.body.appendChild(el);
+      el.querySelector('[data-no]').onclick = () => el.remove();
+      el.querySelector('[data-ok]').onclick = async () => {
+        const max = +el.querySelector('#cr-max').value, pass = el.querySelector('#cr-pass').value.trim();
+        el.querySelector('[data-ok]').disabled = true;
+        try { await G.Social.createRoom({ max, pass }); el.remove(); G.LobbyUI.open(); }
+        catch (e) { el.remove(); G.UI.toast('No se pudo crear la sala'); }
+      };
+    }
+
+    /** Lista de salas abiertas (se lee al abrir Amigos y con "Actualizar"). */
+    let roomsBusy = false;
+    async function renderRooms(force) {
+      const box = $('fr-rooms');
+      if (!box || roomsBusy) return;
+      roomsBusy = true;
+      if (force || !box.children.length) box.innerHTML = '<p class="sub" style="margin:0">Buscando salas…</p>';
+      const rooms = await G.Social.listRooms();
+      roomsBusy = false;
+      if (!G.UI.isOpen('scr-friends')) return;
+      box.innerHTML = '';
+      const mine = G.Social.room;
+      if (!rooms.length) { box.innerHTML = '<p class="sub" style="margin:0">No hay salas abiertas ahora mismo. Crea una con «Crear sala».</p>'; return; }
+      for (const r of rooms) {
+        const el = document.createElement('div');
+        el.className = 'fr-row';
+        el.innerHTML = `<i class="dot on"></i><b translate="no">${esc(r.name || '?')}</b><span class="st">${r.n || 1}/${r.max || 8}${r.lock ? ' · 🔒' : ''}</span><span class="grow"></span>`;
+        const b = document.createElement('button');
+        b.className = 'btn small gold'; b.textContent = mine && mine.id === r.id ? 'Ir a la sala' : 'Entrar';
+        b.onclick = async () => {
+          if (mine && mine.id === r.id) { G.LobbyUI.open(); return; }
+          let res = await G.Social.joinRoom(r.id, '', false);
+          if (!res.ok && res.locked) {
+            const pass = await askText('Sala de ' + (r.name || '?'), { body: '<p class="sub">Esta sala tiene contraseña.</p>', password: true, ok: 'Entrar' });
+            if (pass == null) return;
+            res = await G.Social.joinRoom(r.id, pass, false);
+          }
+          if (res.ok) G.LobbyUI.open(); else { msg(res.error, true); renderRooms(true); }
+        };
+        el.appendChild(b);
+        box.appendChild(el);
+      }
     }
 
     function msg(t, bad) {
@@ -73,7 +149,7 @@
       if (t) G.Audio.sfx(bad ? 'error' : 'confirm');
     }
 
-    function open() { withNick(() => { G.UI.show('scr-friends', true); msg(''); render(); G.Social.refreshPresence(); }); }
+    function open() { withNick(() => { G.UI.show('scr-friends', true); msg(''); render(); renderRooms(true); G.Social.refreshPresence(); }); }
 
     /** "hace 5 min", "hace 2 h", "hace 3 días". */
     function ago(t) {
@@ -191,17 +267,25 @@
       const room = G.Social.room;
       if (!room) return;
       const ms = room.members;
+      const MAXR = room.max || 8;
       $('lobby-sub').textContent = room.isHost
-        ? 'Eres el anfitrión. Invita a tus amigos (hasta ' + G.Social.MAX_PLAYERS + ') y empezad cuando estéis.'
+        ? 'Eres el anfitrión. Invita a tus amigos (hasta ' + MAXR + ') y empezad cuando estéis.'
         : 'Estás en la sala de ' + ((ms.find(m => m.uid === room.host) || {}).name || '…') + '. El anfitrión empezará la partida.';
+      // Aforo: el anfitrión lo cambia; los demás lo ven. Candado si tiene contraseña.
+      const sel = $('lobby-max');
+      if (sel) {
+        if (!sel.options.length) { sel.innerHTML = [4,5,6,7,8,9,10].map(n => `<option value="${n}">${n}</option>`).join(''); sel.onchange = () => G.Social.setMax(+sel.value); }
+        sel.value = MAXR; sel.disabled = !room.isHost;
+        $('lobby-lock').textContent = room.locked ? '🔒 Con contraseña' : 'Sin contraseña: entra cualquiera desde Amigos › Salas abiertas';
+      }
 
       // Las tarjetas sólo se rehacen si cambian los miembros (los sprites no parpadean).
-      const key = ms.map(m => m.uid + ':' + m.dex + ':' + (m.shiny ? 1 : 0)).join('|');
+      const key = MAXR + '#' + ms.map(m => m.uid + ':' + m.dex + ':' + (m.shiny ? 1 : 0)).join('|');
       const box = $('lobby-members');
       if (key !== membersKey) {
         membersKey = key;
         box.innerHTML = '';
-        for (let i = 0; i < G.Social.MAX_PLAYERS; i++) {
+        for (let i = 0; i < MAXR; i++) {
           const m = ms[i];
           const c = document.createElement('div');
           c.className = 'lob-card' + (m ? '' : ' empty');
@@ -222,7 +306,7 @@
       });
 
       // Invitar (sólo el anfitrión y si queda sitio).
-      const canInvite = room.isHost && ms.length < G.Social.MAX_PLAYERS;
+      const canInvite = room.isHost && ms.length < MAXR;
       $('lobby-inv-title').classList.toggle('hidden', !canInvite);
       const inv = $('lobby-invite');
       inv.classList.toggle('hidden', !canInvite);
@@ -247,7 +331,7 @@
       const connecting = ms.some(m => m.uid !== room.host && G.Net.mode(m.uid) === 'connecting');
       const failed = ms.some(m => m.uid !== room.host && G.Net.mode(m.uid) === 'failed');
       btn.disabled = !room.isHost || ms.length < 2 || connecting || failed;
-      btn.textContent = 'Empezar partida (' + ms.length + '/' + G.Social.MAX_PLAYERS + ')';
+      btn.textContent = 'Empezar partida (' + ms.length + '/' + MAXR + ')';
       $('lobby-note').textContent = !room.isHost ? 'Cuando el anfitrión empiece, entraréis todos a la vez.'
         : ms.length < 2 ? 'Necesitas al menos un amigo en la sala.'
         : failed ? 'No se puede conectar con algún amigo: su red (o la tuya) no deja jugar en grupo. Probad con otra wifi o datos móviles; se reintenta solo.'

@@ -19,13 +19,25 @@
  *       peers() · mode(uid) -> 'connecting' | 'direct' | 'relay' | 'closed'
  */
 G.Net = (() => {
-  const ICE = [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }];
+  // Copia local: además del STUN de Google, el TURN público y gratuito de Open
+  // Relay (metered.ca): cuando la red no deja conectar directo (datos móviles,
+  // CGNAT, redes de empresa), el tráfico pasa por él. Es un servicio de
+  // terceros sin garantías; si falla, queda el relé de la base de datos (abajo).
+  const ICE = [
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:openrelay.metered.ca:80'] },
+    { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+  ];
   const DIRECT_TIMEOUT = 9000;     // ms para conseguir canal directo antes de usar el relé
   // Relé por la Realtime Database APAGADO (12-10-2026): a 1 $ el GB era lo que más
   // costaba del cooperativo. Sin conexión directa, esa pareja no puede jugar
   // junta ('failed') y el anfitrión lo reintenta cada RETRY_MS. Por la base de datos
   // sólo pasa la señalización (unos pocos mensajes pequeños para conectarse).
-  const ALLOW_RELAY = false, RETRY_MS = 15000;
+  // Copia local: relé por la Realtime Database ENCENDIDO como último recurso.
+  // En el plan gratuito (Spark) no se cobra: 10 GB al mes y, si se agotan, la
+  // base de datos deja de servir hasta el mes siguiente (sin factura).
+  const ALLOW_RELAY = true, RETRY_MS = 15000;
 
 
   let rtdb = null, uid = null, roomId = null, isHost = false, hostUid = null;

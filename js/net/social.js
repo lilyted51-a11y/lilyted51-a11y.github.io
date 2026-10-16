@@ -23,7 +23,8 @@
  */
 G.Social = (() => {
   const VALID = /^[A-Za-z0-9_ñÑáéíóúÁÉÍÓÚ]{3,16}$/;
-  const MAX_PLAYERS = 8;   // copia local (original 4)
+  const MAX_PLAYERS = 10;  // tope duro; cada sala elige entre 4 y 10 (copia local; original 4)
+  const DEFAULT_MAX = 8;
   const INVITE_TTL = 3 * 60 * 1000;
   /*
    * Hora real: la del servidor de la web (cabecera Date de version.json, gratis).
@@ -336,40 +337,90 @@ G.Social = (() => {
   function rtOn() { if (fb.rtdb) fb.rtdb.goOnline(); }
   function rtOff() { if (fb && fb.rtdb && !room) fb.rtdb.goOffline(); }
 
-  async function createRoom() {
+  async function sha256(text) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  const clampMax = n => Math.max(4, Math.min(MAX_PLAYERS, Math.floor(+n) || DEFAULT_MAX));
+
+  /**
+   * Copia local: la sala se crea directamente (sin invitar), con aforo (4-10) y
+   * contraseña opcional. Además se anuncia en lobby/{id} para la lista de salas.
+   * @param opts  { max, pass }
+   */
+  async function createRoom(opts = {}) {
     if (room) return room;
     rtOn();
+    const max = clampMax(opts.max);
+    const lock = opts.pass ? await sha256(opts.pass) : null;
     const id = fb.rtdb.ref('rooms').push().key;
-    await fb.rtdb.ref('rooms/' + id).set({ host: uid, open: true, at: ts(), m: { [uid]: memberInfo() } });
+    await fb.rtdb.ref('rooms/' + id).set({ host: uid, open: true, at: ts(), max, lock, name: me.name, m: { [uid]: memberInfo() } });
+    await fb.rtdb.ref('lobby/' + id).set({ host: uid, name: me.name, n: 1, max, lock: !!lock, open: true, at: ts() }).catch(() => {});
     enterRoom(id, uid);
     return room;
   }
 
-  async function joinRoom(id) {
+  /** Anfitrión: cambia el aforo de la sala (4-10). */
+  async function setMax(n) {
+    if (!room || !room.isHost) return;
+    const max = clampMax(n);
+    await fb.rtdb.ref('rooms/' + room.id + '/max').set(max).catch(() => {});
+    await fb.rtdb.ref('lobby/' + room.id + '/max').set(max).catch(() => {});
+  }
+
+  /** Salas abiertas con sitio (lista pública), de más reciente a más antigua. */
+  async function listRooms() {
+    if (!fb || !fb.rtdb) return [];
+    rtOn();
+    let out = [];
+    try {
+      const snap = await fb.rtdb.ref('lobby').get();
+      const v = snap.val() || {};
+      const t = ts();
+      out = Object.keys(v).map(id => Object.assign({ id }, v[id]))
+        .filter(r => r.open !== false && (r.n || 0) < (r.max || DEFAULT_MAX) && t - (r.at || 0) < 6 * 3600 * 1000)
+        .sort((a, b) => (b.at || 0) - (a.at || 0));
+    } catch (e) { /* sin permiso o sin red */ }
+    rtOff();
+    return out;
+  }
+
+  /**
+   * @param pass     contraseña escrita (si la sala tiene)
+   * @param invited  con invitación del anfitrión no hace falta contraseña
+   * → { ok } | { ok:false, error } | { ok:false, locked:true } (pide contraseña)
+   */
+  async function joinRoom(id, pass = '', invited = false) {
     if (room && room.id === id) return { ok: true };
     if (room) await leaveRoom();
     rtOn();
-    let open = null, host = null;
+    let open = null, host = null, max = DEFAULT_MAX, lock = null;
     try {
       open = (await fb.rtdb.ref('rooms/' + id + '/open').get()).val();
       host = (await fb.rtdb.ref('rooms/' + id + '/host').get()).val();
+      max = (await fb.rtdb.ref('rooms/' + id + '/max').get()).val() || DEFAULT_MAX;
+      lock = (await fb.rtdb.ref('rooms/' + id + '/lock').get()).val() || null;
     } catch (e) { /* sala borrada */ }
     if (!host) { rtOff(); return { ok: false, error: 'Esa sala ya no existe.' }; }
     if (open !== true) { rtOff(); return { ok: false, error: 'La partida de esa sala ya ha empezado.' }; }
+    if (lock && !invited) {
+      if (!pass) { rtOff(); return { ok: false, locked: true, error: 'Esta sala tiene contraseña.' }; }
+      if (await sha256(pass) !== lock) { rtOff(); return { ok: false, locked: true, error: 'Contraseña incorrecta.' }; }
+    }
     try { await fb.rtdb.ref('rooms/' + id + '/m/' + uid).set(memberInfo()); }
     catch (e) { rtOff(); return { ok: false, error: 'No se pudo entrar en la sala.' }; }
     const n = (await fb.rtdb.ref('rooms/' + id + '/m').get()).numChildren();
-    if (n > MAX_PLAYERS) {
+    if (n > max) {
       await fb.rtdb.ref('rooms/' + id + '/m/' + uid).remove();
       rtOff();
-      return { ok: false, error: 'La sala está llena (máximo ' + MAX_PLAYERS + ').' };
+      return { ok: false, error: 'La sala está llena (máximo ' + max + ').' };
     }
     enterRoom(id, host);
     return { ok: true };
   }
 
   function enterRoom(id, host) {
-    room = { id, host, isHost: host === uid, members: [], open: true };
+    room = { id, host, isHost: host === uid, members: [], open: true, max: DEFAULT_MAX, locked: false };
     watchRoomDisconnect();
     const mref = fb.rtdb.ref('rooms/' + id + '/m');
     mref.on('value', s => {
@@ -378,13 +429,19 @@ G.Social = (() => {
       // El anfitrión siempre primero; el resto por orden de llegada.
       room.members = Object.keys(m).map(k => Object.assign({ uid: k }, m[k]))
         .sort((a, b) => (a.uid === room.host ? -1 : b.uid === room.host ? 1 : (a.at || 0) - (b.at || 0)));
+      // La lista pública de salas: el anfitrión mantiene cuántos hay.
+      if (room.isHost) fb.rtdb.ref('lobby/' + id).update({ n: room.members.length, at: ts() }).catch(() => {});
       emit('room');
     }, () => closedRoom());
+    const xref = fb.rtdb.ref('rooms/' + id + '/max');
+    xref.on('value', s => { if (room && room.id === id) { room.max = clampMax(s.val()); emit('room'); } }, () => {});
+    const lref = fb.rtdb.ref('rooms/' + id + '/lock');
+    lref.on('value', s => { if (room && room.id === id) { room.locked = !!s.val(); emit('room'); } }, () => {});
     const href = fb.rtdb.ref('rooms/' + id + '/host');
     href.on('value', s => { if (room && room.id === id && !s.val()) closedRoom(); }, () => closedRoom());
     const oref = fb.rtdb.ref('rooms/' + id + '/open');
     oref.on('value', s => { if (room && room.id === id) { room.open = s.val() === true; emit('room'); } }, () => {});
-    roomRefs = [mref, href, oref];
+    roomRefs = [mref, href, oref, xref, lref];
     writeStatus();
     emit('room');
   }
@@ -394,6 +451,7 @@ G.Social = (() => {
     if (!room) return;
     const ref = room.isHost ? fb.rtdb.ref('rooms/' + room.id) : fb.rtdb.ref('rooms/' + room.id + '/m/' + uid);
     ref.onDisconnect().remove();
+    if (room.isHost) fb.rtdb.ref('lobby/' + room.id).onDisconnect().remove();
   }
 
   function detachRoom() {
@@ -418,6 +476,7 @@ G.Social = (() => {
     room = null;
     const ref = r.isHost ? fb.rtdb.ref('rooms/' + r.id) : fb.rtdb.ref('rooms/' + r.id + '/m/' + uid);
     ref.onDisconnect().cancel().catch(() => {});
+    if (r.isHost) { fb.rtdb.ref('lobby/' + r.id).onDisconnect().cancel().catch(() => {}); fb.rtdb.ref('lobby/' + r.id).remove().catch(() => {}); }
     await ref.remove().catch(() => {});
     retractInvites();
     writeStatus();
@@ -427,7 +486,9 @@ G.Social = (() => {
 
   /** El anfitrión cierra la sala a nuevos jugadores al empezar la partida. */
   function setOpen(open) {
-    if (room && room.isHost) fb.rtdb.ref('rooms/' + room.id + '/open').set(!!open).catch(() => {});
+    if (!room || !room.isHost) return;
+    fb.rtdb.ref('rooms/' + room.id + '/open').set(!!open).catch(() => {});
+    fb.rtdb.ref('lobby/' + room.id + '/open').set(!!open).catch(() => {});   // fuera de la lista mientras se juega
   }
 
   /** Actualiza tu Pokémon en la sala (si cambias de compañero). */
@@ -452,7 +513,7 @@ G.Social = (() => {
   async function invite(other) {
     const f = friends.get(other);
     if (!f || f.status !== 'ok') return { ok: false, error: 'Sólo puedes invitar a tus amigos.' };
-    if (room && room.members.length >= MAX_PLAYERS) return { ok: false, error: 'La sala está llena.' };
+    if (room && room.members.length >= (room.max || DEFAULT_MAX)) return { ok: false, error: 'La sala está llena.' };
     if (room && !room.isHost) return { ok: false, error: 'Sólo el anfitrión de la sala puede invitar.' };
     if (!room) await createRoom();
     try {
@@ -486,7 +547,7 @@ G.Social = (() => {
     invites.delete(from);
     invDoc(from).delete().catch(() => {});
     emit('invites');
-    return joinRoom(inv.room);
+    return joinRoom(inv.room, '', true);
   }
 
   function declineInvite(from) {
@@ -560,7 +621,7 @@ G.Social = (() => {
 
   return {
     start, stop, claimNick, request, accept, remove, publishProfile, getProfile, profileData,
-    createRoom, joinRoom, leaveRoom, setOpen, refreshMember, freshMembers, setPlaying, refreshPresence,
+    createRoom, joinRoom, leaveRoom, setOpen, setMax, listRooms, refreshMember, freshMembers, setPlaying, refreshPresence,
     invite, acceptInvite, declineInvite,
     on(fn) { listeners.add(fn); }, off(fn) { listeners.delete(fn); },
     get me() { return me; },
