@@ -368,11 +368,18 @@ class PokeAutoBot {
    * 從裂縫往外做一次廣度優先搜尋（和遊戲裡敵人找路一樣：8 方向、不切角、
    * 牆／樹／岩漿不能走），得到每一格「走到裂縫還要幾格」。每 0.3 秒更新。
    */
-  riftField(s, rift) {
+  riftField(s, rift) { return this.field(s, rift.x, rift.y - 10); }
+
+  /**
+   * 從目標 (gx, gy) 往外算每一格「走到目標還要幾格」（8 方向、不切角、牆／樹／岩漿不能走）。
+   * 同一個目標格 0.3 秒內重用。也用在卡住時繞路。
+   */
+  field(s, gx, gy) {
     const now = performance.now();
-    if (this.rf && this.rf.key === rift && now - this.rf.t < 300) return this.rf;
     const TS = s.TS, R = 34, N = R * 2 + 1;
-    const cx = Math.floor(rift.x / TS), cy = Math.floor((rift.y - 10) / TS);
+    const cx = Math.floor(gx / TS), cy = Math.floor(gy / TS);
+    const key = cx + ',' + cy;
+    if (this.rf && this.rf.key === key && now - this.rf.t < 300) return this.rf;
     const ox = cx - R, oy = cy - R;
     const open = new Uint8Array(N * N), dist = new Float32Array(N * N).fill(-1);
     for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) open[j * N + i] = s.walkable(ox + i, oy + j) ? 1 : 0;
@@ -392,8 +399,18 @@ class PokeAutoBot {
         q[tail++] = n;
       }
     }
-    this.rf = { key: rift, t: now, ox, oy, N, dist, rx: rift.x, ry: rift.y - 10 };
+    this.rf = { key, t: now, ox, oy, N, dist, rx: gx, ry: gy };
     return this.rf;
+  }
+
+  /** 從 (x1,y1) 直線走到 (x2,y2) 會不會穿過不能走的格子（牆、樹、岩漿）？ */
+  lineBlocked(s, x1, y1, x2, y2) {
+    const TS = s.TS, d = Math.hypot(x2 - x1, y2 - y1), n = Math.max(1, Math.ceil(d / 16));
+    for (let i = 1; i < n; i++) {
+      const t = i / n;
+      if (!s.walkable(Math.floor((x1 + (x2 - x1) * t) / TS), Math.floor((y1 + (y2 - y1) * t) / TS))) return true;
+    }
+    return false;
   }
 
   /** 從 (x, y) 走到裂縫的路程（像素）。範圍外或走不到就用直線距離加懲罰。 */
@@ -444,6 +461,9 @@ class PokeAutoBot {
     const danger = hpFrac < 0.5 ? 1 + (0.5 - hpFrac) * 2 : 1;
     const specials = s.specials || [];
     const traps = specials.filter(o => o.type === 'trap');
+    // 大寶箱：要站在旁邊 3.5 秒才會開（離開會倒退）。320 像素內有一個就去站好，站到開為止。
+    let bigChest = null, bcd = 320;
+    for (const o of specials) if (o.type === 'bigchest') { const d = Math.hypot(o.x - p.x, o.y - p.y); if (d < bcd) { bcd = d; bigChest = o; } }
     const altars = specials.filter(o => o.type === 'altar' && !o.used);
     const want = this.engageDistance(p) + (lowHp ? 60 : 0);
     // 裂縫（血量太低或快消失前來不及就算了）
@@ -454,11 +474,16 @@ class PokeAutoBot {
     // 卡住偵測：一直按著方向卻沒移動 → 換個方向走一下
     const now = performance.now();
     const st = this.stuck;
-    if (now - st.t > 700) {
+    if (now - st.t > 600) {
       const moved = Math.hypot(p.x - st.x, p.y - st.y);
-      if (this.lastDir >= 0 && moved < spd * 0.08) { st.until = now + 600; st.dir = (this.lastDir + 2 + (Math.random() * 4 | 0)) % 8; }
+      // 按著方向卻幾乎沒動 → 卡住了：接下來 1.5 秒用找路（下面 pf）繞出去
+      if (this.lastDir >= 0 && moved < spd * 0.12) st.until = now + 1500;
       st.x = p.x; st.y = p.y; st.t = now;
     }
+    // 目標和自己之間有牆／樹（直線走不到），或剛卡住：改用「路徑距離」帶路
+    const pathGoal = rift ? null : tgt;
+    const pf = pathGoal && (now < st.until || this.lineBlocked(s, p.x, p.y, pathGoal.x, pathGoal.y)) ? this.field(s, pathGoal.x, pathGoal.y) : null;
+    const pfW = now < st.until ? 0.25 : 0.08;
 
     const DIRS = PokeAutoBot.DIRS;
     let best = -1, bestCost = Infinity;
@@ -561,18 +586,27 @@ class PokeAutoBot {
         let wt = 0;
         if (o.type === 'spring' && (o.charge === undefined || o.charge > 0.05)) wt = hpFrac < 0.5 ? 40 : hpFrac < 0.85 ? 6 : 0;
         else if (o.type === 'altar') continue;   // 下面另外算
-        else if (o.type === 'bigchest') wt = 18;
+        else if (o.type === 'bigchest') wt = o === bigChest ? 0 : 18;   // 近的那個在下面另外處理
         if (wt) cost -= wt * 40 / (dd + 20);
       }
       // 小寶箱（打破有金幣、經驗、有時道具）：走過去，靠近時遊戲會自動瞄它
       for (const c of (s.chests || [])) cost -= 9 * 40 / (Math.hypot(c.x - x, c.y - y) + 20);
+      // 大寶箱：終點要在它旁邊（開箱判定約 46 像素內），到了就站著不動
+      if (bigChest) {
+        // 遊戲的開箱判定：max(46, 箱子半徑 + 自己半徑 + 24) 以內；箱子是實體，不能再近
+        const near = Math.max(46, (bigChest.r || 14) + r + 24) - 4;
+        const dc = Math.hypot(bigChest.x - x, bigChest.y - y);
+        cost += Math.max(0, dc - near) * 0.6;
+        if (dc < near && d < 0) cost -= 12;
+      }
       // 祭壇（25 秒強化：攻擊×2、速度、磁鐵、冷卻）：路線上碰得到就算
       for (const db of altarBest) cost -= 14 * 40 / (db + 20);
 
       // 不要一直換方向（減少抖動）
       if (this.lastDir >= 0 && d !== this.lastDir) cost += 1.5;
       if (d < 0 && enemies.length) cost += 4;   // 有敵人時別站著不動
-      if (now < st.until && d === st.dir) cost -= 8;
+      // 繞路：沿著路徑距離變短的方向走（卡住時權重更大，站著不動另外扣分）
+      if (pf) { cost += this.fieldDist(pf, s.TS, x, y) * pfW; if (now < st.until && d < 0) cost += 20; }
 
       dbg.push(Math.round(cost));
       if (cost < bestCost) { bestCost = cost; best = d; }
