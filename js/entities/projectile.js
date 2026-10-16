@@ -102,6 +102,25 @@ G.Projectiles = (() => {
     return best;
   }
 
+  /**
+   * El enemigo más cercano al que llega un disparo recto (sin pared ni roca en
+   * medio). Se miran como mucho los 12 más cercanos; null si ninguno está a tiro.
+   */
+  function nearestClear(enemies, x, y, maxDist) {
+    const md = maxDist * maxDist, cand = [];
+    for (const e of enemies) {
+      if (e.dead) continue;
+      const d = G.U.dist2(x, y, e.x, e.cy());
+      if (d < md) cand.push([d, e]);
+    }
+    cand.sort((a, b) => a[0] - b[0]);
+    for (let i = 0; i < cand.length && i < 12; i++) {
+      const e = cand[i][1];
+      if (G.World.clearShot(x, y, e.x, e.cy())) return e;
+    }
+    return null;
+  }
+
   function remove(p) {
     const i = list.indexOf(p);
     if (i >= 0) list.splice(i, 1);
@@ -134,6 +153,6 @@ G.Projectiles = (() => {
     }
   }
 
-  return { clear, all, spawn, spawnOrb, clearOrbs, update, remove, draw, nearest,
+  return { clear, all, spawn, spawnOrb, clearOrbs, update, remove, draw, nearest, nearestClear,
            get count() { return list.length; } };
 })();

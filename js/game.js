@@ -623,6 +623,8 @@ G.Game = (() => {
         specials: G.World.specialsNear(pl.x, pl.y, 600),
         // Casillas por las que se puede andar (para buscar camino hasta la grieta)
         TS: G.World.TS, walkable: G.World.walkable,   // manantiales, altares, cofres grandes, trampas
+        // ¿Llega un disparo recto entre dos puntos? (paredes y objetos sólidos)
+        clearShot: (x1, y1, x2, y2) => G.World.clearShot(x1, y1, x2, y2, 6),
         // Dónde acabaría el jugador si intenta ir a (x, y): la misma colisión del juego
         step: (x, y) => { const o = { x, y, r: pl.r }; G.World.collide(o); return o; },
         // ¿Líquido que hace daño (lava, veneno...)?

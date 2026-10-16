@@ -416,6 +416,10 @@ class PokeAutoBot {
     const spd = p.spd || 150, r = p.r || 12;
     const hpFrac = p.hp / (p.maxHp || 1);
     const H = 0.7, STEPS = 7, dt = H / STEPS;
+    // 每一種傷害來源的代價都依「會扣多少血」計算（占最大血量的比例）：
+    // 躲不完的時候，自然會挑總傷害最低的路線（例如寧可吃一顆小子彈，也不碰頭目）。
+    const maxHp = p.maxHp || 100;
+    const hurt = dmg => 40 + 400 * Math.min(1, (dmg || 8) / maxHp);
 
     const enemies = s.enemies.filter(e => !e.dead && e.behavior !== 'thief' &&
       Math.abs(e.x - p.x) < 420 && Math.abs(e.y - p.y) < 420);
@@ -432,6 +436,9 @@ class PokeAutoBot {
       const d = Math.hypot(e.x - p.x, e.y - p.y);
       if (d < nd) { nd = d; nearest = e; }
     }
+    // 真正要打的目標：遊戲目前瞄準的敵人（遠程招式會挑彈道暢通的）；沒有就用最近的
+    const tgt = p.target && !p.target.dead && p.target.hp !== undefined ? p.target : nearest;
+    const usesShots = (p.slots && p.slots[p.active] || []).some(m => ['projectile', 'beam', 'boomerang', 'cone', 'nova'].includes(m.kind));
     const lowHp = hpFrac < 0.35;
     // 血量越少越怕痛
     const danger = hpFrac < 0.5 ? 1 + (0.5 - hpFrac) * 2 : 1;
@@ -481,7 +488,7 @@ class PokeAutoBot {
           const gap = Math.hypot(x - ex, y - ey) - (e.r || 14) - r;
           const big = (e.boss || e.legend || e.judge ? 3 : 1) * (dashing ? 1.6 : 1);
           // 只在快碰到時才怕：近身／範圍招式需要貼近才打得到
-          if (gap < 6) cost += 80 * big * w * danger;
+          if (gap < 6) cost += hurt(e.dmg) * (e.boss || e.legend || e.judge ? 1.5 : 1) * w * danger;
           else cost += 30 * big * w * danger * Math.exp(-gap / 9);
         }
         for (const b of shots) {
@@ -492,14 +499,14 @@ class PokeAutoBot {
           const u = Math.max(0, Math.min(1, ((x - ax) * sx + (y - ay) * sy) / l2));
           const qx = ax + sx * u - x, qy = ay + sy * u - y;
           const rr = (b.r || 6) + r + 10;
-          if (qx * qx + qy * qy < rr * rr) cost += 150 * w * danger;
+          if (qx * qx + qy * qy < rr * rr) cost += hurt(b.dmg) * w * danger;
         }
         for (const o of traps) {
           if (Math.hypot(o.x - x, o.y - 8 - y) < 30) cost += 60 * w;
         }
         for (const h of hazards) {
           const left = h.delay - h.t;
-          if (t >= left - 0.12 && t <= left + (h.end || 0.3) + 0.05 && s.inHazard(h, x, y, r + 8)) cost += h.pct ? 600 : 180;
+          if (t >= left - 0.12 && t <= left + (h.end || 0.3) + 0.05 && s.inHazard(h, x, y, r + 8)) cost += (h.pct ? hurt(maxHp * h.pct) * 1.5 : hurt(h.dmg)) * danger;
         }
       }
       cost += blocked * 6;
@@ -522,11 +529,13 @@ class PokeAutoBot {
       const spread = crowd ? 1 - Math.hypot(cx, cy) / crowd : 0;   // 0 = 都在同一邊, 1 = 被包圍
       cost += crowd * 1.5 + crowd * spread * 4;
 
-      // 保持在招式打得到的距離
-      if (nearest && !rift) {
+      // 保持在招式打得到的距離（對「真正要打的目標」）
+      if (tgt && !rift) {
         // 只有打不到時才靠近；打得到就不用再往前（避免在怪群邊緣來回）
-        const dn = Math.hypot(nearest.x - x, nearest.y - y);
+        const dn = Math.hypot(tgt.x - x, tgt.y - y);
         cost += Math.min(Math.max(0, dn - want), 700) * 0.12;
+        // 遠程招式：站在這裡彈道會被牆或石頭擋住 → 不要站這裡，去找打得到的角度
+        if (usesShots && dn < 560 && s.clearShot && !s.clearShot(x, y, tgt.x, tgt.y)) cost += 30;
       }
 
       // 裂縫：走進去打傳說寶可夢（拿券和「連結」）

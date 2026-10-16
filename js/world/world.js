@@ -339,6 +339,20 @@ G.World = (() => {
     return null;
   }
 
+  /**
+   * ¿Llega un disparo recto de (x1,y1) a (x2,y2) sin chocar con paredes ni
+   * objetos sólidos? Se muestrea cada ~10 px. (Copia local: apuntado y bot.)
+   */
+  function clearShot(x1, y1, x2, y2, r = 6) {
+    const dx = x2 - x1, dy = y2 - y1;
+    const n = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 10));
+    for (let i = 1; i < n; i++) {
+      const t = i / n;
+      if (projectileBlock(x1 + dx * t, y1 + dy * t, r)) return false;
+    }
+    return true;
+  }
+
   // ---------------- daño a objetos ----------------
 
   function damageProp(p, amount, color = '#fff') {
@@ -588,7 +602,7 @@ G.World = (() => {
 
   return {
     TS, CW, reset, setBiome, biomeName, liquidKind, liquidEffect, walkable,
-    kindAt, isWall, isLiquid, isFree, collide, projectileBlock, propsInCircle, nearestBreakable,
+    kindAt, isWall, isLiquid, isFree, collide, projectileBlock, clearShot, propsInCircle, nearestBreakable,
     damageProp, breakAt, specialsNear, update,
     breakProp(p) { if (!broken.has(p.tx + ',' + p.ty)) destroyProp(p); },
     /** Arena de la grieta: { tx, ty, r } (en tiles) o null. */

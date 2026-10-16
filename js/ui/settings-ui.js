@@ -147,7 +147,11 @@ G.SettingsUI = (() => {
     // Copia local: quien tiene ventajas puede apagarlas (partida limpia: cuenta para el ranking, también en grupo).
     if (G.Boost.has) {
       box.insertAdjacentHTML('beforeend', section('Mis ventajas', 'Apagadas, la siguiente partida es como la original y sí cuenta para el ranking (en grupo, la de todo el equipo).')
-        + `<div class="set-row"><div class="grow"><b>Usar mis ventajas</b><small>Se aplica al empezar la siguiente partida.</small></div><button class="switch${G.Boost.paused ? '' : ' on'}" id="set-boost-on"></button></div>`);
+        + `<div class="set-row"><div class="grow"><b>Usar mis ventajas</b><small>Se aplica al empezar la siguiente partida.</small></div>
+             <div class="seg" style="margin:0"><button data-bst="1" class="${G.Boost.paused ? '' : 'on'}" style="font-weight:700">Encendidas</button><button data-bst="0" class="${G.Boost.paused ? 'on' : ''}" style="font-weight:700">Apagadas</button></div></div>
+           <p class="note" style="margin-top:6px;font-size:14px;color:${G.Boost.paused ? '#ffb0b8' : '#5fe08a'}">${G.Boost.paused
+             ? 'AHORA: APAGADAS. La siguiente partida es como la original y cuenta para el ranking (en grupo, la de todo el equipo).'
+             : 'AHORA: ENCENDIDAS. La siguiente partida tiene tus ventajas y no cuenta para el ranking.'}</p>`);
     }
     // Copia local: el administrador (G.Boost.UIDS) reparte el bot y las ventajas desde aquí.
     if (G.Boost.admin) {
@@ -249,8 +253,14 @@ G.SettingsUI = (() => {
     box.querySelectorAll('[data-lang]').forEach(b => { b.onclick = () => { if (b.dataset.lang !== G.I18n.lang) G.I18n.set(b.dataset.lang); }; });
     const lo = $('set-login'); if (lo) lo.onclick = () => { close(); leave(); };
     const out = $('set-logout'); if (out) out.onclick = () => { close(); leave(); };
-    const bsw = $('set-boost-on');
-    if (bsw) bsw.onclick = () => { G.Boost.paused = !G.Boost.paused; render(); G.UI.toast(G.Boost.paused ? 'Ventajas apagadas: la siguiente partida cuenta para el ranking' : 'Ventajas encendidas'); };
+    box.querySelectorAll('[data-bst]').forEach(b => {
+      b.onclick = () => {
+        const on = b.dataset.bst === '1';
+        if (G.Boost.paused === !on) return;
+        G.Boost.paused = !on; render();
+        G.UI.toast(G.Boost.paused ? 'Ventajas apagadas: la siguiente partida cuenta para el ranking' : 'Ventajas encendidas');
+      };
+    });
     const uidEl = $('set-uid');
     if (uidEl) uidEl.onclick = () => { try { navigator.clipboard.writeText(uidEl.textContent); G.UI.toast('ID copiado'); } catch (e) { /* sin portapapeles */ } };
     const del = $('set-delete');

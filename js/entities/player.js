@@ -375,8 +375,13 @@ G.Player = class Player {
     const m = this.activeMove();
     const ranged = !!m && (m.kind === 'projectile' || m.kind === 'beam');
     const threat = G.Projectiles.nearest(all, this.x, this.y, this.r + 24);
-    const boss = all.find(e => e.boss && !e.dead && G.U.dist(this.x, this.y, e.x, e.y) < 330);
+    let boss = all.find(e => e.boss && !e.dead && G.U.dist(this.x, this.y, e.x, e.y) < 330);
+    // Copia local: a distancia no se dispara contra una pared. El jefe sólo
+    // tiene prioridad si está a tiro, y antes que "el más cercano" va "el más
+    // cercano al que llega el disparo" (ver World.clearShot).
+    if (ranged && boss && !G.World.clearShot(this.x, this.y, boss.x, boss.cy())) boss = null;
     const tg = (ranged ? boss || threat : threat || boss)
+            || (ranged ? G.Projectiles.nearestClear(all, this.x, this.y, 520) : null)
             || G.Projectiles.nearest(all, this.x, this.y, 520)
             || G.World.nearestBreakable(this.x, this.y, 200);
     this.target = tg;
