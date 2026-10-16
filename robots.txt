@@ -1,8 +1,3 @@
-# PokéSurvivor
+# PokéSurvivor (copia privada: fuera de los buscadores)
 User-agent: *
-Allow: /
-Disallow: /tools/
-Disallow: /docs/
-Disallow: /dev.html
-
-Sitemap: https://lilyted51-a11y.github.io/sitemap.xml
+Disallow: /

@@ -614,10 +614,7 @@ def extra():
 <p class="cta"><a class="btn" href="/">Volver al juego</a> <a class="btn ghost" href="/en/">Play in English</a></p></article></main></body></html>
 '''
     open(os.path.join(ROOT, '404.html'), 'w', encoding='utf-8').write(nf)
-    open(os.path.join(ROOT, 'robots.txt'), 'w', encoding='utf-8').write('# PokéSurvivor (copia privada: fuera de los buscadores)
-User-agent: *
-Disallow: /
-')
+    open(os.path.join(ROOT, 'robots.txt'), 'w', encoding='utf-8').write('# PokéSurvivor (copia privada: fuera de los buscadores)\nUser-agent: *\nDisallow: /\n')
     PRI = {'home': '1.0', 'guide': '0.8', 'pokedex': '0.7', 'legends': '0.7', 'moves': '0.6', 'types': '0.6', 'shinies': '0.6', 'achievements': '0.5', 'items': '0.5', 'news': '0.5', 'support': '0.4'}
     urls = []
     for pid in PAGES:
