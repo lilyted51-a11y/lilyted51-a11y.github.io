@@ -162,7 +162,8 @@ G.SettingsUI = (() => {
     box.innerHTML = list.map(p => {
       const cur = G.Boost.level(p.uid), own = G.Boost.UIDS.includes(p.uid);
       const chips = LV.map(([v, t]) => `<button class="chip${cur === v ? ' on' : ''}" data-boost="${v}" data-uid="${p.uid}"${own ? ' disabled' : ''}>${t}</button>`).join('');
-      return `<div class="set-row"><div class="grow"><b translate="no">${esc(p.name)}</b>${own ? '<small>Administrador: siempre todo.</small>' : ''}</div><div class="chips">${chips}</div></div>`;
+      const giftBtn = `<button class="btn small" data-gift="${p.uid}" data-name="${esc(p.name)}">Regalar Pokémon</button>`;
+      return `<div class="set-row"><div class="grow"><b translate="no">${esc(p.name)}</b>${own ? '<small>Administrador: siempre todo.</small>' : ''}</div><div class="chips">${chips}${giftBtn}</div></div>`;
     }).join('') || '<p class="sub">Todavía no hay otros jugadores.</p>';
     box.querySelectorAll('[data-boost]').forEach(b => {
       b.onclick = async () => {
@@ -170,6 +171,19 @@ G.SettingsUI = (() => {
         try { await G.Boost.set(b.dataset.uid, b.dataset.boost); G.UI.toast('Guardado: se aplica cuando vuelva a entrar'); }
         catch (e) { G.UI.toast('No se pudo guardar: ' + e.message); }
         renderBoostAdmin();
+      };
+    });
+    box.querySelectorAll('[data-gift]').forEach(b => {
+      b.onclick = async () => {
+        const raw = prompt('Pokémon para ' + b.dataset.name + ': número de la Pokédex o nombre en inglés (añade "shiny" para la versión shiny). Ej.: 150, Mewtwo shiny');
+        if (!raw) return;
+        const shiny = /shiny/i.test(raw);
+        const q = raw.replace(/shiny/ig, '').trim().toLowerCase();
+        const mon = /^\d+$/.test(q) ? G.DEX_BY[+q] : G.DEX.find(m => m.name.toLowerCase() === q);
+        if (!mon) { G.UI.toast('No encuentro ese Pokémon'); return; }
+        if (!confirm('¿Regalar ' + mon.name + (shiny ? ' shiny' : '') + ' (#' + mon.dex + ') a ' + b.dataset.name + '?')) return;
+        try { await G.Boost.gift(b.dataset.uid, mon.dex, shiny); G.UI.toast('Enviado: lo recibe al entrar'); }
+        catch (e) { G.UI.toast('No se pudo enviar: ' + e.message); }
       };
     });
   }

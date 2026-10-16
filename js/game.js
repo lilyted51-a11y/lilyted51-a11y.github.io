@@ -951,6 +951,11 @@ G.Flow = {
   afterLogin() {
     G.Audio.music('village');
     G.Boost.load();              // listas de ventajas (config/boost en Firestore)
+    // Regalos del administrador: se añaden a la colección y se avisa.
+    G.Boost.claimGifts().then(got => {
+      for (const g of got) G.UI.toast((g.shiny ? '¡Regalo! ' + g.name + ' shiny' : '¡Regalo! ' + g.name) + ' ya está en tu Pokédex', 4500);
+      if (got.length) G.UI.refreshCoins();
+    });
     if (!G.DB.save.partner) G.TestUI.start();
     else this.goMenu();
   },

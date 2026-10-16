@@ -62,8 +62,43 @@ G.Boost = (() => {
     });
   }
 
+  // ---------------- regalos: Pokémon enviados por el administrador ----------------
+  // gifts/{uid}/items/{id} = { dex, shiny, from, at }. El que los recibe los
+  // aplica a su partida al entrar (claimGifts) y borra el documento.
+
+  /** Envía un Pokémon (dex) a una cuenta. */
+  async function gift(u, dex, shiny = false) {
+    const fb = G.DB && G.DB.fb;
+    if (!fb || !fb.fs || !UIDS.includes(fb.uid)) throw new Error('Sólo el administrador');
+    if (!G.DEX_BY[dex]) throw new Error('Pokémon desconocido');
+    await fb.fs.collection('gifts').doc(u).collection('items').add({
+      dex, shiny: !!shiny, from: fb.uid, at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+
+  /** Recoge los regalos pendientes de la cuenta conectada. Devuelve los Pokémon recibidos. */
+  async function claimGifts() {
+    const fb = G.DB && G.DB.fb;
+    if (!fb || !fb.uid || !fb.fs || !G.DB.save || G.DB.guest) return [];
+    let snap;
+    try { snap = await fb.fs.collection('gifts').doc(fb.uid).collection('items').get(); }
+    catch (e) { console.warn('[Boost] regalos:', e.message); return []; }
+    const got = [];
+    for (const d of snap.docs) {
+      const g = d.data() || {};
+      const mon = G.DEX_BY[g.dex];
+      if (mon) {
+        if (g.shiny) G.DB.grantShiny(g.dex, 'gift'); else G.DB.grant(g.dex, 'gift');
+        got.push({ dex: g.dex, name: mon.name, shiny: !!g.shiny });
+      }
+      try { await d.ref.delete(); } catch (e) { /* se volverá a aplicar (no duplica) */ }
+    }
+    if (got.length) G.DB.commit(true);
+    return got;
+  }
+
   return {
-    UIDS, POWER, load, players, level, set,
+    UIDS, POWER, load, players, level, set, gift, claimGifts,
     /** ¿La cuenta conectada administra las listas? */
     get admin() { const u = uid(); return !!u && UIDS.includes(u); },
     /** Todas las ventajas. */

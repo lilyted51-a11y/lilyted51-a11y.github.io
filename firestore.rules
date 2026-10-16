@@ -30,6 +30,16 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if false;
     }
+    // Regalos del administrador (Pokémon): él los crea, el destinatario los lee y borra.
+    match /gifts/{uid}/items/{id} {
+      allow read, delete: if signedIn() && (me() == uid || me() in ['DFa2yefCCPVzV9OA5Ie07jHHlZ32']);
+      allow create: if signedIn() && me() in ['DFa2yefCCPVzV9OA5Ie07jHHlZ32']
+        && request.resource.data.keys().hasOnly(['dex', 'shiny', 'from', 'at'])
+        && request.resource.data.dex is int && request.resource.data.dex >= 1 && request.resource.data.dex <= 1100
+        && request.resource.data.shiny is bool
+        && request.resource.data.from == me()
+        && request.resource.data.at == request.time;
+    }
     // Las listas de ventajas las escribe sólo el administrador (desde Ajustes > Cuenta).
     match /config/boost {
       allow write: if request.auth != null
