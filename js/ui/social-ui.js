@@ -282,6 +282,8 @@
       // Las tarjetas sólo se rehacen si cambian los miembros (los sprites no parpadean).
       const key = MAXR + '#' + ms.map(m => m.uid + ':' + m.dex + ':' + (m.shiny ? 1 : 0)).join('|');
       const box = $('lobby-members');
+      // Filas: 4 jugadores en una; de 5 a 10, dos filas (la mitad arriba, redondeando: 5→3+2, 7→4+3, 9→5+4).
+      box.style.setProperty('--cols', MAXR <= 4 ? MAXR : Math.ceil(MAXR / 2));
       if (key !== membersKey) {
         membersKey = key;
         box.innerHTML = '';

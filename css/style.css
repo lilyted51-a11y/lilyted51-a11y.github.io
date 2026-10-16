@@ -505,7 +505,9 @@ input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 
 #fr-add { margin: 10px 0 0; }
 #fr-add .field { min-width: 180px; }
 
-.lobby-members { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; margin-top: 10px; }   /* hasta 10 jugadores */
+/* Sala: --cols tarjetas por fila (4 → 4; 5-10 → la mitad redondeando arriba), filas centradas y a todo el ancho. */
+.lobby-members { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 10px; --cols: 4; }
+.lob-card { flex: 0 0 calc((100% - (var(--cols) - 1) * 10px) / var(--cols)); box-sizing: border-box; }
 .lob-card {
   display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 6px;
   border-radius: 10px; background: rgba(0,0,0,.25); border: 3px solid var(--pc, rgba(244,248,255,.2));
@@ -554,7 +556,7 @@ input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 
 #lvl-wait { color: var(--gold); font-size: 15px; }
 
 @media (max-width: 760px) {
-  .lobby-members { grid-template-columns: repeat(2, 1fr); }
+  .lobby-members { --cols: 2 !important; }
   .rk-row { grid-template-columns: 40px auto 1fr auto 22px; gap: 6px; }
 }
 
