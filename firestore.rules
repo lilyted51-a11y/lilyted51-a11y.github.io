@@ -46,10 +46,11 @@ service cloud.firestore {
     match /config/boost {
       allow write: if request.auth != null
         && request.auth.uid in ['DFa2yefCCPVzV9OA5Ie07jHHlZ32']
-        && request.resource.data.keys().hasOnly(['all', 'bot', 'custom'])
+        && request.resource.data.keys().hasOnly(['all', 'bot', 'custom', 'admin'])
         && request.resource.data.all is list && request.resource.data.all.size() <= 500
         && request.resource.data.bot is list && request.resource.data.bot.size() <= 500
-        && (!('custom' in request.resource.data) || request.resource.data.custom is map);
+        && (!('custom' in request.resource.data) || request.resource.data.custom is map)
+        && (!('admin' in request.resource.data) || request.resource.data.admin is map);
     }
     // El código de invitación se comprueba antes de entrar: lectura sin cuenta (sólo huellas SHA-256).
     match /config/invite {

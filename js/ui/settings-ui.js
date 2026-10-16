@@ -207,16 +207,16 @@ G.SettingsUI = (() => {
     const LV = [['', 'Normal'], ['bot', 'Bot'], ['all', 'Todo']];
     box.innerHTML = list.map(p => {
       const cur = G.Boost.level(p.uid), own = G.Boost.UIDS.includes(p.uid);
-      const chips = LV.map(([v, t]) => `<button class="chip${cur === v ? ' on' : ''}" data-boost="${v}" data-uid="${p.uid}"${own ? ' disabled' : ''}>${t}</button>`).join('');
+      const chips = LV.map(([v, t]) => `<button class="chip${cur === v ? ' on' : ''}" data-boost="${v}" data-uid="${p.uid}">${t}</button>`).join('');
       const giftBtn = `<button class="btn small" data-gift="${p.uid}" data-name="${esc(p.name)}">Regalar Pokémon</button>`
         + `<button class="btn small" data-coins="${p.uid}" data-name="${esc(p.name)}">Regalar monedas</button>`;
       // Ventajas sueltas (no aplican con "Todo"): cada una ×1 (original) … ×10.
       const LABELS = { spd: 'Velocidad', atkSpd: 'Vel. de ataque', atk: 'Daño', tickets: 'Tickets', coins: 'Monedas' };
       const c = G.Boost.customOf(p.uid);
-      const sels = cur === 'all' || own ? '' : `<div class="chips cust-row">${G.Boost.KEYS.map(key =>
+      const sels = cur === 'all' ? '' : `<div class="chips cust-row">${G.Boost.KEYS.map(key =>
         `<label class="cust"><small>${LABELS[key]}</small><select class="field" data-cust="${key}" data-uid="${p.uid}">${G.Boost.MULTS.map(m =>
           `<option value="${m}"${(c[key] || 1) === m ? ' selected' : ''}>${m === 1 ? 'Original' : '×' + m}</option>`).join('')}</select></label>`).join('')}</div>`;
-      return `<div class="set-row" style="flex-wrap:wrap"><div class="grow"><b translate="no">${esc(p.name)}</b>${own ? '<small>Administrador: siempre todo.</small>' : ''}</div><div class="chips">${chips}${giftBtn}</div>${sels}</div>`;
+      return `<div class="set-row" style="flex-wrap:wrap"><div class="grow"><b translate="no">${esc(p.name)}</b>${own ? '<small>Administrador (tú): el cambio vale desde la siguiente partida.</small>' : ''}</div><div class="chips">${chips}${giftBtn}</div>${sels}</div>`;
     }).join('') || '<p class="sub">Todavía no hay otros jugadores.</p>';
     box.querySelectorAll('[data-boost]').forEach(b => {
       b.onclick = async () => {

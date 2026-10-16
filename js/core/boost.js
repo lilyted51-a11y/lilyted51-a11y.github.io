@@ -23,7 +23,8 @@ G.Boost = (() => {
   //   spd velocidad · atkSpd velocidad de ataque · atk daño · tickets cantidad de tickets · coins monedas al acabar
   const KEYS = ['spd', 'atkSpd', 'atk', 'tickets', 'coins'];
   const MULTS = [1, 2, 3, 4, 5, 10];
-  let all = new Set(UIDS), bot = new Set(), custom = {}, loadedFor = null;
+  // El administrador también elige su nivel ('all' por defecto): config/boost.admin[uid]
+  let all = new Set(UIDS), bot = new Set(), custom = {}, adminLvl = {}, loadedFor = null;
 
   let forced = null;            // sólo pruebas (dev.html): debugAs()
   // Interruptor del propio jugador: con las ventajas apagadas la partida es
@@ -42,8 +43,10 @@ G.Boost = (() => {
     try {
       const snap = await fb.fs.collection('config').doc('boost').get();
       const d = snap.exists ? snap.data() : {};
-      all = new Set(UIDS.concat(Array.isArray(d.all) ? d.all : []));
+      all = new Set(Array.isArray(d.all) ? d.all : []);
       bot = new Set(Array.isArray(d.bot) ? d.bot : []);
+      adminLvl = d.admin && typeof d.admin === 'object' ? d.admin : {};
+      for (const u of UIDS) { const l = adminLvl[u] === undefined ? 'all' : adminLvl[u]; if (l === 'all') all.add(u); else if (l === 'bot') bot.add(u); }
       custom = d.custom && typeof d.custom === 'object' ? d.custom : {};
     } catch (e) { console.warn('[Boost] sin config/boost:', e.message); }
   }
@@ -80,7 +83,7 @@ G.Boost = (() => {
   async function save() {
     const fb = G.DB.fb;
     await fb.fs.collection('config').doc('boost').set({
-      all: [...all].filter(x => !UIDS.includes(x)), bot: [...bot], custom
+      all: [...all].filter(x => !UIDS.includes(x)), bot: [...bot].filter(x => !UIDS.includes(x)), custom, admin: adminLvl
     });
   }
 
@@ -96,7 +99,7 @@ G.Boost = (() => {
   }
 
   /** Nivel de una cuenta: 'all' | 'bot' | ''. */
-  function level(u) { return UIDS.includes(u) || all.has(u) ? 'all' : bot.has(u) ? 'bot' : ''; }
+  function level(u) { return all.has(u) ? 'all' : bot.has(u) ? 'bot' : ''; }
 
   /** Cambia el nivel de una cuenta y guarda config/boost (sólo administradores). */
   async function set(u, lvl) {
@@ -104,6 +107,7 @@ G.Boost = (() => {
     if (!fb || !fb.fs || !UIDS.includes(fb.uid)) throw new Error('Sólo el administrador');
     all.delete(u); bot.delete(u);
     if (lvl === 'all') all.add(u); else if (lvl === 'bot') bot.add(u);
+    if (UIDS.includes(u)) adminLvl[u] = lvl;
     await save();
   }
 

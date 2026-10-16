@@ -553,6 +553,7 @@
   "Todo": "全部",
   "Cargando…": "載入中…",
   "Administrador: siempre todo.": "管理員：永遠全部。",
+  "Administrador (tú): el cambio vale desde la siguiente partida.": "管理員（你）：變更從下一局生效。",
   "Todavía no hay otros jugadores.": "目前還沒有其他玩家。",
   "Guardado: se aplica cuando vuelva a entrar": "已儲存：對方重新登入後生效",
   "No se pudo guardar: {x}": "無法儲存：{x}",
