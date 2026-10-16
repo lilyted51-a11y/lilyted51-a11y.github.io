@@ -30,6 +30,14 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if false;
     }
+    // Las listas de ventajas las escribe sólo el administrador (desde Ajustes > Cuenta).
+    match /config/boost {
+      allow write: if request.auth != null
+        && request.auth.uid in ['DFa2yefCCPVzV9OA5Ie07jHHlZ32']
+        && request.resource.data.keys().hasOnly(['all', 'bot'])
+        && request.resource.data.all is list && request.resource.data.all.size() <= 500
+        && request.resource.data.bot is list && request.resource.data.bot.size() <= 500;
+    }
     // El código de invitación se comprueba antes de entrar: lectura sin cuenta (sólo huellas SHA-256).
     match /config/invite {
       allow read: if true;

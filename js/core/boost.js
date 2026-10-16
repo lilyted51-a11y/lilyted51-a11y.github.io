@@ -36,8 +36,36 @@ G.Boost = (() => {
     } catch (e) { console.warn('[Boost] sin config/boost:', e.message); }
   }
 
+  // ---------------- administración (sólo las cuentas de UIDS) ----------------
+
+  /** Todos los jugadores con perfil (apodo), para el panel de Ajustes > Cuenta. */
+  async function players() {
+    const fb = G.DB && G.DB.fb;
+    if (!fb || !fb.fs) return [];
+    const snap = await fb.fs.collection('profiles').limit(300).get();
+    const out = [];
+    snap.forEach(d => { const p = d.data() || {}; if (p.name) out.push({ uid: d.id, name: p.name }); });
+    return out.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /** Nivel de una cuenta: 'all' | 'bot' | ''. */
+  function level(u) { return UIDS.includes(u) || all.has(u) ? 'all' : bot.has(u) ? 'bot' : ''; }
+
+  /** Cambia el nivel de una cuenta y guarda config/boost (sólo administradores). */
+  async function set(u, lvl) {
+    const fb = G.DB && G.DB.fb;
+    if (!fb || !fb.fs || !UIDS.includes(fb.uid)) throw new Error('Sólo el administrador');
+    all.delete(u); bot.delete(u);
+    if (lvl === 'all') all.add(u); else if (lvl === 'bot') bot.add(u);
+    await fb.fs.collection('config').doc('boost').set({
+      all: [...all].filter(x => !UIDS.includes(x)), bot: [...bot]
+    });
+  }
+
   return {
-    UIDS, POWER, load,
+    UIDS, POWER, load, players, level, set,
+    /** ¿La cuenta conectada administra las listas? */
+    get admin() { const u = uid(); return !!u && UIDS.includes(u); },
     /** Todas las ventajas. */
     get on() { const u = uid(); return !!u && all.has(u); },
     /** Puede usar el bot (con o sin las demás ventajas). */

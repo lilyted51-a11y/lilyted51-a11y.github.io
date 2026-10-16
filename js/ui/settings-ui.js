@@ -144,6 +144,34 @@ G.SettingsUI = (() => {
            <button class="btn" id="set-logout">Cerrar sesión</button>
            <button class="btn danger" id="set-delete">Borrar cuenta</button>
          </div><p class="note" id="set-msg"></p>`;
+    // Copia local: el administrador (G.Boost.UIDS) reparte el bot y las ventajas desde aquí.
+    if (G.Boost.admin) {
+      box.insertAdjacentHTML('beforeend', section('Ventajas de los jugadores', 'Sólo tú ves esto. Bot: juego automático con números normales. Todo: bot, daño ×40, botín, tickets y monedas por segundo. Con bot o ventajas no se sube al ranking.')
+        + '<div id="boost-admin"><p class="sub">Cargando…</p></div>');
+      renderBoostAdmin();
+    }
+  }
+
+  async function renderBoostAdmin() {
+    const box = $('boost-admin');
+    if (!box) return;
+    let list;
+    try { list = await G.Boost.players(); } catch (e) { box.innerHTML = `<p class="err">${esc(e.message)}</p>`; return; }
+    if (!$('boost-admin')) return;                    // se cerró la pantalla mientras cargaba
+    const LV = [['', 'Normal'], ['bot', 'Bot'], ['all', 'Todo']];
+    box.innerHTML = list.map(p => {
+      const cur = G.Boost.level(p.uid), own = G.Boost.UIDS.includes(p.uid);
+      const chips = LV.map(([v, t]) => `<button class="chip${cur === v ? ' on' : ''}" data-boost="${v}" data-uid="${p.uid}"${own ? ' disabled' : ''}>${t}</button>`).join('');
+      return `<div class="set-row"><div class="grow"><b translate="no">${esc(p.name)}</b>${own ? '<small>Administrador: siempre todo.</small>' : ''}</div><div class="chips">${chips}</div></div>`;
+    }).join('') || '<p class="sub">Todavía no hay otros jugadores.</p>';
+    box.querySelectorAll('[data-boost]').forEach(b => {
+      b.onclick = async () => {
+        box.querySelectorAll('[data-boost]').forEach(x => { x.disabled = true; });
+        try { await G.Boost.set(b.dataset.uid, b.dataset.boost); G.UI.toast('Guardado: se aplica cuando vuelva a entrar'); }
+        catch (e) { G.UI.toast('No se pudo guardar: ' + e.message); }
+        renderBoostAdmin();
+      };
+    });
   }
 
   function wire(box) {
