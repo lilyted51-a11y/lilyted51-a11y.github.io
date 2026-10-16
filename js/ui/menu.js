@@ -3,6 +3,15 @@ G.MenuUI = (() => {
   const $ = G.UI.$;
   const GEN_NAMES = ['Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Teselia', 'Kalos', 'Alola', 'Galar', 'Paldea'];
   let dexFilter = 'all', dexGen = 1, dexSel = null;
+  // Copia local: buscador. Con texto, la cuadrícula enseña las coincidencias de TODAS las regiones.
+  let dexQuery = '';
+  function dexMatch(p, q) {
+    if (!q) return true;
+    if (/^\d+$/.test(q)) return String(p.dex) === q || String(p.dex).padStart(3, '0').startsWith(q) || String(p.dex).startsWith(q);
+    if (p.name.toLowerCase().includes(q)) return true;
+    const zh = window.PSZH_DICT && window.PSZH_DICT[p.name];
+    return !!(zh && zh.includes(q));
+  }
 
   function init() {
     const ICON = { play: 'ball', dex: 'book', upgrades: 'up', gacha: 'ball4', goals: 'medal3', friends: 'friends', rank: 'trophy', settings: 'gear' };
@@ -110,6 +119,16 @@ G.MenuUI = (() => {
   function openDex() {
     G.UI.show('scr-dex', true);
     const s = G.DB.save;
+    const q = $('dex-search');
+    if (q && !q.dataset.wired) {
+      q.dataset.wired = '1';
+      let t = 0;
+      q.oninput = () => { clearTimeout(t); t = setTimeout(() => { dexQuery = q.value.trim().toLowerCase(); renderGrid(); }, 120); };
+      q.onkeydown = e => {
+        if (e.key === 'Enter') { const first = $('dex-grid').querySelector('.cell'); if (first) first.click(); e.preventDefault(); }
+        if (e.key === 'Escape') { q.value = ''; dexQuery = ''; renderGrid(); q.blur(); e.stopPropagation(); }
+      };
+    }
     if (dexSel == null) { dexSel = s.partner; dexGen = G.DEX_BY[s.partner].gen; }
     const owned = Object.keys(s.owned).filter(d => G.DEX_BY[d]).length;
     $('dex-total').textContent = giftTo ? 'Regalo para ' + giftTo.name : `${owned} / ${G.DEX.length}`;
@@ -148,8 +167,10 @@ G.MenuUI = (() => {
     const s = G.DB.save;
     const grid = $('dex-grid');
     grid.innerHTML = '';
+    let shown = 0;
     for (const p of G.DEX) {
-      if (p.gen !== dexGen) continue;
+      if (dexQuery ? !dexMatch(p, dexQuery) : p.gen !== dexGen) continue;
+      if (dexQuery && ++shown > 80) break;
       const own = giftTo ? true : !!s.owned[p.dex], sh = !!(s.shiny && s.shiny[p.dex]);
       if (dexFilter === 'own' && !own) continue;
       if (dexFilter === 'miss' && own) continue;
@@ -172,7 +193,7 @@ G.MenuUI = (() => {
       };
       grid.appendChild(cell);
     }
-    if (!grid.children.length) grid.innerHTML = '<p class="sub" style="grid-column:1/-1">Ninguno con este filtro.</p>';
+    if (!grid.children.length) grid.innerHTML = '<p class="sub" style="grid-column:1/-1">' + (dexQuery ? 'Ningún Pokémon coincide.' : 'Ninguno con este filtro.') + '</p>';
   }
 
   // Variante que se está viendo en la ficha (normal o shiny).

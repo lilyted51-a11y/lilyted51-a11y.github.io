@@ -513,6 +513,8 @@
   "Bot": "AI",
   "Regalar Pokémon": "送寶可夢",
   "Regalar monedas": "送金幣",
+  "Buscar: nombre, chino o número": "搜尋：中英文名稱或編號",
+  "Ningún Pokémon coincide.": "沒有符合的寶可夢。",
   "Has pausado la partida: todos esperan a que continúes.": "你暫停了遊戲：所有人都在等你繼續。",
   "Pausa: el anfitrión ha pausado la partida": "暫停：房主暫停了遊戲",
   "En el menú (fuera de la sala)": "在選單中（不在房間）",
@@ -3767,6 +3769,7 @@
   "7 October 2026": "2026 年 10 月 7 日",
   "7 de octubre de 2026": "2026 年 10 月 7 日"
 };
+  window.PSZH_DICT = DICT;   // copia local: el buscador de la Pokédex busca también por el nombre en chino
   const exact = new Map(), lower = new Map(), fragments = new Map(), patterns = [];
   const cache = new Map(), translatedNodes = new WeakMap();
   const literalCaptures = new Set([
