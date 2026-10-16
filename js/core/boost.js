@@ -26,8 +26,13 @@ G.Boost = (() => {
   let all = new Set(UIDS), bot = new Set(), custom = {}, loadedFor = null;
 
   let forced = null;            // sólo pruebas (dev.html): debugAs()
+  // Interruptor del propio jugador: con las ventajas apagadas la partida es
+  // limpia (y en grupo, la marca de todo el equipo sí sube al ranking).
+  const K_OFF = 'ps.boost.off';
+  let paused = false;
+  try { paused = localStorage.getItem(K_OFF) === '1'; } catch (e) { /* nada */ }
   function uid() { if (forced) return forced; const fb = G.DB && G.DB.fb; return fb && fb.uid ? fb.uid : null; }
-  function isOn() { const u = uid(); return !!u && all.has(u); }
+  function isOn() { const u = uid(); return !paused && !!u && all.has(u); }
 
   /** Lee config/boost de Firestore (una vez por cuenta). */
   async function load() {
@@ -58,7 +63,7 @@ G.Boost = (() => {
   /** Multiplicador suelto de la cuenta conectada (1 si no tiene, o si tiene "todo"). */
   function k(key) {
     const u = uid();
-    if (!u || all.has(u)) return 1;
+    if (paused || !u || all.has(u)) return 1;
     const v = custom[u] && +custom[u][key];
     return MULTS.includes(v) ? v : 1;
   }
@@ -160,6 +165,11 @@ G.Boost = (() => {
     /** Todas las ventajas. */
     get on() { return isOn(); },
     /** Puede usar el bot (con o sin las demás ventajas). */
-    get bot() { const u = uid(); return !!u && (all.has(u) || bot.has(u)); }
+    get bot() { const u = uid(); return !paused && !!u && (all.has(u) || bot.has(u)); },
+    /** ¿Esta cuenta tiene alguna ventaja asignada (aunque esté en pausa)? */
+    get has() { const u = uid(); return !!u && (all.has(u) || bot.has(u) || !!custom[u]); },
+    /** Ventajas en pausa por decisión del jugador (se aplica a la siguiente partida). */
+    get paused() { return paused; },
+    set paused(v) { paused = !!v; try { localStorage.setItem(K_OFF, paused ? '1' : '0'); } catch (e) { /* nada */ } }
   };
 })();

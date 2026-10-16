@@ -144,6 +144,11 @@ G.SettingsUI = (() => {
            <button class="btn" id="set-logout">Cerrar sesión</button>
            <button class="btn danger" id="set-delete">Borrar cuenta</button>
          </div><p class="note" id="set-msg"></p>`;
+    // Copia local: quien tiene ventajas puede apagarlas (partida limpia: cuenta para el ranking, también en grupo).
+    if (G.Boost.has) {
+      box.insertAdjacentHTML('beforeend', section('Mis ventajas', 'Apagadas, la siguiente partida es como la original y sí cuenta para el ranking (en grupo, la de todo el equipo).')
+        + `<div class="set-row"><div class="grow"><b>Usar mis ventajas</b><small>Se aplica al empezar la siguiente partida.</small></div><button class="switch${G.Boost.paused ? '' : ' on'}" id="set-boost-on"></button></div>`);
+    }
     // Copia local: el administrador (G.Boost.UIDS) reparte el bot y las ventajas desde aquí.
     if (G.Boost.admin) {
       box.insertAdjacentHTML('beforeend', section('Ventajas de los jugadores', 'Sólo tú ves esto. Bot: juego automático con números normales. Todo: bot, daño ×40, botín, tickets y monedas por segundo. Con bot o ventajas no se sube al ranking.')
@@ -215,6 +220,8 @@ G.SettingsUI = (() => {
     box.querySelectorAll('[data-lang]').forEach(b => { b.onclick = () => { if (b.dataset.lang !== G.I18n.lang) G.I18n.set(b.dataset.lang); }; });
     const lo = $('set-login'); if (lo) lo.onclick = () => { close(); leave(); };
     const out = $('set-logout'); if (out) out.onclick = () => { close(); leave(); };
+    const bsw = $('set-boost-on');
+    if (bsw) bsw.onclick = () => { G.Boost.paused = !G.Boost.paused; render(); G.UI.toast(G.Boost.paused ? 'Ventajas apagadas: la siguiente partida cuenta para el ranking' : 'Ventajas encendidas'); };
     const uidEl = $('set-uid');
     if (uidEl) uidEl.onclick = () => { try { navigator.clipboard.writeText(uidEl.textContent); G.UI.toast('ID copiado'); } catch (e) { /* sin portapapeles */ } };
     const del = $('set-delete');
