@@ -478,6 +478,10 @@
         <div class="row" style="margin-top:8px">
           <label for="upg-mon" style="margin:0">Pokémon</label>
           <select id="upg-mon" class="field" style="width:auto;min-width:220px"></select>
+          <span class="grow"></span>
+          <!-- copia local: sólo el administrador (js/ui/menu.js) -->
+          <button class="btn small gold hidden" id="upg-max">Todo al máximo</button>
+          <button class="btn small ghost hidden" id="upg-zero">Volver a cero</button>
         </div>
       </div>
     </div>
@@ -570,7 +574,7 @@
 </section>
 
 <!-- datos generados -->
-<script defer src="js/app.min.js?v=22211ba5e4"></script>
+<script defer src="js/app.min.js?v=ac1142ea2f"></script>
 <!-- interfaz en chino tradicional (fuera del bloque: no se empaqueta en app.min.js; va antes que los defer para traducir también el canvas) -->
 <script src="js/zh-tw.js"></script>
 <!-- bot local de juego automático (la partida con el bot activo no sube al ranking) -->

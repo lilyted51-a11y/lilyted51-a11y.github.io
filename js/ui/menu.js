@@ -261,6 +261,26 @@ G.MenuUI = (() => {
     sel.innerHTML = mons.map(d => `<option value="${d}">${G.DEX_BY[d].name}${d === s.partner ? ' (compañero)' : ''}${lv(d) ? ' · ' + lv(d) + ' niveles' : ''}</option>`).join('');
     sel.value = upgDex;
     sel.onchange = () => { upgDex = +sel.value; G.Audio.sfx('select'); renderUpgrades(); };
+    // Copia local: el administrador sube o baja todas las mejoras del Pokémon elegido de golpe (gratis).
+    const adm = !!(G.Boost && G.Boost.admin);
+    $('upg-max').classList.toggle('hidden', !adm);
+    $('upg-zero').classList.toggle('hidden', !adm);
+    if (adm) {
+      $('upg-max').onclick = () => {
+        const lv = G.DB.upgradesOf(upgDex);
+        for (const u of G.Upgrades.LIST) lv[u.id] = u.max;
+        G.DB.commit(); G.Audio.sfx('legend'); renderUpgrades();
+        G.UI.toast(G.DEX_BY[upgDex].name + ': todas las mejoras al máximo');
+      };
+      $('upg-zero').onclick = async () => {
+        if (!await G.UI.ask('¿Poner a cero todas las mejoras de <b class="gold">' + G.DEX_BY[upgDex].name + '</b>?', 'Volver a cero')) return;
+        const lv = G.DB.upgradesOf(upgDex);
+        for (const u of G.Upgrades.LIST) delete lv[u.id];
+        banOpen = false;
+        G.DB.commit(); G.Audio.sfx('select'); renderUpgrades();
+        G.UI.toast(G.DEX_BY[upgDex].name + ': mejoras a cero');
+      };
+    }
     renderUpgrades();
   }
 
