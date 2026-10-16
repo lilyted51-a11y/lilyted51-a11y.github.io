@@ -270,18 +270,26 @@ G.MenuUI = (() => {
 
   let upgDex = null;
 
+  let upgQuery = '';
   function openUpgrades() {
     G.UI.show('scr-upgrades', true);
     const s = G.DB.save;
-    if (!upgDex || !s.owned[upgDex]) upgDex = s.partner;
-    // Selector con tus Pokémon: el compañero primero, luego los que ya tienen mejoras.
-    const sel = $('upg-mon');
-    const lv = d => Object.values(s.pupg[d] || {}).reduce((a, b) => a + b, 0);
-    const mons = Object.keys(s.owned).map(Number).filter(d => G.DEX_BY[d])
-      .sort((a, b) => (b === s.partner) - (a === s.partner) || lv(b) - lv(a) || a - b);
-    sel.innerHTML = mons.map(d => `<option value="${d}">${G.DEX_BY[d].name}${d === s.partner ? ' (compañero)' : ''}${lv(d) ? ' · ' + lv(d) + ' niveles' : ''}</option>`).join('');
-    sel.value = upgDex;
-    sel.onchange = () => { upgDex = +sel.value; G.Audio.sfx('select'); renderUpgrades(); };
+    upgDex = s.partner;                 // siempre se abre con el compañero
+    upgQuery = '';
+    const q = $('upg-search');
+    if (q) {
+      q.value = '';
+      if (!q.dataset.wired) {
+        q.dataset.wired = '1';
+        let t = 0;
+        q.oninput = () => { clearTimeout(t); t = setTimeout(() => { upgQuery = q.value.trim().toLowerCase(); renderUpgPick(); }, 120); };
+        q.onkeydown = e => {
+          if (e.key === 'Enter') { const c = $('upg-pick').querySelector('.pick-card'); if (c) c.click(); e.preventDefault(); }
+          if (e.key === 'Escape') { q.value = ''; upgQuery = ''; renderUpgPick(); q.blur(); e.stopPropagation(); }
+        };
+      }
+    }
+    renderUpgPick();
     // Copia local: el administrador sube o baja todas las mejoras del Pokémon elegido de golpe (gratis).
     const adm = !!(G.Boost && G.Boost.admin);
     $('upg-max').classList.toggle('hidden', !adm);
@@ -303,6 +311,32 @@ G.MenuUI = (() => {
       };
     }
     renderUpgrades();
+  }
+
+  /** Tarjetas con tus Pokémon (el compañero primero, luego los que ya tienen mejoras); con búsqueda, los que coincidan. */
+  function renderUpgPick() {
+    const s = G.DB.save, box = $('upg-pick');
+    if (!box) return;
+    const lv = d => Object.values(s.pupg[d] || {}).reduce((a, b) => a + b, 0);
+    let mons = Object.keys(s.owned).map(Number).filter(d => G.DEX_BY[d])
+      .sort((a, b) => (b === s.partner) - (a === s.partner) || lv(b) - lv(a) || a - b);
+    if (upgQuery) mons = mons.filter(d => dexMatch(G.DEX_BY[d], upgQuery));
+    else mons = mons.slice(0, 60);
+    box.innerHTML = '';
+    if (!mons.length) { box.innerHTML = '<p class="sub" style="margin:4px">Ningún Pokémon coincide.</p>'; return; }
+    for (const d of mons) {
+      const p = G.DEX_BY[d];
+      const c = document.createElement('div');
+      c.className = 'pick-card' + (d === upgDex ? ' on' : '');
+      c.appendChild(G.UI.spriteCanvas(d, 64, 52, { scale: 1.5, shiny: d === s.partner && !!s.partnerShiny && G.DB.ownsShiny(d) }));
+      c.insertAdjacentHTML('beforeend', `<b>${p.name}</b><small>${d === s.partner ? '(compañero)' : 'Nº ' + String(d).padStart(3, '0')}</small>${lv(d) ? `<span class="lv">${lv(d)} niveles</span>` : ''}`);
+      c.onclick = () => {
+        upgDex = d; G.Audio.sfx('select');
+        box.querySelectorAll('.pick-card').forEach(x => x.classList.toggle('on', x === c));
+        renderUpgrades();
+      };
+      box.appendChild(c);
+    }
   }
 
   function renderUpgrades() {

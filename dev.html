@@ -491,8 +491,8 @@
       <div class="grow">
         <p class="sub" style="margin:0">Cada Pokémon tiene sus propias mejoras: sólo cuentan cuando juegas con él.</p>
         <div class="row" style="margin-top:8px">
-          <label for="upg-mon" style="margin:0">Pokémon</label>
-          <select id="upg-mon" class="field" style="width:auto;min-width:220px"></select>
+          <select id="upg-mon" class="field hidden" style="width:auto;min-width:220px"></select>
+          <input id="upg-search" class="field" maxlength="24" spellcheck="false" autocomplete="off" placeholder="Buscar Pokémon: nombre, chino o número" style="width:min(300px,60vw)">
           <span class="grow"></span>
           <!-- copia local: sólo el administrador (js/ui/menu.js) -->
           <button class="btn small gold hidden" id="upg-max">Todo al máximo</button>
@@ -500,6 +500,8 @@
         </div>
       </div>
     </div>
+    <!-- copia local: se elige el Pokémon tocando su imagen (el compañero primero y ya elegido) -->
+    <div class="upg-pick" id="upg-pick"></div>
     <div class="upg" id="upg-list"></div>
   </div>
 </section>

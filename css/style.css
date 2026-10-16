@@ -695,6 +695,13 @@ body.touch kbd, body.touch .card .key, body.touch .kbd-hint { display: none !imp
 .set-row .switch { min-width: 58px; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .cust-row { width: 100%; margin-top: 6px; }
+.upg-pick { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; max-height: 196px; overflow-y: auto; padding: 4px; }
+.upg-pick .pick-card { width: 86px; padding: 4px 2px 5px; border-radius: 10px; cursor: pointer; text-align: center;
+  background: rgba(0,0,0,.25); border: 2px solid rgba(255,255,255,.12); display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.upg-pick .pick-card:hover { border-color: var(--edge); background: rgba(255,255,255,.08); }
+.upg-pick .pick-card.on { border-color: var(--gold); background: rgba(255,210,63,.14); }
+.upg-pick .pick-card b { font-size: 12px; line-height: 1.1; } .upg-pick .pick-card small { font-size: 10px; color: var(--muted); }
+.upg-pick .pick-card .lv { font-size: 10px; color: var(--gold); }
 .gift-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 6px; max-height: 58vh; overflow-y: auto; padding: 4px; }
 .gift-grid.many { gap: 8px; }
 .gift-grid.many .gift-card { width: 112px; padding: 6px 4px 6px; }
