@@ -270,11 +270,12 @@ G.MenuUI = (() => {
 
   let upgDex = null;
 
-  let upgQuery = '';
+  let upgQuery = '', upgGen = 1;
   function openUpgrades() {
     G.UI.show('scr-upgrades', true);
     const s = G.DB.save;
     upgDex = s.partner;                 // siempre se abre con el compañero
+    upgGen = G.DEX_BY[s.partner].gen;   // ... y en su región
     upgQuery = '';
     const q = $('upg-search');
     if (q) {
@@ -318,10 +319,23 @@ G.MenuUI = (() => {
     const s = G.DB.save, box = $('upg-pick');
     if (!box) return;
     const lv = d => Object.values(s.pupg[d] || {}).reduce((a, b) => a + b, 0);
+    // Pestañas de región (cuántos tienes en cada una); buscando, se ignoran.
+    const tabs = $('upg-gens');
+    tabs.innerHTML = '';
+    tabs.classList.toggle('hidden', !!upgQuery);
+    GEN_NAMES.forEach((name, i) => {
+      const g = i + 1;
+      const total = G.DEX.filter(p => p.gen === g).length;
+      const have = G.DEX.filter(p => p.gen === g && s.owned[p.dex]).length;
+      const b = document.createElement('button');
+      b.className = 'gen-tab' + (g === upgGen ? ' on' : '');
+      b.innerHTML = `<b>${name}</b><small>${have}/${total}</small>`;
+      b.onclick = () => { upgGen = g; G.Audio.sfx('select'); renderUpgPick(); };
+      tabs.appendChild(b);
+    });
     let mons = Object.keys(s.owned).map(Number).filter(d => G.DEX_BY[d])
       .sort((a, b) => (b === s.partner) - (a === s.partner) || lv(b) - lv(a) || a - b);
-    if (upgQuery) mons = mons.filter(d => dexMatch(G.DEX_BY[d], upgQuery));
-    else mons = mons.slice(0, 60);
+    mons = upgQuery ? mons.filter(d => dexMatch(G.DEX_BY[d], upgQuery)) : mons.filter(d => G.DEX_BY[d].gen === upgGen);
     box.innerHTML = '';
     if (!mons.length) { box.innerHTML = '<p class="sub" style="margin:4px">Ningún Pokémon coincide.</p>'; return; }
     for (const d of mons) {
