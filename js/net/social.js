@@ -431,6 +431,17 @@ G.Social = (() => {
   }
 
   /** Actualiza tu Pokémon en la sala (si cambias de compañero). */
+  /** Relee de la base de datos el Pokémon de cada miembro (justo antes de empezar). */
+  async function freshMembers() {
+    if (!room) return [];
+    try {
+      const snap = await fb.rtdb.ref('rooms/' + room.id + '/m').once('value');
+      const m = snap.val() || {};
+      for (const mem of room.members) { const x = m[mem.uid]; if (x && x.dex) { mem.dex = x.dex; mem.shiny = !!x.shiny; } }
+    } catch (e) { /* se usa lo que haya */ }
+    return room.members;
+  }
+
   function refreshMember() {
     if (room && me) fb.rtdb.ref('rooms/' + room.id + '/m/' + uid).update(
       { dex: G.DB.save.partner, shiny: !!G.DB.save.partnerShiny && G.DB.ownsShiny(G.DB.save.partner) }).catch(() => {});
@@ -549,7 +560,7 @@ G.Social = (() => {
 
   return {
     start, stop, claimNick, request, accept, remove, publishProfile, getProfile, profileData,
-    createRoom, joinRoom, leaveRoom, setOpen, refreshMember, setPlaying, refreshPresence,
+    createRoom, joinRoom, leaveRoom, setOpen, refreshMember, freshMembers, setPlaying, refreshPresence,
     invite, acceptInvite, declineInvite,
     on(fn) { listeners.add(fn); }, off(fn) { listeners.delete(fn); },
     get me() { return me; },
