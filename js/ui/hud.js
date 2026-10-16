@@ -51,11 +51,7 @@ G.HUD = (() => {
     ctx.fillStyle = '#ffcb3d';
     ctx.fillText('Nv. ' + pl.level, px, py + 26);
 
-    bar(ctx, px + 48, py + 17, 168, 11, pl.hp / pl.maxHp, '#ff5f6d');
-    ctx.font = F(700, 10);
-    ctx.fillStyle = 'rgba(255,255,255,.95)';
-    ctx.textAlign = 'center';
-    ctx.fillText(Math.ceil(pl.hp) + ' / ' + Math.round(pl.maxHp), px + 48 + 84, py + 26);
+    // (Copia local: la barra de vida va encima del Pokémon, ver Player.draw.)
 
     // buffs activos
     const COL = { atk: '#ff6b4d', spd: '#7fe0ff', def: '#b0b8c8', regen: '#5fe08a' };

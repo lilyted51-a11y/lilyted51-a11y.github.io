@@ -489,11 +489,33 @@ G.Player = class Player {
       ctx.stroke();
       ctx.restore();
     }
+    // Copia local: la vida encima de cada Pokémon (la tuya y la de los compañeros),
+    // para no tener que mirar la esquina.
+    if (!this.dead) {
+      const frac = Math.max(0, Math.min(1, this.hp / (this.maxHp || 1)));
+      const bw = Math.max(26, this.r * 2.4), bh = 3.5;
+      const bx = this.x - bw / 2, by = this.y - this.bodyH - 7;
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,.6)';
+      ctx.fillRect(bx - 0.5, by - 0.5, bw + 1, bh + 1);
+      ctx.fillStyle = this.remote ? (this.tagColor || '#5fe08a') : frac > 0.5 ? '#5fe08a' : frac > 0.25 ? '#ffcb3d' : '#ff5f6d';
+      ctx.fillRect(bx, by, bw * frac, bh);
+      if (!this.remote) {
+        ctx.font = '700 6px Pixelify,"Segoe UI",sans-serif';
+        ctx.textAlign = 'center';
+        ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,.75)';
+        const t = Math.ceil(this.hp) + '/' + Math.round(this.maxHp);
+        ctx.strokeText(t, this.x, by - 2);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(t, this.x, by - 2);
+      }
+      ctx.restore();
+    }
     if (this.tag) {
       ctx.save();
       ctx.font = '700 7px Pixelify,"Segoe UI",sans-serif';
       ctx.textAlign = 'center';
-      const y = this.y - this.bodyH - 8;
+      const y = this.y - this.bodyH - 13;
       ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(0,0,0,.75)';
       ctx.strokeText(this.tag, this.x, y);
       ctx.fillStyle = this.dead ? '#ff8a96' : this.tagColor || '#fff';

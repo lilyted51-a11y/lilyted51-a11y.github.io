@@ -25,7 +25,9 @@ G.Boost = (() => {
   const MULTS = [1, 2, 3, 4, 5, 10];
   let all = new Set(UIDS), bot = new Set(), custom = {}, loadedFor = null;
 
-  function uid() { const fb = G.DB && G.DB.fb; return fb && fb.uid ? fb.uid : null; }
+  let forced = null;            // sólo pruebas (dev.html): debugAs()
+  function uid() { if (forced) return forced; const fb = G.DB && G.DB.fb; return fb && fb.uid ? fb.uid : null; }
+  function isOn() { const u = uid(); return !!u && all.has(u); }
 
   /** Lee config/boost de Firestore (una vez por cuenta). */
   async function load() {
@@ -65,7 +67,7 @@ G.Boost = (() => {
 
   /** Qué aplica al personaje: el paquete "todo", las sueltas, o nada (null). */
   function power() {
-    if (on()) return POWER;
+    if (isOn()) return POWER;
     const spd = k('spd'), cd = 1 / k('atkSpd'), atk = k('atk');
     return spd !== 1 || cd !== 1 || atk !== 1 || k('tickets') !== 1 || k('coins') !== 1 ? { spd, cd, atk, grow: false } : null;
   }
@@ -151,10 +153,12 @@ G.Boost = (() => {
 
   return {
     UIDS, POWER, KEYS, MULTS, load, players, level, set, gift, giftCoins, claimGifts, k, customOf, power, setCustom,
+    /** Pruebas: hacerse pasar por una cuenta, con ventajas sueltas opcionales. */
+    debugAs(u, cust, full) { forced = u; if (cust) custom[u] = cust; if (full) all.add(u); },
     /** ¿La cuenta conectada administra las listas? */
     get admin() { const u = uid(); return !!u && UIDS.includes(u); },
     /** Todas las ventajas. */
-    get on() { const u = uid(); return !!u && all.has(u); },
+    get on() { return isOn(); },
     /** Puede usar el bot (con o sin las demás ventajas). */
     get bot() { const u = uid(); return !!u && (all.has(u) || bot.has(u)); }
   };
