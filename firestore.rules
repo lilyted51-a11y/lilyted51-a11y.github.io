@@ -30,6 +30,10 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if false;
     }
+    // El código de invitación se comprueba antes de entrar: lectura sin cuenta (sólo huellas SHA-256).
+    match /config/invite {
+      allow read: if true;
+    }
 
     match /saves/{uid} {
       allow read, delete: if signedIn() && me() == uid;

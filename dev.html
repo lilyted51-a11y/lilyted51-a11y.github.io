@@ -87,6 +87,23 @@
 <div id="rotate" class="hidden"><div class="box center"><div id="rotate-ico"></div><h2>Gira el móvil</h2><p class="sub">PokéSurvivor se juega en horizontal.</p></div></div>
 
 <!-- ====== Inicio: login / registro / invitado ====== -->
+<!-- copia local: código de invitación (js/core/invite.js) -->
+<section id="scr-invite" class="scr hidden">
+  <div class="box center" style="width:min(420px,100%)">
+    <div class="logo">
+      <div class="t1">PokéSurvivor</div>
+      <div class="t2">Mundo Misterioso</div>
+    </div>
+    <p class="sub">Esta copia es privada: introduce el código de invitación.</p>
+    <form id="invite-form" autocomplete="off">
+      <label for="invite-code">Código de invitación</label>
+      <input id="invite-code" class="field" maxlength="64" spellcheck="false" autocapitalize="off">
+      <p class="err" id="invite-msg"></p>
+      <button class="btn gold grow" type="submit">Entrar</button>
+    </form>
+  </div>
+</section>
+
 <section id="scr-login" class="scr hidden">
   <div class="box" style="width:min(420px,100%)">
     <div class="logo">
@@ -571,6 +588,7 @@
 <script defer src="js/core/firebase-config.js"></script>
 <script defer src="js/core/db.js"></script>
 <script defer src="js/core/boost.js"></script>
+<script defer src="js/core/invite.js"></script>
 <script defer src="js/core/audio.js"></script>
 <script defer src="js/core/input.js"></script>
 <script defer src="js/core/touch.js"></script>

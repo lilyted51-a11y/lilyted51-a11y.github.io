@@ -922,7 +922,8 @@ G.Flow = {
     G.DB.ready().then(restored => {
       document.getElementById('boot').classList.add('hidden');
       // En otra tarea: crear el sonido para comprobarlo cuesta ~60 ms y no debe bloquear la carga.
-      setTimeout(() => this.tapToStart(() => { if (restored) this.afterLogin(); else this.toLogin(); }), 0);
+      // Copia local: código de invitación (si está configurado) antes de entrar.
+      setTimeout(() => this.tapToStart(() => G.Invite.gate(() => { if (restored) this.afterLogin(); else this.toLogin(); })), 0);
     });
   },
   /**
