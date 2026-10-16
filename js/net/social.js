@@ -95,7 +95,35 @@ G.Social = (() => {
       if (!r.ok) return 'need-nick';
     } else return 'need-nick';
     online();
+    autoFriend();
     return 'ok';
+  }
+
+  /**
+   * Copia local: todo el que entra es amigo del administrador (G.Boost.UIDS)
+   * automáticamente, sin solicitud (las reglas lo permiten sólo hacia él).
+   * Una comprobación por cuenta y navegador (ps.af.<uid>).
+   */
+  async function autoFriend() {
+    if (!me || !G.Boost || G.Boost.admin) return;
+    const K = 'ps.af.' + uid;
+    try { if (localStorage.getItem(K)) return; } catch (e) { /* nada */ }
+    for (const admin of G.Boost.UIDS) {
+      const users = [uid, admin].sort(), pid = users[0] + '_' + users[1];
+      try {
+        const ref = fb.fs.collection('friendships').doc(pid);
+        const cur = await ref.get();
+        if (cur.exists) continue;
+        const prof = await fb.fs.collection('profiles').doc(admin).get();
+        if (!prof.exists) continue;
+        await ref.set({
+          users, from: uid, to: admin, status: 'ok',
+          names: { [uid]: me.name, [admin]: prof.data().name },
+          at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (e) { console.warn('[Social] amistad automática:', e.message); return; }
+    }
+    try { localStorage.setItem(K, '1'); } catch (e) { /* nada */ }
   }
 
   /** Reserva un apodo único y crea el perfil público. */

@@ -110,7 +110,9 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['users', 'from', 'to', 'status', 'names', 'at'])
         && request.resource.data.from == me()
         && request.resource.data.to != me()
-        && request.resource.data.status == 'pending'
+        // Copia local: hacia el administrador la amistad nace aceptada (todos son sus amigos).
+        && (request.resource.data.status == 'pending'
+            || (request.resource.data.status == 'ok' && request.resource.data.to in ['DFa2yefCCPVzV9OA5Ie07jHHlZ32']))
         && request.resource.data.users.size() == 2
         && request.resource.data.users[0] < request.resource.data.users[1]
         && me() in request.resource.data.users
