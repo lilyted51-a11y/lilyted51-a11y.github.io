@@ -639,6 +639,8 @@ G.DEX = [
   {"dex":644,"name":"Zekrom","types":["dragon","electric"],"hp":115,"spd":116,"atk":1.52,"rarity":5,"bst":680,"starter":false,"gen":5,"leg":true},
   {"dex":645,"name":"Landorus","types":["ground","flying"],"hp":110,"spd":120,"atk":1.39,"rarity":5,"bst":600,"starter":false,"gen":5,"leg":true},
   {"dex":646,"name":"Kyurem","types":["dragon","ice"],"hp":126,"spd":118,"atk":1.42,"rarity":5,"bst":660,"starter":false,"gen":5,"leg":true},
+  {"dex":1646,"name":"White Kyurem","types":["dragon","ice"],"hp":132,"spd":122,"atk":1.58,"rarity":5,"bst":700,"starter":false,"gen":5,"excl":true},   /* copia local: exclusivo (SpriteCollab 0646/0002) */
+  {"dex":2646,"name":"Black Kyurem","types":["dragon","ice"],"hp":132,"spd":122,"atk":1.58,"rarity":5,"bst":700,"starter":false,"gen":5,"excl":true},   /* copia local: exclusivo (SpriteCollab 0646/0001) */
   {"dex":647,"name":"Keldeo","types":["water","fighting"],"hp":111,"spd":123,"atk":1.41,"rarity":5,"bst":580,"starter":false,"gen":5,"leg":true},
   {"dex":648,"name":"Meloetta","types":["normal","psychic"],"hp":115,"spd":116,"atk":1.4,"rarity":5,"bst":600,"starter":false,"gen":5,"leg":true},
   {"dex":649,"name":"Genesect","types":["bug","steel"],"hp":102,"spd":120,"atk":1.36,"rarity":5,"bst":600,"starter":false,"gen":5,"leg":true},
@@ -867,6 +869,8 @@ G.DEX = [
   {"dex":887,"name":"Dragapult","types":["dragon","ghost"],"hp":110,"spd":138,"atk":1.36,"rarity":5,"bst":600,"starter":false,"gen":8},
   {"dex":888,"name":"Zacian","types":["fairy"],"hp":111,"spd":136,"atk":1.36,"rarity":5,"bst":660,"starter":false,"gen":8,"leg":true},
   {"dex":889,"name":"Zamazenta","types":["fighting"],"hp":111,"spd":136,"atk":1.36,"rarity":5,"bst":660,"starter":false,"gen":8,"leg":true},
+  {"dex":1888,"name":"Zacian Crowned Sword","types":["fairy","steel"],"hp":115,"spd":140,"atk":1.50,"rarity":5,"bst":720,"starter":false,"gen":8,"excl":true},   /* copia local: exclusivo (SpriteCollab 0888/0001) */
+  {"dex":1889,"name":"Zamazenta Crowned Shield","types":["fighting","steel"],"hp":122,"spd":138,"atk":1.44,"rarity":5,"bst":720,"starter":false,"gen":8,"excl":true},   /* copia local: exclusivo (SpriteCollab 0889/0001) */
   {"dex":890,"name":"Eternatus","types":["poison","dragon"],"hp":133,"spd":133,"atk":1.5,"rarity":5,"bst":690,"starter":false,"gen":8,"leg":true},
   {"dex":891,"name":"Kubfu","types":["fighting"],"hp":97,"spd":108,"atk":1.2,"rarity":5,"bst":385,"starter":false,"gen":8,"leg":true},
   {"dex":892,"name":"Urshifu","types":["fighting","dark"],"hp":115,"spd":119,"atk":1.42,"rarity":5,"bst":550,"starter":false,"gen":8,"leg":true},

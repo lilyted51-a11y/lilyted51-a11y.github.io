@@ -11,6 +11,7 @@ si fuera un Pokémon nuevo, y añade su entrada a js/data/sprites-meta.js.
   1384   dex con el que se guarda en el juego (assets/pokemon/1384)
   --fake-shiny  si la forma no tiene shiny en SpriteCollab, se genera uno
                 oscureciendo los verdes (estilo Mega Rayquaza shiny: negro y oro)
+  --hue N       en vez de eso, girar el tono N grados (shiny genérico)
 
 Reutiliza las funciones de tools/fetch_sprites.py.
 """
@@ -23,6 +24,32 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fetch_sprites as fs  # noqa: E402
 from PIL import Image  # noqa: E402
+
+
+def hue_shiny(src_dir, dst_dir, anims, deg):
+    """Gira el tono de los píxeles con color (los grises/negros/blancos se quedan)."""
+    import colorsys
+    os.makedirs(dst_dir, exist_ok=True)
+    for a in anims:
+        p = os.path.join(src_dir, a + '.png')
+        if not os.path.exists(p):
+            continue
+        im = Image.open(p).convert('RGBA')
+        px = im.load()
+        w, h = im.size
+        for y in range(h):
+            for x in range(w):
+                r, g, b, al = px[x, y]
+                if al == 0:
+                    continue
+                hh, ss, vv = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+                if ss < 0.18 or vv < 0.12:
+                    continue
+                hh = (hh + deg / 360.0) % 1.0
+                nr, ng, nb = colorsys.hsv_to_rgb(hh, ss, vv)
+                px[x, y] = (int(nr * 255), int(ng * 255), int(nb * 255), al)
+        buf = io.BytesIO(); im.save(buf, 'PNG')
+        fs.save_optimized(buf.getvalue(), os.path.join(dst_dir, a + '.png'))
 
 
 def fake_shiny(src_dir, dst_dir, anims):
@@ -61,6 +88,7 @@ def main():
         print(__doc__); sys.exit(1)
     src, form, dex = int(sys.argv[1]), sys.argv[2], int(sys.argv[3])
     fake = '--fake-shiny' in sys.argv
+    hue = int(sys.argv[sys.argv.index('--hue') + 1]) if '--hue' in sys.argv else None
     base = f'{fs.BASE}/{src:04d}/{form}'
     out_dir = os.path.join(fs.OUT_ASSETS, str(dex))
     xml = fs.fetch(f'{base}/AnimData.xml')
@@ -82,6 +110,10 @@ def main():
             if diff: meta['sa'] = diff
             miss = [k for k in normal if k not in shiny]
             if miss: meta['sm'] = miss
+    elif hue is not None:
+        hue_shiny(out_dir, os.path.join(out_dir, 's'), normal, hue)
+        meta['sh'] = 1
+        print(f'Shiny generado girando el tono {hue} grados (no existe en SpriteCollab)')
     elif fake:
         fake_shiny(out_dir, os.path.join(out_dir, 's'), normal)
         meta['sh'] = 1
