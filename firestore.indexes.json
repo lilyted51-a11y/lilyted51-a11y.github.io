@@ -5,9 +5,20 @@
       "collectionGroup": "e",
       "fieldPath": "uids",
       "indexes": [
-        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" },
-        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION_GROUP" }
+        {
+          "arrayConfig": "CONTAINS",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "arrayConfig": "CONTAINS",
+          "queryScope": "COLLECTION_GROUP"
+        }
       ]
+    },
+    {
+      "collectionGroup": "saves",
+      "fieldPath": "save",
+      "indexes": []
     }
   ]
 }
