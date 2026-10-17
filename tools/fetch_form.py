@@ -12,6 +12,8 @@ si fuera un Pokémon nuevo, y añade su entrada a js/data/sprites-meta.js.
   --fake-shiny  si la forma no tiene shiny en SpriteCollab, se genera uno
                 oscureciendo los verdes (estilo Mega Rayquaza shiny: negro y oro)
   --hue N       en vez de eso, girar el tono N grados (shiny genérico)
+  --white       el color del cuerpo (el tono dominante) pasa a blanco/gris claro
+                (estilo Mega Gengar shiny); el resto se conserva
 
 Reutiliza las funciones de tools/fetch_sprites.py.
 """
@@ -47,6 +49,45 @@ def hue_shiny(src_dir, dst_dir, anims, deg):
                     continue
                 hh = (hh + deg / 360.0) % 1.0
                 nr, ng, nb = colorsys.hsv_to_rgb(hh, ss, vv)
+                px[x, y] = (int(nr * 255), int(ng * 255), int(nb * 255), al)
+        buf = io.BytesIO(); im.save(buf, 'PNG')
+        fs.save_optimized(buf.getvalue(), os.path.join(dst_dir, a + '.png'))
+
+
+def white_shiny(src_dir, dst_dir, anims):
+    """El tono dominante (el cuerpo) → blanco grisáceo con el mismo sombreado; eyes, boca, etc. se quedan."""
+    import colorsys
+    from collections import Counter
+    os.makedirs(dst_dir, exist_ok=True)
+    # tono dominante entre los píxeles con color
+    hist = Counter()
+    for a in anims:
+        pth = os.path.join(src_dir, a + '.png')
+        if not os.path.exists(pth):
+            continue
+        im = Image.open(pth).convert('RGBA')
+        for r, g, b, al in im.getdata():
+            if al == 0: continue
+            hh, ss, vv = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+            if ss >= 0.18 and vv >= 0.12: hist[int(hh * 36)] += 1
+    dom = hist.most_common(1)[0][0] / 36.0
+    for a in anims:
+        pth = os.path.join(src_dir, a + '.png')
+        if not os.path.exists(pth):
+            continue
+        im = Image.open(pth).convert('RGBA')
+        px = im.load(); w, h = im.size
+        for y in range(h):
+            for x in range(w):
+                r, g, b, al = px[x, y]
+                if al == 0: continue
+                hh, ss, vv = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+                if ss < 0.18 or vv < 0.12: continue
+                d = min(abs(hh - dom), 1 - abs(hh - dom))
+                if d > 0.09: continue                       # otro color (ojos, boca): se queda
+                # blanco con el mismo sombreado: claro → casi blanco, oscuro → gris
+                v2 = 0.45 + vv * 0.55
+                nr, ng, nb = colorsys.hsv_to_rgb(hh, 0.06, v2)
                 px[x, y] = (int(nr * 255), int(ng * 255), int(nb * 255), al)
         buf = io.BytesIO(); im.save(buf, 'PNG')
         fs.save_optimized(buf.getvalue(), os.path.join(dst_dir, a + '.png'))
@@ -89,6 +130,7 @@ def main():
     src, form, dex = int(sys.argv[1]), sys.argv[2], int(sys.argv[3])
     fake = '--fake-shiny' in sys.argv
     hue = int(sys.argv[sys.argv.index('--hue') + 1]) if '--hue' in sys.argv else None
+    white = '--white' in sys.argv
     base = f'{fs.BASE}/{src:04d}/{form}'
     out_dir = os.path.join(fs.OUT_ASSETS, str(dex))
     xml = fs.fetch(f'{base}/AnimData.xml')
@@ -110,6 +152,10 @@ def main():
             if diff: meta['sa'] = diff
             miss = [k for k in normal if k not in shiny]
             if miss: meta['sm'] = miss
+    elif white:
+        white_shiny(out_dir, os.path.join(out_dir, 's'), normal)
+        meta['sh'] = 1
+        print('Shiny generado en blanco (no existe en SpriteCollab)')
     elif hue is not None:
         hue_shiny(out_dir, os.path.join(out_dir, 's'), normal, hue)
         meta['sh'] = 1
