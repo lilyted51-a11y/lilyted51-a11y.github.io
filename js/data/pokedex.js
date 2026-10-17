@@ -101,6 +101,7 @@ G.DEX = [
   {"dex":92,"name":"Gastly","types":["ghost","poison"],"hp":84,"spd":112,"atk":1.25,"rarity":1,"bst":310,"starter":false,"gen":1},
   {"dex":93,"name":"Haunter","types":["ghost","poison"],"hp":90,"spd":118,"atk":1.33,"rarity":2,"bst":405,"starter":false,"gen":1},
   {"dex":94,"name":"Gengar","types":["ghost","poison"],"hp":97,"spd":124,"atk":1.42,"rarity":4,"bst":500,"starter":false,"gen":1},
+  {"dex":1094,"name":"Mega Gengar","types":["ghost","poison"],"hp":104,"spd":132,"atk":1.60,"rarity":5,"bst":600,"starter":false,"gen":1,"excl":true},   /* copia local: exclusivo (SpriteCollab 0094/0001) */
   {"dex":95,"name":"Onix","types":["rock","ground"],"hp":86,"spd":107,"atk":0.95,"rarity":2,"bst":385,"starter":false,"gen":1},
   {"dex":96,"name":"Drowzee","types":["psychic"],"hp":97,"spd":96,"atk":0.96,"rarity":2,"bst":328,"starter":false,"gen":1},
   {"dex":97,"name":"Hypno","types":["psychic"],"hp":108,"spd":106,"atk":1.1,"rarity":3,"bst":483,"starter":false,"gen":1},
@@ -390,6 +391,8 @@ G.DEX = [
   {"dex":381,"name":"Latios","types":["dragon","psychic"],"hp":106,"spd":124,"atk":1.42,"rarity":5,"bst":600,"starter":false,"gen":3,"leg":true},
   {"dex":382,"name":"Kyogre","types":["water"],"hp":115,"spd":116,"atk":1.52,"rarity":5,"bst":670,"starter":false,"gen":3,"leg":true},
   {"dex":383,"name":"Groudon","types":["ground"],"hp":115,"spd":116,"atk":1.52,"rarity":5,"bst":670,"starter":false,"gen":3,"leg":true},
+  {"dex":1382,"name":"Primal Kyogre","types":["water"],"hp":124,"spd":120,"atk":1.70,"rarity":5,"bst":770,"starter":false,"gen":3,"excl":true},   /* copia local: exclusivo (SpriteCollab 0382/0001) */
+  {"dex":1383,"name":"Primal Groudon","types":["ground","fire"],"hp":124,"spd":120,"atk":1.70,"rarity":5,"bst":770,"starter":false,"gen":3,"excl":true},   /* copia local: exclusivo (SpriteCollab 0383/0001) */
   {"dex":384,"name":"Rayquaza","types":["dragon","flying"],"hp":117,"spd":118,"atk":1.52,"rarity":5,"bst":680,"starter":false,"gen":3,"leg":true},
   {"dex":1384,"name":"Mega Rayquaza","types":["dragon","flying"],"hp":125,"spd":122,"atk":1.70,"rarity":5,"bst":780,"starter":false,"gen":3,"excl":true},   /* copia local: exclusivo (regalo del administrador), sprite SpriteCollab 0384/0001 */
   {"dex":385,"name":"Jirachi","types":["steel","psychic"],"hp":115,"spd":120,"atk":1.25,"rarity":5,"bst":600,"starter":false,"gen":3,"leg":true},
@@ -492,6 +495,8 @@ G.DEX = [
   {"dex":482,"name":"Azelf","types":["psychic"],"hp":104,"spd":126,"atk":1.39,"rarity":5,"bst":580,"starter":false,"gen":4,"leg":true},
   {"dex":483,"name":"Dialga","types":["steel","dragon"],"hp":115,"spd":116,"atk":1.52,"rarity":5,"bst":680,"starter":false,"gen":4,"leg":true},
   {"dex":484,"name":"Palkia","types":["water","dragon"],"hp":110,"spd":120,"atk":1.52,"rarity":5,"bst":680,"starter":false,"gen":4,"leg":true},
+  {"dex":1483,"name":"Origin Dialga","types":["steel","dragon"],"hp":122,"spd":120,"atk":1.62,"rarity":5,"bst":700,"starter":false,"gen":4,"excl":true},   /* copia local: exclusivo (SpriteCollab 0483/0001) */
+  {"dex":1484,"name":"Origin Palkia","types":["water","dragon"],"hp":118,"spd":126,"atk":1.62,"rarity":5,"bst":700,"starter":false,"gen":4,"excl":true},   /* copia local: exclusivo (SpriteCollab 0484/0001) */
   {"dex":485,"name":"Heatran","types":["fire","steel"],"hp":111,"spd":110,"atk":1.42,"rarity":5,"bst":600,"starter":false,"gen":4,"leg":true},
   {"dex":486,"name":"Regigigas","types":["normal"],"hp":120,"spd":120,"atk":1.58,"rarity":5,"bst":670,"starter":false,"gen":4,"leg":true},
   {"dex":487,"name":"Giratina","types":["ghost","dragon"],"hp":138,"spd":116,"atk":1.25,"rarity":5,"bst":680,"starter":false,"gen":4,"leg":true},
