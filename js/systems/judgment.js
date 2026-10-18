@@ -696,7 +696,8 @@ G.Judgment = (() => {
     /** Copia local (bot): dónde está Arceus durante la pelea, su radio y si está lanzando algo. */
     get arceus() {
       if (phase !== 'fight' || !A) return null;
-      return { x: A.x, y: A.y, r: A.r, casting: !!A.cast, k: Math.min(1.22, 0.74 + arenaT * 0.013), t: arenaT };
+      return { x: A.x, y: A.y, r: A.r, casting: !!A.cast, k: Math.min(1.22, 0.74 + arenaT * 0.013), t: arenaT,
+               cx: center.x, cy: center.y, max: (ARENA_R - 1.4) * TS() };   // arena redonda
     },
     get cinematic() { return phase === 'cine'; },
     /** Lo que suena: nada en la animación hasta que aterriza. */

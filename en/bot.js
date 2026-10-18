@@ -488,9 +488,14 @@ class PokeAutoBot {
       st.x = p.x; st.y = p.y; st.t = now;
     }
     // 目標和自己之間有牆／樹（直線走不到），或剛卡住：改用「路徑距離」帶路
-    const pathGoal = rift || arc ? null : tgt;   // 審判中不朝任何敵人找路（牠們都在阿爾宙斯旁邊）
-    const pf = pathGoal && (now < st.until || this.lineBlocked(s, p.x, p.y, pathGoal.x, pathGoal.y)) ? this.field(s, pathGoal.x, pathGoal.y) : null;
-    const pfW = now < st.until ? 0.25 : 0.08;
+    // 審判中：找路的目標 = 阿爾宙斯相對競技場中心的「對面」那一點（繞過柱子往遠處跑）
+    let pathGoal = rift ? null : tgt;
+    if (arc) {
+      const vx = arc.cx - arc.x, vy = arc.cy - arc.y, vl = Math.hypot(vx, vy) || 1;
+      pathGoal = { x: arc.cx + vx / vl * arc.max * 0.75, y: arc.cy + vy / vl * arc.max * 0.75 };
+    }
+    const pf = pathGoal && (arc || now < st.until || this.lineBlocked(s, p.x, p.y, pathGoal.x, pathGoal.y)) ? this.field(s, pathGoal.x, pathGoal.y) : null;
+    const pfW = now < st.until ? 0.25 : arc ? 0.06 : 0.08;
 
     const DIRS = PokeAutoBot.DIRS;
     let best = -1, bestCost = Infinity;
@@ -551,7 +556,7 @@ class PokeAutoBot {
           if (t >= left - 0.12 && t <= left + (h.end || 0.3) + 0.05 && s.inHazard(h, x, y, r + 8)) cost += (h.pct ? hurt(maxHp * h.pct) * 1.5 : hurt(h.dmg)) * danger;
         }
       }
-      cost += blocked * 6;
+      cost += blocked * (arc ? 40 : 6);   // 審判中撞牆 = 送死
       // 死路：終點附近能走的方向太少（容易被堵在樹和牆之間）
       if (d >= 0) {
         let open = 0;
