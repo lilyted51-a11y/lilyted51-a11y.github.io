@@ -105,8 +105,10 @@ G.MenuUI = (() => {
     const parts = [];
     if (on) parts.push(on + ' en línea');
     if (req) parts.push(req + (req === 1 ? ' solicitud' : ' solicitudes'));
+    const un = G.Social.unreadDm ? G.Social.unreadDm() : 0;   // copia local: mensajes privados sin leer
+    if (un) parts.push(un + (un === 1 ? ' mensaje nuevo' : ' mensajes nuevos'));
     $('menu-friends-sub').textContent = parts.length ? parts.join(' · ') : 'Juega en grupo, hasta 10';
-    $('menu-friends-sub').classList.toggle('gold', req > 0);
+    $('menu-friends-sub').classList.toggle('gold', req > 0 || un > 0);
   }
 
   // ---------------- colección ----------------

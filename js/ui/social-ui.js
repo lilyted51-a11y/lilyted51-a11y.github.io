@@ -199,6 +199,10 @@
         } else if (f.status === 'out') {
           btn('Cancelar', 'ghost', () => G.Social.remove(f.uid));
         } else {
+          // Copia local: mensajes privados (con marca si hay alguno sin leer)
+          const un = G.Social.dmUnread && G.Social.dmUnread(f.uid);
+          const cb = btn(un ? '💬 ●' : '💬', un ? 'gold' : 'ghost', () => G.ChatUI.openDm(f.uid, f.name));
+          cb.title = un ? 'Mensaje nuevo' : 'Enviar mensaje';
           if (f.online && !f.play && !inRoom && (!room || room.isHost)) {
             btn('Invitar', 'gold', async () => {
               const r = await G.Social.invite(f.uid);
@@ -260,6 +264,7 @@
       G.UI.show('scr-lobby', true);
       membersKey = '';
       render();
+      if (G.ChatUI) G.ChatUI.renderLobby();
     }
 
     function close() { G.UI.hide('scr-lobby'); }
@@ -411,7 +416,7 @@
   })();
 
   G.SocialUI = {
-    init() { G.NickUI.init(); G.FriendsUI.init(); G.LobbyUI.init(); G.InvitePop.init(); },
+    init() { G.NickUI.init(); G.FriendsUI.init(); G.LobbyUI.init(); G.InvitePop.init(); G.ChatUI.init(); },   // copia local: + chat
     withNick, needOnline
   };
 })();

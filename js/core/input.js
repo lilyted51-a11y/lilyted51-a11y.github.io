@@ -10,8 +10,11 @@ G.Input = (() => {
   };
 
   function code(e) { return (e.code || e.key).toLowerCase(); }
+  // Copia local: escribiendo en una cajita (chat, buscador...) las teclas no mueven al jugador.
+  function typing(e) { const t = e.target; return !!(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)); }
 
   addEventListener('keydown', e => {
+    if (typing(e)) { down.clear(); return; }
     const c = code(e);
     if (!down.has(c)) pressed.add(c);
     down.add(c);

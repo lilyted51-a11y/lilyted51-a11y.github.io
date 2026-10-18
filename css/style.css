@@ -866,3 +866,31 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
   #dex-detail .btn { position: sticky; bottom: 0; order: 9; margin-top: auto; padding: 8px 6px; font-size: 15px;
     box-shadow: 0 -6px 10px rgba(5,10,25,.6); }
 }
+
+/* ---------- chat (copia local): sala, partida y mensajes privados ---------- */
+.chat-box { margin-top: 12px; }
+.chat-log {
+  display: flex; flex-direction: column; gap: 3px; max-height: 150px; min-height: 54px; overflow-y: auto;
+  padding: 6px 10px; border-radius: 8px; background: rgba(0,0,0,.28); border: 2px solid rgba(244,248,255,.12);
+  font-size: 14px; line-height: 1.3; text-align: left;
+}
+.chat-log.dm { max-height: 46vh; min-height: 160px; margin: 8px 0; }
+.chat-log .chat-empty { margin: 0; font-size: 13px; }
+.chat-msg { word-break: break-word; }
+.chat-msg b { color: var(--gold); margin-right: 6px; }
+.chat-msg.mine b { color: var(--green); }
+.chat-form { gap: 6px; margin-top: 6px; }
+.chat-form .field { padding: 6px 10px; font-size: 14px; min-width: 0; }
+#game-chat {
+  position: fixed; left: 12px; top: 96px; z-index: 6; width: min(380px, 55vw);
+  display: flex; flex-direction: column; gap: 4px; pointer-events: none;
+}
+#game-chat .chat-log.small {
+  background: rgba(3,6,16,.55); border-color: rgba(244,248,255,.1); max-height: 160px; min-height: 0; padding: 4px 8px;
+  text-shadow: 1px 1px 0 #000; font-size: 13px;
+}
+#game-chat .chat-log.small:empty { display: none; }
+#game-chat .chat-form { pointer-events: auto; margin-top: 0; }
+#game-chat .chat-form .field { background: rgba(3,6,16,.8); }
+#game-chat #game-chat-btn { pointer-events: auto; align-self: flex-start; padding: 4px 10px; font-size: 15px; opacity: .75; }
+body:not(.touch) #game-chat #game-chat-btn { display: none; }

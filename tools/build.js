@@ -55,6 +55,14 @@ const min = fs.readFileSync(outJs);
 const hash = crypto.createHash('sha1').update(min).digest('hex').slice(0, 10);
 
 let html = dev.slice(0, i) + `<script defer src="js/app.min.js?v=${hash}"></script>` + dev.slice(j + END.length);
+// Copia local: zh-tw.js y en/bot.js van fuera del paquete; con ?v= (huella del archivo) el navegador
+// no se queda con una copia vieja (si no, los textos nuevos salen traducidos palabra a palabra).
+for (const f of ['js/zh-tw.js', 'en/bot.js']) {
+  try {
+    const h = crypto.createHash('sha1').update(fs.readFileSync(path.join(ROOT, f))).digest('hex').slice(0, 10);
+    html = html.replace(`src="${f}"`, `src="${f}?v=${h}"`);
+  } catch (e) { /* no está */ }
+}
 html = html.replace(/<meta name="robots" content="noindex">\s*/, '');
 // --sin-seo: sin canonical/redes/datos estructurados ni enlaces a las páginas
 // (para publicar antes de tener el dominio pokesurvivor.com).

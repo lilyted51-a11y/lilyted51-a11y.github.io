@@ -8,7 +8,9 @@
 G.CHANGELOG = [
   { d: '2026-10-18', title: ['Sala: todos listos antes de empezar', 'Room: everyone ready before starting'], new: [
     ['Cooperativo: cada jugador pulsa «Listo» (o la tecla R) en la sala; mientras elige Pokémon o mejoras aparece como «Preparando». El anfitrión sólo puede empezar cuando todos están listos.',
-     'Co-op: each player presses "Ready" (or the R key) in the room; while choosing a Pokémon or upgrades they show as "Preparing". The host can only start once everyone is ready.']
+     'Co-op: each player presses "Ready" (or the R key) in the room; while choosing a Pokémon or upgrades they show as "Preparing". The host can only start once everyone is ready.'],
+    ['Chat: en la sala hay una cajita para hablar, y durante la partida en grupo Enter abre el chat (Esc lo cierra; en el móvil, el botón 💬). Además puedes enviar mensajes privados a tus amigos desde la lista de amigos (💬); los nuevos se avisan en el menú.',
+     'Chat: the room has a chat box, and during a co-op run Enter opens the chat (Esc closes it; on mobile, the 💬 button). You can also send private messages to friends from the friends list (💬); new ones are flagged in the menu.']
   ] },
   { d: '2026-10-16', title: ['Interfaz en chino tradicional', 'Traditional Chinese interface'], new: [
     ['El juego se muestra en chino tradicional: menús, ataques, tipos, Pokémon y textos de la partida.',

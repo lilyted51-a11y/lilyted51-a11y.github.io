@@ -34,6 +34,12 @@
         },
         "name": {
           ".read": "auth != null"
+        },
+        "chat": {
+          "$msg": {
+            ".write": "auth != null && !data.exists() && root.child('rooms').child($room).child('m').child(auth.uid).exists() && newData.child('u').val() === auth.uid",
+            ".validate": "newData.hasChildren(['u', 'n', 't', 'at']) && newData.child('t').isString() && newData.child('t').val().length >= 1 && newData.child('t').val().length <= 200 && newData.child('n').isString() && newData.child('n').val().length <= 20 && newData.child('at').isNumber()"
+          }
         }
       }
     },

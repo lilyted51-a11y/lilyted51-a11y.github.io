@@ -58,6 +58,9 @@ G.Social = (() => {
   const pres = new Map();           // otherUid -> { online, play, room, seen } (lo último leído)
   const sentInv = new Set();        // a quién invitaste (para retirarlo al salir)
   let room = null;                  // { id, host, isHost, members: [{ uid, name, dex, shiny }] }
+  const chat = [];                  // copia local: mensajes de la sala (rooms/{id}/chat)
+  const dms = new Map();            // copia local: últimas charlas privadas (dm/{pareja}) pid -> { pid, other, from, t, last }
+  let unDm = null, dmSeen = {};
   let roomRefs = [];
   const invites = new Map();        // fromUid -> { from, name, room, at }
   const listeners = new Set();
@@ -163,6 +166,8 @@ G.Social = (() => {
     document.addEventListener('visibilitychange', onVisible);
     window.addEventListener('pagehide', onHide);
     listenFriends();
+    loadDmSeen();
+    listenDms();
   }
 
   /** Invitaciones a salas: sólo te pueden llegar de amigos, así que sin amigos no se escucha (lecturas). */
@@ -196,6 +201,8 @@ G.Social = (() => {
     await leaveRoom().catch(() => {});
     if (unFriends) { unFriends(); unFriends = null; }
     if (unInv) { unInv(); unInv = null; }
+    if (unDm) { unDm(); unDm = null; }
+    dms.clear(); dmSeen = {};
     clearInterval(beatT); beatT = 0;
     document.removeEventListener('visibilitychange', onVisible);
     window.removeEventListener('pagehide', onHide);
@@ -460,7 +467,18 @@ G.Social = (() => {
     href.on('value', s => { if (room && room.id === id && !s.val()) closedRoom(); }, () => closedRoom());
     const oref = fb.rtdb.ref('rooms/' + id + '/open');
     oref.on('value', s => { if (room && room.id === id) { room.open = s.val() === true; emit('room'); } }, () => {});
-    roomRefs = [mref, href, oref, xref, lref];
+    // Chat de la sala (también durante la partida): los últimos 60 mensajes.
+    chat.length = 0;
+    const cref = fb.rtdb.ref('rooms/' + id + '/chat').limitToLast(60);
+    cref.on('child_added', s => {
+      if (!room || room.id !== id) return;
+      const v = s.val();
+      if (!v || typeof v.t !== 'string') return;
+      chat.push({ id: s.key, u: v.u, n: String(v.n || '?').slice(0, 20), t: v.t.slice(0, 200), at: v.at || 0 });
+      if (chat.length > 80) chat.splice(0, chat.length - 80);
+      emit('chat');
+    }, () => {});
+    roomRefs = [mref, href, oref, xref, lref, cref];
     writeStatus();
     emit('room');
   }
@@ -476,6 +494,74 @@ G.Social = (() => {
   function detachRoom() {
     for (const r of roomRefs) r.off();
     roomRefs = [];
+    chat.length = 0;
+  }
+
+  /** Mensaje a la sala (lo ven todos los de la sala, en la sala y en la partida). */
+  function sendChat(text) {
+    text = String(text || '').trim().slice(0, 200);
+    if (!room || !me || !text) return;
+    fb.rtdb.ref('rooms/' + room.id + '/chat').push({ u: uid, n: me.name, t: text, at: ts() }).catch(() => {});
+  }
+
+  // ---------------- mensajes privados (Firestore: dm/{pareja} y dm/{pareja}/msgs) ----------------
+
+  function loadDmSeen() { try { dmSeen = JSON.parse(localStorage.getItem('ps.dmseen.' + uid) || '{}') || {}; } catch (e) { dmSeen = {}; } }
+  function saveDmSeen() { try { localStorage.setItem('ps.dmseen.' + uid, JSON.stringify(dmSeen)); } catch (e) { /* nada */ } }
+
+  /** Escucha las charlas en las que estás (un documento pequeño por amigo con el que has hablado). */
+  function listenDms() {
+    if (unDm || !fb) return;
+    unDm = fb.fs.collection('dm').where('users', 'array-contains', uid).onSnapshot(snap => {
+      snap.docChanges().forEach(ch => {
+        if (ch.type === 'removed') { dms.delete(ch.doc.id); return; }
+        const v = ch.doc.data() || {};
+        const other = (v.users || []).find(x => x !== uid);
+        if (!other) return;
+        dms.set(ch.doc.id, { pid: ch.doc.id, other, from: v.from, t: String(v.t || '').slice(0, 80), last: msOf(v.last) });
+      });
+      emit('dm');
+    }, e => console.warn('[Social] mensajes:', e.code || e.message));
+  }
+
+  function dmUnread(other) {
+    const d = dms.get(pidOf(uid, other));
+    return !!(d && d.from !== uid && d.last > (dmSeen[d.pid] || 0));
+  }
+  function unreadDm() { let n = 0; for (const d of dms.values()) if (d.from !== uid && d.last > (dmSeen[d.pid] || 0)) n++; return n; }
+  function markDmSeen(other) {
+    const pid = pidOf(uid, other), d = dms.get(pid);
+    const t = d ? d.last : Date.now();
+    if ((dmSeen[pid] || 0) >= t) return;
+    dmSeen[pid] = t; saveDmSeen(); emit('dm');
+  }
+
+  async function sendDm(other, text) {
+    text = String(text || '').trim().slice(0, 300);
+    if (!fb || !me || !text) return { ok: false };
+    const f = friends.get(other);
+    if (!f || f.status !== 'ok') return { ok: false, error: 'Sólo puedes escribir a tus amigos.' };
+    const pid = pidOf(uid, other);
+    const users = uid < other ? [uid, other] : [other, uid];
+    try {
+      const b = fb.fs.batch();
+      b.set(fb.fs.collection('dm').doc(pid), { users, from: uid, t: text.slice(0, 80), last: fts() });
+      b.set(fb.fs.collection('dm').doc(pid).collection('msgs').doc(), { from: uid, t: text, at: fts() });
+      await b.commit();
+      return { ok: true };
+    } catch (e) {
+      console.warn('[Social] enviar mensaje:', e.code || e.message);
+      return { ok: false, error: 'No se pudo enviar el mensaje.' };
+    }
+  }
+
+  /** Los últimos 50 mensajes con `other`; `fn(lista)` cada vez que cambian. → función para dejar de escuchar. */
+  function watchDm(other, fn) {
+    if (!fb) return () => {};
+    const pid = pidOf(uid, other);
+    return fb.fs.collection('dm').doc(pid).collection('msgs').orderBy('at', 'desc').limit(50).onSnapshot(snap => {
+      fn(snap.docs.map(d => { const v = d.data(); return { id: d.id, from: v.from, t: String(v.t || ''), at: msOf(v.at) || Date.now() }; }).reverse());
+    }, e => console.warn('[Social] leer mensajes:', e.code || e.message));
   }
 
   function closedRoom() {
@@ -642,6 +728,8 @@ G.Social = (() => {
     start, stop, claimNick, request, accept, remove, publishProfile, getProfile, profileData,
     createRoom, joinRoom, leaveRoom, setOpen, setMax, listRooms, setInLobby, setReady, refreshMember, freshMembers, setPlaying, refreshPresence,
     get ready() { return rdyOn; },
+    sendChat, get chat() { return chat; },
+    sendDm, watchDm, markDmSeen, dmUnread, unreadDm, get dms() { return [...dms.values()]; },
     invite, acceptInvite, declineInvite,
     on(fn) { listeners.add(fn); }, off(fn) { listeners.delete(fn); },
     get me() { return me; },

@@ -118,6 +118,39 @@ service cloud.firestore {
     // ---------- amigos ----------
     // Un documento por pareja, con id "uidMenor_uidMayor".
 
+    // ---------- mensajes privados (copia local) ----------
+    // dm/{uidMenor_uidMayor}: resumen (último mensaje) · dm/{...}/msgs: los mensajes.
+    // Sólo entre amigos confirmados (friendships con status 'ok').
+
+    function inPair(pid) { return me() in pid.split('_'); }
+    function friendsOk(pid) {
+      return exists(/databases/$(database)/documents/friendships/$(pid))
+        && get(/databases/$(database)/documents/friendships/$(pid)).data.status == 'ok';
+    }
+
+    match /dm/{pid} {
+      // (con el campo users y no con el id: así vale también para la consulta "mis charlas", array-contains)
+      allow read: if signedIn() && me() in resource.data.users;
+      allow create, update: if signedIn() && inPair(pid) && friendsOk(pid)
+        && request.resource.data.keys().hasOnly(['users', 'from', 't', 'last'])
+        && request.resource.data.users.size() == 2
+        && request.resource.data.users[0] < request.resource.data.users[1]
+        && pid == request.resource.data.users[0] + '_' + request.resource.data.users[1]
+        && me() in request.resource.data.users
+        && request.resource.data.from == me()
+        && request.resource.data.t is string && request.resource.data.t.size() <= 80
+        && request.resource.data.last == request.time;
+
+      match /msgs/{mid} {
+        allow read: if signedIn() && inPair(pid);
+        allow create: if signedIn() && inPair(pid) && friendsOk(pid)
+          && request.resource.data.keys().hasOnly(['from', 't', 'at'])
+          && request.resource.data.from == me()
+          && request.resource.data.t is string && request.resource.data.t.size() >= 1 && request.resource.data.t.size() <= 300
+          && request.resource.data.at == request.time;
+      }
+    }
+
     match /friendships/{pid} {
       allow read: if signedIn() && (resource == null || me() in resource.data.users);
       allow create: if signedIn()
