@@ -529,7 +529,7 @@ class PokeAutoBot {
           const gap = Math.hypot(x - ex, y - ey) - (e.r || 14) - r;
           const big = (e.boss || e.legend || e.judge ? 3 : 1) * (dashing ? 1.6 : 1);
           // 只在快碰到時才怕：近身／範圍招式需要貼近才打得到
-          const bigE = e.boss || e.legend || e.judge;
+          const bigE = arc ? false : (e.boss || e.legend || e.judge);   // 審判中的傳說：當一般敵人處理（要打牠們）
           if (gap < (closeRange && !bigE ? 2 : 6)) cost += hurt(e.dmg) * (bigE ? 1.5 : 1) * w * danger;
           else cost += 30 * big * w * danger * Math.exp(-gap / (closeRange && !bigE ? 5 : 9)) * (closeRange && !bigE ? 0.5 : 1);
         }
@@ -582,8 +582,10 @@ class PokeAutoBot {
           cost += Math.max(0, 6 - open) * 9;
         }
       }
-      // 保持在招式打得到的距離（對「真正要打的目標」）
-      if (tgt && !rift && !arc) {
+      // 保持在招式打得到的距離（對「真正要打的目標」）。審判中：只有阿爾宙斯離得夠遠時才去打傳說寶可夢
+      //（牠們每 5 秒翻倍，早殺早好；太近就只管逃）
+      const arcFar = !arc || Math.hypot(arc.x - x, arc.y - y) > 350;
+      if (tgt && !rift && arcFar) {
         // 只有打不到時才靠近；打得到就不用再往前（避免在怪群邊緣來回）
         const dn = Math.hypot(tgt.x - x, tgt.y - y);
         cost += Math.min(Math.max(0, dn - want), 700) * (closeRange ? 0.22 : 0.12);
