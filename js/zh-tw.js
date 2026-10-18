@@ -817,7 +817,7 @@
   "nuevos ·": "隻首次獲得 ·",
   "shiny ·": "隻閃光 ·",
   "legendarias ·": "隻傳說 ·",
-  "· se muestran 60 de {x} distintos": "・共 {x} 種，顯示 60 種",
+  "se muestran 60 de {x} distintos": "共 {x} 種，只顯示 60 種",
   "tickets ×10": "十連抽獎券",
   "tickets y {x}": "抽獎券與 {x}",
   "No tienes tickets suficientes: consíguelos jugando": "抽獎券不足，請透過遊玩獲得",
