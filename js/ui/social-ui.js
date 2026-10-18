@@ -270,7 +270,7 @@
       if (m.rdy) return m.uid === G.Social.uid ? 'Listo' : 'Listo ✓';
       if (!room.isHost) return m.uid === G.Social.uid ? 'Sin preparar (pulsa Listo)' : 'Sin preparar';
       const mode = G.Net.mode(m.uid);
-      return mode === 'direct' ? 'Conectado' : mode === 'relay' ? 'Conectado (por servidor)' : mode === 'failed' ? 'No se pudo conectar (reintentando…)' : 'Conectando…';
+      return mode === 'direct' ? 'Conectado · sin preparar' : mode === 'relay' ? 'Conectado (por servidor) · sin preparar' : mode === 'failed' ? 'No se pudo conectar (reintentando…)' : 'Conectando…';
     }
 
     function render() {

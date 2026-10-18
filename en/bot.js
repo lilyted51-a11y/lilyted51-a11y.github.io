@@ -472,6 +472,12 @@ class PokeAutoBot {
     let bigChest = null, bcd = 320;
     for (const o of specials) if (o.type === 'bigchest') { const d = Math.hypot(o.x - p.x, o.y - p.y); if (d < bcd) { bcd = d; bigChest = o; } }
     const altars = specials.filter(o => o.type === 'altar' && !o.used);
+    // 倒地的隊友（連線）：要站在他旁邊 3 秒才扶得起來。審判中或自己快死了就先不去。
+    let downed = null;
+    if (!arc && hpFrac >= 0.25) {
+      let bd = Infinity;
+      for (const m of (s.mates || [])) if (m.dead) { const dm = Math.hypot(m.x - p.x, m.y - p.y); if (dm < bd) { bd = dm; downed = m; } }
+    }
     const want = this.engageDistance(p) + (lowHp ? 60 : 0);
     // 裂縫（血量太低或快消失前來不及就算了）
     // 裂縫一出現就一定要進去（沿著繞過樹和湖的路線走）
@@ -489,7 +495,7 @@ class PokeAutoBot {
     }
     // 目標和自己之間有牆／樹（直線走不到），或剛卡住：改用「路徑距離」帶路
     // 審判中：找路的目標 = 阿爾宙斯相對競技場中心的「對面」那一點（繞過柱子往遠處跑）
-    let pathGoal = rift ? null : tgt;
+    let pathGoal = rift ? null : downed || tgt;
     if (arc) {
       const da = Math.hypot(arc.x - p.x, arc.y - p.y);
       if (da > 320) {
@@ -515,6 +521,7 @@ class PokeAutoBot {
       const [dx, dy] = d < 0 ? [0, 0] : DIRS[d];
       let x = p.x, y = p.y, cost = 0, blocked = 0;
       let riftBest = rf ? this.fieldDist(rf, s.TS, x, y) : 0;   // 這條路線上離裂縫最近的一點
+      let mateBest = downed ? Math.hypot(downed.x - x, downed.y - y) : 0;   // 路線上離倒地隊友最近的一點（速度快會走過頭）
       const altarBest = altars.map(o => Math.hypot(o.x - x, o.y - y));   // 祭壇也是碰到就好
       const path = [[x, y]];                  // 我在每一步的位置（衝撞怪瞄準用）
       for (let k = 1; k <= STEPS; k++) {
@@ -528,6 +535,7 @@ class PokeAutoBot {
         }
         path.push([x, y]);
         if (rf) riftBest = Math.min(riftBest, this.fieldDist(rf, s.TS, x, y));
+        if (downed) mateBest = Math.min(mateBest, Math.hypot(downed.x - x, downed.y - y));
         for (let a = 0; a < altars.length; a++) altarBest[a] = Math.min(altarBest[a], Math.hypot(altars[a].x - x, altars[a].y - y));
         const w = 1.15 - k / STEPS * 0.5;      // 越近的未來越重要
 
@@ -645,12 +653,18 @@ class PokeAutoBot {
         cost += Math.max(0, dc - near) * 0.6;
         if (dc < near && d < 0) cost -= 12;
       }
+      // 倒地的隊友：終點要貼著他（遊戲判定 56 像素內），到了就站著不動直到他起來
+      if (downed) {
+        const dm = Math.hypot(downed.x - x, downed.y - y);
+        cost += Math.max(0, Math.min(dm, mateBest + 10) - 36) * 0.9;   // 走過頭也算有靠近（到了就會停）
+        if (dm < 44 && d < 0) cost -= 14;
+      }
       // 祭壇（25 秒強化：攻擊×2、速度、磁鐵、冷卻）：路線上碰得到就算
       for (const db of altarBest) cost -= 14 * 40 / (db + 20);
 
       // 不要一直換方向（減少抖動）
       if (this.lastDir >= 0 && d !== this.lastDir) cost += 1.5;
-      if (d < 0 && enemies.length) cost += 4;   // 有敵人時別站著不動
+      if (d < 0 && enemies.length && !downed && !bigChest) cost += 4;   // 有敵人時別站著不動（扶人、開箱除外）
       // 繞路：沿著路徑距離變短的方向走（卡住時權重更大，站著不動另外扣分）
       if (pf) { cost += this.fieldDist(pf, s.TS, x, y) * pfW; if (now < st.until && d < 0) cost += 20; }
 

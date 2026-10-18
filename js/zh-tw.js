@@ -524,6 +524,8 @@
   "Listo": "已準備",
   "Sin preparar (pulsa Listo)": "未準備（請按「準備」）",
   "Sin preparar": "未準備",
+  "Conectado · sin preparar": "已連線・未準備",
+  "Conectado (por servidor) · sin preparar": "已連線（經伺服器）・未準備",
   "Listo (R)": "準備（R）",
   "Cancelar (R)": "取消準備（R）",
   "Pulsa «Listo» (o la tecla R) cuando estés preparado.": "準備好了就按「準備」（或按 R 鍵）。",
