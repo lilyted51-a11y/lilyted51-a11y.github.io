@@ -561,8 +561,6 @@ class PokeAutoBot {
           const bigE = e.boss || e.legend || e.judge;
           if (gap < (closeRange && !bigE ? 2 : 6)) cost += hurt(e.dmg) * (bigE ? 1.5 : 1) * w * danger;
           else cost += 30 * big * w * danger * Math.exp(-gap / (closeRange && !bigE ? 5 : 9)) * (closeRange && !bigE ? 0.5 : 1);
-          // 審判中的傳說寶可夢：血量每隻翻倍、很快就打不死，一下就是半條血 → 稍微離遠一點（但別為了躲牠們撞上阿爾宙斯）
-          if (arc && bigE) cost += 25 * w * Math.exp(-gap / 40);
         }
         for (const b of shots) {
           // 子彈這一步走過的線段離我多近（快的子彈一步會跳很遠）
