@@ -491,11 +491,22 @@ class PokeAutoBot {
     // 審判中：找路的目標 = 阿爾宙斯相對競技場中心的「對面」那一點（繞過柱子往遠處跑）
     let pathGoal = rift ? null : tgt;
     if (arc) {
-      const vx = arc.cx - arc.x, vy = arc.cy - arc.y, vl = Math.hypot(vx, vy) || 1;
-      pathGoal = { x: arc.cx + vx / vl * arc.max * 0.75, y: arc.cy + vy / vl * arc.max * 0.75 };
+      const da = Math.hypot(arc.x - p.x, arc.y - p.y);
+      if (da > 320) {
+        // 遠：往阿爾宙斯相對中心的「對面」跑
+        const vx = arc.cx - arc.x, vy = arc.cy - arc.y, vl = Math.hypot(vx, vy) || 1;
+        pathGoal = { x: arc.cx + vx / vl * arc.max * 0.75, y: arc.cy + vy / vl * arc.max * 0.75 };
+      } else {
+        // 近：沿著圓周往「離牠較遠的那一側」繞（切線逃脫，不會被壓在邊緣）
+        const pa = Math.atan2(p.y - arc.cy, p.x - arc.cx), aa = Math.atan2(arc.y - arc.cy, arc.x - arc.cx);
+        let diff = aa - pa; while (diff > Math.PI) diff -= 2 * Math.PI; while (diff < -Math.PI) diff += 2 * Math.PI;
+        const dir = diff > 0 ? -1 : 1;                       // 阿爾宙斯在逆時針方向 → 往順時針繞
+        const ga = pa + dir * 1.1;
+        pathGoal = { x: arc.cx + Math.cos(ga) * arc.max * 0.7, y: arc.cy + Math.sin(ga) * arc.max * 0.7 };
+      }
     }
     const pf = pathGoal && (arc || now < st.until || this.lineBlocked(s, p.x, p.y, pathGoal.x, pathGoal.y)) ? this.field(s, pathGoal.x, pathGoal.y) : null;
-    const pfW = now < st.until ? 0.25 : arc ? 0.06 : 0.08;
+    const pfW = now < st.until ? 0.25 : arc ? 0.1 : 0.08;
 
     const DIRS = PokeAutoBot.DIRS;
     let best = -1, bestCost = Infinity;
