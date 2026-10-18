@@ -23,7 +23,7 @@ G.ChatUI = (() => {
   function line(m) {
     const mine = m.u === G.Social.uid;
     const c = colorOf(m.u);
-    return `<div class="chat-msg${mine ? ' mine' : ''}"><b${c ? ` style="color:${c}"` : ''}>${esc(m.n || '?')}</b><span>${esc(m.t)}</span></div>`;
+    return `<div class="chat-msg${mine ? ' mine' : ''}" translate="no"><b${c ? ` style="color:${c}"` : ''}>${esc(m.n || '?')}</b><span>${esc(m.t)}</span></div>`;
   }
 
   // ---------------- sala ----------------
@@ -91,7 +91,7 @@ G.ChatUI = (() => {
     el.className = 'scr dim'; el.style.zIndex = 70;
     el.innerHTML = `<div class="box" style="width:min(460px,100%)">
       <div class="row between"><h3 style="margin:0">💬 <span translate="no">${esc(name)}</span></h3><button class="btn small ghost" data-no>Cerrar</button></div>
-      <div class="chat-log dm" translate="no" data-log><p class="sub chat-empty">Cargando…</p></div>
+      <div class="chat-log dm" data-log><p class="sub chat-empty">Cargando…</p></div>
       <form class="row chat-form" autocomplete="off" data-form><input class="field grow" maxlength="300" placeholder="Escribe un mensaje…" spellcheck="false" data-in><button class="btn small gold" type="submit">Enviar</button></form></div>`;
     document.body.appendChild(el);
     const log = el.querySelector('[data-log]'), inp = el.querySelector('[data-in]');
@@ -110,7 +110,7 @@ G.ChatUI = (() => {
       inp.focus();
     };
     un = G.Social.watchDm(uid, msgs => {
-      log.innerHTML = msgs.length ? msgs.map(m => `<div class="chat-msg${m.from === G.Social.uid ? ' mine' : ''}"><b>${esc(m.from === G.Social.uid ? (G.Social.me ? G.Social.me.name : '') : name)}</b><span>${esc(m.t)}</span></div>`).join('')
+      log.innerHTML = msgs.length ? msgs.map(m => `<div class="chat-msg${m.from === G.Social.uid ? ' mine' : ''}" translate="no"><b>${esc(m.from === G.Social.uid ? (G.Social.me ? G.Social.me.name : '') : name)}</b><span>${esc(m.t)}</span></div>`).join('')
         : '<p class="sub chat-empty">Todavía no hay mensajes. ¡Escribe el primero!</p>';
       log.scrollTop = log.scrollHeight;
       G.Social.markDmSeen(uid);
