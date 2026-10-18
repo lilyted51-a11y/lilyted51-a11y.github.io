@@ -531,6 +531,11 @@ class PokeAutoBot {
           // 撞到東西：實際移動距離比預期短
           blocked += 1 - Math.min(1, Math.hypot(o.x - x, o.y - y) / (spd * dt));
           x = o.x; y = o.y;
+          // 審判的競技場是圓的：遊戲會把人夾回圓內（step 不知道），這裡照樣夾，免得以為往牆外跑有用
+          if (arc) {
+            const qx = x - arc.cx, qy = y - arc.cy, qd = Math.hypot(qx, qy), lim = arc.max - 2;
+            if (qd > lim) { const f = lim / qd; x = arc.cx + qx * f; y = arc.cy + qy * f; blocked += 0.35; }
+          }
           if (s.bad(x, y)) cost += 25;
         }
         path.push([x, y]);
@@ -575,6 +580,12 @@ class PokeAutoBot {
           if (t >= left - 0.12 && t <= left + (h.end || 0.3) + 0.05 && s.inHazard(h, x, y, r + 8)) cost += (h.pct ? hurt(maxHp * h.pct) * 1.5 : hurt(h.dmg)) * danger;
         }
       }
+      // 還沒到時間的地面警告（光柱、十字光束…）：終點站在裡面就先扣一點分，便宜的時候就先走開
+      //（上面只算 0.7 秒內會炸的；審判的光柱 1.25 秒後才炸，等到看見常常已被包圍）
+      for (const h of hazards) {
+        const left = h.delay - h.t;
+        if (left > H && left < 2.2 && s.inHazard(h, x, y, r + 12)) cost += (h.pct ? 30 : 10) * (1 - (left - H) / 1.5) * danger;
+      }
       cost += blocked * (arc ? 40 : 6);   // 審判中撞牆 = 送死
       // 死路：終點附近能走的方向太少（容易被堵在樹和牆之間）
       if (d >= 0) {
@@ -602,7 +613,10 @@ class PokeAutoBot {
         // 別把自己逼到牆角：終點附近能走的方向越少越糟
         if (d >= 0) {
           let open = 0;
-          for (const [ox, oy] of PokeAutoBot.DIRS) { const o = s.step(x + ox * 60, y + oy * 60); if (Math.hypot(o.x - x, o.y - y) > 42) open++; }
+          for (const [ox, oy] of PokeAutoBot.DIRS) {
+            const o = s.step(x + ox * 60, y + oy * 60);
+            if (Math.hypot(o.x - x, o.y - y) > 42 && Math.hypot(o.x - arc.cx, o.y - arc.cy) < arc.max - 2) open++;   // 牆外（圓外）不算
+          }
           cost += Math.max(0, 6 - open) * 9;
         }
       }

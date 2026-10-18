@@ -572,6 +572,10 @@ def game_en():
     app = re.search(r'<script defer src="js/app\.min\.js\?v=[^"]+"></script>', idx).group(0)
     a, b = dev.index('<!-- scripts:begin -->'), dev.index('<!-- scripts:end -->') + len('<!-- scripts:end -->')
     src = dev[:a] + app + dev[b:]
+    # Copia local: zh-tw.js y en/bot.js también con su huella (?v=), como en index.html.
+    for f in ('js/zh-tw.js', 'en/bot.js'):
+        m = re.search(r'<script src="' + re.escape(f) + r'\?v=[^"]+"></script>', idx)
+        if m: src = src.replace('<script src="' + f + '"></script>', m.group(0))
     src = re.sub(r'<!-- seo:(begin|end) -->\n?', '', src)
     src = re.sub(r'<meta name="robots" content="noindex">\s*', '', src)
     src = re.sub(r'<!-- dev\.html: página fuente[^>]*-->\n?', '', src)

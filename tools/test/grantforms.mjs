@@ -1,0 +1,13 @@
+import { tab, sleep } from './cdp.lib.mjs';
+import fs from 'node:fs';
+const ids = JSON.parse(fs.readFileSync('C:/Ted-Temp/Ted/pokesurvivor-main/tools/cache/forms_added.json', 'utf8')).concat([1800]);
+const B = await tab(9334);
+await B.go('http://localhost:8765/dev.html?dev', 8000);
+await B.ev(`document.getElementById('tap-start').click(); 1`); await sleep(1500);
+await B.ev(`document.getElementById('scr-invite').classList.add('hidden'); G.Flow.afterLogin(); 1`); await sleep(5000);
+console.log('user:', await B.ev(`G.DB.save.name + ' uid=' + G.DB.fb.uid`));
+console.log('missing in dex:', await B.ev(`${JSON.stringify(ids)}.filter(d => !G.DEX_BY[d]).join(',') || 'none'`));
+console.log('before owned/shiny:', await B.ev(`${JSON.stringify(ids)}.filter(d => G.DB.save.owned[d]).length + '/' + ${JSON.stringify(ids)}.filter(d => G.DB.save.shiny[d]).length`));
+console.log('grant + max + flush:', await B.ev(`(async()=>{ for (const d of ${JSON.stringify(ids)}) { if (!G.DEX_BY[d]) continue; G.DB.grantShiny(d, 'gift'); const u = G.DB.upgradesOf(d); for (const x of G.Upgrades.LIST) u[x.id] = x.max; } G.DB.commit(true); await new Promise(r=>setTimeout(r,1500)); await G.DB.flush(); await new Promise(r=>setTimeout(r,3000)); const sv = (await G.DB.fb.fs.collection('saves').doc(G.DB.fb.uid).get()).data().save; const ok = ${JSON.stringify(ids)}.filter(d => sv.owned[d] && sv.shiny[d]).length; return 'cloud owned+shiny ' + ok + '/' + ${ids.length} + ' sync=' + G.DB.syncState; })()`));
+console.log('dex count shown:', await B.ev(`(()=>{ G.MenuUI.open(); G.MenuUI.openDex?.(); return (document.querySelector('#dex-count')||{}).textContent || document.querySelector('#scr-dex .sub, #dex-title')?.textContent; })()`));
+console.log('warnings:', B.errs.slice(0,3).join(' || ') || 'none'); B.close(); process.exit(0);
