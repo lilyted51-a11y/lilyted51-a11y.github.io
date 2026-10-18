@@ -488,7 +488,7 @@ class PokeAutoBot {
       st.x = p.x; st.y = p.y; st.t = now;
     }
     // 目標和自己之間有牆／樹（直線走不到），或剛卡住：改用「路徑距離」帶路
-    const pathGoal = rift ? null : tgt;
+    const pathGoal = rift || arc ? null : tgt;   // 審判中不朝任何敵人找路（牠們都在阿爾宙斯旁邊）
     const pf = pathGoal && (now < st.until || this.lineBlocked(s, p.x, p.y, pathGoal.x, pathGoal.y)) ? this.field(s, pathGoal.x, pathGoal.y) : null;
     const pfW = now < st.until ? 0.25 : 0.08;
 
