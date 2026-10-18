@@ -74,6 +74,10 @@ G.Game = (() => {
   let holdBy = [];                   // grupo: quién está eligiendo fusión (todo parado)
 
   let pausedByHost = false;          // grupo (invitado): el anfitrión ha pausado para todos
+  // Copia local: caído en grupo, la cámara sigue a un compañero vivo (←/→, A/D o un toque para cambiar).
+  let specUid = null, specNext = false, spectating = null;
+  const gameCanvas = document.getElementById('game');
+  if (gameCanvas) gameCanvas.addEventListener('pointerdown', () => { if (coop && pl && pl.dead) specNext = true; });
   function togglePause() {
     if (G.Coop.active) {
       // Copia local: el ANFITRIÓN sí pausa, y para todos (los invitados quedan "held").
@@ -718,7 +722,22 @@ G.Game = (() => {
       for (const p of G.Coop.puppets()) { p.netUpdate(dt); G.Combat.ghostOrbit(p, dt, time); }
       if (pl.dead) reviveTick(dt);
     }
-    G.Camera.follow(pl.x, pl.y, dt);
+    // Copia local: caído en grupo → ver a un compañero vivo; al levantarte, la cámara vuelve a ti.
+    let camX = pl.x, camY = pl.y;
+    spectating = null;
+    if (coop && pl.dead) {
+      const alive = G.Coop.puppets().filter(p => !p.dead);
+      if (alive.length) {
+        let i = alive.findIndex(p => p.uid === specUid);
+        if (i < 0) i = 0;
+        if (G.Input.tap('arrowright') || G.Input.tap('keyd') || G.Input.tap('space') || specNext) i = (i + 1) % alive.length;
+        else if (G.Input.tap('arrowleft') || G.Input.tap('keya')) i = (i - 1 + alive.length) % alive.length;
+        specNext = false;
+        spectating = alive[i]; specUid = spectating.uid;
+        camX = spectating.x; camY = spectating.y;
+      }
+    } else specNext = false;
+    G.Camera.follow(camX, camY, dt);
     G.World.update(dt, G.Camera);
 
     const all = everyone();
@@ -937,6 +956,8 @@ G.Game = (() => {
     debugTime(t) { tampered = true; time = t; t10Sec = Math.floor(t); },
     /** Para grabar vídeos: cámara lenta (0,5 = mitad de velocidad). */
     debugSpeed(k) { if (k > 1) tampered = true; speedK = k; },
+    /** Copia local: compañero al que miras mientras estás caído (o null). */
+    get spectating() { return spectating; },
     togglePause,
     /** Abandona la partida en curso (p. ej. al cerrar sesión desde Ajustes). */
     quit() { if (state !== 'ui' && state !== 'over') quitRun(); },

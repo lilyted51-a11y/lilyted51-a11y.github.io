@@ -472,6 +472,8 @@
   "¡Ticket ×10!": "十連抽獎券！",
   "· ×{x} Fortuna": "· 幸運 ×{x}",
   "Has caído: un compañero puede levantarte": "你倒下了：隊友可以救起你",
+  "Viendo a {x} · ←/→ o un toque para cambiar": "正在觀看 {x}・←／→ 或點一下切換",
+  "Viendo a {x}": "正在觀看 {x}",
   "Habéis caído todos…": "所有人都倒下了…",
   "¡{x} necesita ayuda! · {x} m": "{x} 需要救援！· {x} 公尺",
   "CAÍDO": "倒地",

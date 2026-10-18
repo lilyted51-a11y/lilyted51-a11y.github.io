@@ -549,6 +549,17 @@ G.HUD = (() => {
       ctx.fillText(msg, w / 2, h * 0.62);
       const f = (pl.reviveT || 0) / G.Player.REVIVE_TIME;
       if (f > 0) bar(ctx, w / 2 - 110, h * 0.62 + 12, 220, 10, f, '#5fe08a');
+      // Copia local: a quién estás viendo y cómo cambiar
+      const sp = G.Game.spectating;
+      if (sp) {
+        ctx.font = F(700, 15);
+        ctx.lineWidth = 3;
+        const n = G.Coop.puppets().filter(p => !p.dead).length;
+        const t = 'Viendo a ' + (sp.tag || '?') + (n > 1 ? ' · ←/→ o un toque para cambiar' : '');
+        ctx.strokeText(t, w / 2, h * 0.62 + 40);
+        ctx.fillStyle = sp.tagColor || '#cfe3ff';
+        ctx.fillText(t, w / 2, h * 0.62 + 40);
+      }
       ctx.restore();
     }
   }

@@ -13,6 +13,8 @@ G.CHANGELOG = [
      'Chat: the room has a chat box, and during a co-op run Enter opens the chat (Esc closes it; on mobile, the 💬 button). You can also send private messages to friends from the friends list (💬); new ones are flagged in the menu.'],
     ['Sala: el anfitrión puede pasar el puesto a otro jugador («Hacer anfitrión» en su tarjeta).',
      'Room: the host can hand the host role to another player ("Make host" on their card).'],
+    ['Cooperativo: si caes, la cámara sigue a un compañero vivo (←/→, A/D o un toque para cambiar de compañero) y vuelve a ti cuando te levantan.',
+     'Co-op: when you fall, the camera follows a living teammate (←/→, A/D or a tap to switch) and returns to you once you are revived.'],
     ['Gacha: botones de ×100 y ×1000 tiradas (pagan con tickets ×10 si alcanzan; si no, con tickets normales). Sin tragaperras y con el resultado resumido y agrupado; cada bloque de 10 sigue garantizando una Épica.',
      'Gacha: ×100 and ×1000 pull buttons (paid with ×10 tickets when you have enough, otherwise with regular tickets). No slot animation, with a summarised, grouped result; every block of 10 still guarantees an Epic.']
   ] },
