@@ -1657,6 +1657,7 @@
   "Rayquaza": "烈空坐",
   "Mega Rayquaza": "Mega 烈空坐",
   "Mega Gengar": "Mega 耿鬼",
+  "Ultra Necrozma": "究極奈克洛茲瑪",
   "Primal Groudon": "原始固拉多",
   "Primal Kyogre": "原始蓋歐卡",
   "Origin Dialga": "帝牙盧卡 起源型態",

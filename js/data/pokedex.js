@@ -793,6 +793,7 @@ G.DEX = [
   {"dex":798,"name":"Kartana","types":["grass","steel"],"hp":97,"spd":124,"atk":1.7,"rarity":4,"bst":570,"starter":false,"gen":7},
   {"dex":799,"name":"Guzzlord","types":["dark","dragon"],"hp":170,"spd":96,"atk":1.26,"rarity":4,"bst":570,"starter":false,"gen":7},
   {"dex":800,"name":"Necrozma","types":["psychic"],"hp":114,"spd":111,"atk":1.4,"rarity":5,"bst":600,"starter":false,"gen":7,"leg":true},
+  {"dex":1800,"name":"Ultra Necrozma","types":["psychic","dragon"],"hp":120,"spd":130,"atk":1.72,"rarity":5,"bst":754,"starter":false,"gen":7,"excl":true},   /* copia local: exclusivo (SpriteCollab 0800/0003) */
   {"dex":801,"name":"Magearna","types":["steel","fairy"],"hp":106,"spd":105,"atk":1.42,"rarity":5,"bst":600,"starter":false,"gen":7,"leg":true},
   {"dex":802,"name":"Marshadow","types":["fighting","ghost"],"hp":110,"spd":130,"atk":1.39,"rarity":5,"bst":600,"starter":false,"gen":7,"leg":true},
   {"dex":803,"name":"Poipole","types":["poison"],"hp":100,"spd":109,"atk":1.1,"rarity":3,"bst":420,"starter":false,"gen":7},
