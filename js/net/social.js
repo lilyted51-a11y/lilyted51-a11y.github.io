@@ -325,7 +325,16 @@ G.Social = (() => {
 
   function memberInfo() {
     const s = G.DB.save;
-    return { name: me.name, dex: s.partner, shiny: !!s.partnerShiny && G.DB.ownsShiny(s.partner), at: ts(), lob: true };
+    return { name: me.name, dex: s.partner, shiny: !!s.partnerShiny && G.DB.ownsShiny(s.partner), at: ts(), lob: true, rdy: false };
+  }
+
+  /** Copia local: "listo" en la sala (el anfitrión sólo empieza cuando todos lo están). */
+  let rdyOn = false;
+  function setReady(on) {
+    on = !!on;
+    if (!room || !me) return;
+    rdyOn = on;
+    fb.rtdb.ref('rooms/' + room.id + '/m/' + uid + '/rdy').set(on).catch(() => {});
   }
 
   /** Copia local: ¿estás viendo la pantalla de la sala? (el anfitrión no empieza hasta que todos estén). */
@@ -430,7 +439,7 @@ G.Social = (() => {
 
   function enterRoom(id, host) {
     room = { id, host, isHost: host === uid, members: [], open: true, max: DEFAULT_MAX, locked: false };
-    lobOn = true;                       // se entra desde la sala (memberInfo ya lleva lob: true)
+    lobOn = true; rdyOn = false;        // se entra desde la sala (memberInfo ya lleva lob: true, rdy: false)
     watchRoomDisconnect();
     const mref = fb.rtdb.ref('rooms/' + id + '/m');
     mref.on('value', s => {
@@ -631,7 +640,8 @@ G.Social = (() => {
 
   return {
     start, stop, claimNick, request, accept, remove, publishProfile, getProfile, profileData,
-    createRoom, joinRoom, leaveRoom, setOpen, setMax, listRooms, setInLobby, refreshMember, freshMembers, setPlaying, refreshPresence,
+    createRoom, joinRoom, leaveRoom, setOpen, setMax, listRooms, setInLobby, setReady, refreshMember, freshMembers, setPlaying, refreshPresence,
+    get ready() { return rdyOn; },
     invite, acceptInvite, declineInvite,
     on(fn) { listeners.add(fn); }, off(fn) { listeners.delete(fn); },
     get me() { return me; },

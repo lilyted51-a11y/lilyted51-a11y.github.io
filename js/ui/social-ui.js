@@ -228,6 +228,14 @@
       };
       $('lobby-menu').onclick = () => G.MenuUI.open();
       $('lobby-start').onclick = start;
+      // Listo / cancelar (botón o tecla R) — sólo invitados.
+      const toggleReady = () => { const r = G.Social.room; if (!r || r.isHost) return; G.Social.setReady(!G.Social.ready); G.Audio.sfx('select'); render(); };
+      $('lobby-ready').onclick = toggleReady;
+      addEventListener('keydown', e => {
+        if (!G.UI.isOpen('scr-lobby') || e.repeat) return;
+        const tag = document.activeElement && document.activeElement.tagName;
+        if (e.code === 'KeyR' && tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') toggleReady();
+      });
       $('lobby-start').dataset.sfx = 'confirm';
       // Conecta / desconecta la red al entrar o salir de una sala.
       G.Social.on(what => {
@@ -258,8 +266,9 @@
 
     function connText(m, room) {
       if (m.uid === room.host) return 'Anfitrión';
-      if (m.lob === false) return 'En el menú (fuera de la sala)';
-      if (!room.isHost) return m.uid === G.Social.uid ? 'Tú' : 'En la sala';
+      if (m.lob === false) return 'Preparando (eligiendo Pokémon o mejoras)…';
+      if (m.rdy) return m.uid === G.Social.uid ? 'Listo' : 'Listo ✓';
+      if (!room.isHost) return m.uid === G.Social.uid ? 'Sin preparar (pulsa Listo)' : 'Sin preparar';
       const mode = G.Net.mode(m.uid);
       return mode === 'direct' ? 'Conectado' : mode === 'relay' ? 'Conectado (por servidor)' : mode === 'failed' ? 'No se pudo conectar (reintentando…)' : 'Conectando…';
     }
@@ -281,7 +290,7 @@
       }
 
       // Las tarjetas sólo se rehacen si cambian los miembros (los sprites no parpadean).
-      const key = MAXR + '#' + ms.map(m => m.uid + ':' + m.dex + ':' + (m.shiny ? 1 : 0) + ':' + (m.lob === false ? 0 : 1)).join('|');
+      const key = MAXR + '#' + ms.map(m => m.uid + ':' + m.dex + ':' + (m.shiny ? 1 : 0) + ':' + (m.lob === false ? 0 : 1) + ':' + (m.rdy ? 1 : 0)).join('|');
       const box = $('lobby-members');
       // Filas: 4 jugadores en una; de 5 a 10, dos filas (la mitad arriba, redondeando: 5→3+2, 7→4+3, 9→5+4).
       box.style.setProperty('--cols', MAXR <= 4 ? MAXR : Math.ceil(MAXR / 2));
@@ -334,11 +343,17 @@
       const connecting = ms.some(m => m.uid !== room.host && G.Net.mode(m.uid) === 'connecting');
       const failed = ms.some(m => m.uid !== room.host && G.Net.mode(m.uid) === 'failed');
       const away = ms.filter(m => m.uid !== room.host && m.lob === false).map(m => m.name);
-      btn.disabled = !room.isHost || ms.length < 2 || connecting || failed || away.length > 0;
+      const notReady = ms.filter(m => m.uid !== room.host && m.lob !== false && !m.rdy).map(m => m.name);
+      btn.disabled = !room.isHost || ms.length < 2 || connecting || failed || away.length > 0 || notReady.length > 0;
       btn.textContent = 'Empezar partida (' + ms.length + '/' + MAXR + ')';
-      $('lobby-note').textContent = !room.isHost ? 'Cuando el anfitrión empiece, entraréis todos a la vez.'
+      const rb = $('lobby-ready');
+      rb.classList.toggle('hidden', room.isHost);
+      rb.textContent = G.Social.ready ? 'Cancelar (R)' : 'Listo (R)';
+      rb.classList.toggle('gold', !G.Social.ready);
+      $('lobby-note').textContent = !room.isHost ? (G.Social.ready ? 'Listo. Cuando el anfitrión empiece, entraréis todos a la vez.' : 'Pulsa «Listo» (o la tecla R) cuando estés preparado.')
         : ms.length < 2 ? 'Necesitas al menos un amigo en la sala.'
         : away.length ? 'Esperando a que ' + away.join(', ') + ' vuelva a la sala.'
+        : notReady.length ? 'Esperando a que estén listos: ' + notReady.join(', ') + '.'
         : failed ? 'No se puede conectar con algún amigo: su red (o la tuya) no deja jugar en grupo. Probad con otra wifi o datos móviles; se reintenta solo.'
         : connecting ? 'Conectando con tus amigos…' : 'La partida empieza para todos a la vez.';
     }
