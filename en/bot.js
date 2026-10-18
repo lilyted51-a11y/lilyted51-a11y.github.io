@@ -461,6 +461,8 @@ class PokeAutoBot {
     const usesShots = (p.slots && p.slots[p.active] || []).some(m => ['projectile', 'beam', 'boomerang', 'cone', 'nova'].includes(m.kind));
     // 近身型（近戰、衝刺、光環、環繞）：本來就要貼著怪，對一般小怪的「靠近」不扣分，只有真的碰到才算
     const closeRange = !usesShots && (p.slots && p.slots[p.active] || []).some(m => ['melee', 'dash', 'aura', 'orbit', 'trail'].includes(m.kind));
+    // 阿爾宙斯的審判：牠殺不死、碰到扣 40% 血、越來越快。目標只有一個：活越久越好。
+    const arc = s.arceus;
     const lowHp = hpFrac < 0.35;
     // 血量越少越怕痛
     const danger = hpFrac < 0.5 ? 1 + (0.5 - hpFrac) * 2 : 1;
@@ -513,6 +515,15 @@ class PokeAutoBot {
         for (let a = 0; a < altars.length; a++) altarBest[a] = Math.min(altarBest[a], Math.hypot(altars[a].x - x, altars[a].y - y));
         const w = 1.15 - k / STEPS * 0.5;      // 越近的未來越重要
 
+        if (arc) {
+          // 阿爾宙斯朝「我那時的位置」追來，速度 = 我的速度 × k（放招時停住）
+          const ax0 = x - arc.x, ay0 = y - arc.y, ad0 = Math.hypot(ax0, ay0) || 1;
+          const astep = arc.casting ? 0 : Math.min(ad0, spd * arc.k * t);
+          const ax = arc.x + ax0 / ad0 * astep, ay = arc.y + ay0 / ad0 * astep;
+          const agap = Math.hypot(x - ax, y - ay) - arc.r - r;
+          if (agap < 10) cost += hurt(maxHp * 0.4) * 2 * w;                    // 碰到：40% 血
+          else cost += 260 * w * Math.exp(-agap / 70);                         // 越近越危險
+        }
         for (const e of enemies) {
           const [ex, ey, dashing] = this.predictEnemy(e, t, x, y, path, dt, p);
           const gap = Math.hypot(x - ex, y - ey) - (e.r || 14) - r;
@@ -560,8 +571,19 @@ class PokeAutoBot {
       const spread = crowd ? 1 - Math.hypot(cx, cy) / crowd : 0;   // 0 = 都在同一邊, 1 = 被包圍
       cost += crowd * 1.5 + crowd * spread * 4;
 
+      // 審判中：離阿爾宙斯越遠越好（牠放招時是拉開距離的機會），不主動去追傳說寶可夢
+      if (arc) {
+        const da = Math.hypot(arc.x - x, arc.y - y);
+        cost -= Math.min(da, 700) * 0.12;
+        // 別把自己逼到牆角：終點附近能走的方向越少越糟
+        if (d >= 0) {
+          let open = 0;
+          for (const [ox, oy] of PokeAutoBot.DIRS) { const o = s.step(x + ox * 60, y + oy * 60); if (Math.hypot(o.x - x, o.y - y) > 42) open++; }
+          cost += Math.max(0, 6 - open) * 9;
+        }
+      }
       // 保持在招式打得到的距離（對「真正要打的目標」）
-      if (tgt && !rift) {
+      if (tgt && !rift && !arc) {
         // 只有打不到時才靠近；打得到就不用再往前（避免在怪群邊緣來回）
         const dn = Math.hypot(tgt.x - x, tgt.y - y);
         cost += Math.min(Math.max(0, dn - want), 700) * (closeRange ? 0.22 : 0.12);
@@ -579,7 +601,7 @@ class PokeAutoBot {
         const v = PokeAutoBot.PICK[it.kind] !== undefined ? PokeAutoBot.PICK[it.kind] : 0.3;
         let wt = it.kind === 'heal' ? (hpFrac < 0.85 ? 4 + (1 - hpFrac) * 30 : 0.3) : v;
         if (it.kind === 'xp' || it.kind === 'xpBig') wt *= Math.min(3, 0.6 + (it.value || 1) / 10);
-        cost -= (rift ? 0.2 : 1) * wt * 40 / (Math.hypot(it.x - x, it.y - y) + 30);
+        cost -= (rift || arc ? 0.2 : 1) * wt * 40 / (Math.hypot(it.x - x, it.y - y) + 30);
       }
       // 寶藏怪（喵喵掉金幣、賽富豪掉 ×10 扭蛋券）：不會攻擊、會逃跑、時間到會消失 → 全力追
       for (const e of thieves) cost -= (e.def && e.def.loot === 'ticket10' ? 60 : 30) * 40 / (Math.hypot(e.x - x, e.y - y) + 30);
