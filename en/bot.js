@@ -574,7 +574,7 @@ class PokeAutoBot {
       // 審判中：離阿爾宙斯越遠越好（牠放招時是拉開距離的機會），不主動去追傳說寶可夢
       if (arc) {
         const da = Math.hypot(arc.x - x, arc.y - y);
-        cost -= Math.min(da, 700) * 0.12;
+        cost -= Math.min(da, 900) * 0.2;
         // 別把自己逼到牆角：終點附近能走的方向越少越糟
         if (d >= 0) {
           let open = 0;
@@ -584,7 +584,7 @@ class PokeAutoBot {
       }
       // 保持在招式打得到的距離（對「真正要打的目標」）。審判中：只有阿爾宙斯離得夠遠時才去打傳說寶可夢
       //（牠們每 5 秒翻倍，早殺早好；太近就只管逃）
-      const arcFar = !arc || Math.hypot(arc.x - x, arc.y - y) > 520;
+      const arcFar = !arc;   // 審判中不追任何目標：自動瞄準會打到靠近的傳說
       if (tgt && !rift && arcFar) {
         // 只有打不到時才靠近；打得到就不用再往前（避免在怪群邊緣來回）
         const dn = Math.hypot(tgt.x - x, tgt.y - y);
