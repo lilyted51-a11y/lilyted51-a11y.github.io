@@ -245,6 +245,12 @@
       G.Social.on(what => {
         const room = G.Social.room;
         if (room) {
+          if (what === 'host') {
+            // Copia local: nuevo anfitrión → todos se reconectan en estrella alrededor de él.
+            G.Net.close();
+            G.UI.toast(room.isHost ? 'Ahora eres el anfitrión' : 'Ahora ' + (((room.members.find(m => m.uid === room.host) || {}).name) || '?') + ' es el anfitrión', 2600);
+            G.Audio.sfx('select');
+          }
           G.Net.open(room.id, room.isHost, room.host);
           G.Net.syncMembers(room.members.map(m => m.uid));
         } else if (G.Net.open_) G.Net.close();
@@ -295,7 +301,7 @@
       }
 
       // Las tarjetas sólo se rehacen si cambian los miembros (los sprites no parpadean).
-      const key = MAXR + '#' + ms.map(m => m.uid + ':' + m.dex + ':' + (m.shiny ? 1 : 0) + ':' + (m.lob === false ? 0 : 1) + ':' + (m.rdy ? 1 : 0)).join('|');
+      const key = MAXR + '#' + room.host + ':' + (room.isHost ? 1 : 0) + '#' + ms.map(m => m.uid + ':' + m.dex + ':' + (m.shiny ? 1 : 0) + ':' + (m.lob === false ? 0 : 1) + ':' + (m.rdy ? 1 : 0)).join('|');
       const box = $('lobby-members');
       // Filas: 4 jugadores en una; de 5 a 10, dos filas (la mitad arriba, redondeando: 5→3+2, 7→4+3, 9→5+4).
       box.style.setProperty('--cols', MAXR <= 4 ? MAXR : Math.ceil(MAXR / 2));
@@ -310,6 +316,17 @@
             c.style.setProperty('--pc', G.Coop.COLORS[i]);
             c.appendChild(G.UI.spriteCanvas(m.dex, 120, 96, { scale: 2, lively: true, shiny: !!m.shiny }));
             c.insertAdjacentHTML('beforeend', `<b translate="no">${esc(m.name)}</b><small>${esc((G.DEX_BY[m.dex] || {}).name || '')}</small><span class="conn" data-u="${m.uid}"></span>`);
+            // Copia local: el anfitrión puede pasar el puesto a otro miembro.
+            if (room.isHost && m.uid !== room.host) {
+              const tb = document.createElement('button');
+              tb.className = 'btn small ghost host-btn'; tb.textContent = 'Hacer anfitrión'; tb.title = 'Pasarle el puesto de anfitrión';
+              tb.onclick = async () => {
+                if (!await G.UI.ask('¿Pasar el puesto de anfitrión a <b class="gold" translate="no">' + esc(m.name) + '</b>?', 'Hacer anfitrión')) return;
+                const r = await G.Social.transferHost(m.uid);
+                if (!r.ok) G.UI.toast(r.error || 'No se pudo pasar el puesto de anfitrión', 2600);
+              };
+              c.appendChild(tb);
+            }
           } else c.innerHTML = '<span>Libre</span>';
           box.appendChild(c);
         }

@@ -10,7 +10,11 @@ G.CHANGELOG = [
     ['Cooperativo: cada jugador pulsa «Listo» (o la tecla R) en la sala; mientras elige Pokémon o mejoras aparece como «Preparando». El anfitrión sólo puede empezar cuando todos están listos.',
      'Co-op: each player presses "Ready" (or the R key) in the room; while choosing a Pokémon or upgrades they show as "Preparing". The host can only start once everyone is ready.'],
     ['Chat: en la sala hay una cajita para hablar, y durante la partida en grupo Enter abre el chat (Esc lo cierra; en el móvil, el botón 💬). Además puedes enviar mensajes privados a tus amigos desde la lista de amigos (💬); los nuevos se avisan en el menú.',
-     'Chat: the room has a chat box, and during a co-op run Enter opens the chat (Esc closes it; on mobile, the 💬 button). You can also send private messages to friends from the friends list (💬); new ones are flagged in the menu.']
+     'Chat: the room has a chat box, and during a co-op run Enter opens the chat (Esc closes it; on mobile, the 💬 button). You can also send private messages to friends from the friends list (💬); new ones are flagged in the menu.'],
+    ['Sala: el anfitrión puede pasar el puesto a otro jugador («Hacer anfitrión» en su tarjeta).',
+     'Room: the host can hand the host role to another player ("Make host" on their card).'],
+    ['Gacha: botones de ×100 y ×1000 tiradas (pagan con tickets ×10 si alcanzan; si no, con tickets normales). Sin tragaperras y con el resultado resumido y agrupado; cada bloque de 10 sigue garantizando una Épica.',
+     'Gacha: ×100 and ×1000 pull buttons (paid with ×10 tickets when you have enough, otherwise with regular tickets). No slot animation, with a summarised, grouped result; every block of 10 still guarantees an Epic.']
   ] },
   { d: '2026-10-16', title: ['Interfaz en chino tradicional', 'Traditional Chinese interface'], new: [
     ['El juego se muestra en chino tradicional: menús, ataques, tipos, Pokémon y textos de la partida.',

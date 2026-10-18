@@ -18,7 +18,9 @@ G.Gacha = (() => {
   /** @param use  't1' (tickets normales) o 't10' (un ticket ×10, sólo para la ×10) */
   function costOf(save, n, use = 't1') {
     const t = save.tickets || { t1: 0, t10: 0 };
-    if (n === 10 && use === 't10') return t.t10 >= 1 ? { t1: 0, t10: 1 } : null;
+    // Copia local: 'auto' (×100, ×1000) paga con tickets ×10 si alcanzan; si no, con tickets normales.
+    if (use === 'auto') return costOf(save, n, 't10') || costOf(save, n, 't1');
+    if (use === 't10') return n % 10 === 0 && t.t10 >= n / 10 ? { t1: 0, t10: n / 10 } : null;
     return t.t1 >= n ? { t1: n, t10: 0 } : null;
   }
   const RATES = [[1, 45], [2, 30], [3, 17], [4, 6.5], [5, 1.5]];
@@ -91,7 +93,7 @@ G.Gacha = (() => {
       save.pity[gen]++;
       let want;
       if (save.pity[gen] >= PITY_5) want = 5;
-      else if (n === 10 && i === n - 1 && !out.some(r => r.rarity >= 4)) want = rollRarity(4);
+      else if (n >= 10 && i % 10 === 9 && !out.slice(i - 9).some(r => r.rarity >= 4)) want = rollRarity(4);   // cada bloque de 10 garantiza una Épica
       else want = rollRarity();
 
       const { rarity, list } = poolNear(want, gen);

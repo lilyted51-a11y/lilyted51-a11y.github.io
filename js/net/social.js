@@ -464,7 +464,21 @@ G.Social = (() => {
     const lref = fb.rtdb.ref('rooms/' + id + '/lock');
     lref.on('value', s => { if (room && room.id === id) { room.locked = !!s.val(); emit('room'); } }, () => {});
     const href = fb.rtdb.ref('rooms/' + id + '/host');
-    href.on('value', s => { if (room && room.id === id && !s.val()) closedRoom(); }, () => closedRoom());
+    href.on('value', s => {
+      if (!room || room.id !== id) return;
+      const h = s.val();
+      if (!h) { closedRoom(); return; }
+      if (h !== room.host) {
+        // Copia local: el anfitrión ha pasado el puesto a otro (transferHost).
+        const wasHost = room.isHost;
+        room.host = h; room.isHost = h === uid;
+        room.members.sort((a, b) => (a.uid === h ? -1 : b.uid === h ? 1 : (a.at || 0) - (b.at || 0)));
+        if (wasHost !== room.isHost) rewatchDisconnect(wasHost);
+        if (room.isHost) rdyOn = false;
+        emit('host');
+        emit('room');
+      }
+    }, () => closedRoom());
     const oref = fb.rtdb.ref('rooms/' + id + '/open');
     oref.on('value', s => { if (room && room.id === id) { room.open = s.val() === true; emit('room'); } }, () => {});
     // Chat de la sala (también durante la partida): los últimos 60 mensajes.
@@ -481,6 +495,27 @@ G.Social = (() => {
     roomRefs = [mref, href, oref, xref, lref, cref];
     writeStatus();
     emit('room');
+  }
+
+  /** Copia local: pasar el puesto de anfitrión a otro miembro (sólo en la sala, no en partida). */
+  async function transferHost(to) {
+    if (!room || !room.isHost || to === uid || !room.members.some(m => m.uid === to)) return { ok: false };
+    if (playing) return { ok: false, error: 'No se puede cambiar de anfitrión durante la partida.' };
+    const m = room.members.find(x => x.uid === to);
+    try {
+      await fb.rtdb.ref('rooms/' + room.id).update({ host: to, name: m.name || '?' });
+      await fb.rtdb.ref('lobby/' + room.id).update({ host: to, name: m.name || '?', at: ts() }).catch(() => {});
+      return { ok: true };
+    } catch (e) { return { ok: false, error: 'No se pudo pasar el puesto de anfitrión.' }; }
+  }
+
+  /** Al cambiar de anfitrión: el nuevo vigila la sala entera; el antiguo, sólo su plaza. */
+  function rewatchDisconnect(wasHost) {
+    if (!room) return;
+    const rref = fb.rtdb.ref('rooms/' + room.id), mref = fb.rtdb.ref('rooms/' + room.id + '/m/' + uid), lref = fb.rtdb.ref('lobby/' + room.id);
+    if (wasHost) { rref.onDisconnect().cancel().catch(() => {}); lref.onDisconnect().cancel().catch(() => {}); }
+    else mref.onDisconnect().cancel().catch(() => {});
+    watchRoomDisconnect();
   }
 
   /** Si se cierra el navegador, la sala (anfitrión) o tu plaza (invitado) se borran solas. */
@@ -726,7 +761,7 @@ G.Social = (() => {
 
   return {
     start, stop, claimNick, request, accept, remove, publishProfile, getProfile, profileData,
-    createRoom, joinRoom, leaveRoom, setOpen, setMax, listRooms, setInLobby, setReady, refreshMember, freshMembers, setPlaying, refreshPresence,
+    createRoom, joinRoom, leaveRoom, setOpen, setMax, listRooms, setInLobby, setReady, transferHost, refreshMember, freshMembers, setPlaying, refreshPresence,
     get ready() { return rdyOn; },
     sendChat, get chat() { return chat; },
     sendDm, watchDm, markDmSeen, dmUnread, unreadDm, get dms() { return [...dms.values()]; },

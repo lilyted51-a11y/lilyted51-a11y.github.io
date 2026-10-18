@@ -10,6 +10,8 @@ G.GachaUI = (() => {
     $('pull-1').onclick = () => pull(1);
     $('pull-10').onclick = () => pull(10, 't1');
     $('pull-10b').onclick = () => pull(10, 't10');
+    $('pull-100').onclick = () => pull(100, 'auto');     // copia local
+    $('pull-1000').onclick = () => pull(1000, 'auto');
     $('pull-close').onclick = close;
 
     const tabs = $('gacha-gens');
@@ -75,6 +77,12 @@ G.GachaUI = (() => {
     $('pull-1').disabled = !G.Gacha.costOf(s, 1);
     $('pull-10').disabled = !G.Gacha.costOf(s, 10, 't1');
     $('pull-10b').disabled = !G.Gacha.costOf(s, 10, 't10');
+    // Copia local: ×100 y ×1000 (el coste que se muestra es con lo que se pagaría ahora)
+    for (const n of [100, 1000]) {
+      const c = G.Gacha.costOf(s, n, 'auto');
+      $('cost-' + n).innerHTML = c && c.t10 ? `${G.Icons.html('ticket10', 18)} ${c.t10}` : `${G.Icons.html('ticket', 18)} ${n}`;
+      $('pull-' + n).disabled = !c;
+    }
     G.UI.refreshCoins();
   }
 
@@ -96,13 +104,32 @@ G.GachaUI = (() => {
     fx.classList.remove('hidden');
 
     // La tragaperras (ui/slots.js) y luego las cartas. Con "saltar animación", directo a las cartas.
-    const skip = !!G.Settings.get('gachaSkip');
+    // Copia local: en las tiradas en masa (×100, ×1000) no hay tragaperras y las cartas se agrupan.
+    const mass = n >= 100;
+    const skip = mass || !!G.Settings.get('gachaSkip');
     if (skip) slot.style.display = 'none';
     else await G.Slots.play(slot, res);
     G.Audio.sfx('burst', { rarity: best });
     slot.style.display = 'none';
 
-    for (const r of res) {
+    let cards = res;
+    if (mass) {
+      // Resumen y cartas agrupadas (un mismo Pokémon, una carta con ×n), las mejores primero; como mucho 60.
+      const groups = new Map();
+      for (const r of res) {
+        const k = r.dex + (r.shiny ? 's' : '');
+        const g = groups.get(k);
+        if (g) { g.n++; g.refund += r.refund; g.isNew = g.isNew || r.isNew; } else groups.set(k, Object.assign({}, r, { n: 1 }));
+      }
+      cards = [...groups.values()].sort((a, b) => (b.shiny - a.shiny) || (b.isNew - a.isNew) || (b.rarity - a.rarity) || (b.n - a.n));
+      const news = res.filter(r => r.isNew && !r.shiny).length, shinies = res.filter(r => r.shiny).length,
+            legends = res.filter(r => r.rarity === 5).length, coins = res.reduce((a, r) => a + r.refund, 0);
+      out.insertAdjacentHTML('beforeend', `<p class="sub mass-sum" style="width:100%;margin:0 0 6px">${n} tiradas: <b>${news}</b> nuevos · ${G.Icons.html('shiny', 12)} <b>${shinies}</b> shiny · ${G.UI.stars(5, 12)} <b>${legends}</b> legendarias · <span class="coin"></span> +${coins}` +
+        (cards.length > 60 ? ` · se muestran 60 de ${cards.length} distintos` : '') + `</p>`);
+      cards = cards.slice(0, 60);
+    }
+
+    for (const r of cards) {
       const mon = G.DEX_BY[r.dex];
       const c = document.createElement('div');
       c.className = 'pcard r' + r.rarity + (r.shiny ? ' shiny' : '');
@@ -110,12 +137,13 @@ G.GachaUI = (() => {
       c.innerHTML = `<div class="stars">${G.UI.stars(r.rarity, 24)}</div>`;
       c.appendChild(G.UI.spriteCanvas(r.dex, 132, 120, { lively: r.rarity >= 4 || r.shiny, scale: 2, shiny: r.shiny }));
       const tag = r.isNew
-        ? `<span class="new">${r.shiny ? '¡SHINY NUEVO!' : '¡NUEVO!'}</span>`
+        ? `<span class="new">${r.shiny ? '¡SHINY NUEVO!' : '¡NUEVO!'}</span>` + (r.n > 1 ? ` · <span class="coin"></span> +${r.refund}` : '')
         : `Repetido · <span class="coin"></span> +${r.refund}`;
-      c.insertAdjacentHTML('beforeend', `<b>${r.shiny ? G.Icons.html('shiny', 12) + ' ' : ''}${mon.name}</b><div class="tag">${tag}</div>`);
+      c.insertAdjacentHTML('beforeend', `<b>${r.shiny ? G.Icons.html('shiny', 12) + ' ' : ''}${mon.name}${r.n > 1 ? ' <small class="times">×' + r.n + '</small>' : ''}</b><div class="tag">${tag}</div>`);
       out.appendChild(c);
       G.Audio.sfx('reveal', { rarity: r.rarity });
       if (!skip) await wait(n === 10 ? 150 : 0);
+      else if (mass && cards.indexOf(r) % 12 === 11) await wait(0);   // deja respirar al navegador
     }
     $('pull-close').classList.remove('hidden');
     busy = false;
