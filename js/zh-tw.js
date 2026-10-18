@@ -517,6 +517,7 @@
   "Ningún Pokémon coincide.": "沒有符合的寶可夢。",
   "Has pausado la partida: todos esperan a que continúes.": "你暫停了遊戲：所有人都在等你繼續。",
   "Pausa: el anfitrión ha pausado la partida": "暫停：房主暫停了遊戲",
+  "Pausa del anfitrión": "房主暫停中",
   "En el menú (fuera de la sala)": "在選單中（不在房間）",
   "Esperando a que {x} vuelva a la sala.": "等待 {x} 回到房間。",
   "Saltar la animación (resultado directo)": "跳過動畫（直接顯示結果）",

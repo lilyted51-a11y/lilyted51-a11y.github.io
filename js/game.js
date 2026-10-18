@@ -258,7 +258,7 @@ G.Game = (() => {
         else if (!others.length) G.Spawner.say(awayBy ? awayText() : '', awayBy ? 999 : 0, true);   // sólo tú: sin aviso viejo
       } else {
         if (state === 'held' && !awayBy && !pausedByHost) state = 'playing';
-        G.Spawner.say(awayBy ? awayText() : pausedByHost ? 'Pausa: el anfitrión ha pausado la partida' : '', awayBy || pausedByHost ? 999 : 0, true);
+        G.Spawner.say(awayBy ? awayText() : pausedByHost ? 'Pausa del anfitrión' : '', awayBy || pausedByHost ? 999 : 0, true);
       }
     },
     /** Grupo (invitado): el anfitrión ha pausado (o reanudado) la partida para todos. */
@@ -266,7 +266,7 @@ G.Game = (() => {
       pausedByHost = !!on;
       if (pausedByHost) {
         if (state === 'playing') state = 'held';
-        G.Spawner.say('Pausa: el anfitrión ha pausado la partida', 999, true);
+        G.Spawner.say('Pausa del anfitrión', 999, true);
       } else {
         if (state === 'held' && !holdBy.length && !awayBy) state = 'playing';
         G.Spawner.say(awayBy ? awayText() : '', awayBy ? 999 : 0, true);
