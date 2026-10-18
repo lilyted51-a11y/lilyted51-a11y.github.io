@@ -483,13 +483,13 @@ G.Social = (() => {
     oref.on('value', s => { if (room && room.id === id) { room.open = s.val() === true; emit('room'); } }, () => {});
     // Chat de la sala (también durante la partida): los últimos 60 mensajes.
     chat.length = 0;
-    const cref = fb.rtdb.ref('rooms/' + id + '/chat').limitToLast(60);
+    const cref = fb.rtdb.ref('rooms/' + id + '/chat').limitToLast(80);
     cref.on('child_added', s => {
       if (!room || room.id !== id) return;
       const v = s.val();
       if (!v || typeof v.t !== 'string') return;
       chat.push({ id: s.key, u: v.u, n: String(v.n || '?').slice(0, 20), t: v.t.slice(0, 200), at: v.at || 0 });
-      if (chat.length > 80) chat.splice(0, chat.length - 80);
+      if (chat.length > 120) chat.splice(0, chat.length - 120);
       emit('chat');
     }, () => {});
     roomRefs = [mref, href, oref, xref, lref, cref];

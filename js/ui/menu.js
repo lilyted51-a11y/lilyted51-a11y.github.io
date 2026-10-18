@@ -109,6 +109,9 @@ G.MenuUI = (() => {
     if (un) parts.push(un + (un === 1 ? ' mensaje nuevo' : ' mensajes nuevos'));
     $('menu-friends-sub').textContent = parts.length ? parts.join(' · ') : 'Juega en grupo, hasta 10';
     $('menu-friends-sub').classList.toggle('gold', req > 0 || un > 0);
+    // Copia local: globo rojo con los mensajes privados (y solicitudes) sin leer sobre «Amigos»
+    const badge = $('menu-dm-badge');
+    if (badge) { const n = un + req; badge.textContent = n > 99 ? '99+' : String(n); badge.classList.toggle('hidden', n === 0); }
   }
 
   // ---------------- colección ----------------

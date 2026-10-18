@@ -726,14 +726,15 @@ G.Game = (() => {
     let camX = pl.x, camY = pl.y;
     spectating = null;
     if (coop && pl.dead) {
-      const alive = G.Coop.puppets().filter(p => !p.dead);
-      if (alive.length) {
-        let i = alive.findIndex(p => p.uid === specUid);
-        if (i < 0) i = 0;
-        if (G.Input.tap('arrowright') || G.Input.tap('keyd') || G.Input.tap('space') || specNext) i = (i + 1) % alive.length;
-        else if (G.Input.tap('arrowleft') || G.Input.tap('keya')) i = (i - 1 + alive.length) % alive.length;
+      // Todos los compañeros, también los caídos (para ver dónde están); al empezar, uno vivo.
+      const mates = G.Coop.puppets();
+      if (mates.length) {
+        let i = mates.findIndex(p => p.uid === specUid);
+        if (i < 0) { i = mates.findIndex(p => !p.dead); if (i < 0) i = 0; }
+        if (G.Input.tap('arrowright') || G.Input.tap('keyd') || G.Input.tap('space') || specNext) i = (i + 1) % mates.length;
+        else if (G.Input.tap('arrowleft') || G.Input.tap('keya')) i = (i - 1 + mates.length) % mates.length;
         specNext = false;
-        spectating = alive[i]; specUid = spectating.uid;
+        spectating = mates[i]; specUid = spectating.uid;
         camX = spectating.x; camY = spectating.y;
       }
     } else specNext = false;

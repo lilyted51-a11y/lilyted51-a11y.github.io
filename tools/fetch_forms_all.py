@@ -108,7 +108,7 @@ def gen_of(dex):
 
 def fetch_json(url):
     try:
-        with urllib.request.urlopen(url, timeout=30) as r:
+        with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 PokeSurvivor-tools'}), timeout=30) as r:
             return json.loads(r.read().decode('utf-8'))
     except Exception:
         return None

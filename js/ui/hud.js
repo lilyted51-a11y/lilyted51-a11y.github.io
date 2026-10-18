@@ -554,8 +554,8 @@ G.HUD = (() => {
       if (sp) {
         ctx.font = F(700, 15);
         ctx.lineWidth = 3;
-        const n = G.Coop.puppets().filter(p => !p.dead).length;
-        const t = 'Viendo a ' + (sp.tag || '?') + (n > 1 ? ' · ←/→ o un toque para cambiar' : '');
+        const n = G.Coop.puppets().length;
+        const t = 'Viendo a ' + (sp.tag || '?') + (sp.dead ? ' (caído)' : '') + (n > 1 ? ' · ←/→ o un toque para cambiar' : '');
         ctx.strokeText(t, w / 2, h * 0.62 + 40);
         ctx.fillStyle = sp.tagColor || '#cfe3ff';
         ctx.fillText(t, w / 2, h * 0.62 + 40);

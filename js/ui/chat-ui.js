@@ -35,8 +35,10 @@ G.ChatUI = (() => {
     const key = msgs.length ? msgs[msgs.length - 1].id + ':' + msgs.length : '';
     if (key === lastLobby) return;
     lastLobby = key;
-    log.innerHTML = msgs.length ? msgs.slice(-60).map(line).join('') : '<p class="sub chat-empty">Aquí podéis hablar los de la sala.</p>';
-    log.scrollTop = log.scrollHeight;
+    // Si estabas leyendo mensajes antiguos (desplazado hacia arriba), no te baja al llegar uno nuevo.
+    const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+    log.innerHTML = msgs.length ? msgs.slice(-80).map(line).join('') : '<p class="sub chat-empty">Aquí podéis hablar los de la sala.</p>';
+    if (atBottom || !log.childElementCount) log.scrollTop = log.scrollHeight;
   }
 
   // ---------------- partida ----------------
@@ -127,9 +129,12 @@ G.ChatUI = (() => {
       dmToasted.add(k);
       if (d.from === G.Social.uid || (dmOpen && dmOpen.uid === d.other)) continue;
       if (inGame()) continue;
-      const el = document.createElement('div');
+      // Aviso propio (el toast normal es texto plano y lo traduciría el parche zh; aquí el nombre y el mensaje van tal cual)
+      let el = document.getElementById('dm-toast');
+      if (!el) { el = document.createElement('div'); el.id = 'dm-toast'; el.className = 'toast'; el.style.bottom = '64px'; document.body.appendChild(el); }
       el.innerHTML = '💬 <b translate="no">' + esc(nameOf(d.other)) + '</b>: <span translate="no">' + esc(d.t) + '</span>';
-      G.UI.toast(el.innerHTML, 3200);
+      el.style.display = 'block';
+      clearTimeout(el._t); el._t = setTimeout(() => { el.style.display = 'none'; }, 3200);
       G.Audio.sfx('select');
     }
   }
