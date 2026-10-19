@@ -529,6 +529,7 @@
   "Sin preparar (pulsa Listo)": "未準備（請按「準備」）",
   "Sin preparar": "未準備",
   "Hacer anfitrión": "轉交房主",
+  "Aceptar amistad": "接受好友邀請",
   "Pasarle el puesto de anfitrión": "把房主轉交給他",
   "¿Pasar el puesto de anfitrión a {x}?": "要把房主轉交給 {x} 嗎？",
   "No se pudo pasar el puesto de anfitrión": "無法轉交房主",

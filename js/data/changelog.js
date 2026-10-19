@@ -13,6 +13,8 @@ G.CHANGELOG = [
      'Chat: the room has a chat box, and during a co-op run Enter opens the chat (Esc closes it; on mobile, the 💬 button). You can also send private messages to friends from the friends list (💬); new ones are flagged in the menu.'],
     ['144 formas nuevas en la Pokédex y en el gacha de su región: Megas, formas de Alola, Galar, Hisui y Paldea, Gigamax, formas de legendarios (Kyurem Blanco y Negro, Zacian y Zamazenta coronados, Dialga y Palkia Origen, Groudon y Kyogre Primigenios, Ultra-Necrozma…) y más. Todas con sus shiny.',
      '144 new forms in the Pokédex and in their region’s gacha: Megas, Alolan, Galarian, Hisuian and Paldean forms, Gigantamax, legendary forms (White and Black Kyurem, Crowned Zacian and Zamazenta, Origin Dialga and Palkia, Primal Groudon and Kyogre, Ultra Necrozma…) and more. All with their shinies.'],
+    ['Sala: puedes añadir como amigo a cualquiera que esté en tu sala desde su tarjeta («Añadir amigo»), sin tener que escribir su apodo.',
+     'Room: you can add anyone in your room as a friend from their card ("Add friend"), without typing their nickname.'],
     ['Sala: el anfitrión puede pasar el puesto a otro jugador («Hacer anfitrión» en su tarjeta).',
      'Room: the host can hand the host role to another player ("Make host" on their card).'],
     ['Cooperativo: si caes, la cámara sigue a un compañero vivo (←/→, A/D o un toque para cambiar de compañero) y vuelve a ti cuando te levantan.',

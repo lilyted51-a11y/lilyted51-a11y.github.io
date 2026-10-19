@@ -913,3 +913,5 @@ body:not(.touch) #game-chat #game-chat-btn { display: none; }
   box-shadow: 0 0 0 2px #1a1030, 0 0 10px rgba(255,77,94,.6); animation: pop .25s ease-out;
 }
 .dm-badge.hidden { display: none; }
+
+.lob-card .fr-st { color: var(--muted); font-size: 11px; margin-top: 4px; }

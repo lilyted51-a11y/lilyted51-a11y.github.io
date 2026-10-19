@@ -291,7 +291,12 @@ G.Social = (() => {
     if (!VALID.test(name)) return { ok: false, error: 'Escribe el apodo exacto de tu amigo.' };
     const n = await fb.fs.collection('names').doc(name.toLowerCase()).get().catch(() => null);
     if (!n || !n.exists) return { ok: false, error: 'No hay ningún jugador con ese apodo.' };
-    const other = n.data().uid;
+    return requestUid(n.data().uid, name);
+  }
+
+  /** Copia local: solicitud por uid (desde la sala, sin escribir el apodo). */
+  async function requestUid(other, name) {
+    if (!me) return { ok: false, error: 'Primero elige tu apodo.' };
     if (other === uid) return { ok: false, error: 'Ese eres tú.' };
     const f = friends.get(other);
     if (f && f.status === 'ok') return { ok: false, error: 'Ya sois amigos.' };
@@ -760,7 +765,7 @@ G.Social = (() => {
   G.DB.onLeave(why => stop(why));
 
   return {
-    start, stop, claimNick, request, accept, remove, publishProfile, getProfile, profileData,
+    start, stop, claimNick, request, requestUid, accept, remove, publishProfile, getProfile, profileData,
     createRoom, joinRoom, leaveRoom, setOpen, setMax, listRooms, setInLobby, setReady, transferHost, refreshMember, freshMembers, setPlaying, refreshPresence,
     get ready() { return rdyOn; },
     sendChat, get chat() { return chat; },
