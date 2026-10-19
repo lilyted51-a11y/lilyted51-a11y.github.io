@@ -17,6 +17,8 @@ G.CHANGELOG = [
      'Room: you can add anyone in your room as a friend from their card ("Add friend"), without typing their nickname.'],
     ['Sala: el anfitrión puede pasar el puesto a otro jugador («Hacer anfitrión» en su tarjeta).',
      'Room: the host can hand the host role to another player ("Make host" on their card).'],
+    ['Con el juego automático (bot) activado, la partida sigue aunque cambies de ventana o la minimices: ya no se pausa sola.',
+     'With auto-play (bot) on, the run keeps going when you switch windows or minimize it: it no longer pauses by itself.'],
     ['Cooperativo: si caes, la cámara sigue a un compañero vivo (←/→, A/D o un toque para cambiar de compañero) y vuelve a ti cuando te levantan.',
      'Co-op: when you fall, the camera follows a living teammate (←/→, A/D or a tap to switch) and returns to you once you are revived.'],
     ['Gacha: botones de ×100 y ×1000 tiradas (pagan con tickets ×10 si alcanzan; si no, con tickets normales). Sin tragaperras y con el resultado resumido y agrupado; cada bloque de 10 sigue garantizando una Épica.',

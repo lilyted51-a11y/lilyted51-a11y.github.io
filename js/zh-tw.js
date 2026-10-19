@@ -528,6 +528,8 @@
   "Listo": "已準備",
   "Sin preparar (pulsa Listo)": "未準備（請按「準備」）",
   "Sin preparar": "未準備",
+  "Con el juego automático (bot) activado, la partida sigue aunque cambies de ventana o la minimices: ya no se pausa sola.": "開啟 AI 自動玩時，切換視窗或縮小視窗遊戲也會繼續跑，不會再自動暫停。",
+  "With auto-play (bot) on, the run keeps going when you switch windows or minimize it: it no longer pauses by itself.": "開啟 AI 自動玩時，切換視窗或縮小視窗遊戲也會繼續跑，不會再自動暫停。",
   "Con {x} rinde al {x} %.": "{x} 使用有 {x}% 威力。",
   "With {x} it deals {x} %.": "{x} 使用有 {x}% 威力。",
   "Nv.{x} > {x} · {x}": "等級 {x} > {x}・{x}",

@@ -22,7 +22,8 @@ G.Input = (() => {
     if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'space', 'tab'].includes(c)) e.preventDefault();
   });
   addEventListener('keyup', e => down.delete(code(e)));
-  addEventListener('blur', () => { down.clear(); });
+  // Copia local: con el bot jugando no se sueltan sus teclas al cambiar de ventana (él sabe cuáles tiene pulsadas).
+  addEventListener('blur', () => { if (!(window.__POKE_BOOST__ && window.__POKE_BOT_ON__)) down.clear(); });
   let movedAt = 0;               // última vez que se movió el ratón (apuntado a mano)
   addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; movedAt = performance.now(); });
   addEventListener('mousedown', () => mdown = true);

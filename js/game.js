@@ -40,7 +40,7 @@ G.Game = (() => {
     if (window.ResizeObserver) new ResizeObserver(() => resize()).observe(cv);
     G.Touch.init(cv);
     // En móvil: al cambiar de app o girarlo en vertical, la partida se pausa.
-    document.addEventListener('visibilitychange', () => { if (document.hidden) autoPause(); });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) autoPause(); bgDrive(); });
     G.RunUI.wirePause(() => {
       if (state === 'paused') { if (G.Coop.active && G.Coop.isHost) G.Coop.broadcast(['pz', 0]); state = 'playing'; }
       G.UI.hideAll();
@@ -84,7 +84,38 @@ G.Game = (() => {
   /** Pausa sola (sólo en solitario: en grupo los demás siguen). */
   function autoPause() {
     G.Touch.reset();
+    if (botRunning()) return;          // copia local: con el bot jugando, la partida sigue aunque cambies de ventana
     if (state === 'playing' && !G.Coop.active) { state = 'paused'; G.RunUI.showPause(); }
+  }
+
+  /*
+   * Copia local: con el bot jugando y la pestaña oculta (otra ventana encima,
+   * minimizada...), el navegador deja de llamar a requestAnimationFrame. Un
+   * worker (js/core/bg-tick.js, que el navegador no frena) da los fotogramas
+   * hasta que la pestaña vuelve a verse; entonces sigue el bucle normal.
+   */
+  const botRunning = () => !!(window.__POKE_BOOST__ && window.__POKE_BOT_ON__);
+  let bgWorker = null, bgOn = false, bgFallback = 0;
+  function bgTick() {
+    if (!document.hidden || !botRunning() || state === 'ui' || state === 'over') { bgStop(); return; }
+    step(performance.now());
+  }
+  function bgStop() {
+    if (!bgOn) return;
+    bgOn = false;
+    if (bgWorker) bgWorker.postMessage('stop');
+    clearInterval(bgFallback); bgFallback = 0;
+  }
+  function bgDrive() {
+    if (!document.hidden || !botRunning() || state === 'ui' || state === 'over') { bgStop(); return; }
+    if (bgOn) return;
+    bgOn = true;
+    try {
+      if (!bgWorker) { bgWorker = new Worker('js/core/bg-tick.js'); bgWorker.onmessage = bgTick; }
+      bgWorker.postMessage('start');
+    } catch (e) {
+      bgFallback = setInterval(bgTick, 16);   // sin worker (abierto como archivo...): mejor que nada
+    }
   }
 
   /** Pausa/continúa (tecla Esc o P, o el botón de pausa del móvil). */
@@ -632,6 +663,10 @@ G.Game = (() => {
   let loopErrs = 0, errRun = 0;
   function loop(ts) {
     requestAnimationFrame(loop);
+    if (bgOn && !document.hidden) bgStop();   // copia local: vuelve a verse → se acaba el reloj de fondo
+    step(ts);
+  }
+  function step(ts) {
     try { frame(ts); errRun = 0; }
     catch (e) {
       if (loopErrs++ < 5) console.error('[Game] fallo en un fotograma:', e);
