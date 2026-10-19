@@ -208,6 +208,8 @@ class PokeAutoBot {
     // 合作模式選完後會等其他人，卡片區會加上 done
     const box = screen.querySelector('#cards, #item-cards, #bond-cards');
     if (!box || box.classList.contains('done')) return true;
+    // 卡片剛出現時會暗掉 0.6 秒、點了沒用（防止戰鬥中按 1-4 誤選）→ 等它亮
+    if (box.classList.contains('guard')) return true;
     const cards = Array.from(box.querySelectorAll('.card'));
     if (!cards.length) return true;
 
@@ -244,8 +246,19 @@ class PokeAutoBot {
    *   - 升級：先把最高等的攻擊招式升滿（升滿 + 能力卡 = 進化），再升下一招
    *   - 輔助：劍舞／龍之舞（加攻擊）最好；其他輔助普通
    */
+  /**
+   * 招式對這隻寶可夢好不好用（遊戲規則 G.Stats.fit）：物理招吃「攻擊」、特殊招吃「特攻」，
+   * 以兩者中較高者為 1。例如怪力（攻擊高）用暗影球（特殊）只剩 6 成多。
+   */
+  static fit(player, cat) {
+    const mon = player && player.mon;
+    if (!mon || !cat || mon.pa == null || !mon.atk) return 1;
+    return (cat === 'special' ? mon.sa : mon.pa) / mon.atk;
+  }
+
   scoreLevelCard(card, player) {
     const [type, id] = card.dataset.key.split(':');
+    const fit = PokeAutoBot.fit(player, card.dataset.cat);
     const moves = (player && player.moves) || [];
     const attacks = moves.filter(m => m.kind !== 'buff');
     const buffs = moves.filter(m => m.kind === 'buff');
@@ -267,6 +280,7 @@ class PokeAutoBot {
       let s = 600 + 700 * q + (m.lvl / max) * 600;
       if (m.lvl / max >= top && q >= 0.8) s += 300;
       if (m.lvl + 1 >= max) s += 200;          // 這一下就升滿
+      if (fit < 0.95) s *= Math.max(0.35, fit * fit);   // 不合這隻寶可夢的招式：少投資
       return s + tiebreak;
     }
 
@@ -274,13 +288,22 @@ class PokeAutoBot {
       if (free <= 0) return 0;
       if (card.dataset.buff) {
         if (buffs.length) return 200;
-        // 加攻擊的輔助最值得，而且要留一格給它
-        const atkBuff = card.dataset.buff === 'atk';
-        return (attacks.length >= 2 ? (atkBuff ? 1500 : 800) : 400) + tiebreak;
+        // 加攻擊的輔助最值得，而且要留一格給它。
+        // 劍舞／龍之舞（patk）只加物理、詭計（satk）只加特殊：要跟手上攻擊招式的類別對上才有用
+        const b = card.dataset.buff;
+        let atkBuff = b === 'atk';
+        if (b === 'patk' || b === 'satk') {
+          const cat = b === 'patk' ? 'physical' : 'special';
+          const same = attacks.filter(a => a.cat === cat).length;
+          atkBuff = attacks.length ? same * 2 >= attacks.length : PokeAutoBot.fit(player, cat) >= 0.999;
+        }
+        return (attacks.length >= 2 ? (atkBuff ? 1500 : 500) : 400) + tiebreak;
       }
       // 留一格給輔助：攻擊招式最多 3 招
       if (attacks.length >= 3) return 300;
-      const k = PokeAutoBot.QUALITY[card.dataset.mkind] || 0.6;
+      // 很不合這隻寶可夢的招式（卡上寫「只剩 xx %」）：不要
+      if (fit < 0.85) return 40 + fit * 100 + tiebreak;
+      const k = (PokeAutoBot.QUALITY[card.dataset.mkind] || 0.6) * fit * fit;
       const base = attacks.length < 2 ? 2600 : 1300;
       return base * k + tiebreak;
     }
@@ -550,7 +573,7 @@ class PokeAutoBot {
           const astep = arc.casting ? 0 : Math.min(ad0, spd * arc.k * t);
           const ax = arc.x + ax0 / ad0 * astep, ay = arc.y + ay0 / ad0 * astep;
           const agap = Math.hypot(x - ax, y - ay) - arc.r - r;
-          if (agap < 10) cost += hurt(maxHp * 0.4) * 2 * w;                    // 碰到：40% 血
+          if (agap < 10) cost += hurt(maxHp * (arc.touch || 0.4)) * 2 * w;      // 碰到：40% 血（7 分鐘後越來越多，約 40 分鐘一碰就倒）
           else cost += 260 * w * Math.exp(-agap / 70);                         // 越近越危險
         }
         for (const e of enemies) {
