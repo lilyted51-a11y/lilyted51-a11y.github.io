@@ -41,17 +41,20 @@ G.LevelUp = (() => {
   /** Construye el conjunto de cartas candidatas, con pesos. */
   function candidates(pl) {
     const out = [];
+    // Si es de su lado flojo, cuánto rinde (Machamp con Bola Sombra...).
+    // Copia local: también se dice cuando rinde bien, y va en las cartas de mejora.
+    const fitNote = (mon, cat) => {
+      if (!cat) return '';
+      const f = G.Stats.fit(mon, cat);
+      return f < 0.95 ? ` <span class="fit-low">Con ${mon.name} rinde un ${Math.round(f * 100)} %: pega mejor con ataques ${G.Stats.sideOf(mon) === 'special' ? 'especiales' : 'físicos'}.</span>`
+                      : ` <span class="fit-ok">Con ${mon.name} rinde al ${Math.round(f * 100)} %.</span>`;
+    };
 
     // --- movimientos nuevos ---
     if (pl.slots.length < pl.maxMoves) {
       // Con 2 potenciadores ya no se ofrecen más: los buff no hacen daño y
       // llenar los 4 huecos con ellos deja la run sin salida.
       const buffs = pl.moves.filter(m => m.kind === 'buff').length;
-      // Si es de su lado flojo, cuánto rinde (Machamp con Bola Sombra...).
-      const fitNote = (mon, cat) => {
-        const f = G.Stats.fit(mon, cat);
-        return f < 0.95 ? ` <span class="fit-low">Con ${mon.name} rinde un ${Math.round(f * 100)} %: pega mejor con ataques ${G.Stats.sideOf(mon) === 'special' ? 'especiales' : 'físicos'}.</span>` : '';
-      };
       const pool = G.Moves.poolFor(pl.mon).filter(id =>
         !pl.hasMove(id) && !(pl.banned && pl.banned.has(id)) && !(buffs >= 2 && G.Moves.BY_ID[id].kind === 'buff'));
       // Los de su lado bueno (y los empatados y mejoras) salen el doble.
@@ -95,8 +98,8 @@ G.LevelUp = (() => {
       out.push({
         w: 8, type: 'up', key: 'up:' + m.id, cat: m.cat,
         icon: 'move:' + m.id, color: G.U.TYPE_COLOR[m.type],
-        tag: 'Nv.' + m.lvl + ' > ' + (m.lvl + 1),
-        title: m.name, desc: txt,
+        tag: 'Nv.' + m.lvl + ' > ' + (m.lvl + 1) + (m.cat ? ' · ' + G.Stats.NAME[m.cat] : ''),   // copia local: + categoría
+        title: m.name, desc: txt + fitNote(pl.mon, m.cat),
         apply: () => G.Moves.levelUp(m)
       });
     }

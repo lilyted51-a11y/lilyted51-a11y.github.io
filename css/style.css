@@ -235,6 +235,7 @@ label { display: block; font-size: 14px; color: var(--muted); margin: 8px 0 4px;
 .dex-sort { align-items: center; margin-top: -4px; }
 .dex-more { grid-column: 1 / -1; height: 1px; }
 .fit-low { display: block; color: #ffb37a; font-size: 12px; margin-top: 2px; }
+.fit-ok { display: block; color: #7ee07a; font-size: 12px; margin-top: 2px; }   /* copia local */
 /* Pausa con el resumen de la partida (run-ui.js, pauseSummary). */
 .pause-box { width: min(720px, 100%); max-height: calc(100dvh - 24px); overflow-y: auto; }
 .pause-sum { text-align: left; margin: 4px 0 10px; }

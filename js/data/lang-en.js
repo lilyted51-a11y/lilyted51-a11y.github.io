@@ -4,6 +4,8 @@
  * son los oficiales en inglés.
  */
 G.I18n.add({
+  // copia local: nota de lo que rinde un ataque con tu Pokémon
+  'Con {x} rinde al {x} %.': 'With {x} it deals {x} %.',
   // ---------------- tipos y regiones ----------------
   'Acero': 'Steel', 'Agua': 'Water', 'Bicho': 'Bug', 'Dragón': 'Dragon', 'Eléctrico': 'Electric', 'Fantasma': 'Ghost',
   'Fuego': 'Fire', 'Hada': 'Fairy', 'Hielo': 'Ice', 'Lucha': 'Fighting', 'Planta': 'Grass', 'Psíquico': 'Psychic',
