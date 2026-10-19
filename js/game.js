@@ -94,7 +94,7 @@ G.Game = (() => {
   // Copia local: caído en grupo, la cámara sigue a un compañero vivo (←/→, A/D o un toque para cambiar).
   let specUid = null, specNext = false, spectating = null;
   const gameCanvas = document.getElementById('game');
-  if (gameCanvas) gameCanvas.addEventListener('pointerdown', () => { if (coop && pl && pl.dead) specNext = true; });
+  if (gameCanvas) gameCanvas.addEventListener('pointerdown', () => { if (G.Coop && G.Coop.active && pl && pl.dead) specNext = true; });
   function togglePause() {
     if (G.Coop.active) {
       // Copia local: el ANFITRIÓN sí pausa, y para todos (los invitados quedan "held").
