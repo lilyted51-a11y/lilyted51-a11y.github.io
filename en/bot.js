@@ -264,6 +264,8 @@ class PokeAutoBot {
 
   scoreLevelCard(card, player) {
     const [type, id] = card.dataset.key.split(':');
+    // 有「全部」特權（攻擊 ×5 以上）：輸出已經夠，保命優先（見下面的能力卡）
+    const boosted = !!(player && player.boost && player.boost.atk >= 5);
     const fit = PokeAutoBot.fit(player, card.dataset.cat);
     const moves = (player && player.moves) || [];
     const attacks = moves.filter(m => m.kind !== 'buff');
@@ -287,6 +289,7 @@ class PokeAutoBot {
       if (m.lvl / max >= top && q >= 0.8) s += 300;
       if (m.lvl + 1 >= max) s += 200;          // 這一下就升滿
       if (fit < 0.95) s *= Math.max(0.35, fit * fit);   // 不合這隻寶可夢的招式：少投資
+      if (boosted && m.lvl + 1 < max) s *= 0.6;          // 有特權：一般升級讓給防禦／體力（快升滿＝快進化的照舊）
       return s + tiebreak;
     }
 
@@ -317,8 +320,11 @@ class PokeAutoBot {
     if (type === 'stat') {
       if (id === 'heal') return hpFrac < 0.4 ? 5000 : 50;
       const lv = player ? player.level : 1;
-      const STAT = { atk: 650, cd: 680, hp: hpFrac < 0.6 ? 700 : 480, def: 520, rgn: 400, spd: 500,
-                     xp: lv < 12 ? 560 : 250, mag: 260 };
+      // 開「全部」特權時攻擊 ×40 還會一直長，輸出早就溢出；後期死因都是一發 200 多的傷害秒殺低血量。
+      // → 先拿防禦（每張減傷 6%，最多 12 張＝70%）、體力（沒有上限）、回復，攻擊和冷卻幾乎不拿
+      const STAT = boosted
+        ? { def: 1900, hp: 1500, rgn: 900, spd: 600, mag: 300, xp: lv < 12 ? 400 : 120, atk: 150, cd: 250 }
+        : { atk: 650, cd: 680, hp: hpFrac < 0.6 ? 900 : 620, def: 800, rgn: 450, spd: 500, xp: lv < 12 ? 560 : 250, mag: 260 };
       return (STAT[id] || 200) + tiebreak;
     }
     return tiebreak;
