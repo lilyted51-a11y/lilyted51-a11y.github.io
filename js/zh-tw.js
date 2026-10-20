@@ -1099,6 +1099,8 @@
   "(hoy, semana, mes, año e histórico). ¡A por el primer puesto!": "（今日、本週、本月、本年與歷史）。衝第一吧！",
   "Entendido": "知道了",
   "21 de octubre de 2026": "2026 年 10 月 21 日",
+  "Chino tradicional: la pantalla de mantenimiento y la de «no se pudo cargar el juego» ya salen en chino (antes se quedaban en español).": "繁體中文：維護畫面和「無法載入遊戲」的畫面現在也會顯示中文（之前還是西班牙文）。",
+  "Traditional Chinese: the maintenance screen and the \"the game could not load\" screen now show in Chinese (they stayed in Spanish before).": "繁體中文：維護畫面和「無法載入遊戲」的畫面現在也會顯示中文（之前還是西班牙文）。",
   "Cooperativo: un jugador con el juego trucado ya no puede colgar la partida de los demás mandando números imposibles (una experiencia infinita dejaba congelado al anfitrión y un efecto gigante, a los invitados).": "合作模式：使用修改版遊戲的玩家無法再透過傳送不可能的數值讓其他人的遊戲卡死（無限經驗會讓房主卡死，巨大的特效會讓客人卡死）。",
   "Co-op: a player with a tampered game can no longer freeze the others by sending impossible numbers (infinite experience froze the host and a giant effect froze the guests).": "合作模式：使用修改版遊戲的玩家無法再透過傳送不可能的數值讓其他人的遊戲卡死（無限經驗會讓房主卡死，巨大的特效會讓客人卡死）。",
   "Cooperativo: Viento Aciago, Bucle Arena y Torbellino de un invitado ya atraen a los enemigos (sólo atraían los del anfitrión).": "合作模式：客人的奇異之風、流沙地獄和潮旋現在也會把敵人吸過去了（之前只有房主的有效）。",
@@ -4611,6 +4613,7 @@
   "recogidas": "拾取", "Shinies conseguidos": "捕獲的閃光寶可夢",
   "No se pudo cargar {x}": "無法載入 {x}",
   "Estamos en mantenimiento.": "維護中。", "We are under maintenance.": "維護中。",
+  "Volver a intentarlo": "重試", "Try again": "重試",
   "Estamos mudando el juego a servidores nuevos para que siga siendo gratis para todos. Tu cuenta, tu partida y tus Pokémon están a salvo. ¡Vuelve en unas horas!":
     "我們正在把遊戲搬到新的伺服器，讓大家可以繼續免費遊玩。你的帳號、存檔和寶可夢都很安全，請過幾個小時再回來！",
   "We are moving the game to new servers so it can stay free for everyone. Your account, your save and your Pokémon are safe. Please come back in a few hours!":
@@ -4714,7 +4717,8 @@
     // copia local: #lvl-wait (grupo: quién falta por elegir carta) es una frase entera marcada así por los
     // apodos; se traduce igual y los apodos se dejan tal cual (nameListCaptures).
     if (protectedElement?.matches('#user-pill > span') && protectedElement.textContent.trim() === 'Invitado') return false;   // copia local: sólo esa palabra, no el apodo
-    return !!protectedElement && !protectedElement.matches('#news-body > .news-day[translate="no"], #lvl-wait');
+    // copia local: #boot (mantenimiento y «no se pudo cargar») también: no lleva apodos
+    return !!protectedElement && !protectedElement.matches('#news-body > .news-day[translate="no"], #lvl-wait, #boot');
   };
   function textNode(node) {
     if (!node.parentElement || skipped(node.parentElement)) return;

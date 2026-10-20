@@ -20,7 +20,9 @@ G.CHANGELOG = [
     ['Chino tradicional: frases que salían a medias en español, ahora traducidas enteras: la línea del ranking cuando no estás en el top 50, quién falta por elegir carta en cooperativo, avisos de error, misiones, notas de afinidad de las cartas, apariciones de shiny, grieta, mejoras activas del HUD, resumen del gacha ×100/×1000 y la pantalla final. Los apodos de los jugadores ya no se traducen por error (alguien llamado Pikachu ya no sale como 皮卡丘).',
      'Traditional Chinese: sentences that came out half in Spanish are now fully translated: the leaderboard line when you are not in the top 50, who still has to pick a card in co-op, error messages, missions, card affinity notes, shiny appearances, the rift, active buffs in the HUD, the ×100/×1000 gacha summary and the end screen. Player nicknames are no longer translated by mistake (someone called Pikachu no longer shows as 皮卡丘).'],
     ['Chino tradicional: el título de la animación de la Sentencia de Arceus salía como un galimatías (se traducía letra a letra); ahora sale entero.',
-     "Traditional Chinese: the title of the Arceus Judgment animation came out as gibberish (it was translated letter by letter); it now shows in full."]
+     "Traditional Chinese: the title of the Arceus Judgment animation came out as gibberish (it was translated letter by letter); it now shows in full."],
+    ["Chino tradicional: la pantalla de mantenimiento y la de «no se pudo cargar el juego» ya salen en chino (antes se quedaban en español).",
+     "Traditional Chinese: the maintenance screen and the \"the game could not load\" screen now show in Chinese (they stayed in Spanish before)."],
   ], chg: [
     ["En el móvil ya no está la opción «Apuntar a mano» (no funcionaba con la pantalla táctil): los ataques siempre apuntan solos.",
      "On mobile the \"Manual aim\" option is gone (it did not work with the touch screen): moves always aim on their own."]

@@ -6,6 +6,18 @@ Normas fijas del dueño del proyecto. Se aplican SIEMPRE.
 - Responder al dueño **siempre en chino tradicional (繁體中文)**: informes, resúmenes, preguntas y
   estados de las pruebas. Nunca en inglés. (El código, los comentarios y los commits siguen como están.)
 
+## Chino: comprobar SIEMPRE lo nuevo (obligatorio)
+Cada vez que se añade algo que ve el jugador (ataques, objetos, formas, pantallas, botones, avisos,
+mensajes de error, novedades...) hay que comprobar que sale bien en chino tradicional (el dueño juega
+en chino: con el navegador en chino el juego va en español por debajo y lo traduce `js/zh-tw.js`):
+1. Añadir la traducción en el diccionario de `js/zh-tw.js` (clave en español Y en inglés).
+   Frases armadas con trozos ('¡' + nombre + ' salvaje apareció!') necesitan un patrón con `{x}`.
+2. `node tools/zh_check.js`: novedades sin traducir tiene que dar 0; revisar las cadenas nuevas que salgan.
+3. `node tools/zh_try.js "frase tal como sale en pantalla"` para ver cómo la pinta el parche.
+4. Ojo: lo marcado con `translate="no"` el parche no lo toca (hay que permitirlo en `skipped()` si no
+   lleva apodos), y el texto del canvas que se pinta letra a letra se traduce letra a letra (ver PSZH_TITLE).
+5. Probarlo también en la versión publicada (app.min.js, sin `G` global), no sólo en dev.html.
+
 ## Publicar una versión
 1. Se edita `dev.html` (nunca `index.html`, que se genera).
 2. `node tools/build.js && node tools/export_data.js && python tools/make_seo_pages.py`
