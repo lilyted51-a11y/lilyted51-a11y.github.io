@@ -229,7 +229,10 @@ class PokeAutoBot {
     const player = window.__POKE_STATE__ && window.__POKE_STATE__.player;
     let best = cards[0], bestScore = -Infinity;
     for (const card of cards) {
-      const score = card.dataset.key ? this.scoreLevelCard(card, player) : this.scoreByText(card);
+      const score = card.dataset.key ? this.scoreLevelCard(card, player)
+        : card.dataset.item ? this.scoreItem(card.dataset.item)
+        : card.dataset.move ? this.scoreBond(card.dataset.move, player)
+        : this.scoreByText(card);
       if (score > bestScore) { bestScore = score; best = card; }
     }
     this.cardsSeenAt = undefined;
@@ -291,6 +294,16 @@ class PokeAutoBot {
         }
         return 700 + m.lvl * 20 + tiebreak;
       }
+      // 沒特權：只有選中的那一格會出手，換格時那一格的冷卻直接跳到 35%（Player.setActive）→
+      // 兩個強招來回切換最划算。只投資兩個主力攻擊招（進化、等級、實際打出的傷害、合不合這隻寶可夢），
+      // 其他攻擊招升了也不會出手（資料：好幾招升滿了整場打 0 傷害），點數改拿 Potencia／Reflejos。
+      if (!boosted && attacks.length > 2) {
+        const total = attacks.reduce((a, x) => a + (x.dealt || 0), 0) + 1;
+        const rank = a => ((a.evolved ? 2 : 0) + a.lvl / ((a.def && a.def.maxLvl) || 5) + 2 * (a.dealt || 0) / total) *
+          (PokeAutoBot.QUALITY[a.kind] || 0.6) * Math.min(1, PokeAutoBot.fit(player, a.cat));
+        const core = attacks.slice().sort((a, b) => rank(b) - rank(a)).slice(0, 2);
+        if (!core.includes(m)) return 450 + tiebreak;
+      }
       // 最高等的攻擊招式最優先（集中把它升滿進化），其他攻擊招式其次
       const top = Math.max(...attacks.map(a => a.lvl / ((a.def && a.def.maxLvl) || 5)));
       const q = PokeAutoBot.QUALITY[m.kind] || 0.6;
@@ -322,7 +335,8 @@ class PokeAutoBot {
       // 很不合這隻寶可夢的招式（卡上寫「只剩 xx %」）：不要
       if (fit < 0.85) return 40 + fit * 100 + tiebreak;
       const k = (PokeAutoBot.QUALITY[card.dataset.mkind] || 0.6) * fit * fit;
-      const base = attacks.length < 2 ? 2600 : 1300;
+      // 沒特權：已經有兩個攻擊招就不太需要第三個（排在 Potencia／Reflejos 之後）
+      const base = attacks.length < 2 ? 2600 : boosted ? 1300 : 1100;
       return base * k + tiebreak;
     }
 
@@ -334,12 +348,42 @@ class PokeAutoBot {
       const STAT = boosted
         ? { def: 1900, hp: 1500, rgn: 900, spd: 600, mag: 300, xp: lv < 12 ? 400 : 120, atk: 150, cd: 250 }
         : { atk: 650, cd: 680, hp: hpFrac < 0.6 ? 900 : 620, def: 800, rgn: 450, spd: 500, xp: lv < 12 ? 560 : 250, mag: 260 };
+      // 沒特權：真正的瓶頸是殺怪速度（第 4～5 分鐘怪堆到上限 64，之後全是菁英）。
+      // 「Potencia」+10% 全部招式傷害、「Reflejos」-8% 全部冷卻，比升一個次要招式（只占總輸出一小部分）划算，
+      // 排在一般招式升級之前（進化、新攻擊招式、加攻擊的輔助、升滿進化那一下還是優先）。
+      //（試過優先拿防禦：打怪變慢、等級低，平均反而少 1 分半）
+      if (!boosted && (id === 'atk' || id === 'cd')) return (id === 'atk' ? 1700 : 1650) + tiebreak;
       return (STAT[id] || 200) + tiebreak;
     }
     return tiebreak;
   }
 
-  // 沒有遊戲標記的卡片（道具二選一、技能連結）：文字關鍵字評分
+  /**
+   * 道具二選一（一局只能帶一個，js/data/items.js）。以前用文字評分：「換成」那張有 evo 樣式 → +5000，
+   * 永遠換成最新撿到的，連「不能換招」的講究頭帶也換（換招會把冷卻跳到 35%，是主要輸出手段）。
+   * 保命優先：突擊背心 +20% 減傷、吃剩的東西每秒回 1.5% 血、貝殼之鈴打怪回血、氣勢披帶擋一次致命傷。
+   */
+  scoreItem(id) {
+    const V = { assaultvest: 100, leftovers: 90, shellbell: 85, focussash: 80, quickclaw: 75, choicescarf: 60,
+                luckyegg: 55, rockyhelmet: 50, lifeorb: 45, choiceband: 25, amuletcoin: 5 };
+    return V[id] ?? 30;
+  }
+
+  /**
+   * 羈絆（打倒傳說寶可夢）：把招式融合在同一格、同時出手。
+   * 選最強的攻擊招式（進化、等級、實際打出的傷害、合不合這隻寶可夢）；輔助招式放最後。
+   */
+  scoreBond(id, player) {
+    const moves = (player && player.moves) || [];
+    const m = moves.find(x => x.id === id);
+    if (!m) return 0;
+    if (m.kind === 'buff') return 0.3;
+    const total = moves.reduce((a, x) => a + (x.dealt || 0), 0) + 1;
+    return ((m.evolved ? 2 : 0) + m.lvl / ((m.def && m.def.maxLvl) || 5) + 2 * (m.dealt || 0) / total) *
+      (PokeAutoBot.QUALITY[m.kind] || 0.6) * Math.min(1, PokeAutoBot.fit(player, m.cat)) + 1;
+  }
+
+  // 沒有遊戲標記的卡片：文字關鍵字評分
   scoreByText(card) {
     const text = card.innerText || '';
     let score = 0;
@@ -543,6 +587,7 @@ class PokeAutoBot {
     const eHit = new Map(enemies.map(e => [e, real(e.dmg, e.atkType, e.cat)]));
     const bHit = new Map(shots.map(b => [b, real(b.dmg, b.mtype, b.cat)]));
     const hazards = (s.hazards || []).filter(h => !h.hit);
+    const hHit = new Map(hazards.map(h => [h, h.pct ? maxHp * h.pct * 1.5 : h.pure ? (h.dmg || 8) : real(h.dmg, h.type, h.cat)]));
     const pickups = s.pickups.filter(it => Math.abs(it.x - p.x) < 500 && Math.abs(it.y - p.y) < 500)
       .sort((a, b) => Math.hypot(a.x - p.x, a.y - p.y) - Math.hypot(b.x - p.x, b.y - p.y)).slice(0, 40);
     // 小偷寶可夢（會掉金幣和券）：值得追
@@ -622,7 +667,17 @@ class PokeAutoBot {
     }
     // 身邊 150 像素內沒敵人：先把經驗球掃乾淨（有敵人靠近時，照常以戰鬥為主）
     const calm = !enemies.some(e => !e.boss && Math.hypot(e.x - p.x, e.y - p.y) < 150) && !enemies.some(e => e.boss && Math.hypot(e.x - p.x, e.y - p.y) < 260);
-    let pathGoal = rift ? null : downed || thief || lostGoal || (chestMode && bigChest) || (calm && pickGoal) || tgt;
+    // 泉水（站在上面每秒回 14% 最大血量，一口泉水約可回 1.5 倍血量，45 秒回滿）：血量不到六成就過去，站到回滿或泉水乾掉
+    //（以前只在血少於一半時輕輕拉一下，200 像素外幾乎沒感覺，從來不會特地過去）
+    let spring = null;
+    if (!arc && !rift) {
+      const want = this.springOn ? hpFrac < 0.97 : hpFrac < 0.6;
+      let sd = 450;
+      if (want) for (const o of specials) if (o.type === 'spring' && (o.charge === undefined || o.charge > (this.springOn ? 0.03 : 0.2))) {
+        const d0 = Math.hypot(o.x - p.x, o.y - 8 - p.y); if (d0 < sd) { sd = d0; spring = { x: o.x, y: o.y - 8 }; } }
+    }
+    this.springOn = !!spring;
+    let pathGoal = rift ? null : downed || spring || thief || lostGoal || (chestMode && bigChest) || (calm && pickGoal) || tgt;
     if (arc) {
       const da = Math.hypot(arc.x - p.x, arc.y - p.y);
       if (da > 320) {
@@ -653,6 +708,7 @@ class PokeAutoBot {
       let thiefBest = thief ? Math.hypot(thief.x - x, thief.y - y) : 0;
       let pgBest = pickGoal ? Math.hypot(pickGoal.x - x, pickGoal.y - y) : 0;
       let chestBest = bigChest ? Math.hypot(bigChest.x - x, bigChest.y - y) : 0;   // 路線上離大寶箱最近的一點
+      let springBest = spring ? Math.hypot(spring.x - x, spring.y - y) : 0;
       const pickBest = pickups.map(it => Math.hypot(it.x - x, it.y - y));   // 路線上離每個掉落物最近的距離
       const altarBest = altars.map(o => Math.hypot(o.x - x, o.y - y));   // 祭壇也是碰到就好
       const path = [[x, y]];                  // 我在每一步的位置（衝撞怪瞄準用）
@@ -676,6 +732,7 @@ class PokeAutoBot {
         if (lostGoal) lostBest = Math.min(lostBest, Math.hypot(lostGoal.x - x, lostGoal.y - y));
         if (pickGoal) pgBest = Math.min(pgBest, Math.hypot(pickGoal.x - x, pickGoal.y - y));
         if (bigChest) chestBest = Math.min(chestBest, Math.hypot(bigChest.x - x, bigChest.y - y));
+        if (spring) springBest = Math.min(springBest, Math.hypot(spring.x - x, spring.y - y));
         if (thief) { const [tx, ty] = [thief.x + (thief.vx || 0) * t, thief.y + (thief.vy || 0) * t]; thiefBest = Math.min(thiefBest, Math.hypot(tx - x, ty - y)); }
         for (let q = 0; q < pickups.length; q++) pickBest[q] = Math.min(pickBest[q], Math.hypot(pickups[q].x - x, pickups[q].y - y));
         for (let a = 0; a < altars.length; a++) altarBest[a] = Math.min(altarBest[a], Math.hypot(altars[a].x - x, altars[a].y - y));
@@ -718,14 +775,14 @@ class PokeAutoBot {
         }
         for (const h of hazards) {
           const left = h.delay - h.t;
-          if (t >= left - 0.12 && t <= left + (h.end || 0.3) + 0.05 && s.inHazard(h, x, y, r + 8)) cost += (h.pct ? hurt(maxHp * h.pct) * 1.5 : hurt(h.dmg)) * danger;
+          if (t >= left - 0.12 && t <= left + (h.end || 0.3) + 0.05 && s.inHazard(h, x, y, r + 8)) cost += hurt(hHit.get(h)) * danger;
         }
       }
-      // 還沒到時間的地面警告（光柱、十字光束…）：終點站在裡面就先扣一點分，便宜的時候就先走開
-      //（上面只算 0.7 秒內會炸的；審判的光柱 1.25 秒後才炸，等到看見常常已被包圍）
+      // 還沒到時間的地面警告：終點還站在裡面就扣分，一出現就開始走開
+      //（以前只扣 10 分，旁邊有怪就不走，最後 0.7 秒才逃已經來不及：19/23 次被炸是警告出現時就在圈裡，只走了 25～43 像素）
       for (const h of hazards) {
         const left = h.delay - h.t;
-        if (left > H && left < 2.2 && s.inHazard(h, x, y, r + 12)) cost += (h.pct ? 30 : 10) * (1 - (left - H) / 1.5) * danger;
+        if (left > H && left < 2.2 && s.inHazard(h, x, y, r + 12)) cost += Math.max(h.pct ? 30 : 10, hurt(hHit.get(h)) * 0.5) * (1 - (left - H) / 1.5) * danger;
       }
       // 走到要開的寶箱旁邊被它擋住是正常的（寶箱是實心的）：終點在開箱範圍內就不算撞牆、不算死路
       //（以前把大寶箱當牆，停在 60 像素外不敢貼上去，開箱範圍只有 56）
@@ -839,6 +896,12 @@ class PokeAutoBot {
         cost += Math.max(0, Math.min(dc, chestBest + 10) - near) * 1.6 * want2;
         if (dc < near) cost -= (d < 0 ? 30 : 12) * want2;
       }
+      // 泉水：終點要站在上面（遊戲判定 26 像素內），到了就站著回血
+      if (spring) {
+        const dsp = Math.hypot(spring.x - x, spring.y - y);
+        cost += Math.max(0, Math.min(dsp, springBest + 8) - 16) * 1.4;
+        if (dsp < 20) cost -= d < 0 ? 24 : 10;
+      }
       // 倒地的隊友：終點要貼著他（遊戲判定 56 像素內），到了就站著不動直到他起來
       if (downed) {
         const dm = Math.hypot(downed.x - x, downed.y - y);
@@ -851,7 +914,7 @@ class PokeAutoBot {
 
       // 不要一直換方向（減少抖動）
       if (this.lastDir >= 0 && d !== this.lastDir) cost += 1.5;
-      if (d < 0 && enemies.length && !downed && !bigChest) cost += 4;   // 有敵人時別站著不動（扶人、開箱除外）
+      if (d < 0 && enemies.length && !downed && !bigChest && !spring) cost += 4;   // 有敵人時別站著不動（扶人、開箱除外）
       // 繞路：沿著路徑距離變短的方向走（卡住時權重更大，站著不動另外扣分）
       if (pf) { cost += this.fieldDist(pf, s.TS, x, y) * pfW; if (now < st.until && d < 0) cost += 20; }
 

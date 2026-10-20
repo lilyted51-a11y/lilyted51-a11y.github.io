@@ -175,6 +175,7 @@ G.RunUI = (() => {
       const it = G.Items.BY[id];
       const el = document.createElement('div');
       el.className = 'card' + (i === 1 ? ' evo' : '');
+      el.dataset.item = id;   // copia local: lo lee en/bot.js para elegir objeto
       el.innerHTML = `<div class="ico">${G.Icons.html(id, 36)}</div>
         <div class="txt"><div class="nm">${verb} ${it.name}</div><div class="ds">${it.desc}</div></div>
         <div class="key">${i + 1}</div>`;
@@ -223,6 +224,7 @@ G.RunUI = (() => {
          <div class="txt"><div class="nm">${G.T(m.name, 'move')} <span class="tag-chip" style="background:${col}">Nv.${m.lvl}</span></div><div class="ds">${desc}</div></div>
          <div class="key">${i + 1}</div>`;
       el.dataset.sfx = 'none';
+      el.dataset.move = m.id;   // copia local: lo lee en/bot.js para elegir qué se fusiona
       el.onclick = () => pickBond(i);
       box.appendChild(el);
     });

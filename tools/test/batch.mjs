@@ -32,11 +32,19 @@ const SETUP = `(()=>{ document.getElementById('tap-start').click(); document.get
   G.UI.hideAll(); G.Game.startRun(); window.__POKE_BOT_ON__ = true;
   window.__botErr = 0; const ce = console.error.bind(console); console.error = (...a) => { if (String(a[0]).includes('[bot]')) window.__botErr++; ce(...a); };
   const p = G.Game.player; window.__dmg = []; const orig = p.hurt.bind(p);
+  // Peligros: dónde estaba el jugador cuando apareció el aviso (¿se podía escapar?)
+  const hadd = G.Hazards.add; G.Hazards.add = function (h, net) { const o = hadd.call(this, h, net);
+    o.__in0 = G.Hazards.inside(o, p.x, p.y, p.r); o.__t0 = G.Game.st.time; o.__p0 = [p.x, p.y]; return o; };
   p.hurt = (amount, type, pure, cat) => { const st = new Error().stack; const nearE = G.EnemyMgr.all().filter(e => !e.dead).reduce((m, e) => Math.min(m, Math.hypot(e.x - p.x, e.y - p.y) - (e.r || 14) - p.r), 1e9);
     const src = /hazards\\.js/.test(st) ? 'HAZARD' : /judgment/.test(st) ? 'ARCEUS' : /combat\\.js/.test(st) ? (nearE < 6 ? 'CONTACT' : 'SHOT') : 'OTHER';
     const hp0 = p.hp; const r = orig(amount, type, pure, cat); const lost = hp0 - p.hp;
     if (lost > 0.5) { const near = G.EnemyMgr.all().filter(e => !e.dead && Math.hypot(e.x - p.x, e.y - p.y) < 160).sort((a, b) => Math.hypot(a.x - p.x, a.y - p.y) - Math.hypot(b.x - p.x, b.y - p.y)).slice(0, 2).map(e => (e.def && e.def.name || '?') + (e.boss ? '(BOSS)' : '') + '@' + Math.round(Math.hypot(e.x - p.x, e.y - p.y)));
-      window.__dmg.push({ src, t: Math.round(G.Game.st.time), lost: Math.round(lost), hp: Math.round(p.hp), max: Math.round(p.maxHp), type: pure ? 'pure' : type, near }); if (window.__dmg.length > 400) window.__dmg.shift(); }
+      let hz = null;
+      if (src === 'HAZARD') { const h = G.Hazards.all.find(h => h.hit && h.t - h.delay < 0.1 && G.Hazards.inside(h, p.x, p.y, p.r));
+        if (h) hz = { k: h.kind, delay: +h.delay.toFixed(2), sz: Math.round(h.r || h.w || 0), len: Math.round(h.len || 0), in0: h.__in0 ? 1 : 0,
+          moved: h.__p0 ? Math.round(Math.hypot(p.x - h.__p0[0], p.y - h.__p0[1])) : null, others: G.Hazards.all.filter(o => !o.hit).length,
+          dir: window.myPokeBot ? window.myPokeBot.lastDir : null }; }
+      window.__dmg.push({ src, hz, t: Math.round(G.Game.st.time), lost: Math.round(lost), hp: Math.round(p.hp), max: Math.round(p.maxHp), type: pure ? 'pure' : type, near }); if (window.__dmg.length > 400) window.__dmg.shift(); }
     return r; };
   // Detector de "quiere moverse pero no se mueve": cada fotograma, con el motivo
   window.__stuck = []; window.__stuckN = 0;
@@ -54,21 +62,27 @@ const SETUP = `(()=>{ document.getElementById('tap-start').click(); document.get
     }
     return r;
   };
-  let lt = -1, lp = null; window.__ter = [];
+  let lt = -1, lp = null, lt30 = -30, fr = 0, fw = performance.now(); window.__ter = []; window.__tl = [];
   const D8 = [[1,0],[-1,0],[0,1],[0,-1],[0.707,0.707],[0.707,-0.707],[-0.707,0.707],[-0.707,-0.707]];
   const tick = () => {
+    fr++; if (G.Game.state === 'playing' && G.World.specialsNear(p.x, p.y, 40).some(o => o.type === 'spring' && Math.hypot(o.x - p.x, o.y - 8 - p.y) < 26)) window.__springF = (window.__springF || 0) + 1;
     if (G.Game.state === 'playing' && G.Game.st.time - lt >= 0.5) { lt = G.Game.st.time;
       let open = 0; for (const [dx, dy] of D8) { let cx = p.x, cy = p.y, d = 0; for (; d < 84; d += 12) { const o = { x: cx + dx * 12, y: cy + dy * 12, r: p.r }; G.World.collide(o); if (Math.hypot(o.x - cx, o.y - cy) < 6) break; cx = o.x; cy = o.y; } if (d >= 72) open++; }   // paso a paso: no atraviesa paredes finas
       const mv = lp ? Math.round(Math.hypot(p.x - lp[0], p.y - lp[1])) : 0; lp = [p.x, p.y];
       const b = window.myPokeBot;
       window.__ter.push([Math.round(G.Game.st.time), Math.round(p.hp), open, mv, G.EnemyMgr.all().filter(e => !e.dead && Math.hypot(e.x - p.x, e.y - p.y) < 120).length, p.inLiquid ? 1 : 0, +(p.slowT || 0).toFixed(1),
         b ? b.lastDir : null, b ? (b.dbgMode || '') : '', b ? Object.entries(b.currentKeys || {}).filter(k => k[1]).map(k => k[0].replace('Key', '')).join('') : '', window.__botErr || 0]); if (window.__ter.length > 30) window.__ter.shift(); }
+    // Línea de tiempo cada 30 s: [t, enemigos vivos, élites (≥55 vivos), nivel, muertes, vida, daño hecho (miles), movimientos evolucionados, enemigos a <200, en la grieta, fotogramas por segundo, fotogramas sobre un manantial]
+    if (G.Game.state === 'playing' && G.Game.st.time - lt30 >= 30) { lt30 = G.Game.st.time;
+      window.__tl.push([Math.round(lt30), G.EnemyMgr.count, G.EnemyMgr.count >= 55 ? 1 : 0, p.level, p.kills, Math.round(p.hp),
+        Math.round(p.moves.reduce((a, m) => a + (m.dealt || 0), 0) / 1000), p.moves.filter(m => m.evolved).length,
+        G.EnemyMgr.all().filter(e => !e.dead && Math.hypot(e.x - p.x, e.y - p.y) < 200).length, G.Rift.inArena ? 1 : 0, Math.round(fr * 1000 / Math.max(1, performance.now() - fw)), window.__springF || 0]); window.__springF = 0; fr = 0; fw = performance.now(); }
     const j = G.Judgment.summary();
     if ((G.Game.state === 'over' || p.dead || (j && j.time >= 60)) && !window.__done) {
       window.__done = { t: Math.round(G.Game.st.time), judg: j ? Math.round(j.time) : null, lv: p.level, kills: p.kills, bosses: p.bosses, maxHp: Math.round(p.maxHp),
-        moves: p.moves.map(m => m.id + ':' + m.lvl).join(','), stats: Object.assign({}, p.statsTaken || {}),
+        moves: p.moves.map(m => m.id + ':' + m.lvl + (m.evolved ? '*' : '') + '=' + Math.round((m.dealt || 0) / 1000) + 'k').join(','), stats: Object.assign({}, p.statsTaken || {}), item: p.item || null, groups: p.slots.map(g => g.map(m => m.id).join('+')).join(' | '),
         dmgBy: window.__dmg.reduce((m, d) => { m[d.src] = (m[d.src] || 0) + d.lost; return m; }, {}),
-        last: window.__dmg.slice(-5), ter: window.__ter.slice(-8), stuckN: window.__stuckN, stuck: window.__stuck.slice(-12) };
+        last: window.__dmg.slice(-5), ter: window.__ter.slice(-8), stuckN: window.__stuckN, tl: window.__tl, hzHits: window.__dmg.filter(d => d.src === 'HAZARD').map(d => Object.assign({ t: d.t, lost: d.lost, hp: d.hp }, d.hz || {})), stuck: window.__stuck.slice(-12) };
     }
     if (!window.__done) requestAnimationFrame(tick); };
   requestAnimationFrame(tick); return 'ok'; })()`;
