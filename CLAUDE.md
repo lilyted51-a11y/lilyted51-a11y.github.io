@@ -2,6 +2,10 @@
 
 Normas fijas del dueño del proyecto. Se aplican SIEMPRE.
 
+## Idioma con el dueño (obligatorio)
+- Responder al dueño **siempre en chino tradicional (繁體中文)**: informes, resúmenes, preguntas y
+  estados de las pruebas. Nunca en inglés. (El código, los comentarios y los commits siguen como están.)
+
 ## Publicar una versión
 1. Se edita `dev.html` (nunca `index.html`, que se genera).
 2. `node tools/build.js && node tools/export_data.js && python tools/make_seo_pages.py`
