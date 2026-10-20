@@ -173,7 +173,7 @@ G.Boost = (() => {
   return {
     UIDS, POWER, KEYS, MULTS, load, players, level, set, gift, giftCoins, claimGifts, k, customOf, power, setCustom,
     /** Pruebas: hacerse pasar por una cuenta, con ventajas sueltas opcionales. */
-    debugAs(u, cust, full) { forced = u; if (cust) custom[u] = cust; if (full) all.add(u); },
+    debugAs(u, cust, full, botOnly) { forced = u; if (cust) custom[u] = cust; if (full) all.add(u); if (botOnly) bot.add(u); },   // botOnly: sólo el bot, sin ventajas (pruebas)
     /** ¿La cuenta conectada administra las listas? */
     get admin() { const u = uid(); return !!u && UIDS.includes(u); },
     /** Todas las ventajas. */
