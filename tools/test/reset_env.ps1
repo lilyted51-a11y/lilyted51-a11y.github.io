@@ -29,6 +29,7 @@ foreach ($port in $map.Keys) {
 }
 Start-Sleep 5
 foreach ($port in ($map.Keys | Sort-Object)) {
-  $tabs = (Invoke-RestMethod "http://127.0.0.1:$port/json/list" | Where-Object { $_.type -eq 'page' }).Count
+  $list = (Invoke-WebRequest -UseBasicParsing "http://127.0.0.1:$port/json/list").Content | ConvertFrom-Json
+  $tabs = @($list | ForEach-Object { $_ } | Where-Object { $_.type -eq 'page' }).Count   # sólo pestañas (no la interfaz ni extensiones)
   "puerto $port listo ($tabs pestaña)"
 }

@@ -708,6 +708,8 @@ G.Game = (() => {
         chests: G.World.propsInCircle(pl.x, pl.y, 520).filter(o => o.type === 'chest'),   // cofres pequeños (se rompen a golpes)
         // Casillas por las que se puede andar (para buscar camino hasta la grieta)
         TS: G.World.TS, walkable: G.World.walkable,
+        // Copia local: ¿agua/líquido en esta casilla? (el bot prefiere suelo abierto y seco)
+        liquidTile: (tx, ty) => G.World.isLiquid(tx * G.World.TS + G.World.TS / 2, ty * G.World.TS + G.World.TS / 2),
         // ¿Llega un disparo recto entre dos puntos? (paredes y objetos sólidos)
         clearShot: (x1, y1, x2, y2) => G.World.clearShot(x1, y1, x2, y2, 6),
         // Dónde acabaría el jugador si intenta ir a (x, y): la misma colisión del juego

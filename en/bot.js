@@ -452,6 +452,54 @@ class PokeAutoBot {
   }
 
   /** 從 (x1,y1) 直線走到 (x2,y2) 會不會穿過不能走的格子（牆、樹、岩漿）？ */
+  /**
+   * 開闊度地圖：玩家周圍 20 格內，每一格離最近的牆、障礙物或水有幾格（最多 6）。
+   * 洞窟（第 4～8 分鐘）牆和水最多，大部分沒加成的死亡都在這段：在窄通道、牆邊被圍住就跑不掉。
+   */
+  clearAt(s, x, y) {
+    const TS = s.TS, R = 20, N = R * 2 + 1, now = performance.now();
+    const pcx = Math.floor(s.player.x / TS), pcy = Math.floor(s.player.y / TS);
+    let c = this.clr;
+    if (!c || now - c.t > 400 || Math.abs(c.cx - pcx) > 3 || Math.abs(c.cy - pcy) > 3) {
+      const ox = pcx - R, oy = pcy - R, dist = new Int8Array(N * N).fill(-1), q = new Int32Array(N * N);
+      let head = 0, tail = 0;
+      for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+        const tx = ox + i, ty = oy + j;
+        if (!s.walkable(tx, ty) || (s.liquidTile && s.liquidTile(tx, ty))) { dist[j * N + i] = 0; q[tail++] = j * N + i; }
+      }
+      while (head < tail) {
+        const k = q[head++], i = k % N, j = (k / N) | 0, dv = dist[k];
+        if (dv >= 6) continue;
+        for (const [di, dj] of PokeAutoBot.D8) {
+          const ni = i + di, nj = j + dj;
+          if (ni < 0 || nj < 0 || ni >= N || nj >= N) continue;
+          const n = nj * N + ni;
+          if (dist[n] >= 0) continue;
+          dist[n] = dv + 1; q[tail++] = n;
+        }
+      }
+      c = this.clr = { t: now, cx: pcx, cy: pcy, ox, oy, N, dist };
+    }
+    const i = Math.floor(x / TS) - c.ox, j = Math.floor(y / TS) - c.oy;
+    if (i < 0 || j < 0 || i >= c.N || j >= c.N) return 6;
+    const v = c.dist[j * c.N + i];
+    return v < 0 ? 6 : v;
+  }
+
+  /**
+   * 從 (x, y) 往 (ox, oy) 方向「一小步一小步」真的走走看，能走多遠（最多 maxD）。
+   * 以前一次跳 40～60 像素去試，會直接「穿過」薄牆、水邊的高地，誤以為走得通，結果一路走進死角。
+   */
+  freeRun(s, x, y, ox, oy, maxD) {
+    let cx = x, cy = y;
+    for (let d = 0; d < maxD; d += 12) {
+      const o = s.step(cx + ox * 12, cy + oy * 12);
+      if (Math.hypot(o.x - cx, o.y - cy) < 6) return d;
+      cx = o.x; cy = o.y;
+    }
+    return maxD;
+  }
+
   lineBlocked(s, x1, y1, x2, y2) {
     const TS = s.TS, d = Math.hypot(x2 - x1, y2 - y1), n = Math.max(1, Math.ceil(d / 16));
     for (let i = 1; i < n; i++) {
@@ -533,15 +581,17 @@ class PokeAutoBot {
     const rift = s.rift && !s.inArena ? s.rift : null;
     const rf = rift ? this.riftField(s, rift) : null;
 
-    // 卡住偵測：一直按著方向卻沒移動 → 換個方向走一下
+    // 卡住偵測：一直按著方向卻沒移動 → 換個方向走一下（每 0.3 秒檢查一次，比以前快一倍）
     const now = performance.now();
     const st = this.stuck;
-    if (now - st.t > 600) {
+    if (now - st.t > 300) {
       const moved = Math.hypot(p.x - st.x, p.y - st.y);
       // 按著方向卻幾乎沒動 → 卡住了：接下來 1.5 秒用找路（下面 pf）繞出去
-      if (this.lastDir >= 0 && moved < spd * 0.12) st.until = now + 1500;
+      if (this.lastDir >= 0 && moved < spd * 0.06) st.until = now + 1500;
       st.x = p.x; st.y = p.y; st.t = now;
     }
+    // 卡住時：從目前位置往 8 個方向各試走 160 像素，脫困時往走得最遠的方向
+    const escapeRun = now < st.until ? PokeAutoBot.DIRS.map(([ox, oy]) => this.freeRun(s, p.x, p.y, ox, oy, 160)) : null;
     // 目標和自己之間有牆／樹（直線走不到），或剛卡住：改用「路徑距離」帶路
     // 審判中：找路的目標 = 阿爾宙斯相對競技場中心的「對面」那一點（繞過柱子往遠處跑）
     // 迷路的寶可夢：先走過去碰牠，牠跟上後帶到綠色標記（獎勵：回血、金幣、抽獎券，有機會加入收藏）
@@ -674,15 +724,19 @@ class PokeAutoBot {
       //（以前把大寶箱當牆，停在 60 像素外不敢貼上去，開箱範圍只有 56）
       const atChest = bigChest && Math.hypot(bigChest.x - x, bigChest.y - y) < Math.max(46, (bigChest.r || 14) + r + 24) + 4;
       if (!atChest) cost += blocked * (arc ? 40 : 6);   // 審判中撞牆 = 送死
-      // 死路：終點附近能走的方向太少（容易被堵在樹和牆之間）
-      if (d >= 0 && !atChest) {
+      // 死路：終點附近真的走得出去（連續走 72 像素以上）的方向太少 → 口袋地形（牆、高地、樹、水邊）
+      // 旁邊有怪時更危險：被堵在牆邊、水裡出不去，是沒加成時最常見的死法之一
+      if (!atChest) {
         let open = 0;
-        for (const [ox, oy] of PokeAutoBot.DIRS) {
-          const o = s.step(x + ox * 40, y + oy * 40);
-          if (Math.hypot(o.x - x, o.y - y) > 28) open++;
-        }
-        cost += Math.max(0, 5 - open) * 4;
+        for (const [ox, oy] of PokeAutoBot.DIRS) if (this.freeRun(s, x, y, ox, oy, 84) >= 72) open++;
+        let crowdEnd = 0;
+        for (const e of enemies) if (Math.hypot(e.x - x, e.y - y) < 150) crowdEnd++;
+        cost += Math.max(0, 6 - open) * (6 + 3 * Math.min(6, crowdEnd));
+        // 待在開闊的地方：離牆／水不到 3 格就扣分，怪越多扣越重（審判和裂縫的競技場另外處理）
+        if (!arc) cost += Math.max(0, 3 - this.clearAt(s, x, y)) * (5 + 3 * Math.min(6, crowdEnd));
       }
+      // 卡住了：往「真的走得最遠」的方向脫困，不要一直往牆上擠
+      if (escapeRun && d >= 0) cost -= escapeRun[d] * 0.2;
 
       // 終點：別被包圍（四面都有敵人比單邊危險）
       let crowd = 0, cx = 0, cy = 0;
