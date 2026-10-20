@@ -4734,7 +4734,9 @@
     proto[method] = function (text, ...args) {
       const font = this.font;
       this.font = font.replace(/Pixelify/g, '"Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif');
-      try { return original.call(this, translate(typeof text === 'string' && /^(?:Psíquico|Psychic)(?: \+\d+)?$/iu.test(text.trim()) ? moveText(text) : text), ...args); }
+      // 單一個字母不翻（逐字畫的文字，「A」→「給」會變成亂碼）
+      try { if (typeof text === 'string' && text.trim().length <= 1) return original.call(this, text, ...args);
+        return original.call(this, translate(typeof text === 'string' && /^(?:Psíquico|Psychic)(?: \+\d+)?$/iu.test(text.trim()) ? moveText(text) : text), ...args); }
       finally { this.font = font; }
     };
   }
@@ -4742,6 +4744,9 @@
     const original = window[method];
     window[method] = function(text) { return original.call(window, translate(text)); };
   }
+  // 內建版：審判動畫的標題是逐字畫的（每個字母分開進 fillText，「A」會被翻成「給」）。
+  // 正式版的遊戲程式包過、沒有全域 G，下面的掛鉤裝不上 → 由遊戲直接問這裡要整句標題（js/systems/judgment.js）。
+  window.PSZH_TITLE = s => ({ 'LA SENTENCIA': '阿爾宙斯的', 'DE ARCEUS': '審判' })[s];
   function installJudgmentTitles() {
     const judgment = window.G?.Judgment;
     if (!judgment?.drawOverlay || judgment.drawOverlay.__pszhTitles) return;

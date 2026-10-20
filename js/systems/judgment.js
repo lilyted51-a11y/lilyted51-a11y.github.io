@@ -593,7 +593,9 @@ G.Judgment = (() => {
 
   /** Título que aparece letra a letra (cada una cae y se asienta). */
   function title(ctx, raw, cx, y, size, t0, alpha) {
-    const s = G.I18n ? G.I18n.t(raw) : raw;
+    // Copia local: el parche de chino (js/zh-tw.js) da el título entero ya traducido. Antes se
+    // traducía letra a letra en el canvas («A» → «給») y salía un galimatías (en app.min.js no hay G global).
+    const s = (window.PSZH_TITLE && window.PSZH_TITLE(raw)) || (G.I18n ? G.I18n.t(raw) : raw);
     ctx.save();
     ctx.font = F(800, size);
     const total = ctx.measureText(s).width;
