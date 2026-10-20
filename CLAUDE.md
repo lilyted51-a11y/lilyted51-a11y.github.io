@@ -46,3 +46,8 @@ servidores, base de datos o costes NO van ahí.
 - Partidas completas del bot: `tools/test/batch.mjs` (siempre cierra su pestaña, resultados en JSONL)
   y `tools/test/stats.mjs` para la media, el IC 95 %, la mediana y de qué se muere. Comparar
   versiones con el mismo número de partidas.
+- **Mejorar el bot es un bucle que NO se para solo** (meta: sin ventajas, sólo el bot, aguantar
+  30 min de forma estable). Al acabar cada tanda, en el mismo turno y sin esperar a que el dueño
+  pregunte: analizar → informar en breve (en chino) → si es mejor con datos, commit (el dueño hace
+  el push) → diseñar y lanzar ya la siguiente variante. Si no es mejor, descartarla y probar otra.
+  Nunca dejar las pruebas paradas esperando un "sigue".
