@@ -709,6 +709,8 @@ G.Game = (() => {
         // Casillas por las que se puede andar (para buscar camino hasta la grieta)
         TS: G.World.TS, walkable: G.World.walkable,
         // Copia local: ¿agua/líquido en esta casilla? (el bot prefiere suelo abierto y seco)
+        // Copia local: daño real de un golpe sobre el jugador (tipo, clima, defensa)
+        hitFor: (amt, type, cat) => pl.hitFor(amt, type, cat),
         liquidTile: (tx, ty) => G.World.isLiquid(tx * G.World.TS + G.World.TS / 2, ty * G.World.TS + G.World.TS / 2),
         // ¿Llega un disparo recto entre dos puntos? (paredes y objetos sólidos)
         clearShot: (x1, y1, x2, y2) => G.World.clearShot(x1, y1, x2, y2, 6),

@@ -532,11 +532,16 @@ class PokeAutoBot {
     // 每一種傷害來源的代價都依「會扣多少血」計算（占最大血量的比例）：
     // 躲不完的時候，自然會挑總傷害最低的路線（例如寧可吃一顆小子彈，也不碰頭目）。
     const maxHp = p.maxHp || 100;
-    const hurt = dmg => 40 + 400 * Math.min(1, (dmg || 8) / maxHp);
+    // 「真實」傷害：屬性相剋、天氣、防禦都算進去（同一隻怪對不同寶可夢可以差到 4 倍）；一下就會被打倒的特別怕
+    const hpNow = Math.max(1, p.hp || 1);
+    const hurt = dmg => 40 + 400 * Math.min(1, (dmg || 8) / maxHp) + ((dmg || 8) >= hpNow ? 300 : 0);
+    const real = (amt, type, cat) => s.hitFor ? s.hitFor(amt || 8, type, cat) : (amt || 8);
 
     const enemies = s.enemies.filter(e => !e.dead && e.behavior !== 'thief' &&
       Math.abs(e.x - p.x) < 420 && Math.abs(e.y - p.y) < 420);
     const shots = s.projectiles.filter(b => Math.abs(b.x - p.x) < 450 && Math.abs(b.y - p.y) < 450);
+    const eHit = new Map(enemies.map(e => [e, real(e.dmg, e.atkType, e.cat)]));
+    const bHit = new Map(shots.map(b => [b, real(b.dmg, b.mtype, b.cat)]));
     const hazards = (s.hazards || []).filter(h => !h.hit);
     const pickups = s.pickups.filter(it => Math.abs(it.x - p.x) < 500 && Math.abs(it.y - p.y) < 500)
       .sort((a, b) => Math.hypot(a.x - p.x, a.y - p.y) - Math.hypot(b.x - p.x, b.y - p.y)).slice(0, 40);
@@ -688,12 +693,14 @@ class PokeAutoBot {
         for (const e of enemies) {
           const [ex, ey, dashing] = this.predictEnemy(e, t, x, y, path, dt, p);
           const gap = Math.hypot(x - ex, y - ey) - (e.r || 14) - r;
-          const big = (e.boss || e.legend || e.judge ? 3 : 1) * (dashing ? 1.6 : 1);
+          // 打得痛的怪（一下超過最大血量 15%，例如被剋）拉開得更遠，像頭目一樣
+          const ed = eHit.get(e), heavy = Math.min(3, Math.max(1, ed / (maxHp * 0.15)));
+          const big = Math.max(e.boss || e.legend || e.judge ? 3 : 1, heavy) * (dashing ? 1.6 : 1);
           // 只在快碰到時才怕：近身／範圍招式需要貼近才打得到
           const bigE = e.boss || e.legend || e.judge;
-          if (gap < (closeRange && !bigE ? 2 : 8)) cost += hurt(e.dmg) * (bigE ? 1.5 : 1) * w * danger;
+          if (gap < (closeRange && !bigE ? 2 : 8)) cost += hurt(ed) * (bigE ? 1.5 : 1) * w * danger;
           // 遠程：敵人進到 60～80 像素就開始拉開（風箏），不要等快碰到才躲——沒加成時死因幾乎都是被圍住連續碰撞
-          else if (!closeRange || bigE) cost += 30 * big * w * danger * Math.exp(-gap / 14);   // 溫和版：太強會一直後退、打不到怪、等級跟不上
+          else if (!closeRange || bigE || heavy > 1.5) cost += 30 * big * w * danger * Math.exp(-gap / 14);   // 溫和版：太強會一直後退、打不到怪、等級跟不上
           else cost += 15 * big * w * danger * Math.exp(-gap / 5);   // 近戰：本來就要貼著打
         }
         for (const b of shots) {
@@ -704,7 +711,7 @@ class PokeAutoBot {
           const u = Math.max(0, Math.min(1, ((x - ax) * sx + (y - ay) * sy) / l2));
           const qx = ax + sx * u - x, qy = ay + sy * u - y;
           const rr = (b.r || 6) + r + 10;
-          if (qx * qx + qy * qy < rr * rr) cost += hurt(b.dmg) * w * danger;
+          if (qx * qx + qy * qy < rr * rr) cost += hurt(bHit.get(b)) * w * danger;
         }
         for (const o of traps) {
           if (Math.hypot(o.x - x, o.y - 8 - y) < 30) cost += 60 * w;

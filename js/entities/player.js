@@ -251,6 +251,13 @@ G.Player = class Player {
    * @param pure  daño que no baja con la defensa ni el cuerpo a cuerpo (Arceus)
    */
   /** @param cat  'physical' | 'special': con qué defensa tuya se para (la del enemigo que pega). */
+  // Copia local: cuánto quitaría de verdad un golpe (tipo, clima, defensa), sin aplicarlo. Lo usa el bot.
+  hitFor(amount, type = null, cat = null) {
+    amount *= G.Stats.taken(this.mon, cat);
+    if (type) amount *= G.Types.mult(type, this.mon.types) * G.Weather.mult(type);
+    const close = this.activeGroup().some(m => m.kind === 'melee') ? 0.75 : 1;
+    return Math.max(1, amount * (1 - this.reduction) * close);
+  }
   hurt(amount, type = null, pure = false, cat = null) {
     if (this.invuln > 0 || this.dead) return;
     if (!pure) amount *= G.Stats.taken(this.mon, cat);
