@@ -281,7 +281,16 @@ class PokeAutoBot {
       const m = moves.find(x => x.id === id);
       if (!m) return 1000 + tiebreak;
       const max = (m.def && m.def.maxLvl) || 5;
-      if (m.kind === 'buff') return 700 + m.lvl * 20 + tiebreak;
+      if (m.kind === 'buff') {
+        // 劍舞／龍之舞只加物攻、詭計只加特攻：跟手上攻擊招式不同類就別再升（Mega 基格爾德是特攻型，卻把劍舞升滿）
+        const st = m.def && m.def.stat;
+        if (st === 'patk' || st === 'satk') {
+          const cat = st === 'patk' ? 'physical' : 'special';
+          const same = attacks.filter(a => a.cat === cat).length;
+          if (attacks.length && same * 2 < attacks.length) return 120 + tiebreak;
+        }
+        return 700 + m.lvl * 20 + tiebreak;
+      }
       // 最高等的攻擊招式最優先（集中把它升滿進化），其他攻擊招式其次
       const top = Math.max(...attacks.map(a => a.lvl / ((a.def && a.def.maxLvl) || 5)));
       const q = PokeAutoBot.QUALITY[m.kind] || 0.6;
@@ -543,8 +552,10 @@ class PokeAutoBot {
     if (!arc) for (const e of thieves) if (!thief || Math.hypot(e.x - p.x, e.y - p.y) < Math.hypot(thief.x - p.x, thief.y - p.y)) thief = e;
     if (thief && riftOn && Math.hypot(thief.x - p.x, thief.y - p.y) > 200) thief = null;   // 裂縫優先，寶藏怪只在很近時順手打
     // 最值得撿的那一顆（價值 ÷ 距離最高、還在磁鐵範圍外）：鎖定它直線過去，不會被四周的掉落物拉來拉去
+    // 開箱模式：大寶箱在旁邊、附近沒怪、血量夠 → 專心站滿 3.5 秒（經驗球等開完再撿，開箱也會噴出很多）
+    const chestMode = !!bigChest && hpFrac >= 0.4 && !enemies.some(e => Math.hypot(e.x - bigChest.x, e.y - bigChest.y) < 90);
     let pickGoal = null;
-    if (!arc && !rift) {
+    if (!arc && !rift && !chestMode) {
       let bv = 0;
       for (const it of pickups) {
         const d0 = Math.hypot(it.x - p.x, it.y - p.y);
@@ -556,7 +567,7 @@ class PokeAutoBot {
     }
     // 身邊 150 像素內沒敵人：先把經驗球掃乾淨（有敵人靠近時，照常以戰鬥為主）
     const calm = !enemies.some(e => !e.boss && Math.hypot(e.x - p.x, e.y - p.y) < 150) && !enemies.some(e => e.boss && Math.hypot(e.x - p.x, e.y - p.y) < 260);
-    let pathGoal = rift ? null : downed || thief || lostGoal || (calm && pickGoal) || tgt;
+    let pathGoal = rift ? null : downed || thief || lostGoal || (chestMode && bigChest) || (calm && pickGoal) || tgt;
     if (arc) {
       const da = Math.hypot(arc.x - p.x, arc.y - p.y);
       if (da > 320) {
@@ -586,6 +597,7 @@ class PokeAutoBot {
       let lostBest = lostGoal ? Math.hypot(lostGoal.x - x, lostGoal.y - y) : 0;
       let thiefBest = thief ? Math.hypot(thief.x - x, thief.y - y) : 0;
       let pgBest = pickGoal ? Math.hypot(pickGoal.x - x, pickGoal.y - y) : 0;
+      let chestBest = bigChest ? Math.hypot(bigChest.x - x, bigChest.y - y) : 0;   // 路線上離大寶箱最近的一點
       const pickBest = pickups.map(it => Math.hypot(it.x - x, it.y - y));   // 路線上離每個掉落物最近的距離
       const altarBest = altars.map(o => Math.hypot(o.x - x, o.y - y));   // 祭壇也是碰到就好
       const path = [[x, y]];                  // 我在每一步的位置（衝撞怪瞄準用）
@@ -608,6 +620,7 @@ class PokeAutoBot {
         if (downed) mateBest = Math.min(mateBest, Math.hypot(downed.x - x, downed.y - y));
         if (lostGoal) lostBest = Math.min(lostBest, Math.hypot(lostGoal.x - x, lostGoal.y - y));
         if (pickGoal) pgBest = Math.min(pgBest, Math.hypot(pickGoal.x - x, pickGoal.y - y));
+        if (bigChest) chestBest = Math.min(chestBest, Math.hypot(bigChest.x - x, bigChest.y - y));
         if (thief) { const [tx, ty] = [thief.x + (thief.vx || 0) * t, thief.y + (thief.vy || 0) * t]; thiefBest = Math.min(thiefBest, Math.hypot(tx - x, ty - y)); }
         for (let q = 0; q < pickups.length; q++) pickBest[q] = Math.min(pickBest[q], Math.hypot(pickups[q].x - x, pickups[q].y - y));
         for (let a = 0; a < altars.length; a++) altarBest[a] = Math.min(altarBest[a], Math.hypot(altars[a].x - x, altars[a].y - y));
@@ -628,8 +641,10 @@ class PokeAutoBot {
           const big = (e.boss || e.legend || e.judge ? 3 : 1) * (dashing ? 1.6 : 1);
           // 只在快碰到時才怕：近身／範圍招式需要貼近才打得到
           const bigE = e.boss || e.legend || e.judge;
-          if (gap < (closeRange && !bigE ? 2 : 6)) cost += hurt(e.dmg) * (bigE ? 1.5 : 1) * w * danger;
-          else cost += 30 * big * w * danger * Math.exp(-gap / (closeRange && !bigE ? 5 : 9)) * (closeRange && !bigE ? 0.5 : 1);
+          if (gap < (closeRange && !bigE ? 2 : 8)) cost += hurt(e.dmg) * (bigE ? 1.5 : 1) * w * danger;
+          // 遠程：敵人進到 60～80 像素就開始拉開（風箏），不要等快碰到才躲——沒加成時死因幾乎都是被圍住連續碰撞
+          else if (!closeRange || bigE) cost += 30 * big * w * danger * Math.exp(-gap / 14);   // 溫和版：太強會一直後退、打不到怪、等級跟不上
+          else cost += 15 * big * w * danger * Math.exp(-gap / 5);   // 近戰：本來就要貼著打
         }
         for (const b of shots) {
           // 子彈這一步走過的線段離我多近（快的子彈一步會跳很遠）
@@ -655,9 +670,12 @@ class PokeAutoBot {
         const left = h.delay - h.t;
         if (left > H && left < 2.2 && s.inHazard(h, x, y, r + 12)) cost += (h.pct ? 30 : 10) * (1 - (left - H) / 1.5) * danger;
       }
-      cost += blocked * (arc ? 40 : 6);   // 審判中撞牆 = 送死
+      // 走到要開的寶箱旁邊被它擋住是正常的（寶箱是實心的）：終點在開箱範圍內就不算撞牆、不算死路
+      //（以前把大寶箱當牆，停在 60 像素外不敢貼上去，開箱範圍只有 56）
+      const atChest = bigChest && Math.hypot(bigChest.x - x, bigChest.y - y) < Math.max(46, (bigChest.r || 14) + r + 24) + 4;
+      if (!atChest) cost += blocked * (arc ? 40 : 6);   // 審判中撞牆 = 送死
       // 死路：終點附近能走的方向太少（容易被堵在樹和牆之間）
-      if (d >= 0) {
+      if (d >= 0 && !atChest) {
         let open = 0;
         for (const [ox, oy] of PokeAutoBot.DIRS) {
           const o = s.step(x + ox * 40, y + oy * 40);
@@ -670,10 +688,10 @@ class PokeAutoBot {
       let crowd = 0, cx = 0, cy = 0;
       for (const e of enemies) {
         const ddx = e.x - x, ddy = e.y - y, dd = Math.hypot(ddx, ddy);
-        if (dd < 140) { crowd++; cx += ddx / (dd || 1); cy += ddy / (dd || 1); }
+        if (dd < 150) { crowd++; cx += ddx / (dd || 1); cy += ddy / (dd || 1); }
       }
       const spread = crowd ? 1 - Math.hypot(cx, cy) / crowd : 0;   // 0 = 都在同一邊, 1 = 被包圍
-      cost += crowd * 1.5 + crowd * spread * 4;
+      cost += crowd * 1.5 + crowd * spread * 6;   // 被包圍要付出代價：往敵人少的那一側走
 
       // 審判中：離阿爾宙斯越遠越好（牠放招時是拉開距離的機會），不主動去追傳說寶可夢
       if (arc) {
@@ -692,7 +710,7 @@ class PokeAutoBot {
       // 保持在招式打得到的距離（對「真正要打的目標」）。審判中：只有阿爾宙斯離得夠遠時才去打傳說寶可夢
       //（牠們每 5 秒翻倍，早殺早好；太近就只管逃）
       const arcFar = !arc;   // 審判中不追任何目標：自動瞄準會打到靠近的傳說
-      if (tgt && !rift && arcFar && !(calm && pickGoal)) {
+      if (tgt && !rift && arcFar && !(calm && pickGoal) && !chestMode) {
         // 只有打不到時才靠近；打得到就不用再往前（避免在怪群邊緣來回）
         const dn = Math.hypot(tgt.x - x, tgt.y - y);
         cost += Math.min(Math.max(0, dn - want), 700) * (arc ? 0.04 : closeRange ? 0.22 : 0.12);
@@ -719,7 +737,7 @@ class PokeAutoBot {
         pickSum += Math.min(wt, 6) * 160 / (eff + 40);   // 單一個最多 24 分
       }
       // 加總也有上限，血少時再減半：撿東西永遠不能比「被包圍、被打」更重要（曾經為了撿回血衝進怪堆被圍死）
-      cost -= (rift || arc ? 0.2 : 1) * Math.min(pickSum, 40) * (danger > 1 ? 0.5 : 1);
+      cost -= (rift || arc ? 0.2 : chestMode ? 0.3 : 1) * Math.min(pickSum, 40) * (danger > 1 ? 0.5 : 1);
       // 鎖定的那顆掉落物：越接近越好（進到磁鐵範圍就會自己飛過來）
       if (pickGoal) cost += Math.max(0, Math.min(Math.hypot(pickGoal.x - x, pickGoal.y - y), pgBest + 10) - mag) * (calm ? 0.35 : 0.1);
       // 迷路的寶可夢：碰到牠／帶到標記
@@ -741,14 +759,24 @@ class PokeAutoBot {
         if (wt) cost -= wt * 40 / (dd + 20);
       }
       // 小寶箱（打破有金幣、經驗、有時道具）：走過去，靠近時遊戲會自動瞄它
-      if (!riftOn) for (const c of (s.chests || [])) cost -= 9 * 40 / (Math.hypot(c.x - x, c.y - y) + 20);
+      // 小寶箱（要打破）：走到 130 像素內，遊戲就會讓 bot 改瞄它（身邊 70 像素沒有敵人時）
+      if (!riftOn) {
+        let cBest = null, cbd = 220;
+        for (const c of (s.chests || [])) { const dcs = Math.hypot(c.x - x, c.y - y); cost -= 9 * 40 / (dcs + 20); const d0 = Math.hypot(c.x - p.x, c.y - p.y); if (d0 < cbd) { cbd = d0; cBest = c; } }
+        // 最近的那個（220 像素內）：一路走到 60 像素內，近了攻擊就會打它
+        if (cBest) cost += Math.max(0, Math.hypot(cBest.x - x, cBest.y - y) - 55) * (calm ? 0.25 : 0.08);
+      }
       // 大寶箱：終點要在它旁邊（開箱判定約 46 像素內），到了就站著不動
       if (bigChest) {
         // 遊戲的開箱判定：max(46, 箱子半徑 + 自己半徑 + 24) 以內；箱子是實體，不能再近
         const near = Math.max(46, (bigChest.r || 14) + r + 24) - 4;
         const dc = Math.hypot(bigChest.x - x, bigChest.y - y);
-        cost += Math.max(0, dc - near) * 0.6;
-        if (dc < near && d < 0) cost -= 12;
+        // 要連續站 3.5 秒（離開會倒退）：周圍有怪也要站好（寶箱本來就設計成邊挨打邊開），血少於四成才放棄
+        // 附近（90 像素內）沒有敵人才站著開；有怪貼身就先處理怪，不硬吃傷害
+        const want2 = chestMode ? 1 : 0.2;
+        // 速度快時 0.7 秒的路線會「走過頭」衝到寶箱另一邊：看路線上最接近的那一點（到了範圍內就會站住）
+        cost += Math.max(0, Math.min(dc, chestBest + 10) - near) * 1.6 * want2;
+        if (dc < near) cost -= (d < 0 ? 30 : 12) * want2;
       }
       // 倒地的隊友：終點要貼著他（遊戲判定 56 像素內），到了就站著不動直到他起來
       if (downed) {

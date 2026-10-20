@@ -421,9 +421,10 @@ G.Player = class Player {
         const th = all.find(e => !e.dead && e.behavior === 'thief' && G.U.dist(this.x, this.y, e.x, e.y) < 420);
         if (th) tgt = th;
       }
-      // Copia local, sólo con el bot: un cofre pegado y ningún enemigo cerca → se abre el cofre.
-      if (this.bot && !(tgt && tgt.hurt && G.U.dist(this.x, this.y, tgt.x, tgt.y) < 140)) {
-        const chest = G.World.propsInCircle(this.x, this.y, 80).find(o => o.type === 'chest' && o.solid && o.hp > 0);
+      // Copia local, sólo con el bot: un cofre cerca y ningún enemigo encima → se rompe el cofre.
+      // (Antes pedía ningún enemigo a 140: con ataques que llenan la pantalla siempre había alguno y no lo abría nunca.)
+      if (this.bot && !all.some(e => !e.dead && e.behavior !== 'thief' && G.U.dist(this.x, this.y, e.x, e.y) < 70)) {
+        const chest = G.World.propsInCircle(this.x, this.y, 130).find(o => o.type === 'chest' && o.solid && o.hp > 0);
         if (chest) tgt = chest;
       }
       this.target = tgt;
