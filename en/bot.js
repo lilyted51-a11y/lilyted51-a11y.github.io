@@ -506,9 +506,12 @@ class PokeAutoBot {
     const specials = s.specials || [];
     const traps = specials.filter(o => o.type === 'trap');
     // 大寶箱：要站在旁邊 3.5 秒才會開（離開會倒退）。320 像素內有一個就去站好，站到開為止。
+    // 有時間限制的優先：裂縫一出現（會消失）就只管裂縫，大寶箱、小寶箱、祭壇都不會跑掉，回來再開
+    //（以前兩邊一起拉，會在中間來回抖：寶箱沒開到、裂縫也過期了）
+    const riftOn = !!(s.rift && !s.inArena);
     let bigChest = null, bcd = 320;
-    for (const o of specials) if (o.type === 'bigchest') { const d = Math.hypot(o.x - p.x, o.y - p.y); if (d < bcd) { bcd = d; bigChest = o; } }
-    const altars = specials.filter(o => o.type === 'altar' && !o.used);
+    if (!riftOn) for (const o of specials) if (o.type === 'bigchest') { const d = Math.hypot(o.x - p.x, o.y - p.y); if (d < bcd) { bcd = d; bigChest = o; } }
+    const altars = riftOn ? [] : specials.filter(o => o.type === 'altar' && !o.used);
     // 倒地的隊友（連線）：要站在他旁邊 3 秒才扶得起來。審判中或自己快死了就先不去。
     let downed = null;
     if (!arc && hpFrac >= 0.25) {
@@ -538,6 +541,7 @@ class PokeAutoBot {
     // 寶藏怪（喵喵＝金幣、賽富豪＝十連券）：15 秒內打倒，不然就跑掉
     let thief = null;
     if (!arc) for (const e of thieves) if (!thief || Math.hypot(e.x - p.x, e.y - p.y) < Math.hypot(thief.x - p.x, thief.y - p.y)) thief = e;
+    if (thief && riftOn && Math.hypot(thief.x - p.x, thief.y - p.y) > 200) thief = null;   // 裂縫優先，寶藏怪只在很近時順手打
     // 最值得撿的那一顆（價值 ÷ 距離最高、還在磁鐵範圍外）：鎖定它直線過去，不會被四周的掉落物拉來拉去
     let pickGoal = null;
     if (!arc && !rift) {
@@ -733,11 +737,11 @@ class PokeAutoBot {
         let wt = 0;
         if (o.type === 'spring' && (o.charge === undefined || o.charge > 0.05)) wt = hpFrac < 0.5 ? 40 : hpFrac < 0.85 ? 6 : 0;
         else if (o.type === 'altar') continue;   // 下面另外算
-        else if (o.type === 'bigchest') wt = o === bigChest ? 0 : 18;   // 近的那個在下面另外處理
+        else if (o.type === 'bigchest') wt = riftOn || o === bigChest ? 0 : 18;   // 近的那個在下面另外處理；裂縫期間不管寶箱
         if (wt) cost -= wt * 40 / (dd + 20);
       }
       // 小寶箱（打破有金幣、經驗、有時道具）：走過去，靠近時遊戲會自動瞄它
-      for (const c of (s.chests || [])) cost -= 9 * 40 / (Math.hypot(c.x - x, c.y - y) + 20);
+      if (!riftOn) for (const c of (s.chests || [])) cost -= 9 * 40 / (Math.hypot(c.x - x, c.y - y) + 20);
       // 大寶箱：終點要在它旁邊（開箱判定約 46 像素內），到了就站著不動
       if (bigChest) {
         // 遊戲的開箱判定：max(46, 箱子半徑 + 自己半徑 + 24) 以內；箱子是實體，不能再近
