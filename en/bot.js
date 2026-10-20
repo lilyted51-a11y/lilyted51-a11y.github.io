@@ -531,13 +531,25 @@ class PokeAutoBot {
   }
 
   /**
+   * 照遊戲的碰撞，從 (x, y) 往 (dx, dy) 走 dist 像素，切成每次最多 6 像素的小步。
+   * 遊戲一幀只走 3 像素左右；以前一次試走 19 像素，撞牆角、薄牆時會被推到側邊或牆的另一邊，
+   * 以為「走得通」，實際上每一幀都被整步推回 → 對著牆一直推、站著被打死（測試：卡住時 push = 想走的距離）。
+   */
+  walk(s, x, y, dx, dy, dist) {
+    const n = Math.max(1, Math.ceil(dist / 6)), sx = dx * dist / n, sy = dy * dist / n;
+    let o = { x, y };
+    for (let i = 0; i < n; i++) o = s.step(o.x + sx, o.y + sy);
+    return o;
+  }
+
+  /**
    * 從 (x, y) 往 (ox, oy) 方向「一小步一小步」真的走走看，能走多遠（最多 maxD）。
    * 以前一次跳 40～60 像素去試，會直接「穿過」薄牆、水邊的高地，誤以為走得通，結果一路走進死角。
    */
   freeRun(s, x, y, ox, oy, maxD) {
     let cx = x, cy = y;
     for (let d = 0; d < maxD; d += 12) {
-      const o = s.step(cx + ox * 12, cy + oy * 12);
+      const o = this.walk(s, cx, cy, ox, oy, 12);
       if (Math.hypot(o.x - cx, o.y - cy) < 6) return d;
       cx = o.x; cy = o.y;
     }
@@ -637,7 +649,7 @@ class PokeAutoBot {
     if (now - st.t > 300) {
       const moved = Math.hypot(p.x - st.x, p.y - st.y);
       // 按著方向卻幾乎沒動 → 卡住了：接下來 1.5 秒用找路（下面 pf）繞出去
-      if (this.lastDir >= 0 && moved < spd * 0.06) st.until = now + 1500;
+      if (this.lastDir >= 0 && moved < spd * 0.06) { st.until = now + 1500; this.badDir = { d: this.lastDir, until: now + 800 }; }
       st.x = p.x; st.y = p.y; st.t = now;
     }
     // 卡住時：從目前位置往 8 個方向各試走 160 像素，脫困時往走得最遠的方向
@@ -715,7 +727,7 @@ class PokeAutoBot {
       for (let k = 1; k <= STEPS; k++) {
         const t = k * dt;
         if (d >= 0) {
-          const o = s.step(x + dx * spd * dt, y + dy * spd * dt);
+          const o = this.walk(s, x, y, dx, dy, spd * dt);
           // 撞到東西：實際移動距離比預期短
           blocked += 1 - Math.min(1, Math.hypot(o.x - x, o.y - y) / (spd * dt));
           x = o.x; y = o.y;
@@ -801,6 +813,7 @@ class PokeAutoBot {
       }
       // 卡住了：往「真的走得最遠」的方向脫困，不要一直往牆上擠
       if (escapeRun && d >= 0) cost -= escapeRun[d] * 0.2;
+      if (this.badDir && now < this.badDir.until && d === this.badDir.d) cost += 60;   // 剛剛實際按了這個方向卻沒動：先別再推它
 
       // 終點：別被包圍（四面都有敵人比單邊危險）
       let crowd = 0, cx = 0, cy = 0;
@@ -819,7 +832,7 @@ class PokeAutoBot {
         if (d >= 0) {
           let open = 0;
           for (const [ox, oy] of PokeAutoBot.DIRS) {
-            const o = s.step(x + ox * 60, y + oy * 60);
+            const o = this.walk(s, x, y, ox, oy, 60);
             if (Math.hypot(o.x - x, o.y - y) > 42 && Math.hypot(o.x - arc.cx, o.y - arc.cy) < arc.max - 2) open++;   // 牆外（圓外）不算
           }
           cost += Math.max(0, 6 - open) * 9;
