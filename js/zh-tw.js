@@ -534,7 +534,7 @@
   "Idioma chino tradicional en Ajustes, con nombres de Pokémon, movimientos y objetos, menús y textos del juego.": "設定中新增繁體中文，包含寶可夢、招式與道具名稱，以及選單和遊戲文字。",
   "Todas las partidas cuentan": "每一局都算數",
   "Ya no hay comprobaciones contra trampas: todas las partidas cuentan para el ranking y los récords, y no se pierde nada de lo ganado.": "移除反作弊檢查：所有遊戲都會計入排行榜與個人紀錄，也不會扣除已獲得的獎勵。",
-  "Shinies": "異色寶可夢",
+  "Shinies": "閃光寶可夢",
   " / mes": "／月",
   "mes": "月",
   "{x} Nv.{x}": "{x} 等級 {x}",
@@ -553,7 +553,7 @@
   "Móvil: ya puedes colocar los botones donde quieras. En Ajustes > Controles > Colocar los botones arrastras los ataques (con el objeto), la pausa y el joystick, que ahora también puede ser fijo en vez de aparecer donde pones el dedo.": "手機：現在可以自由配置按鈕位置。在「設定 > 操作 > 配置按鈕位置」拖曳攻擊按鈕（含道具）、暫停按鈕與搖桿。搖桿也可設為固定，不必隨手指觸碰位置出現。",
   "Aviso importante: la única web oficial de PokéSurvivor es pokesurvivor.com. El juego es y será gratis: si alguna otra web te pide pagar (por tickets, monedas o lo que sea), no somos nosotros. Lo verás también al entrar y en el Aviso legal.": "重要公告：PokéSurvivor 唯一的官方網站是 pokesurvivor.com。本遊戲現在與未來都免費：若其他網站要求付費購買票券、金幣或任何內容，並非官方所為。登入畫面與法律聲明也會顯示這項公告。",
   "El código del juego pasa a una licencia no comercial (PolyForm Noncommercial 1.0.0): se puede seguir estudiando y modificando, pero nadie puede cobrar por él.": "遊戲程式碼改採非商業授權（PolyForm Noncommercial 1.0.0）：仍可研究與修改，但不得藉此收費。",
-  "Jugar en dos aparatos (PC y móvil) ya no hace perder monedas ni tickets: antes, si uno tenía la partida abierta con datos viejos y guardaba, borraba lo ganado en el otro. Ahora se suma lo de los dos. Y al volver al juego tras un rato fuera, se trae lo conseguido en el otro aparato (Pokémon, shinies...) sin recargar.": "在電腦與手機兩台裝置遊玩時，金幣與票券不再遺失。先前若其中一台保留舊資料並儲存，會覆蓋另一台獲得的成果；現在會合併兩台裝置的資源變動。離開一段時間再回到遊戲時，也會自動同步另一台取得的寶可夢與異色寶可夢等成果，不必重新載入。",
+  "Jugar en dos aparatos (PC y móvil) ya no hace perder monedas ni tickets: antes, si uno tenía la partida abierta con datos viejos y guardaba, borraba lo ganado en el otro. Ahora se suma lo de los dos. Y al volver al juego tras un rato fuera, se trae lo conseguido en el otro aparato (Pokémon, shinies...) sin recargar.": "在電腦與手機兩台裝置遊玩時，金幣與票券不再遺失。先前若其中一台保留舊資料並儲存，會覆蓋另一台獲得的成果；現在會合併兩台裝置的資源變動。離開一段時間再回到遊戲時，也會自動同步另一台取得的寶可夢與閃光寶可夢等成果，不必重新載入。",
   "Los avisos grandes de la partida (un Gholdengo cerca, una marea...) ya salen siempre centrados.": "局內大型公告（例如附近出現賽富豪、敵人大軍來襲等）現在都會置中顯示。",
   "{x}).": "{x}）。",
   "Botón Guardar arriba a la derecha: sube tu partida a la nube al momento. Úsalo antes de cerrar el juego o de cambiar de aparato. Si tiene un punto rojo, hay progreso sin subir.": "右上角的儲存按鈕可將進度上傳至雲端。關閉遊戲或更換裝置前請使用。紅點表示還有進度尚未上傳。",
@@ -1207,7 +1207,7 @@
   "Original": "原始",
   "Regalo para {x}": "送給 {x} 的禮物",
   "Regalar a {x}": "送給 {x}",
-  "Regalar a {x} (shiny)": "送給 {x}（異色）",
+  "Regalar a {x} (shiny)": "送給 {x}（閃光）",
   "Enviado a {x}: lo recibe al entrar": "已送給 {x}：對方登入時收到",
   "No encuentro ese Pokémon": "找不到這隻寶可夢",
   "Enviado: lo recibe al entrar": "已送出：對方登入時收到",
@@ -4572,26 +4572,67 @@
   "Primera versión": "首個版本",
   "Primera versión pública de PokéSurvivor.": "PokéSurvivor 首次公開發佈。",
   "7 October 2026": "2026 年 10 月 7 日",
-  "7 de octubre de 2026": "2026 年 10 月 7 日"
+  "7 de octubre de 2026": "2026 年 10 月 7 日",
+  // ---- copia local: textos que faltaban (revisión 21-10-2026) ----
+  "Mensajes nuevos": "新訊息", "New messages": "新訊息",
+  "{x} · {x} m": "{x} · {x} 公尺",
+  "⏱ {x} s": "⏱ {x} 秒",
+  "Ver su perfil": "查看個人檔案", "View profile": "查看個人檔案",
+  "Chat: en la sala hay una cajita para hablar, y durante la partida en grupo Enter abre el chat (Esc lo cierra; en el móvil, el botón 💬). Además puedes enviar mensajes privados a tus amigos desde la lista de amigos (💬); los nuevos se avisan en el menú.": "聊天：房間裡有聊天框；多人遊戲進行中按 Enter 開啟聊天（Esc 關閉；手機請點 💬 按鈕）。也可以從好友清單（💬）傳私訊給好友，收到新訊息時主選單會提醒。",
+  "El juego sólo se puede jugar en su web oficial, pokesurvivor.com: si otra web lo mete dentro de la suya (por ejemplo, para ponerle anuncios alrededor), sale un aviso con un botón para ir a la oficial.": "遊戲只能在官方網站 pokesurvivor.com 遊玩：若其他網站把遊戲嵌入自己的頁面（例如在周圍加上廣告），會顯示提示，並提供前往官方網站的按鈕。",
+  "Aviso importante: la única web oficial de PokéSurvivor es pokesurvivor.com. El juego es y será gratis: si alguna otra web te pide pagar (por tickets, monedas o lo que sea), no somos nosotros. Lo verás también al entrar y en el Aviso legal.": "重要提醒：PokéSurvivor 唯一的官方網站是 pokesurvivor.com。遊戲永遠免費：如果其他網站要你付錢（買票券、金幣或任何東西），那不是我們。登入時和「法律聲明」中也會看到這則提醒。",
+  "¿Pasar el puesto de anfitrión a": "要把房主轉交給",
+  "+{x} · se muestran 60 de {x} distintos": "+{x} · 共 {x} 種，只顯示 60 種",
+  "ATK ×{x}": "攻擊 ×{x}", "AT.E ×{x}": "特攻 ×{x}", "VEL ×{x}": "速度 ×{x}", "DEF ×{x}": "防禦 ×{x}", "REG ×{x}": "回復 ×{x}",
+  "recogidas": "拾取", "Shinies conseguidos": "捕獲的閃光寶可夢",
+  "No se pudo cargar {x}": "無法載入 {x}",
+  "Estamos en mantenimiento.": "維護中。", "We are under maintenance.": "維護中。",
+  "Estamos mudando el juego a servidores nuevos para que siga siendo gratis para todos. Tu cuenta, tu partida y tus Pokémon están a salvo. ¡Vuelve en unas horas!":
+    "我們正在把遊戲搬到新的伺服器，讓大家可以繼續免費遊玩。你的帳號、存檔和寶可夢都很安全，請過幾個小時再回來！",
+  "We are moving the game to new servers so it can stay free for everyone. Your account, your save and your Pokémon are safe. Please come back in a few hours!":
+    "我們正在把遊戲搬到新的伺服器，讓大家可以繼續免費遊玩。你的帳號、存檔和寶可夢都很安全，請過幾個小時再回來！"
 };
+  // copia local: frases del ranking que se montan por trozos (js/ui/ranking-ui.js): periodo × modo × (con un Pokémon)
+  for (const [pe, pz] of [['de hoy', '今日'], ['de esta semana', '本週'], ['de este mes', '本月'], ['de este año', '本年'], ['de siempre', '歷史']])
+    for (const [we, wz] of [['en solitario', '單人'], ['en grupo', '多人']])
+      for (const mon of [false, true]) {
+        const w = we + (mon ? ' con {x}' : ''), z = pz + wz + (mon ? '（{x}）' : '');
+        DICT[`Aún no estás en el top 50 ${pe} ${w}. Tu puesto está en Histórico.`] = `你還沒進入${z}榜的前 50 名。可在「歷史紀錄」查看你的名次。`;
+        DICT[`Tu mejor puesto ${pe} ${w}:`] = `你在${z}榜的最佳排名：`;
+        DICT[`Aún no tienes marca ${pe} ${w}.`] = `你在${z}榜還沒有紀錄。`;
+      }
   window.PSZH_DICT = DICT;   // copia local: el buscador de la Pokédex busca también por el nombre en chino
   const exact = new Map(), lower = new Map(), fragments = new Map(), patterns = [];
   const cache = new Map(), translatedNodes = new WeakMap();
   const literalCaptures = new Set([
     '¿Reportar la marca de {x} como trampa?', "Report {x}'s record as cheating?",
-    '¿Banear a {x}? No podrán volver a salir en el ranking y se borra su marca.'
+    '¿Banear a {x}? No podrán volver a salir en el ranking y se borra su marca.',
+    // copia local: códigos de error (permission-denied...) y apodos: tal cual
+    'No se pudo guardar el apodo ({x}).', 'No se pudo aceptar ({x}).', 'No se pudo borrar ({x}).', 'No se pudo invitar ({x}).',
+    'No se pudo cargar el ranking ({x}).', 'No se pudo cargar ({x}).', 'No se pudo cargar {x}', 'No se pudo guardar: {x}',
+    'Sala de {x}', 'Regalo para {x}', 'Enviado a {x}: lo recibe al entrar', 'Ahora {x} es el anfitrión'
   ]);
+  // copia local: listas de apodos ("Ted, Ana y tú"): los apodos tal cual, "tú" → 你, unidos con 、
+  const nameListCaptures = new Set([
+    'Faltan por elegir: {x}', 'Esperando a {x}…', 'Pausa: {x} está eligiendo…', 'Pausa: {x} están eligiendo…',
+    'Esperando a que {x} vuelva a la sala.', 'Esperando a que estén listos: {x}.', 'Viendo a {x}', 'Viendo a {x} (caído)',
+    'Viendo a {x} · ←/→ o un toque para cambiar', 'Viendo a {x} (caído) · ←/→ o un toque para cambiar'
+  ]);
+  const nameList = s => s.split(/\s*,\s*|\s+y\s+|\s+and\s+/).map(n => /^(tú|you)$/i.test(n) ? '你' : n).join('、');
   const escapeRE = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   for (const [source, target] of Object.entries(DICT)) {
     if (!target || source === target) continue;
     if (source.includes('{x}')) {
-      patterns.push({ re: new RegExp('^' + source.split('{x}').map(escapeRE).join('(.+?)') + '$', 'iu'), target, literal: literalCaptures.has(source) });
+      patterns.push({ re: new RegExp('^' + source.split('{x}').map(escapeRE).join('(.+?)') + '$', 'iu'), target,
+        literal: literalCaptures.has(source), names: nameListCaptures.has(source), weight: source.replace(/\{x\}/g, '').length });
     } else {
       exact.set(source, target);
       lower.set(source.toLowerCase(), target);
       if (source.length >= 4 || /\s/.test(source)) fragments.set(source.toLowerCase(), target);
     }
   }
+  // copia local: el patrón más concreto primero (como G.I18n): antes "{x} Pokémon" ganaba a "Derrota a {x} Pokémon"
+  patterns.sort((a, b) => b.weight - a.weight);
   const fragmentRE = new RegExp('(?<![\\p{L}\\p{N}])(' + [...fragments.keys()].sort((a,b) => b.length-a.length).map(escapeRE).join('|') + ')(?![\\p{L}\\p{N}])', 'giu');
   function translate(s, depth = 0) {
     if (typeof s !== 'string' || !/[A-Za-zÀ-ž]/u.test(s) || depth > 8) return s;
@@ -4604,7 +4645,7 @@
         const match = p.re.exec(body);
         if (!match) continue;
         let i = 1;
-        result = p.target.replace(/\{x\}/g, () => p.literal ? match[i++] : translate(match[i++], depth + 1));
+        result = p.target.replace(/\{x\}/g, () => p.names ? nameList(match[i++]) : p.literal ? match[i++] : translate(match[i++], depth + 1));
         break;
       }
     }
@@ -4631,7 +4672,12 @@
       const body = middle.replace(/\s+/g, ' ');
       const target = exact.get(body) ?? lower.get(body.toLowerCase());
       result = target === undefined ? s : lead + target + tail;
-    } else result = translate(isMoveElement(el) ? moveText(s) : s);
+    } else if (isMoveElement(el)) {
+      // copia local: una frase entera del diccionario (descripción de un ataque en el vínculo) va antes que el
+      // cambio Psíquico → 精神強念 (si no, «Rayo psíquico ancho y contundente.» salía a medias)
+      const body = s.trim().replace(/\s+/g, ' ');
+      result = exact.has(body) || lower.has(body.toLowerCase()) ? translate(s) : translate(moveText(s));
+    } else result = translate(s);
     const typeLabel = el.closest('.type-chip, .type, .tag-chip') || (guideHost && el.closest('a[href^="/types/"]'));
     return typeLabel && typeNames.has(result.trim()) ? result.replace(result.trim(), result.trim() + '系') : result;
   }
@@ -4641,7 +4687,10 @@
     const protectedElement = el?.closest('[translate="no"]');
     // Upstream protects its bilingual release notes from its own translator.
     // Only allow this known static announcement container; player names remain protected.
-    return !!protectedElement && !protectedElement.matches('#news-body > .news-day[translate="no"]');
+    // copia local: #lvl-wait (grupo: quién falta por elegir carta) es una frase entera marcada así por los
+    // apodos; se traduce igual y los apodos se dejan tal cual (nameListCaptures).
+    if (protectedElement?.matches('#user-pill > span') && protectedElement.textContent.trim() === 'Invitado') return false;   // copia local: sólo esa palabra, no el apodo
+    return !!protectedElement && !protectedElement.matches('#news-body > .news-day[translate="no"], #lvl-wait');
   };
   function textNode(node) {
     if (!node.parentElement || skipped(node.parentElement)) return;
@@ -4652,7 +4701,7 @@
     if (after !== before) node.nodeValue = after;
   }
   function element(el) {
-    if (skipped(el)) return;
+    if (skipped(el) && !el.matches('a.plink')) return;   // copia local: el «title» del enlace al perfil sí (el apodo, no)
     for (const attr of ATTRS) {
       const before = el.getAttribute(attr);
       if (!before) continue;

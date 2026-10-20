@@ -12,7 +12,7 @@ $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 # 1) procesos de prueba y Chrome sin ventana
 Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'node.exe' -and $_.CommandLine -match 'tools[\\/]test|survive|batch\.mjs|judge|chest|revive|quest|smoke' } |
   ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
-Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'remote-debugging-port=933' } |
+Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'remote-debugging-port=933[3-7](\D|$)' } |
   ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 Start-Sleep 3
 

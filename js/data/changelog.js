@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-21', title: ['Chino tradicional más completo', 'More complete Traditional Chinese'], fix: [
+    ['Chino tradicional: frases que salían a medias en español, ahora traducidas enteras: la línea del ranking cuando no estás en el top 50, quién falta por elegir carta en cooperativo, avisos de error, misiones, notas de afinidad de las cartas, apariciones de shiny, grieta, mejoras activas del HUD, resumen del gacha ×100/×1000 y la pantalla final. Los apodos de los jugadores ya no se traducen por error (alguien llamado Pikachu ya no sale como 皮卡丘).',
+     'Traditional Chinese: sentences that came out half in Spanish are now fully translated: the leaderboard line when you are not in the top 50, who still has to pick a card in co-op, error messages, missions, card affinity notes, shiny appearances, the rift, active buffs in the HUD, the ×100/×1000 gacha summary and the end screen. Player nicknames are no longer translated by mistake (someone called Pikachu no longer shows as 皮卡丘).']
+  ] },
   { d: '2026-10-20', title: ['Sala, chat, formas nuevas y gacha ×100', 'Room, chat, new forms and ×100 gacha'], new: [
     ['Cooperativo: cada jugador pulsa «Listo» (o la tecla R) en la sala; mientras elige Pokémon o mejoras aparece como «Preparando». El anfitrión sólo puede empezar cuando todos están listos.',
      'Co-op: each player presses "Ready" (or the R key) in the room; while choosing a Pokémon or upgrades they show as "Preparing". The host can only start once everyone is ready.'],
