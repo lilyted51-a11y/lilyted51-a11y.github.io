@@ -310,6 +310,12 @@ class PokeAutoBot {
       let s = 600 + 700 * q + (m.lvl / max) * 600;
       if (m.lvl / max >= top && q >= 0.8) s += 300;
       if (m.lvl + 1 >= max) s += 200;          // 這一下就升滿
+      // 沒特權：實際打出最多傷害的攻擊招（通常是起手招）先升滿進化。前期就死的局都是它停在 2～4 級、
+      // 點數分散到別的招，打怪太慢，第 2～3 分鐘怪就堆到 40～65 隻
+      if (!boosted && m.lvl < max) {
+        const main = attacks.slice().sort((a, b) => (b.dealt || 0) - (a.dealt || 0) || b.lvl - a.lvl)[0];
+        if (m === main && PokeAutoBot.fit(player, m.cat) >= 0.85) s += 900;
+      }
       if (fit < 0.95) s *= Math.max(0.35, fit * fit);   // 不合這隻寶可夢的招式：少投資
       if (boosted && m.lvl + 1 < max) s *= 0.6;          // 有特權：一般升級讓給防禦／體力（快升滿＝快進化的照舊）
       return s + tiebreak;

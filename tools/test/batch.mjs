@@ -57,7 +57,10 @@ const SETUP = `(()=>{ document.getElementById('tap-start').click(); document.get
     if (G.Game.state === 'playing' && !p.dead && want > 0.5 && moved < want * 0.2) {
       window.__stuckN++;
       window.__stuck.push({ t: +G.Game.st.time.toFixed(2), ax: ax.map(v => +v.toFixed(2)), want: +want.toFixed(2), moved: +moved.toFixed(2), push: +(window.__push || 0).toFixed(2), spd: Math.round(p.spd), sv: [Math.round(p.svx || 0), Math.round(p.svy || 0)], frozen: !!p.frozen, liq: !!p.inLiquid,
-        near: G.EnemyMgr.all().filter(e => !e.dead && Math.hypot(e.x - p.x, e.y - p.y) < 40).length, props: G.World.propsInCircle(p.x, p.y, 40).filter(o => o.solid).map(o => o.type).join(',') });
+        near: G.EnemyMgr.all().filter(e => !e.dead && Math.hypot(e.x - p.x, e.y - p.y) < 40).length, props: G.World.propsInCircle(p.x, p.y, 40).filter(o => o.solid).map(o => o.type).join(','),
+        // lo que cree el bot: ¿se movería 6 px en esa dirección según la colisión? (si sí y no se mueve, algo más lo frena)
+        pred: (() => { const o = { x: x0 + ax[0] * 6, y: y0 + ax[1] * 6, r: p.r }; G.World.collide(o); return +Math.hypot(o.x - x0, o.y - y0).toFixed(2); })(),
+        pos: [Math.round(p.x), Math.round(p.y)], arena: !!G.Rift.inArena, judge: !!(G.Judgment.arceus), r: p.r });
       if (window.__stuck.length > 20) window.__stuck.shift();
     }
     return r;
