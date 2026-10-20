@@ -353,6 +353,14 @@ G.Events = (() => {
     /** Para pruebas. */
     debugStart(id) { start(id, G.Game.st.time, G.Game.everyone()); },
     debugThief() { spawnThief(G.Game.everyone(), G.Game.st.time); },
-    _dbg() { return lost && { x: lost.x, y: lost.y, tx: lost.tx, ty: lost.ty, state: lost.state, hp: lost.hp }; }
+    _dbg() { return lost && { x: lost.x, y: lost.y, tx: lost.tx, ty: lost.ty, state: lost.state, hp: lost.hp }; },
+    /** Copia local (bot): el Pokémon perdido, dónde está la marca y si te sigue a ti. */
+    get lostInfo() {
+      if (!lost) return null;
+      const pl = G.Game.player;
+      // (en grupo, el invitado no sabe a quién sigue: se da por suyo si está pegado a él)
+      const mine = lost.follow ? lost.follow === pl : lost.state === 'follow' && !!pl && G.U.dist(pl.x, pl.y, lost.x, lost.y) < 120;
+      return { x: lost.x, y: lost.y, tx: lost.tx, ty: lost.ty, state: lost.state, mine, hp: lost.hp };
+    }
   };
 })();

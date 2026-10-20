@@ -701,6 +701,7 @@ G.Game = (() => {
         projectiles: G.Projectiles.all().filter(p => p.friendly === false), pickups: G.Pickups.all(),
         hazards: G.Hazards.all, inHazard: G.Hazards.inside, time, rift: G.Rift.rift, inArena: G.Rift.inArena,
         arceus: G.Judgment.arceus,   // la Sentencia: huir de él
+        lost: G.Events.lostInfo,     // Pokémon perdido: ir a por él y llevarlo a la marca
         // Compañeros (cooperativo): dónde están y si han caído (el bot va a levantarlos)
         mates: G.Coop.active ? G.Coop.puppets().map(m => ({ x: m.x, y: m.y, dead: !!m.dead, reviveT: m.reviveT || 0 })) : [],
         specials: G.World.specialsNear(pl.x, pl.y, 600),   // manantiales, altares, cofres grandes, trampas

@@ -6,7 +6,7 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
-  { d: '2026-10-19', title: ['Sala, chat, formas nuevas y gacha ×100', 'Room, chat, new forms and ×100 gacha'], new: [
+  { d: '2026-10-20', title: ['Sala, chat, formas nuevas y gacha ×100', 'Room, chat, new forms and ×100 gacha'], new: [
     ['Cooperativo: cada jugador pulsa «Listo» (o la tecla R) en la sala; mientras elige Pokémon o mejoras aparece como «Preparando». El anfitrión sólo puede empezar cuando todos están listos.',
      'Co-op: each player presses "Ready" (or the R key) in the room; while choosing a Pokémon or upgrades they show as "Preparing". The host can only start once everyone is ready.'],
     ['Chat: en la sala hay una cajita para hablar, y durante la partida en grupo Enter abre el chat (Esc lo cierra; en el móvil, el botón 💬). Además puedes enviar mensajes privados a tus amigos desde la lista de amigos (💬); los nuevos se avisan en el menú.',
@@ -23,6 +23,32 @@ G.CHANGELOG = [
      'Co-op: when you fall, the camera follows a living teammate (←/→, A/D or a tap to switch) and returns to you once you are revived.'],
     ['Gacha: botones de ×100 y ×1000 tiradas (pagan con tickets ×10 si alcanzan; si no, con tickets normales). Sin tragaperras y con el resultado resumido y agrupado; cada bloque de 10 sigue garantizando una Épica.',
      'Gacha: ×100 and ×1000 pull buttons (paid with ×10 tickets when you have enough, otherwise with regular tickets). No slot animation, with a summarised, grouped result; every block of 10 still guarantees an Epic.']
+  ] },
+  { d: '2026-10-19', title: ['38 ataques nuevos', '38 new moves'], new: [
+    ['38 ataques nuevos: ahora todos los tipos tienen 5 o más (Roca, Lucha, Dragón y Hada tenían sólo 2). Entre ellos Hiperrayo, Rayo Solar, Magnitud, Torbellino, Onda Trueno, Enfado, Carantoña, Golpe Bajo... cada uno con su evolución.',
+     '38 new moves: every type now has 5 or more (Rock, Fighting, Dragon and Fairy had only 2). Among them Hyper Beam, Solar Beam, Magnitude, Whirlpool, Thunder Wave, Outrage, Play Rough, Sucker Punch... each with its evolution.'],
+    ['Formas nuevas de atacar: disparos que persiguen al enemigo o rebotan entre ellos, rayos que se cargan, giros que golpean todo alrededor, ondas que avanzan por el suelo, remolinos que atraen a los enemigos, ondas que los apartan y zonas que los dejan aturdidos.',
+     'New ways to attack: shots that chase enemies or bounce between them, beams you charge up, spins that hit everything around you, shockwaves that travel along the ground, vortexes that pull enemies in, waves that push them away and zones that stun them.'],
+    ['Mejora nueva, Movimiento inicial: se compra una vez por Pokémon y luego eliges gratis con qué ataque empieza la partida.',
+     'New upgrade, Starting move: buy it once per Pokémon and then choose for free which move it starts the run with.'],
+    ['Idiomas nuevos: francés, italiano, portugués de Brasil, chino simplificado y chino tradicional, en Ajustes > Gráficos > Idioma. Gracias a quienes los tradujeron.',
+     'New languages: French, Italian, Brazilian Portuguese, Simplified Chinese and Traditional Chinese, in Settings > Graphics > Language. Thanks to everyone who translated them.'],
+    ['Una frase de broma en el título del menú principal, como las de Minecraft.',
+     'A joke line on the main menu title, like the ones in Minecraft.']
+  ], chg: [
+    ['Los Pokémon de un solo tipo pegan un 20 % más con los ataques de su tipo, para compensar que tienen menos variedad.',
+     'Single-type Pokémon deal 20% more damage with moves of their type, to make up for having less variety.'],
+    ['Al aprender un ataque nuevo ya no se cambia solo a él: sigues con el que estabas usando y cambias cuando tú quieras.',
+     'Learning a new move no longer switches to it on its own: you keep the one you were using and switch whenever you want.'],
+    ['El juego sólo se puede jugar en su web oficial, pokesurvivor.com: si otra web lo mete dentro de la suya (por ejemplo, para ponerle anuncios alrededor), sale un aviso con un botón para ir a la oficial.',
+     'The game can only be played on its official website, pokesurvivor.com: if another site embeds it in its own page (for example, to put ads around it), a notice appears with a button to go to the official one.']
+  ], fix: [
+    ['Movimiento inicial: ya se puede volver al ataque de serie aunque no sea de su tipo (por ejemplo Confusión en Psyduck).',
+     'Starting move: you can now go back to the default move even if it is not of its type (for example Confusion on Psyduck).'],
+    ['Cooperativo: el jefe que tocaba al volver de una grieta podía salir a miles de metros, donde nadie lo encontraba, y la partida se quedaba sin más grietas. Ahora sale cerca, y si un jefe se queda lejísimos de todos, vuelve a aparecer cerca a los pocos segundos.',
+     'Co-op: the boss due when coming back from a rift could appear thousands of metres away, where nobody could find it, and the run got no more rifts. Now it appears nearby, and if a boss ends up very far from everyone, it shows up close again after a few seconds.'],
+    ['Al recargar, a veces la página nueva se juntaba con los estilos viejos guardados en el navegador (por ejemplo, la frase del título salía en grande pegada a «PokéSurvivor»). Ya no pasa.',
+     'When reloading, the new page sometimes got mixed with the old styles saved in the browser (for example, the title line showed up big and stuck to "PokéSurvivor"). That no longer happens.']
   ] },
   { d: '2026-10-18', title: ['Físico y especial, mando, botón Guardar y rankings desde cero', 'Physical and special, controller, Save button and fresh leaderboards'], new: [
     ['Ataques físicos y especiales, como en los juegos: cada Pokémon tiene su Ataque, Ataque Especial, Defensa y Defensa Especial. Los ataques físicos pegan con su Ataque y los especiales con su Ataque Especial: Machamp pega fuerte con Golpe Kárate y flojo con Bola Sombra. Con los de su lado bueno pega lo mismo que antes. Al subir de nivel, cada carta dice si el ataque es físico o especial y cuánto rinde con tu Pokémon, y en la colección se ven todas sus estadísticas.',

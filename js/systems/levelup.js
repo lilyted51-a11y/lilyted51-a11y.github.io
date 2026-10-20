@@ -65,7 +65,7 @@ G.LevelUp = (() => {
           w: 10, type: 'new', key: 'new:' + id, buff: d.kind === 'buff', mkind: d.kind, stat: d.stat, cat: d.cat,
           icon: 'move:' + id, color: G.U.TYPE_COLOR[d.type],
           tag: G.U.TYPE_NAME[d.type] + (d.cat ? ' · ' + G.Stats.NAME[d.cat] : ''),
-          title: d.name, desc: d.desc + fitNote(pl.mon, d.cat),
+          title: G.T(d.name, 'move'), desc: d.desc + fitNote(pl.mon, d.cat),
           apply: p => p.addMove(id)
         });
       }
@@ -80,7 +80,7 @@ G.LevelUp = (() => {
       out.push({
         w: 40, type: 'evo', key: 'evo:' + m.id,
         icon: 'move:' + m.id, color: '#ffd23f', tag: 'EVOLUCIÓN',
-        title: m.name + ' → ' + ev.name, desc: ev.text,
+        title: G.T(m.name, 'move') + ' → ' + G.T(ev.name, 'move'), desc: ev.text,
         apply: p => {
           G.Moves.evolve(m);
           G.FX.ring(p.x, p.y, 8, 120, '#ffd23f', 0.8, 6);
@@ -99,7 +99,7 @@ G.LevelUp = (() => {
         w: 8, type: 'up', key: 'up:' + m.id, cat: m.cat,
         icon: 'move:' + m.id, color: G.U.TYPE_COLOR[m.type],
         tag: 'Nv.' + m.lvl + ' > ' + (m.lvl + 1) + (m.cat ? ' · ' + G.Stats.NAME[m.cat] : ''),   // copia local: + categoría
-        title: m.name, desc: txt + fitNote(pl.mon, m.cat),
+        title: G.T(m.name, 'move'), desc: txt + fitNote(pl.mon, m.cat),
         apply: () => G.Moves.levelUp(m)
       });
     }
@@ -115,8 +115,8 @@ G.LevelUp = (() => {
       const evoFor = waiting[s.id];
       out.push({
         w: evoFor ? 14 : pl.slots.length < pl.maxMoves ? 4 : 7,
-        type: 'stat', key: 'stat:' + s.id, evoFor: !!evoFor,
-        icon: s.icon, color: evoFor ? '#ffd23f' : '#8fa3c4', tag: evoFor ? 'Evoluciona ' + evoFor.name : 'Mejora',
+        type: 'stat', key: 'stat:' + s.id, evoFor: !!evoFor,   // copia local: evoFor lo lee en/bot.js (data-evo)
+        icon: s.icon, color: evoFor ? '#ffd23f' : '#8fa3c4', tag: evoFor ? 'Evoluciona ' + G.T(evoFor.name, 'move') : 'Mejora',
         title: s.title, desc: s.desc,
         apply: p => { s.apply(p); p.statsTaken[s.id] = (p.statsTaken[s.id] || 0) + 1; }
       });

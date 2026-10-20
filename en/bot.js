@@ -193,6 +193,12 @@ class PokeAutoBot {
       case 'cone': return (m.speed || 200) * (m.life || 0.5) + 30;
       case 'projectile': return Math.min(520, (m.speed || 300) * (m.life || 1.5));
       case 'aura': case 'nova': return m.radius || (m.speed || 200) * (m.life || 1);
+      // 10/19 新招式（跟遊戲 combat.js 的 reach 一樣）
+      case 'homing': case 'bounce': return Math.min(520, (m.speed || 300) * (m.life || 1.6));   // 追蹤／彈跳：遠程
+      case 'charge': return (m.radius || 300) + 20;     // 蓄力光束：直線很長
+      case 'quake': return (m.count | 0) * 34 + (m.radius || 30);   // 地震波：往前一路炸過去
+      case 'vortex': case 'stun': return 300;           // 漩渦／暈眩：出現在敵人腳下
+      case 'spin': case 'shove': return (m.radius || 60) + 20;   // 迴旋／擊退：打身邊一圈
       default: return 200;
     }
   }
@@ -344,6 +350,7 @@ class PokeAutoBot {
     // 近戰／衝刺：命中要敵人「中心」在招式半徑內 → 站在半徑的 55%，貼著打
     if (best.kind === 'melee' || best.kind === 'dash') return Math.max(22, (best.radius || 50) * 0.55);
     if (best.kind === 'aura') return Math.max(24, (best.radius || 60) * 0.5);
+    if (best.kind === 'spin' || best.kind === 'shove') return Math.max(26, (best.radius || 60) * 0.55);   // 打身邊一圈：貼近
     if (best.kind === 'orbit') return 45;
     if (['mine', 'trail', 'turret'].includes(best.kind)) return 120;
     if (best.kind === 'nova') {
@@ -468,7 +475,8 @@ class PokeAutoBot {
       Math.abs(e.x - p.x) < 420 && Math.abs(e.y - p.y) < 420);
     const shots = s.projectiles.filter(b => Math.abs(b.x - p.x) < 450 && Math.abs(b.y - p.y) < 450);
     const hazards = (s.hazards || []).filter(h => !h.hit);
-    const pickups = s.pickups.filter(it => Math.abs(it.x - p.x) < 500 && Math.abs(it.y - p.y) < 500);
+    const pickups = s.pickups.filter(it => Math.abs(it.x - p.x) < 500 && Math.abs(it.y - p.y) < 500)
+      .sort((a, b) => Math.hypot(a.x - p.x, a.y - p.y) - Math.hypot(b.x - p.x, b.y - p.y)).slice(0, 40);
     // 小偷寶可夢（會掉金幣和券）：值得追
     const thieves = s.enemies.filter(e => !e.dead && e.behavior === 'thief');
 
@@ -481,9 +489,9 @@ class PokeAutoBot {
     }
     // 真正要打的目標：遊戲目前瞄準的敵人（遠程招式會挑彈道暢通的）；沒有就用最近的
     const tgt = p.target && !p.target.dead && p.target.hp !== undefined ? p.target : nearest;
-    const usesShots = (p.slots && p.slots[p.active] || []).some(m => ['projectile', 'beam', 'boomerang', 'cone', 'nova'].includes(m.kind));
+    const usesShots = (p.slots && p.slots[p.active] || []).some(m => ['projectile', 'beam', 'boomerang', 'cone', 'nova', 'homing', 'bounce', 'charge', 'quake', 'vortex', 'stun'].includes(m.kind));
     // 近身型（近戰、衝刺、光環、環繞）：本來就要貼著怪，對一般小怪的「靠近」不扣分，只有真的碰到才算
-    const closeRange = !usesShots && (p.slots && p.slots[p.active] || []).some(m => ['melee', 'dash', 'aura', 'orbit', 'trail'].includes(m.kind));
+    const closeRange = !usesShots && (p.slots && p.slots[p.active] || []).some(m => ['melee', 'dash', 'aura', 'orbit', 'trail', 'spin', 'shove'].includes(m.kind));
     // 阿爾宙斯的審判：牠殺不死、碰到扣 40% 血、越來越快。目標只有一個：活越久越好。
     const arc = s.arceus;
     const lowHp = hpFrac < 0.35;
@@ -518,7 +526,27 @@ class PokeAutoBot {
     }
     // 目標和自己之間有牆／樹（直線走不到），或剛卡住：改用「路徑距離」帶路
     // 審判中：找路的目標 = 阿爾宙斯相對競技場中心的「對面」那一點（繞過柱子往遠處跑）
-    let pathGoal = rift ? null : downed || tgt;
+    // 迷路的寶可夢：先走過去碰牠，牠跟上後帶到綠色標記（獎勵：回血、金幣、抽獎券，有機會加入收藏）
+    const lost = !arc && !rift && s.lost && (s.lost.state === 'wait' || s.lost.mine) && hpFrac >= 0.3 ? s.lost : null;
+    const lostGoal = lost ? (lost.state === 'wait' ? { x: lost.x, y: lost.y } : { x: lost.tx, y: lost.ty }) : null;
+    // 寶藏怪（喵喵＝金幣、賽富豪＝十連券）：15 秒內打倒，不然就跑掉
+    let thief = null;
+    if (!arc) for (const e of thieves) if (!thief || Math.hypot(e.x - p.x, e.y - p.y) < Math.hypot(thief.x - p.x, thief.y - p.y)) thief = e;
+    // 最值得撿的那一顆（價值 ÷ 距離最高、還在磁鐵範圍外）：鎖定它直線過去，不會被四周的掉落物拉來拉去
+    let pickGoal = null;
+    if (!arc && !rift) {
+      let bv = 0;
+      for (const it of pickups) {
+        const d0 = Math.hypot(it.x - p.x, it.y - p.y);
+        if (d0 < (p.magnet || 78) * 0.9) continue;
+        const v0 = it.kind === 'heal' ? (hpFrac < 0.85 ? 6 : 0.2) : (PokeAutoBot.PICK[it.kind] ?? 0.3) * (it.kind === 'xp' || it.kind === 'xpBig' ? Math.min(3, 0.6 + (it.value || 1) / 10) : 1);
+        const sc = v0 / (d0 + 60);
+        if (sc > bv) { bv = sc; pickGoal = it; }
+      }
+    }
+    // 身邊 150 像素內沒敵人：先把經驗球掃乾淨（有敵人靠近時，照常以戰鬥為主）
+    const calm = !enemies.some(e => !e.boss && Math.hypot(e.x - p.x, e.y - p.y) < 150) && !enemies.some(e => e.boss && Math.hypot(e.x - p.x, e.y - p.y) < 260);
+    let pathGoal = rift ? null : downed || thief || lostGoal || (calm && pickGoal) || tgt;
     if (arc) {
       const da = Math.hypot(arc.x - p.x, arc.y - p.y);
       if (da > 320) {
@@ -545,6 +573,10 @@ class PokeAutoBot {
       let x = p.x, y = p.y, cost = 0, blocked = 0;
       let riftBest = rf ? this.fieldDist(rf, s.TS, x, y) : 0;   // 這條路線上離裂縫最近的一點
       let mateBest = downed ? Math.hypot(downed.x - x, downed.y - y) : 0;   // 路線上離倒地隊友最近的一點（速度快會走過頭）
+      let lostBest = lostGoal ? Math.hypot(lostGoal.x - x, lostGoal.y - y) : 0;
+      let thiefBest = thief ? Math.hypot(thief.x - x, thief.y - y) : 0;
+      let pgBest = pickGoal ? Math.hypot(pickGoal.x - x, pickGoal.y - y) : 0;
+      const pickBest = pickups.map(it => Math.hypot(it.x - x, it.y - y));   // 路線上離每個掉落物最近的距離
       const altarBest = altars.map(o => Math.hypot(o.x - x, o.y - y));   // 祭壇也是碰到就好
       const path = [[x, y]];                  // 我在每一步的位置（衝撞怪瞄準用）
       for (let k = 1; k <= STEPS; k++) {
@@ -564,6 +596,10 @@ class PokeAutoBot {
         path.push([x, y]);
         if (rf) riftBest = Math.min(riftBest, this.fieldDist(rf, s.TS, x, y));
         if (downed) mateBest = Math.min(mateBest, Math.hypot(downed.x - x, downed.y - y));
+        if (lostGoal) lostBest = Math.min(lostBest, Math.hypot(lostGoal.x - x, lostGoal.y - y));
+        if (pickGoal) pgBest = Math.min(pgBest, Math.hypot(pickGoal.x - x, pickGoal.y - y));
+        if (thief) { const [tx, ty] = [thief.x + (thief.vx || 0) * t, thief.y + (thief.vy || 0) * t]; thiefBest = Math.min(thiefBest, Math.hypot(tx - x, ty - y)); }
+        for (let q = 0; q < pickups.length; q++) pickBest[q] = Math.min(pickBest[q], Math.hypot(pickups[q].x - x, pickups[q].y - y));
         for (let a = 0; a < altars.length; a++) altarBest[a] = Math.min(altarBest[a], Math.hypot(altars[a].x - x, altars[a].y - y));
         const w = 1.15 - k / STEPS * 0.5;      // 越近的未來越重要
 
@@ -646,7 +682,7 @@ class PokeAutoBot {
       // 保持在招式打得到的距離（對「真正要打的目標」）。審判中：只有阿爾宙斯離得夠遠時才去打傳說寶可夢
       //（牠們每 5 秒翻倍，早殺早好；太近就只管逃）
       const arcFar = !arc;   // 審判中不追任何目標：自動瞄準會打到靠近的傳說
-      if (tgt && !rift && arcFar) {
+      if (tgt && !rift && arcFar && !(calm && pickGoal)) {
         // 只有打不到時才靠近；打得到就不用再往前（避免在怪群邊緣來回）
         const dn = Math.hypot(tgt.x - x, tgt.y - y);
         cost += Math.min(Math.max(0, dn - want), 700) * (arc ? 0.04 : closeRange ? 0.22 : 0.12);
@@ -660,14 +696,25 @@ class PokeAutoBot {
       if (rf) cost += riftBest * 0.7 + (riftBest < 26 ? -60 : 0);
 
       // 撿東西
-      for (const it of pickups) {
+      // 掉落物進到吸取範圍（磁鐵）就會自己飛過來：以「路線上最近的一點」減掉磁鐵半徑來算，分數比以前高很多，
+      // 沒有危險時會主動去掃經驗球（危險時，躲子彈和敵人的分數一樣比較大）
+      const mag = (p.magnet || 78) * 0.9;
+      for (let q = 0; q < pickups.length; q++) {
+        const it = pickups[q];
         const v = PokeAutoBot.PICK[it.kind] !== undefined ? PokeAutoBot.PICK[it.kind] : 0.3;
         let wt = it.kind === 'heal' ? (hpFrac < 0.85 ? 4 + (1 - hpFrac) * 30 : 0.3) : v;
         if (it.kind === 'xp' || it.kind === 'xpBig') wt *= Math.min(3, 0.6 + (it.value || 1) / 10);
-        cost -= (rift || arc ? 0.2 : 1) * wt * 40 / (Math.hypot(it.x - x, it.y - y) + 30);
+        const eff = Math.max(0, pickBest[q] - mag);
+        cost -= (rift || arc ? 0.2 : 1) * wt * 160 / (eff + 40);
       }
+      // 鎖定的那顆掉落物：越接近越好（進到磁鐵範圍就會自己飛過來）
+      if (pickGoal) cost += Math.max(0, Math.min(Math.hypot(pickGoal.x - x, pickGoal.y - y), pgBest + 10) - mag) * (calm ? 0.35 : 0.1);
+      // 迷路的寶可夢：碰到牠／帶到標記
+      if (lostGoal) cost += Math.max(0, Math.min(Math.hypot(lostGoal.x - x, lostGoal.y - y), lostBest + 10) - (lost.state === 'wait' ? 18 : 30)) * 0.9;
       // 寶藏怪（喵喵掉金幣、賽富豪掉 ×10 扭蛋券）：不會攻擊、會逃跑、時間到會消失 → 全力追
       for (const e of thieves) cost -= (e.def && e.def.loot === 'ticket10' ? 60 : 30) * 40 / (Math.hypot(e.x - x, e.y - y) + 30);
+      // 最近的那隻：用預測的逃跑位置追，越近分數越高（射程內就會被自動瞄準）
+      if (thief) cost -= (thief.def && thief.def.loot === 'ticket10' ? 140 : 80) * 60 / (thiefBest + 60);
 
       // 地圖上的東西：
       //   泉水（站上去每秒回 14% 血）：血少時最優先
@@ -693,8 +740,9 @@ class PokeAutoBot {
       // 倒地的隊友：終點要貼著他（遊戲判定 56 像素內），到了就站著不動直到他起來
       if (downed) {
         const dm = Math.hypot(downed.x - x, downed.y - y);
-        cost += Math.max(0, Math.min(dm, mateBest + 10) - 36) * 0.9;   // 走過頭也算有靠近（到了就會停）
-        if (dm < 44 && d < 0) cost -= 14;
+        // 判定是 56 像素內，但隊友那邊看到的你會因延遲偏一點：貼到 28 像素內才停（走過頭也算有靠近）
+        cost += Math.max(0, Math.min(dm, mateBest + 10) - 28) * 1.2;
+        if (dm < 32 && d < 0) cost -= 18;
       }
       // 祭壇（25 秒強化：攻擊×2、速度、磁鐵、冷卻）：路線上碰得到就算
       for (const db of altarBest) cost -= 14 * 40 / (db + 20);
@@ -725,7 +773,9 @@ PokeAutoBot.DIRS = [0, 1, 2, 3, 4, 5, 6, 7].map(i => [Math.round(Math.cos(i * Ma
 PokeAutoBot.TARGETED = ['melee', 'beam', 'projectile', 'boomerang', 'chain', 'meteor', 'dash', 'cone'];
 // 招式好不好用（越安全、越容易打中越高）：學新招和升級時參考
 PokeAutoBot.QUALITY = { projectile: 1, chain: 1, meteor: 0.95, beam: 0.9, boomerang: 0.85, turret: 0.8, cone: 0.75,
-                        aura: 0.75, mine: 0.7, orbit: 0.6, trail: 0.6, nova: 0.55, melee: 0.55, dash: 0.5 };
+                        aura: 0.75, mine: 0.7, orbit: 0.6, trail: 0.6, nova: 0.55, melee: 0.55, dash: 0.5,
+                        // 10/19 新招式：自動追蹤／彈跳的遠程最好用；蓄力光束、暈眩、漩渦也是遠程；迴旋／擊退要貼近
+                        homing: 1, bounce: 0.95, charge: 0.85, stun: 0.85, vortex: 0.8, quake: 0.75, shove: 0.6, spin: 0.55 };
 PokeAutoBot.D8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 // 撿東西的價值（heal 依血量另算）
 PokeAutoBot.PICK = { xp: 1.2, xpBig: 2.5, coin: 0.8, magnet: 4, bomb: 2, ticket: 10, ticket10: 16, item: 9 };
