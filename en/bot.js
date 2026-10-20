@@ -705,14 +705,17 @@ class PokeAutoBot {
       // 掉落物進到吸取範圍（磁鐵）就會自己飛過來：以「路線上最近的一點」減掉磁鐵半徑來算，分數比以前高很多，
       // 沒有危險時會主動去掃經驗球（危險時，躲子彈和敵人的分數一樣比較大）
       const mag = (p.magnet || 78) * 0.9;
+      let pickSum = 0;
       for (let q = 0; q < pickups.length; q++) {
         const it = pickups[q];
         const v = PokeAutoBot.PICK[it.kind] !== undefined ? PokeAutoBot.PICK[it.kind] : 0.3;
         let wt = it.kind === 'heal' ? (hpFrac < 0.85 ? 4 + (1 - hpFrac) * 30 : 0.3) : v;
         if (it.kind === 'xp' || it.kind === 'xpBig') wt *= Math.min(3, 0.6 + (it.value || 1) / 10);
         const eff = Math.max(0, pickBest[q] - mag);
-        cost -= (rift || arc ? 0.2 : 1) * wt * 160 / (eff + 40);
+        pickSum += Math.min(wt, 6) * 160 / (eff + 40);   // 單一個最多 24 分
       }
+      // 加總也有上限，血少時再減半：撿東西永遠不能比「被包圍、被打」更重要（曾經為了撿回血衝進怪堆被圍死）
+      cost -= (rift || arc ? 0.2 : 1) * Math.min(pickSum, 40) * (danger > 1 ? 0.5 : 1);
       // 鎖定的那顆掉落物：越接近越好（進到磁鐵範圍就會自己飛過來）
       if (pickGoal) cost += Math.max(0, Math.min(Math.hypot(pickGoal.x - x, pickGoal.y - y), pgBest + 10) - mag) * (calm ? 0.35 : 0.1);
       // 迷路的寶可夢：碰到牠／帶到標記
