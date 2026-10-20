@@ -1099,6 +1099,8 @@
   "(hoy, semana, mes, año e histórico). ¡A por el primer puesto!": "（今日、本週、本月、本年與歷史）。衝第一吧！",
   "Entendido": "知道了",
   "21 de octubre de 2026": "2026 年 10 月 21 日",
+  "Chino tradicional: el título de la animación de la Sentencia de Arceus salía como un galimatías (se traducía letra a letra); ahora sale entero.": "繁體中文：阿爾宙斯審判動畫的標題原本被一個字母一個字母地翻譯，變成看不懂的亂碼；現在會完整顯示。",
+  "Traditional Chinese: the title of the Arceus Judgment animation came out as gibberish (it was translated letter by letter); it now shows in full.": "繁體中文：阿爾宙斯審判動畫的標題原本被一個字母一個字母地翻譯，變成看不懂的亂碼；現在會完整顯示。",
   "21 October 2026": "2026 年 10 月 21 日",
   "20 de octubre de 2026": "2026 年 10 月 20 日",
   "20 October 2026": "2026 年 10 月 20 日",
