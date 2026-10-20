@@ -253,7 +253,8 @@ G.Combat = (() => {
       G.FX.beam(fx, fy, Math.atan2(ty - fy, tx - fx), Math.hypot(tx - fx, ty - fy), 10, col, vis);
       if (!ghost) {
         // Infortunio: más daño a quien ya sufre un estado.
-        const hex = m.hex && (cur.burn > 0 || cur.poison > 0 || cur.slow > 0) ? m.hex : 1;
+        // (Una copia del anfitrión no lleva los estados: vienen en net.st.)
+        const hex = m.hex && (cur.burn > 0 || cur.poison > 0 || cur.slow > 0 || (cur.net && cur.net.st & 11)) ? m.hex : 1;
         hit(pl, cur, m.dmg * pl.atkFor(m) * k * hex, col, tx - fx, ty - fy, 0, m);
       }
       k *= 0.85;
@@ -497,8 +498,9 @@ G.Combat = (() => {
       return f.i >= f.n;
     }
     if (f.kind === 'vortex') {
-      // Atrae (en quien manda: los enemigos de un invitado se mueven en el anfitrión).
-      if (!f.ghost) {
+      // Atrae quien tiene los enemigos de verdad: el anfitrión, también con el
+      // remolino (fantasma) de un invitado. En el invitado son copias y no se tocan.
+      // Antes el fantasma no atraía y en grupo el remolino de un invitado no hacía nada.
         for (const e of G.EnemyMgr.queryCircle(f.x, f.y, f.r * 1.4)) {
           if (e.dead || e.remote) continue;
           const dx = f.x - e.x, dy = f.y - e.y, d = Math.hypot(dx, dy);
@@ -506,7 +508,6 @@ G.Combat = (() => {
           const k = Math.min(d, f.pull * dt * (e.boss || e.judge ? 0.25 : 1));
           e.x += dx / d * k; e.y += dy / d * k;
         }
-      }
       f.tick -= dt;
       if (f.tick <= 0) { f.tick = 0.4; blast(f, f.r); }
       if (Math.random() < dt * 16 && G.Camera.sees(f.x, f.y, 40)) {

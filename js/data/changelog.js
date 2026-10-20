@@ -6,11 +6,24 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
-  { d: '2026-10-21', title: ['Chino tradicional más completo', 'More complete Traditional Chinese'], fix: [
+  { d: '2026-10-21', title: ['Arreglos de ataques, cooperativo más seguro y chino tradicional', 'Move fixes, safer co-op and Traditional Chinese'], fix: [
+    ["Cooperativo: un jugador con el juego trucado ya no puede colgar la partida de los demás mandando números imposibles (una experiencia infinita dejaba congelado al anfitrión y un efecto gigante, a los invitados).",
+     "Co-op: a player with a tampered game can no longer freeze the others by sending impossible numbers (infinite experience froze the host and a giant effect froze the guests)."],
+    ["Cooperativo: Viento Aciago, Bucle Arena y Torbellino de un invitado ya atraen a los enemigos (sólo atraían los del anfitrión).",
+     "Co-op: a guest's Ominous Wind, Sand Tomb and Whirlpool now pull enemies in (only the host's did)."],
+    ["Cooperativo: el Infortunio de un invitado ya hace su daño extra a los enemigos quemados, envenenados o frenados.",
+     "Co-op: a guest's Hex now deals its extra damage to burned, poisoned or slowed enemies."],
+    ["Bomba Ácida, Bola Voltio, Bomba Germen, Rayo Señal, Joya de Luz, Bola Neblina, Energibola, Canto Helado, Sombra Vil y Beso Drenaje: al evolucionar, los disparos salían hacia los lados y no daban a nadie. Ahora salen hacia delante, y la mejora «+1 proyectil» ya añade uno (antes no añadía ninguno).",
+     "Acid Spray, Electro Ball, Seed Bomb, Signal Beam, Power Gem, Mist Ball, Energy Ball, Ice Shard, Shadow Sneak and Draining Kiss: once evolved, the shots flew off to the sides and hit nothing. Now they go forward, and the \"+1 projectile\" upgrade really adds one (it added none before)."],
+    ["Cooperativo: si a alguien se le cerraban las cartas de subida de nivel sin haber elegido (podía pasar eligiendo muy deprisa), ahora se le vuelven a abrir y los demás ya no se quedan esperándole.",
+     "Co-op: if someone's level-up cards closed before they had picked (it could happen when picking very fast), they now open again and the others are no longer left waiting for them."],
     ['Chino tradicional: frases que salían a medias en español, ahora traducidas enteras: la línea del ranking cuando no estás en el top 50, quién falta por elegir carta en cooperativo, avisos de error, misiones, notas de afinidad de las cartas, apariciones de shiny, grieta, mejoras activas del HUD, resumen del gacha ×100/×1000 y la pantalla final. Los apodos de los jugadores ya no se traducen por error (alguien llamado Pikachu ya no sale como 皮卡丘).',
      'Traditional Chinese: sentences that came out half in Spanish are now fully translated: the leaderboard line when you are not in the top 50, who still has to pick a card in co-op, error messages, missions, card affinity notes, shiny appearances, the rift, active buffs in the HUD, the ×100/×1000 gacha summary and the end screen. Player nicknames are no longer translated by mistake (someone called Pikachu no longer shows as 皮卡丘).'],
     ['Chino tradicional: el título de la animación de la Sentencia de Arceus salía como un galimatías (se traducía letra a letra); ahora sale entero.',
      "Traditional Chinese: the title of the Arceus Judgment animation came out as gibberish (it was translated letter by letter); it now shows in full."]
+  ], chg: [
+    ["En el móvil ya no está la opción «Apuntar a mano» (no funcionaba con la pantalla táctil): los ataques siempre apuntan solos.",
+     "On mobile the \"Manual aim\" option is gone (it did not work with the touch screen): moves always aim on their own."]
   ] },
   { d: '2026-10-20', title: ['Sala, chat, formas nuevas y gacha ×100', 'Room, chat, new forms and ×100 gacha'], new: [
     ['Cooperativo: cada jugador pulsa «Listo» (o la tecla R) en la sala; mientras elige Pokémon o mejoras aparece como «Preparando». El anfitrión sólo puede empezar cuando todos están listos.',
