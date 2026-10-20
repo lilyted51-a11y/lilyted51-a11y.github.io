@@ -2,6 +2,15 @@
 
 Scripts que manejan dos Chromes headless por el protocolo DevTools contra el servidor local.
 
+**Antes de cada prueba, siempre:** `powershell -ExecutionPolicy Bypass -File tools	esteset_env.ps1 -Profiles <carpeta>`
+(cierra todos los Chrome de prueba con sus pestañas acumuladas y los procesos de prueba, arranca el
+servidor y abre Chrome limpios en 9333-9337; `<carpeta>` es donde están los perfiles con sesión iniciada:
+`chromeA` = tester1, `chromeB` = MiNG). Pestañas olvidadas = CPU llena = pruebas lentas o falsas.
+
+Partidas completas del bot y estadística:
+- `node tools/test/batch.mjs <puerto> <n> <dex> <bot|all> <etiqueta> <salida.jsonl>`
+- `node tools/test/stats.mjs <salida.jsonl>` → media ± IC 95 %, mediana, mín/máx, cuántas llegan a 30:00, de qué se muere.
+
 1. Servidor: `python tools/serve.py 8765` (sin caché).
 2. Dos Chromes (perfiles `chromeA` = tester1, `chromeB` = MiNG, ya con sesión iniciada), desde PowerShell:
    ```

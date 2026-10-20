@@ -30,3 +30,15 @@ servidores, base de datos o costes NO van ahí.
   (Cloudflare Realtime) se quitaron el 15-10-2026: el cooperativo va sólo con conexión directa
   (STUN gratis de Google). No volver a añadir nada de pago.
 - Mantenimiento: `MAINTENANCE` en `js/main.js` (con `?dev` se puede entrar para probar).
+
+## Pruebas automáticas (copia local, obligatorio)
+- **Antes de CADA prueba** (cualquier script de `tools/test/`): limpiar y reiniciar el entorno con
+  `powershell -ExecutionPolicy Bypass -File tools\test\reset_env.ps1 -Profiles <carpeta de perfiles>`.
+  Cierra todos los procesos de prueba y todos los Chrome sin ventana (puertos 9333-9337) con las
+  pestañas que se hayan acumulado, arranca el servidor si hace falta y abre los Chrome limpios.
+  Las pestañas que se quedan abiertas siguen jugando en segundo plano, se comen la CPU y las
+  pruebas salen lentas, se cuelgan o dan datos falsos (19-10-2026: 59 pestañas en un solo Chrome).
+- Mientras corre una prueba, no lanzar otra en el mismo Chrome (puerto).
+- Partidas completas del bot: `tools/test/batch.mjs` (siempre cierra su pestaña, resultados en JSONL)
+  y `tools/test/stats.mjs` para la media, el IC 95 %, la mediana y de qué se muere. Comparar
+  versiones con el mismo número de partidas.
