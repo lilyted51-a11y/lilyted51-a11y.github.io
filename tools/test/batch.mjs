@@ -34,6 +34,19 @@ async function openTab() {
 const SETUP = `(()=>{ document.getElementById('tap-start').click(); document.getElementById('scr-invite').classList.add('hidden');
   G.DB.playAsGuest(); const s = G.DB.save; s.partner = ${dex}; s.owned[${dex}] = { at: 1 };
   const u = G.DB.upgradesOf(${dex}); for (const x of G.Upgrades.LIST) u[x.id] = x.max;
+  ${process.env.BANS ? `(() => {   // BANS=1: veto y movimiento inicial como en la cuenta del dueño (tools/admin/auto_moves.mjs)
+    const mon = G.DEX_BY[${dex}], Q = PokeAutoBot.QUALITY, DEF = new Set(['spd', 'def', 'regen']);
+    const ONCE = new Set(['projectile', 'beam', 'charge', 'cone', 'nova', 'homing', 'bounce', 'chain', 'boomerang', 'melee', 'dash']);
+    const dps = id => { const d = G.Moves.BY_ID[id]; const m = G.Moves.instance(id, d.maxLvl || 5); return (m.dmg || 10) * Math.max(1, m.count || 1) / Math.max(0.2, m.cd || 1); };
+    const pool = G.Moves.poolFor(mon), med = pool.map(dps).sort((a, b) => a - b)[pool.length >> 1] || 1;
+    const v = id => { const d = G.Moves.BY_ID[id];
+      if (d.kind === 'buff') { if (DEF.has(d.stat)) return Infinity; const cat = d.stat === 'patk' ? 'physical' : d.stat === 'satk' ? 'special' : null; return cat && G.Stats.fit(mon, cat) < 0.95 ? -1 : 2; }
+      const fit = G.Stats.fit(mon, d.cat), b = (Q[d.kind] || 0.6) * fit * fit * (mon.types.length === 1 && d.type === mon.types[0] ? 1.2 : 1);
+      return ONCE.has(d.kind) ? b * Math.sqrt(dps(id) / med) : b; };
+    // START_BASE=1: el inicial de serie (para comparar con el que elige el veto automático)
+    const start = ${process.env.START_BASE ? 'G.baseStartOf(' + dex + ')' : 'G.startChoices(' + dex + ').sort((a, b) => v(b) - v(a))[0]'};
+    s.pstart = { [${dex}]: start }; s.pban = { [${dex}]: pool.filter(id => id !== start && v(id) !== Infinity).sort((a, b) => v(a) - v(b)).slice(0, 3) };
+  })();` : ''}
   G.Boost.paused = false; ${mode === 'bot' ? "G.Boost.debugAs('BATCHBOT', null, false, true);" : "G.Boost.debugAs('BATCHALL', null, true);"}
   G.UI.hideAll(); G.Game.startRun(); window.__POKE_BOT_ON__ = true;
   window.__botErr = 0; const ce = console.error.bind(console); console.error = (...a) => { if (String(a[0]).includes('[bot]')) window.__botErr++; ce(...a); };
