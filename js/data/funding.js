@@ -9,8 +9,10 @@
  *   costs     gastos [concepto, euros al mes]; si el coste no es fijo, un texto
  */
 G.Funding = {
-  kofi: 'jpter78',
-  sponsors: 'JPTER78',
+  // Copia local: vacíos. Eran las cuentas del autor del juego oficial y aquí confundían (parecía que se
+  // donaba a esta web); así no salen el botón «Apoyar», el de Ko-fi de la pausa ni la página /apoyar/.
+  kofi: '',
+  sponsors: '',
   costs: [
     ['Servidores (partidas, cuentas, ranking y multijugador)', 'Según cuánta gente juegue'],
     ['Dominio pokesurvivor.com', '≈12 € al año']

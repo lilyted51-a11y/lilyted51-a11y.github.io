@@ -24,6 +24,8 @@ G.CHANGELOG = [
     ["Chino tradicional: la pantalla de mantenimiento y la de «no se pudo cargar el juego» ya salen en chino (antes se quedaban en español).",
      "Traditional Chinese: the maintenance screen and the \"the game could not load\" screen now show in Chinese (they stayed in Spanish before)."],
   ], chg: [
+    ["Se quita el botón «Apoyar» y la página de donaciones: eran las del autor del juego oficial y podía parecer que se donaba a esta web. El juego sigue siendo gratis y sin anuncios.",
+     "The \"Support\" button and the donations page are gone: they belonged to the author of the official game and could look like donations to this site. The game is still free and ad-free."],
     ["En el móvil ya no está la opción «Apuntar a mano» (no funcionaba con la pantalla táctil): los ataques siempre apuntan solos.",
      "On mobile the \"Manual aim\" option is gone (it did not work with the touch screen): moves always aim on their own."]
   ] },
