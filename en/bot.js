@@ -354,6 +354,9 @@ class PokeAutoBot {
         const DEF_BUFF = { spd: 3, def: 2, regen: 1.5 };
         if (!boosted && DEF_BUFF[card.dataset.buff]) {
           const haveDef = buffs.some(b => DEF_BUFF[b.def && b.def.stat]);
+          // Agilidad 有一個攻擊招就先學（v25：沒學到的局都早死）；其他的等有兩個攻擊招
+          const haveSpd = buffs.some(b => b.def && b.def.stat === 'spd');
+          if (card.dataset.buff === 'spd' && !haveSpd && attacks.length >= 1) return 1850 + tiebreak;
           if (!haveDef && (attacks.length >= 2 || this.pacifist)) return 1800 + DEF_BUFF[card.dataset.buff] * 10 + tiebreak;
           if (this.pacifist) return 900 + tiebreak;
         }
@@ -366,6 +369,9 @@ class PokeAutoBot {
           const cat = b === 'patk' ? 'physical' : 'special';
           const same = attacks.filter(a => a.cat === cat).length;
           atkBuff = attacks.length ? same * 2 >= attacks.length : PokeAutoBot.fit(player, cat) >= 0.999;
+          // 不合這隻寶可夢的加攻輔助（特攻型的劍舞、物攻型的詭計）：白佔一格，比任何一張都差
+          //（蓋歐卡學了劍舞：只出 3 張卡、其他兩張更差時會被選上）
+          if (!atkBuff && PokeAutoBot.fit(player, cat) < 0.95) return 20 + tiebreak;
         }
         return (attacks.length >= 2 ? (atkBuff ? 1500 : 500) : 400) + tiebreak;
       }
