@@ -8,10 +8,10 @@ import fs from 'node:fs';
 const [,, port, n, dex, mode, label, out] = process.argv;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 // Nunca esperar para siempre (21-10-2026: un Chrome colgado dejó la tanda parada 4 horas sin avisar):
-// todo lo que habla con Chrome tiene tope, y si en 50 min no acaba ninguna partida, se sale con error.
+// todo lo que habla con Chrome tiene tope, y si en 90 min no acaba ninguna partida, se sale con error.
 const withTimeout = (p, ms, what) => Promise.race([p, sleep(ms).then(() => { throw new Error('timeout ' + what); })]);
 let lastProgress = Date.now();
-setInterval(() => { if (Date.now() - lastProgress > 50 * 60000) { console.log(label, 'WATCHDOG: sin progreso en 50 min, salgo'); process.exit(3); } }, 60000).unref();
+setInterval(() => { if (Date.now() - lastProgress > 90 * 60000) { console.log(label, "WATCHDOG: sin progreso en 90 min, salgo"); process.exit(3); } }, 60000).unref();
 
 async function openTab() {
   const t = await withTimeout(fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT', signal: AbortSignal.timeout(15000) }).then(r => r.json()), 20000, 'json/new');
