@@ -140,7 +140,10 @@ class PokeAutoBot {
     const boosted = !!(p.boost && p.boost.atk >= 5);
     const alive = s.enemies.reduce((n, e) => n + (e.dead ? 0 : 1), 0);
     if ((s.time || 0) < 5) this.pacifist = false;   // 新的一局
-    if (!boosted && !s.arceus && !this.pacifist && (s.time || 0) >= 90 && alive >= 58) this.pacifist = true;
+    // Sólo con Agilidad: sin ella, dejar de matar no sirve (v27: las 5 partidas que sólo tenían Fortaleza murieron
+    // entre 3:34 y 7:57; las 5 más largas, 8:11 a 30:11, tenían Agilidad). Sin Agilidad se sigue matando como siempre.
+    const hasSpd = (p.moves || []).some(m => m.kind === 'buff' && m.stat === 'spd');
+    if (!boosted && !s.arceus && !this.pacifist && hasSpd && (s.time || 0) >= 90 && alive >= 58) this.pacifist = true;
     // 頭目一定要打：打不死會一直追、越積越多，而且頭目活著就不出裂縫 → 頭目在 320 像素內、血量四成以上就照常出招
     const hpFrac = p.hp / (p.maxHp || 1);
     const bossNear = s.enemies.some(e => e.boss && !e.dead && !e.judge && Math.hypot(e.x - p.x, e.y - p.y) < 320);
