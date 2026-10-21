@@ -742,7 +742,10 @@ class PokeAutoBot {
         const d0 = Math.hypot(o.x - p.x, o.y - 8 - p.y); if (d0 < sd) { sd = d0; spring = { x: o.x, y: o.y - 8 }; } }
     }
     this.springOn = !!spring;
-    let pathGoal = rift ? null : downed || spring || thief || lostGoal || (chestMode && bigChest) || (calm && pickGoal) || tgt;
+    // 「不殺怪」時不追目標（只在要打頭目時才追）：以前保持射程和找路都朝著要打的那隻怪，等於一直把自己拉回怪群
+    const bossWin = enemies.some(e => e.boss && !e.judge && Math.hypot(e.x - p.x, e.y - p.y) < 320) && hpFrac >= 0.4;
+    const hunt = !this.pacifist || bossWin;
+    let pathGoal = rift ? null : downed || spring || thief || lostGoal || (chestMode && bigChest) || (calm && pickGoal) || (hunt ? tgt : null);
     if (arc) {
       const da = Math.hypot(arc.x - p.x, arc.y - p.y);
       if (da > 320) {
@@ -894,7 +897,7 @@ class PokeAutoBot {
       // 保持在招式打得到的距離（對「真正要打的目標」）。審判中：只有阿爾宙斯離得夠遠時才去打傳說寶可夢
       //（牠們每 5 秒翻倍，早殺早好；太近就只管逃）
       const arcFar = !arc;   // 審判中不追任何目標：自動瞄準會打到靠近的傳說
-      if (tgt && !rift && arcFar && !(calm && pickGoal) && !chestMode) {
+      if (tgt && hunt && !rift && arcFar && !(calm && pickGoal) && !chestMode) {
         // 只有打不到時才靠近；打得到就不用再往前（避免在怪群邊緣來回）
         const dn = Math.hypot(tgt.x - x, tgt.y - y);
         cost += Math.min(Math.max(0, dn - want), 700) * (arc ? 0.04 : closeRange ? 0.22 : 0.12);
