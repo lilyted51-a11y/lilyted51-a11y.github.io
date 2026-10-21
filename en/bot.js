@@ -134,6 +134,24 @@ class PokeAutoBot {
       const v = value(i);
       if (v > bestV * 1.2 + 1) { best = i; bestV = v; }
     }
+    // 沒特權、場上第一次擠滿（上限 64，滿了就不再出新怪，Spawner）之後：盡量別殺怪。
+    // 每隻怪的強度在出生那一刻就定了；殺掉一隻，補上來的是「現在」的怪（血 1+t/95 倍、傷害 1+t/420 倍、種類更強），
+    // 不殺，場上一直是早期的弱怪（測試：一局 23 級、幾乎沒殺怪，卻滿血撐到 15 分鐘）。→ 換到不打人的那一格（輔助招）
+    const boosted = !!(p.boost && p.boost.atk >= 5);
+    const alive = s.enemies.reduce((n, e) => n + (e.dead ? 0 : 1), 0);
+    if ((s.time || 0) < 5) this.pacifist = false;   // 新的一局
+    if (!boosted && !s.arceus && !this.pacifist && (s.time || 0) >= 90 && alive >= 58) this.pacifist = true;
+    // 頭目一定要打：打不死會一直追、越積越多，而且頭目活著就不出裂縫 → 頭目在 320 像素內、血量四成以上就照常出招
+    const hpFrac = p.hp / (p.maxHp || 1);
+    const bossNear = s.enemies.some(e => e.boss && !e.dead && !e.judge && Math.hypot(e.x - p.x, e.y - p.y) < 320);
+    if (this.pacifist && !s.arceus && !(bossNear && hpFrac >= 0.4)) {
+      // 開著保命的輔助招（速度 > 減傷 > 回血），而且盡量不打人；加攻擊的輔助招在這時沒用
+      const W = { spd: 3, def: 2, regen: 1.5 };
+      const calmV = i => slots[i].reduce((a, m) => a + (m.kind === 'buff' ? (W[m.stat] || 0) * 10 : -(m.dmg || 10) / Math.max(0.05, m.cd || 1)), 0);
+      let calm = p.active, cv = calmV(p.active);
+      for (let i = 0; i < slots.length; i++) { const v = calmV(i); if (v > cv + 0.01) { calm = i; cv = v; } }
+      best = calm;
+    }
     if (best !== p.active) {
       const code = 'Digit' + (best + 1);
       window.dispatchEvent(new KeyboardEvent('keydown', { code, key: String(best + 1), bubbles: true }));
@@ -284,6 +302,12 @@ class PokeAutoBot {
       const m = moves.find(x => x.id === id);
       if (!m) return 1000 + tiebreak;
       const max = (m.def && m.def.maxLvl) || 5;
+      // 不殺怪階段：防禦型輔助招升級最值得（開著它閃躲），攻擊招升級幾乎沒用（只有打頭目時才切回去）
+      if (!boosted && this.pacifist) {
+        const st = m.def && m.def.stat;
+        if (m.kind === 'buff') return (st === 'spd' ? 1750 : st === 'def' ? 1650 : st === 'regen' ? 1550 : 300) + tiebreak;
+        return (m.lvl + 1 >= max ? 1200 : 400) + tiebreak;   // 升滿那一下還是要（可以進化）
+      }
       if (m.kind === 'buff') {
         // 劍舞／龍之舞只加物攻、詭計只加特攻：跟手上攻擊招式不同類就別再升（Mega 基格爾德是特攻型，卻把劍舞升滿）
         const st = m.def && m.def.stat;
@@ -324,6 +348,15 @@ class PokeAutoBot {
     if (type === 'new') {
       if (free <= 0) return 0;
       if (card.dataset.buff) {
+        // 防禦型輔助招（Fortaleza 減傷、Agilidad 速度、Acua Aro 回血）：場上擠滿後「不殺怪、專心閃躲」時開這一格。
+        // 有兩個攻擊招之後先學一個（之後幾乎不會再升級，要在擠滿前學到）
+        // 速度最值得（v24：活最久的 4 局都有 Agilidad；只有 Fortaleza 的都在 5～7 分鐘死）
+        const DEF_BUFF = { spd: 3, def: 2, regen: 1.5 };
+        if (!boosted && DEF_BUFF[card.dataset.buff]) {
+          const haveDef = buffs.some(b => DEF_BUFF[b.def && b.def.stat]);
+          if (!haveDef && (attacks.length >= 2 || this.pacifist)) return 1800 + DEF_BUFF[card.dataset.buff] * 10 + tiebreak;
+          if (this.pacifist) return 900 + tiebreak;
+        }
         if (buffs.length) return 200;
         // 加攻擊的輔助最值得，而且要留一格給它。
         // 劍舞／龍之舞（patk）只加物理、詭計（satk）只加特殊：要跟手上攻擊招式的類別對上才有用
@@ -358,6 +391,11 @@ class PokeAutoBot {
       // 「Potencia」+10% 全部招式傷害、「Reflejos」-8% 全部冷卻，比升一個次要招式（只占總輸出一小部分）划算，
       // 排在一般招式升級之前（進化、新攻擊招式、加攻擊的輔助、升滿進化那一下還是優先）。
       //（試過優先拿防禦：打怪變慢、等級低，平均反而少 1 分半）
+      // 不殺怪階段：保命優先（防禦 > 體力 > 回血 > 速度），攻擊／冷卻只剩打頭目用
+      if (!boosted && this.pacifist) {
+        const P = { def: (player && (player.dmgReduce || 0) < 0.69) ? 1900 : 300, hp: 1600, rgn: 1450, spd: 1350, atk: 700, cd: 650, mag: 200, xp: 150 };
+        if (P[id] != null) return P[id] + tiebreak;
+      }
       if (!boosted && (id === 'atk' || id === 'cd')) return (id === 'atk' ? 1700 : 1650) + tiebreak;
       return (STAT[id] || 200) + tiebreak;
     }
