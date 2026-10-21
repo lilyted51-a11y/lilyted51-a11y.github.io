@@ -1,7 +1,7 @@
 /* ============ batch.mjs — partidas completas del bot, en serie, con resultados en JSONL (copia local) ============
  * node tools/test/batch.mjs <puerto> <n> <dex> <modo: bot|all> <etiqueta> <archivo.jsonl>
  * Cada partida en una pestaña nueva que SIEMPRE se cierra (también si algo falla), con
- * tope de 40 min. Al morir, el propio juego guarda el resultado (no se pierde aunque la
+ * tope de 80 min (y apunta dónde iba). Al morir, el propio juego guarda el resultado (no se pierde aunque la
  * pantalla cambie). Una línea JSON por partida en <archivo.jsonl>.
  */
 import fs from 'node:fs';
@@ -123,7 +123,14 @@ for (let k = 0, retried = false; k < +n; k++) {
       await sleep(5000);
       const d = await T.ev(`window.__done ? JSON.stringify(window.__done) : ''`);
       if (d && d !== 'TIMEOUT' && !String(d).startsWith('ERR')) { Object.assign(rec, JSON.parse(d)); break; }
-      if (Date.now() - t0 > 40 * 60000) { rec.error = 'timeout 40 min'; break; }
+      // 80 min de reloj: con 3 partidas a la vez el juego va más lento que el reloj y una partida que llega a la
+      // Sentencia (30:00 + 60 s) puede pasar de 40 min. Antes de cortar se apunta dónde iba (21-10-2026: se cortó una sin saber si vivía)
+      if (Date.now() - t0 > 80 * 60000) {
+        rec.error = 'timeout 80 min';
+        const snap = await T.ev(`JSON.stringify({ t: Math.round(G.Game.st.time), state: G.Game.state, lv: G.Game.player.level, hp: Math.round(G.Game.player.hp), dead: !!G.Game.player.dead, judg: G.Judgment.active })`);
+        try { rec.snapshot = JSON.parse(snap); } catch (e) { rec.snapshot = String(snap).slice(0, 120); }
+        break;
+      }
     }
   } catch (e) { rec.error = String(e.message || e); }
   rec.pageErrors = T.errs.slice(0, 2);

@@ -7,7 +7,7 @@
 set -u
 LABEL=$1 N=$2 DEX=$3 MODE=$4 PROFILES=$5 OUT=$6
 HERE="$(cd "$(dirname "$0")" && pwd)"
-CAP=$(( N * 45 * 60 ))   # 45 min por partida como mucho
+CAP=$(( N * 85 * 60 ))   # 85 min por partida como mucho (batch.mjs corta cada partida a los 80)
 powershell -ExecutionPolicy Bypass -File "$HERE/reset_env.ps1" -Profiles "$PROFILES" 2>&1 | tail -1
 pids=()
 for port in 9333 9335 9336; do
