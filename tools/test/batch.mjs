@@ -7,21 +7,27 @@
 import fs from 'node:fs';
 const [,, port, n, dex, mode, label, out] = process.argv;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+// Nunca esperar para siempre (21-10-2026: un Chrome colgado dejó la tanda parada 4 horas sin avisar):
+// todo lo que habla con Chrome tiene tope, y si en 50 min no acaba ninguna partida, se sale con error.
+const withTimeout = (p, ms, what) => Promise.race([p, sleep(ms).then(() => { throw new Error('timeout ' + what); })]);
+let lastProgress = Date.now();
+setInterval(() => { if (Date.now() - lastProgress > 50 * 60000) { console.log(label, 'WATCHDOG: sin progreso en 50 min, salgo'); process.exit(3); } }, 60000).unref();
 
 async function openTab() {
-  const t = await (await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT' })).json();
-  const ws = new WebSocket(t.webSocketDebuggerUrl); await new Promise(r => ws.onopen = r);
+  const t = await withTimeout(fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT', signal: AbortSignal.timeout(15000) }).then(r => r.json()), 20000, 'json/new');
+  const ws = new WebSocket(t.webSocketDebuggerUrl); await withTimeout(new Promise((r, j) => { ws.onopen = r; ws.onerror = j; }), 15000, 'websocket');
   let id = 0; const pend = new Map(), errs = [];
   ws.onmessage = m => { const d = JSON.parse(m.data); if (d.id && pend.has(d.id)) { pend.get(d.id)(d); pend.delete(d.id); }
     if (d.method === 'Runtime.exceptionThrown') errs.push(String(d.params.exceptionDetails.exception?.description || '').slice(0, 200));
     // console.error también (el juego atrapa los fallos del bot y los escribe con console.error('[bot]', e))
     if (d.method === 'Runtime.consoleAPICalled' && d.params.type === 'error') errs.push(JSON.stringify(d.params.args.map(a => a.value ?? a.description)).slice(0, 240)); };
-  const send = (method, params = {}) => new Promise(r => { const i = ++id; pend.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
+  const send = (method, params = {}) => Promise.race([new Promise(r => { const i = ++id; pend.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); }),
+    sleep(30000).then(() => ({ timeout: method }))]);
   const ev = e => Promise.race([
     send('Runtime.evaluate', { expression: e, returnByValue: true, awaitPromise: true }).then(r => r.result?.result?.value ?? ('ERR ' + (r.result?.exceptionDetails?.exception?.description || ''))),
     sleep(20000).then(() => 'TIMEOUT')]);
   await send('Runtime.enable');
-  const close = async () => { try { ws.close(); } catch (e) {} try { await fetch(`http://127.0.0.1:${port}/json/close/${t.id}`); } catch (e) {} };
+  const close = async () => { try { ws.close(); } catch (e) {} try { await fetch(`http://127.0.0.1:${port}/json/close/${t.id}`, { signal: AbortSignal.timeout(10000) }); } catch (e) {} };
   return { send, ev, errs, close };
 }
 
@@ -90,8 +96,15 @@ const SETUP = `(()=>{ document.getElementById('tap-start').click(); document.get
     if (!window.__done) requestAnimationFrame(tick); };
   requestAnimationFrame(tick); return 'ok'; })()`;
 
+let tabFails = 0;
 for (let k = 0, retried = false; k < +n; k++) {
-  const T = await openTab();
+  let T;
+  try { T = await openTab(); tabFails = 0; }
+  catch (e) {   // Chrome no responde: tras 3 intentos se deja (el que lanza la tanda lo verá en el log)
+    console.log(label, 'no se pudo abrir pestaña:', e.message);
+    if (++tabFails >= 3) { console.log(label, 'Chrome no responde, salgo'); process.exit(2); }
+    k--; await sleep(10000); continue;
+  }
   const rec = { label, port: +port, dex: +dex, mode, k, started: new Date().toISOString() };
   try {
     await T.send('Page.navigate', { url: 'http://localhost:8765/dev.html?dev' });
@@ -115,6 +128,7 @@ for (let k = 0, retried = false; k < +n; k++) {
   if (rec.error && /never ready|setup/.test(rec.error) && !retried) { retried = true; k--; console.log(label, 'retry after', rec.error); await sleep(10000); continue; }
   retried = false;
   fs.appendFileSync(out, JSON.stringify(rec) + '\n');
+  lastProgress = Date.now();
   console.log(label, k, rec.error ? 'ERROR ' + rec.error : `survived ${rec.t}s lv${rec.lv} judg=${rec.judg}`);
 }
 process.exit(0);

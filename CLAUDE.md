@@ -58,6 +58,11 @@ servidores, base de datos o costes NO van ahí.
 - Partidas completas del bot: `tools/test/batch.mjs` (siempre cierra su pestaña, resultados en JSONL)
   y `tools/test/stats.mjs` para la media, el IC 95 %, la mediana y de qué se muere. Comparar
   versiones con el mismo número de partidas.
+- **Nunca parado y nunca gastando a lo tonto** (21-10-2026: una tanda se colgó a las 4:40 y nadie se
+  enteró hasta las 8:36). Lanzar las tandas con `bash tools/test/run3.sh` (reinicia, pone tope de tiempo,
+  espera a que acaben las tres y luego cierra los Chrome de prueba). Si no hay ninguna prueba en marcha,
+  no puede quedar ningún Chrome de prueba abierto. Mientras corre una tanda, comprobar el avance
+  (los .log) cada ~20 min; si no avanza, matarla, ver por qué y relanzar.
 - **Mejorar el bot es un bucle que NO se para solo** (meta: sin ventajas, sólo el bot, aguantar
   30 min de forma estable). Al acabar cada tanda, en el mismo turno y sin esperar a que el dueño
   pregunte: analizar → informar en breve (en chino) → si es mejor con datos, commit (el dueño hace
