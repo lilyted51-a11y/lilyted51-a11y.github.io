@@ -360,9 +360,6 @@ class PokeAutoBot {
           // Agilidad 有一個攻擊招就先學（v25：沒學到的局都早死）；其他的等有兩個攻擊招
           const haveSpd = buffs.some(b => b.def && b.def.stat === 'spd');
           if (card.dataset.buff === 'spd' && !haveSpd && attacks.length >= 1) return 1850 + tiebreak;
-          // 有了 Agilidad 之後也要 Fortaleza：撐過 30 分鐘的局幾乎都兩個都有。以前「已經有一個保命招」就不再優先學
-          const haveDefB = buffs.some(b => b.def && b.def.stat === 'def');
-          if (card.dataset.buff === 'def' && haveSpd && !haveDefB) return 1780 + tiebreak;
           if (!haveDef && (attacks.length >= 2 || this.pacifist)) return 1800 + DEF_BUFF[card.dataset.buff] * 10 + tiebreak;
           if (this.pacifist) return 900 + tiebreak;
         }
