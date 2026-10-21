@@ -60,7 +60,12 @@ try {
       const mon = G.DEX_BY[dex]; if (!mon) continue;
       const pool = G.Moves.poolFor(mon);
       const med = pool.map(dps).sort((a, b) => a - b)[pool.length >> 1] || 1;
-      const v = id => { const b = value(mon, id); return G.Moves.BY_ID[id].kind === 'buff' ? b : b * Math.sqrt(dps(id) / med); };
+      // El daño por segundo «daño ÷ recarga» sólo vale para lo que pega una vez por uso. Los que hacen daño
+      // continuo (remolino cada 0,4 s, muñeco que dispara, aura, minas, rastro, órbita...) salían casi a 0 y se
+      // vetaban por error (Torbellino de Kyogre): para ésos cuenta sólo el tipo de ataque y la categoría.
+      const ONCE = new Set(['projectile', 'beam', 'charge', 'cone', 'nova', 'homing', 'bounce', 'chain', 'boomerang', 'melee', 'dash']);
+      const v = id => { const b = value(mon, id), k = G.Moves.BY_ID[id].kind;
+        return k === 'buff' || !ONCE.has(k) ? b : b * Math.sqrt(dps(id) / med); };
       const choices = G.startChoices(dex);
       const start = choices.slice().sort((a, b) => v(b) - v(a))[0];
       const bans = pool.filter(id => id !== start && v(id) !== Infinity).sort((a, b) => v(a) - v(b)).slice(0, 3);
