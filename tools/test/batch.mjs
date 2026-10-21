@@ -81,11 +81,15 @@ const SETUP = `(()=>{ document.getElementById('tap-start').click(); document.get
       const b = window.myPokeBot;
       window.__ter.push([Math.round(G.Game.st.time), Math.round(p.hp), open, mv, G.EnemyMgr.all().filter(e => !e.dead && Math.hypot(e.x - p.x, e.y - p.y) < 120).length, p.inLiquid ? 1 : 0, +(p.slowT || 0).toFixed(1),
         b ? b.lastDir : null, b ? (b.dbgMode || '') : '', b ? Object.entries(b.currentKeys || {}).filter(k => k[1]).map(k => k[0].replace('Key', '')).join('') : '', window.__botErr || 0]); if (window.__ter.length > 30) window.__ter.shift(); }
-    // Línea de tiempo cada 30 s: [t, enemigos vivos, élites (≥55 vivos), nivel, muertes, vida, daño hecho (miles), movimientos evolucionados, enemigos a <200, en la grieta, fotogramas por segundo, fotogramas sobre un manantial]
+    // Línea de tiempo cada 30 s: [t, enemigos vivos, élites (≥55 vivos), nivel, muertes, vida, daño hecho (miles), movimientos evolucionados, enemigos a <200, en la grieta, fotogramas por segundo, fotogramas sobre un manantial, xp en el suelo, xp a <300 px, xp para subir]
     if (G.Game.state === 'playing' && G.Game.st.time - lt30 >= 30) { lt30 = G.Game.st.time;
       window.__tl.push([Math.round(lt30), G.EnemyMgr.count, G.EnemyMgr.count >= 55 ? 1 : 0, p.level, p.kills, Math.round(p.hp),
         Math.round(p.moves.reduce((a, m) => a + (m.dealt || 0), 0) / 1000), p.moves.filter(m => m.evolved).length,
-        G.EnemyMgr.all().filter(e => !e.dead && Math.hypot(e.x - p.x, e.y - p.y) < 200).length, G.Rift.inArena ? 1 : 0, Math.round(fr * 1000 / Math.max(1, performance.now() - fw)), window.__springF || 0]); window.__springF = 0; fr = 0; fw = performance.now(); }
+        G.EnemyMgr.all().filter(e => !e.dead && Math.hypot(e.x - p.x, e.y - p.y) < 200).length, G.Rift.inArena ? 1 : 0, Math.round(fr * 1000 / Math.max(1, performance.now() - fw)), window.__springF || 0,
+        // experiencia que sigue en el suelo (no desaparece): total y a menos de 300 px; y la que se necesita para el siguiente nivel
+        Math.round(G.Pickups.all().filter(o => o.kind === 'xp' || o.kind === 'xpBig').reduce((a, o) => a + (o.value || 1), 0)),
+        Math.round(G.Pickups.all().filter(o => (o.kind === 'xp' || o.kind === 'xpBig') && Math.hypot(o.x - p.x, o.y - p.y) < 300).reduce((a, o) => a + (o.value || 1), 0)),
+        Math.round(p.xpNext)]); window.__springF = 0; fr = 0; fw = performance.now(); }
     const j = G.Judgment.summary();
     if ((G.Game.state === 'over' || p.dead || (j && j.time >= 60)) && !window.__done) {
       window.__done = { t: Math.round(G.Game.st.time), judg: j ? Math.round(j.time) : null, lv: p.level, kills: p.kills, bosses: p.bosses, maxHp: Math.round(p.maxHp),
