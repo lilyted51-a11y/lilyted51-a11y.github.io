@@ -17,6 +17,8 @@ en chino: con el navegador en chino el juego va en español por debajo y lo trad
 4. Ojo: lo marcado con `translate="no"` el parche no lo toca (hay que permitirlo en `skipped()` si no
    lleva apodos), y el texto del canvas que se pinta letra a letra se traduce letra a letra (ver PSZH_TITLE).
 5. Probarlo también en la versión publicada (app.min.js, sin `G` global), no sólo en dev.html.
+   Novedades: `node tools/test/news_zh.mjs <puerto>` (títulos, FECHAS y líneas en la publicada). Mirar la
+   pantalla entera tal como la ve el dueño, no sólo la frase nueva (22-10-2026: la fecha salía «22 de 10 de 2026»).
 
 ## Publicar una versión
 1. Se edita `dev.html` (nunca `index.html`, que se genera).
