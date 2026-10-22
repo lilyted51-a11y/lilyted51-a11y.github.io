@@ -123,7 +123,7 @@ G.Game = (() => {
 
   let pausedByHost = false;          // grupo (invitado): el anfitrión ha pausado para todos
   // Copia local: caído en grupo, la cámara sigue a un compañero vivo (←/→, A/D o un toque para cambiar).
-  let specUid = null, specNext = false, spectating = null;
+  let specUid = null, specNext = false, spectating = null, specAlive = false;
   const gameCanvas = document.getElementById('game');
   if (gameCanvas) gameCanvas.addEventListener('pointerdown', () => { if (G.Coop && G.Coop.active && pl && pl.dead) specNext = true; });
   function togglePause() {
@@ -810,10 +810,15 @@ G.Game = (() => {
       if (mates.length) {
         let i = mates.findIndex(p => p.uid === specUid);
         if (i < 0) { i = mates.findIndex(p => !p.dead); if (i < 0) i = 0; }
+        // El que mirabas acaba de caer: al siguiente que siga vivo (si queda alguno). A un caído
+        // elegido a mano (para ver dónde está) no se le quita: sólo cuenta el paso de vivo a caído.
+        else if (specAlive && mates[i].dead) {
+          for (let k = 1; k < mates.length; k++) { const j = (i + k) % mates.length; if (!mates[j].dead) { i = j; break; } }
+        }
         if (G.Input.tap('arrowright') || G.Input.tap('keyd') || G.Input.tap('space') || specNext || specDir > 0) i = (i + 1) % mates.length;
         else if (G.Input.tap('arrowleft') || G.Input.tap('keya') || specDir < 0) i = (i - 1 + mates.length) % mates.length;
         specNext = false; specDir = 0;
-        spectating = mates[i]; specUid = spectating.uid;
+        spectating = mates[i]; specUid = spectating.uid; specAlive = !spectating.dead;
         camX = spectating.x; camY = spectating.y;
       }
     } else specNext = false;
