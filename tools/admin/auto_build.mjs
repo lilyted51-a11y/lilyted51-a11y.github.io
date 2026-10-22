@@ -3,10 +3,10 @@
  * Para cada Pokémon que tiene la cuenta, pensado para el "cuatro en uno" (guía de un jugador, 22-10-2026:
  * ataque inicial + potenciador de ataque + potenciador de defensa + control, fusionados con los vínculos):
  *   - naturaleza (Menta): +10 % a su lado bueno y −10 % al otro, que no usa (Modesta / Firme),
- *   - ataque inicial: el que más pega con SU lado (rinde al 100 %), contando la habilidad (p. ej. Adaptable
- *     +25 % a los de sus tipos) y las MT que aprende en los juegos,
- *   - control (segundo movimiento inicial): un ataque que paraliza (Onda Trueno, Tumba Rocas, Liofilización,
- *     Puño Dinámico) de su lado; si no tiene ninguno, uno que atrae o empuja, y si no, uno que frena,
+ *   - ataque inicial: el que más pega con SU lado (rinde al 100 %) y de SUS tipos (si tiene alguno), contando la
+ *     habilidad (p. ej. Adaptable +25 % a los de sus tipos) y las MT que aprende en los juegos,
+ *   - control (segundo movimiento inicial), siempre de su lado: de sus tipos, uno que paraliza o atrae
+ *     (Torbellino), luego que empuja; si no, de otro tipo (Onda Trueno, Tumba Rocas...); si no, uno que frena,
  *   - habilidad (Cápsula): la que más suma con ese ataque y en defensa,
  *   - MT: sólo las que hacen falta para lo anterior (más movimientos en el mazo = menos cartas de lo bueno),
  *   - veto: los 3 que peor le van; nunca el inicial, el control, su potenciador de ataque, Fortaleza,
@@ -84,7 +84,7 @@ try {
       const nat = side === 'special' ? 'modest' : 'adamant';
       const mon = withNature(base, nat);
       const natural = G.Moves.poolFor(base, true);
-      const tmAll = [...new Set([...G.Mons.learnable(dex), ...G.Mons.taught(dex)])].filter(id => BY[id]);
+      const tmAll = [...new Set([...G.Mons.learnable(dex), ...G.Mons.taught(dex)])].filter(id => BY[id] && !natural.includes(id));
       const all = [...new Set([...natural, ...tmAll])];
       const atks = all.filter(id => BY[id].kind !== 'buff');
       const full = id => G.Stats.fit(mon, BY[id].cat) >= 0.999;          // rinde al 100 % con este Pokémon
@@ -92,10 +92,17 @@ try {
       const val = id => { const d = BY[id];
         const f = G.Stats.fit(mon, d.cat), mono = mon.types.length === 1 && d.type === mon.types[0] ? 1.2 : 1;
         return (Q[d.kind] || 0.6) * f * f * mono * (ONCE.has(d.kind) ? Math.sqrt(dps(id) / med) : 1); };
-      // Control: paraliza > atrae / empuja > frena; siempre de su lado
-      const tiers = [atks.filter(id => BY[id].kind === 'stun' && full(id)),
-                     atks.filter(id => (BY[id].kind === 'vortex' || BY[id].kind === 'shove') && full(id)),
-                     atks.filter(id => BY[id].slow && full(id))];
+      // De sus tipos primero (22-10-2026, Kyogre 12 + 12 partidas del bot: Pistola Agua + Torbellino media 16:54,
+      // Rayo + Onda Trueno 12:36; el daño estimado de Rayo, que salta a 8, no se da, y Torbellino pega más que nadie)
+      const own = id => base.types.includes(BY[id].type);
+      // Control: siempre de su lado; de sus tipos paraliza / atrae > empuja, luego de otro tipo, y si no, frena
+      const K = id => BY[id].kind;
+      const tiers = [atks.filter(id => full(id) && own(id) && (K(id) === 'stun' || K(id) === 'vortex')),
+                     atks.filter(id => full(id) && own(id) && K(id) === 'shove'),
+                     atks.filter(id => full(id) && K(id) === 'stun'),
+                     atks.filter(id => full(id) && (K(id) === 'vortex' || K(id) === 'shove')),
+                     atks.filter(id => full(id) && own(id) && BY[id].slow),
+                     atks.filter(id => full(id) && BY[id].slow)];
       const ctrlPool = tiers.find(l => l.length) || [];
       const slotsL = G.Mons.slots(dex);
       const abils = [0, 1, 2].filter(i => slotsL[i] && !(i === 1 && slotsL[1] === slotsL[0]));
@@ -105,8 +112,10 @@ try {
         const ctrlIds = ctrlPool.slice().sort((a, b) => val(b) * abilScore(fx, mon, [[b, 1]]) - val(a) * abilScore(fx, mon, [[a, 1]])
                                                         || natural.includes(b) - natural.includes(a));
         const ctrl = ctrlIds[0] || null;
+        const ownStart = atks.some(id => id !== ctrl && full(id) && own(id));
         for (const st of atks) {
           if (st === ctrl || !full(st)) continue;          // el inicial también tiene que rendir al 100 %
+          if (ownStart && !own(st)) continue;              // y de sus tipos, si tiene alguno que rinda al 100 %
           // Una MT de ataque sólo si pega claramente más que lo que ya tiene (cada movimiento de más estorba en el mazo)
           const v = val(st) * (natural.includes(st) ? 1 : 0.9) * abilScore(fx, mon, ctrl ? [[st, 3], [ctrl, 1]] : [[st, 1]]);
           if (!best || v > best.v) best = { v, ai, st, ctrl };
@@ -115,20 +124,23 @@ try {
       if (!best) continue;
       const { ai, st: start, ctrl } = best;
       // Sin control que rinda al 100 %: el segundo inicial es el segundo mejor ataque (de los que ya tiene)
-      const second = ctrl || natural.filter(id => BY[id].kind !== 'buff' && id !== start && full(id)).sort((a, b) => val(b) - val(a))[0] || null;
+      const second = ctrl || natural.filter(id => BY[id].kind !== 'buff' && id !== start && full(id)).sort((a, b) => own(b) - own(a) || val(b) - val(a))[0] || null;
       const teach = [start, ctrl].filter(id => id && !natural.includes(id));
       const atkBuff = side === 'special' ? ['nasty-plot'] : ['swords-dance', 'dragon-dance'];
       const keep = new Set([start, second, ...atkBuff, ...NEVER_BAN].filter(Boolean));
       const pool = [...new Set([...natural, ...G.Mons.taught(dex), ...teach])];
+      // MT que ya sabe y no le hacen falta (p. ej. de una pasada anterior): las primeras en el veto, así no salen en las cartas
+      const extra = G.Mons.taught(dex).filter(id => !keep.has(id) && !NEVER_BAN.has(id));
       const banV = id => { const d = BY[id];
         if (d.kind === 'buff') return d.stat === 'patk' || d.stat === 'satk' ? -1 : 2;   // potenciador de la otra categoría: el peor
         return val(id); };
-      const bans = pool.filter(id => !keep.has(id)).sort((a, b) => banV(a) - banV(b)).slice(0, 3);
+      const bans = [...extra, ...pool.filter(id => !keep.has(id) && !extra.includes(id)).sort((a, b) => banV(a) - banV(b))].slice(0, 3);
       tally.nat[nat] = (tally.nat[nat] || 0) + 1; tally.tms += teach.length;
       if (ctrl) tally.ctrl[ctrl] = (tally.ctrl[ctrl] || 0) + 1; else tally.noCtrl++;
       if (${WRITE}) {
         G.Mons.setNature(dex, nat);
         if (slotsL[ai]) G.Mons.setAbility(dex, ai);
+        // MT: las aprendidas no se olvidan nunca (al fusionar partidas es la unión): sólo se añaden; las que sobran se vetan
         if (teach.length) { s.ptm = s.ptm || {}; s.ptm[dex] = [...new Set([...G.Mons.taught(dex), ...teach])]; }
         s.pstart = s.pstart || {}; s.pstart2 = s.pstart2 || {}; s.pban = s.pban || {};
         s.pstart[dex] = start;
