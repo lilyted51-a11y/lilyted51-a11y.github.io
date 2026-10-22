@@ -47,6 +47,14 @@ const SETUP = `(()=>{ document.getElementById('tap-start').click(); document.get
     const start = ${process.env.START_BASE ? 'G.baseStartOf(' + dex + ')' : 'G.startChoices(' + dex + ').sort((a, b) => v(b) - v(a))[0]'};
     s.pstart = { [${dex}]: start }; s.pban = { [${dex}]: pool.filter(id => id !== start && v(id) !== Infinity).sort((a, b) => v(a) - v(b)).slice(0, 3) };
   })();` : ''}
+  ${process.env.START || process.env.TM || process.env.NAT || process.env.ABIL ? `(() => {   // configuración fija (tools/admin/auto_build.mjs): START, START2, TM=a,b, NAT, ABIL=0|1|2
+    const E = ${JSON.stringify({ START: process.env.START || '', START2: process.env.START2 || '', TM: process.env.TM || '', NAT: process.env.NAT || '', ABIL: process.env.ABIL || '' })};
+    if (E.TM) { s.ptm = { [${dex}]: E.TM.split(',') }; }
+    if (E.NAT) G.Mons.setNature(${dex}, E.NAT);
+    if (E.ABIL !== '') G.Mons.setAbility(${dex}, +E.ABIL);
+    if (E.START) { s.pstart = s.pstart || {}; s.pstart[${dex}] = E.START; }
+    if (E.START2) { s.pstart2 = s.pstart2 || {}; s.pstart2[${dex}] = E.START2; }
+  })();` : ''}
   G.Boost.paused = false; ${mode === 'bot' ? "G.Boost.debugAs('BATCHBOT', null, false, true);" : "G.Boost.debugAs('BATCHALL', null, true);"}
   G.UI.hideAll(); G.Game.startRun(); window.__POKE_BOT_ON__ = true;
   window.__botErr = 0; const ce = console.error.bind(console); console.error = (...a) => { if (String(a[0]).includes('[bot]')) window.__botErr++; ce(...a); };

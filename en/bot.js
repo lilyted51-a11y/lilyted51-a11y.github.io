@@ -150,7 +150,8 @@ class PokeAutoBot {
     if (this.pacifist && !s.arceus && !(bossNear && hpFrac >= 0.4)) {
       // 開著保命的輔助招（速度 > 減傷 > 回血），而且盡量不打人；加攻擊的輔助招在這時沒用
       const W = { spd: 3, def: 2, regen: 1.5 };
-      const calmV = i => slots[i].reduce((a, m) => a + (m.kind === 'buff' ? (W[m.stat] || 0) * 10 : -(m.dmg || 10) / Math.max(0.05, m.cd || 1)), 0);
+      // v41：輔助招合進攻擊格之後，那一格也會打人；保命的加成優先（×1000），同樣的加成才看哪一格打得少
+      const calmV = i => slots[i].reduce((a, m) => a + (m.kind === 'buff' ? (W[m.stat] || 0) * 1000 : -(m.dmg || 10) / Math.max(0.05, m.cd || 1)), 0);
       let calm = p.active, cv = calmV(p.active);
       for (let i = 0; i < slots.length; i++) { const v = calmV(i); if (v > cv + 0.01) { calm = i; cv = v; } }
       best = calm;
@@ -252,7 +253,7 @@ class PokeAutoBot {
     for (const card of cards) {
       const score = card.dataset.key ? this.scoreLevelCard(card, player)
         : card.dataset.item ? this.scoreItem(card.dataset.item)
-        : card.dataset.move ? this.scoreBond(card.dataset.move, player)
+        : card.dataset.move ? this.scoreBond(card.dataset.move, player, card.classList.contains('bond'))
         : this.scoreByText(card);
       if (score > bestScore) { bestScore = score; best = card; }
     }
@@ -426,11 +427,19 @@ class PokeAutoBot {
    * 羈絆（打倒傳說寶可夢）：把招式融合在同一格、同時出手。
    * 選最強的攻擊招式（進化、等級、實際打出的傷害、合不合這隻寶可夢）；輔助招式放最後。
    */
-  scoreBond(id, player) {
+  scoreBond(id, player, joining) {
     const moves = (player && player.moves) || [];
     const m = moves.find(x => x.id === id);
     if (!m) return 0;
-    if (m.kind === 'buff') return 0.3;
+    // v41（玩家攻略：起手招升滿後依序合成「增攻、增防、控制」）：同一格的招式各自照冷卻出手，
+    // 輔助招合進攻擊格 → 一邊打一邊一直有加成，不用換格子。第一步選最強的攻擊，之後要合進去的優先選輔助：
+    // 速度 > 減傷 > 合這隻寶可夢類別的加攻擊 > 回血；另一類別的加攻擊沒用，排最後。
+    if (m.kind === 'buff') {
+      if (!joining) return 0.3;
+      const side = PokeAutoBot.fit(player, 'special') >= PokeAutoBot.fit(player, 'physical') ? 'satk' : 'patk';
+      const W = { spd: 50, def: 40, regen: 20 };
+      return W[m.stat] || (m.stat === side ? 30 : m.stat === 'patk' || m.stat === 'satk' ? 0.2 : 10);
+    }
     const total = moves.reduce((a, x) => a + (x.dealt || 0), 0) + 1;
     return ((m.evolved ? 2 : 0) + m.lvl / ((m.def && m.def.maxLvl) || 5) + 2 * (m.dealt || 0) / total) *
       (PokeAutoBot.QUALITY[m.kind] || 0.6) * Math.min(1, PokeAutoBot.fit(player, m.cat)) + 1;
