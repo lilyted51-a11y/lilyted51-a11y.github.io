@@ -56,7 +56,7 @@ function* files(dir) {
   for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, f.name);
     if (f.isDirectory()) { if (!['lang'].includes(f.name)) yield* files(p); }
-    else if (f.name.endsWith('.js') && !/^lang-/.test(f.name) && !['app.min.js', 'zh-tw.js', 'changelog.js', 'pokedex.js', 'boot.js', 'i18n.js', 'locales.js', 'bg-tick.js', 'noframe.js'].includes(f.name)) yield p;
+    else if (f.name.endsWith('.js') && !/^lang-/.test(f.name) && !['app.min.js', 'zh-tw.js', 'changelog.js', 'pokedex.js', 'boot.js', 'i18n.js', 'locales.js', 'bg-tick.js', 'noframe.js', 'abilities.js', 'natures.js'  /* llevan su propia columna zh-Hant (G.Mons.name) */].includes(f.name)) yield p;
   }
 }
 // Parece una frase para el jugador: letras, un espacio y nada de código/CSS/selectores.

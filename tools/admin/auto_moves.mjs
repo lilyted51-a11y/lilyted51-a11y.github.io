@@ -6,6 +6,7 @@
  *   - veto = los 3 que peor le van (antes que nada, los potenciadores de ataque de la otra
  *     categoría: Danza Espada en un atacante especial, Maquinación en uno físico).
  *     Agilidad, Fortaleza y Acua Aro no se vetan nunca (el bot los usa para esquivar).
+ *   - segundo movimiento inicial = el siguiente mejor (con --grant2 se le da la mejora si tiene Repertorio).
  * Sin --write sólo enseña lo que haría. Con --write lo guarda y lo sube a la nube (G.DB.commit).
  */
 const [,, port, ...rest] = process.argv;
@@ -55,7 +56,7 @@ try {
       return (Q[d.kind] || 0.6) * fit * fit * mono;
     };
     const rows = [], show = ${JSON.stringify(SHOW)};
-    let changed = 0, noStart = 0, noBan = 0;
+    let changed = 0, noStart = 0, noBan = 0, noMoves = 0, granted = 0;
     for (const dex of Object.keys(s.owned).map(Number)) {
       const mon = G.DEX_BY[dex]; if (!mon) continue;
       const pool = G.Moves.poolFor(mon);
@@ -67,22 +68,30 @@ try {
       const v = id => { const b = value(mon, id), k = G.Moves.BY_ID[id].kind;
         return k === 'buff' || !ONCE.has(k) ? b : b * Math.sqrt(dps(id) / med); };
       const choices = G.startChoices(dex);
-      const start = choices.slice().sort((a, b) => v(b) - v(a))[0];
-      const bans = pool.filter(id => id !== start && v(id) !== Infinity).sort((a, b) => v(a) - v(b)).slice(0, 3);
+      const ranked = choices.slice().sort((a, b) => v(b) - v(a));
+      const start = ranked[0], start2 = ranked[1] || null;   // el segundo (Repertorio + Segundo movimiento inicial)
+      const bans = pool.filter(id => id !== start && id !== start2 && v(id) !== Infinity).sort((a, b) => v(a) - v(b)).slice(0, 3);
       const up = (s.pupg && s.pupg[dex]) || {};
       if (!up.start) noStart++;
       if ((up.ban || 0) < 3) noBan++;
+      if (!up.moves) noMoves++;
       if (${WRITE}) {
         s.pstart = s.pstart || {}; s.pban = s.pban || {};
         // Siempre explícito, aunque sea el de serie: al fusionar partidas, lo que falta se rellena con lo de la otra
         s.pstart[dex] = start;
         s.pban[dex] = bans; changed++;
+        s.pstart2 = s.pstart2 || {};
+        if (start2) s.pstart2[dex] = start2; else delete s.pstart2[dex];
+        // --grant2: la mejora "Segundo movimiento inicial" (sólo si ya tiene Repertorio, que es lo que pide)
+        if (${rest.includes('--grant2')} && up.moves) { s.pupg = s.pupg || {}; s.pupg[dex] = Object.assign(up, { start2: 1 }); granted++; }
+        // Hora del cambio: al fusionar con otro aparato gana el más reciente (G.DB.touchPick)
+        for (const k of ['pban', 'pstart', 'pstart2']) G.DB.touchPick(k, dex);
       }
       if (show.includes(dex)) rows.push(mon.name + ' (#' + dex + ', AT ' + mon.pa + ' / AE ' + mon.sa + ', ' + mon.types.join('/') + '): inicial ' +
-        G.Moves.BY_ID[start].name + ' [' + G.Moves.BY_ID[start].cat + '] · vetados ' + bans.map(id => G.Moves.BY_ID[id].name).join(', '));
+        G.Moves.BY_ID[start].name + ' [' + G.Moves.BY_ID[start].cat + '] · segundo ' + (start2 ? G.Moves.BY_ID[start2].name : '-') + ' · vetados ' + bans.map(id => G.Moves.BY_ID[id].name).join(', '));
     }
     if (${WRITE}) G.DB.commit();
-    return JSON.stringify({ who, owned: Object.keys(s.owned).length, changed, sinMejoraInicial: noStart, vetoIncompleto: noBan, rows });
+    return JSON.stringify({ who, owned: Object.keys(s.owned).length, changed, granted, sinMejoraInicial: noStart, vetoIncompleto: noBan, sinRepertorio: noMoves, rows });
   })()`);
   console.log(out);
   if (WRITE) {
@@ -99,7 +108,9 @@ try {
     console.log('nube', await ev(`(async () => { const fb = G.DB.fb; if (!fb) return 'sin nube';
       const d = await fb.fs.collection('saves').doc(fb.uid).get(); const sv = d.data().save || {};
       return JSON.stringify({ vetos: Object.keys(sv.pban || {}).length, iniciales: Object.keys(sv.pstart || {}).length,
-        kyogre: { veto: (sv.pban || {})[382] || null, inicial: (sv.pstart || {})[382] || null },
+        segundos: Object.keys(sv.pstart2 || {}).length, marcas: Object.keys(sv.pickT || {}).length,
+        conSegundo: Object.values(sv.pupg || {}).filter(u => u && u.start2).length,
+        kyogre: { veto: (sv.pban || {})[382] || null, inicial: (sv.pstart || {})[382] || null, segundo: (sv.pstart2 || {})[382] || null },
         mewtwoY: { veto: (sv.pban || {})[1150] || null, inicial: (sv.pstart || {})[1150] || null } }); })()`));
   }
 } finally {

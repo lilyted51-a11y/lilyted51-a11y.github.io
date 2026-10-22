@@ -150,7 +150,8 @@ G.Game = (() => {
   function startRun(coop = null) {
     holdBy = []; awayBy = null; pausedByHost = false;
     const save = G.DB.save;
-    const mon = G.DEX_BY[save.partner];
+    // Con su naturaleza aplicada (una copia: ver systems/mons.js).
+    const mon = G.Mons.monFor(save.partner);
     const perks = G.Upgrades.perks(G.DB.upgradesOf(mon.dex));
 
     G.UI.hideAll();
@@ -174,6 +175,7 @@ G.Game = (() => {
     runReal = performance.now(); tampered = false;
 
     pl = new G.Player(mon, perks, !!save.partnerShiny && G.DB.ownsShiny(mon.dex));
+    pl.setAbility(G.Mons.abilityOf(mon.dex).id);
     banked = { t1: 0, t10: 0 };
     t10Sec = 0;
     caught = [];
@@ -183,10 +185,13 @@ G.Game = (() => {
     pl.addMove(G.startMoveOf(mon.dex));
     // Mejora "Veto": movimientos que no quieres que te salgan.
     pl.banned = new Set((save.pban && save.pban[mon.dex] || []).slice(0, perks.bans));
-    // Mejora "Repertorio": un segundo movimiento de ataque al azar.
+    // Mejora "Repertorio": un segundo movimiento de ataque, el elegido con
+    // "Segundo movimiento inicial" o, si no, al azar.
     if (perks.startMoves >= 2) {
+      const pick2 = G.startMove2Of(mon.dex);
       const pool = G.Moves.poolFor(mon).filter(id => !pl.hasMove(id) && !pl.banned.has(id) && G.Moves.BY_ID[id].kind !== 'buff');
-      if (pool.length) pl.addMove(G.U.pick(pool));
+      if (pick2 && !pl.hasMove(pick2)) pl.addMove(pick2);
+      else if (pool.length) pl.addMove(G.U.pick(pool));
       pl.setActive(0);
     }
 
@@ -287,6 +292,8 @@ G.Game = (() => {
     },
     /** ¿Estás eligiendo algo que para la partida (objeto o vínculo)? */
     choosing() { return state === 'choice'; },
+    /** A quién miras mientras estás caído (uid, o '' si a ti). */
+    watching() { const w = watched(); return w ? w.uid : ''; },
     inLevelUp() { return state === 'levelup'; },
     shiny(dex) { G.onShinyCaught({ dex, name: (G.DEX_BY[dex] || {}).name || '' }); },
     over(d) {
@@ -635,7 +642,7 @@ G.Game = (() => {
     }
     if (state === 'ui') {
       // Esc en una subpantalla del menú vuelve al menú.
-      if (G.Input.tap('escape') && !G.UI.isOpen('scr-profile') && ['scr-dex', 'scr-upgrades', 'scr-gacha', 'scr-friends', 'scr-rank', 'scr-goals'].some(G.UI.isOpen)
+      if (G.Input.tap('escape') && !G.UI.isOpen('scr-profile') && ['scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-friends', 'scr-rank', 'scr-goals'].some(G.UI.isOpen)
           && document.getElementById('pull-fx').classList.contains('hidden')) G.MenuUI.open();
       return;
     }
@@ -644,6 +651,8 @@ G.Game = (() => {
     for (let i = 0; i < 4; i++) {
       if (G.Input.tap('digit' + (i + 1)) || G.Input.tap('numpad' + (i + 1))) pl.setActive(i);
     }
+    // Caído en grupo: Q / E cambian a quién miras.
+    if (pl.dead) { if (G.Input.tap('keyq')) cycleWatch(-1); if (G.Input.tap('keye') || G.Input.tap('tab')) cycleWatch(1); return; }
     if (G.Input.tap('keyq')) pl.cycle(-1);
     if (G.Input.tap('keye') || G.Input.tap('tab')) pl.cycle(1);
   }
@@ -651,6 +660,16 @@ G.Game = (() => {
   // ---------------- bucle ----------------
 
   let deathT = 0;
+
+  // Caído en grupo: puedes mirar a un compañero vivo. Sólo cambia a quién
+  // sigue la cámara (y el anfitrión te manda los enemigos de allí).
+  // Copia local: a quién se mira lo lleva nuestro sistema (también a los caídos, con un toque o ←/→,
+  // ver la cámara en step); Q / E del oficial sólo le dicen hacia dónde cambiar.
+  let specDir = 0;
+  /** El compañero al que miras, o null si miras tu cuerpo. */
+  function watched() { return pl && pl.dead && G.Coop.active ? spectating : null; }
+  /** Cambia a quién miras (al siguiente o al anterior). */
+  function cycleWatch(dir) { specDir = dir; G.Audio.sfx('click'); }
 
   let frameDt = 0, speedK = 1;
   let fpsShown = 60, fpsAcc = 0, fpsN = 0;
@@ -791,9 +810,9 @@ G.Game = (() => {
       if (mates.length) {
         let i = mates.findIndex(p => p.uid === specUid);
         if (i < 0) { i = mates.findIndex(p => !p.dead); if (i < 0) i = 0; }
-        if (G.Input.tap('arrowright') || G.Input.tap('keyd') || G.Input.tap('space') || specNext) i = (i + 1) % mates.length;
-        else if (G.Input.tap('arrowleft') || G.Input.tap('keya')) i = (i - 1 + mates.length) % mates.length;
-        specNext = false;
+        if (G.Input.tap('arrowright') || G.Input.tap('keyd') || G.Input.tap('space') || specNext || specDir > 0) i = (i + 1) % mates.length;
+        else if (G.Input.tap('arrowleft') || G.Input.tap('keya') || specDir < 0) i = (i - 1 + mates.length) % mates.length;
+        specNext = false; specDir = 0;
         spectating = mates[i]; specUid = spectating.uid;
         camX = spectating.x; camY = spectating.y;
       }
@@ -1047,7 +1066,9 @@ G.Game = (() => {
     debugSpeed(k) { if (k > 1) tampered = true; speedK = k; },
     /** Copia local: compañero al que miras mientras estás caído (o null). */
     get spectating() { return spectating; },
-    togglePause,
+    togglePause, cycleWatch,
+    /** El compañero al que miras estando caído (o null). */
+    get watching() { return watched(); },
     /** Abandona la partida en curso (p. ej. al cerrar sesión desde Ajustes). */
     quit() { if (state !== 'ui' && state !== 'over') quitRun(); },
     /** Para grabar vídeos: abre las cartas de subir de nivel. */
