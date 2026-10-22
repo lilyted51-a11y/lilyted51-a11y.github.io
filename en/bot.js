@@ -351,6 +351,23 @@ class PokeAutoBot {
 
     if (type === 'new') {
       if (free <= 0) return 0;
+      // v43：起手招之後先湊齊四合一的材料（增攻 > 變硬 > 控制），照攻略的順序
+      if (!boosted && attacks.length >= 1) {
+        const [, rAtk, rDef, rCtrl] = PokeAutoBot.recipe(player);
+        const side = PokeAutoBot.fit(player, 'special') >= PokeAutoBot.fit(player, 'physical') ? 'satk' : 'patk';
+        const b = card.dataset.buff;
+        if (b && b === side && !rAtk) return 1900 + tiebreak;
+        if (b === 'def' && !rDef) return 1890 + tiebreak;
+        const mk = card.dataset.mkind;
+        if (!b && !rCtrl && fit >= 0.999 && (mk === 'stun' || mk === 'vortex' || mk === 'shove'))
+          return Math.max(1880, 2600 * (PokeAutoBot.QUALITY[mk] || 0.6)) + tiebreak;
+        // v44：空格留給還沒學到的增攻／變硬（v43：第二個起手招占一格，第 4 格被水流環、高速移動拿走，變硬一直沒學到）
+        const missing = (rAtk ? 0 : 1) + (rDef ? 0 : 1);
+        // v45：高速移動例外（v44 只有 1/12 局學到，一半的局死在地形危害上；撐得久的局都有它）
+        const haveSpd = buffs.some(x => x.def && x.def.stat === 'spd');
+        if (b === 'spd' && !haveSpd) return 1850 + tiebreak;
+        if (free <= missing) return 100 + tiebreak;
+      }
       if (card.dataset.buff) {
         // 防禦型輔助招（Fortaleza 減傷、Agilidad 速度、Acua Aro 回血）：場上擠滿後「不殺怪、專心閃躲」時開這一格。
         // 有兩個攻擊招之後先學一個（之後幾乎不會再升級，要在擠滿前學到）
@@ -427,17 +444,40 @@ class PokeAutoBot {
    * 羈絆（打倒傳說寶可夢）：把招式融合在同一格、同時出手。
    * 選最強的攻擊招式（進化、等級、實際打出的傷害、合不合這隻寶可夢）；輔助招式放最後。
    */
+  /**
+   * v43（玩家攻略，照順序）：四合一 = 起手攻擊 → 合這隻寶可夢類別的增攻 → 變硬（增防）→ 控制。
+   * 控制：暈眩（電磁波、岩石封鎖…）優先，沒有就吸／推；都要能發揮 100%（類別跟這隻寶可夢的強項一樣）。
+   * 回傳已經學到的那幾招（照順序，沒學到的是 null）。
+   */
+  static recipe(player) {
+    const moves = (player && player.moves) || [];
+    const side = PokeAutoBot.fit(player, 'special') >= PokeAutoBot.fit(player, 'physical') ? 'satk' : 'patk';
+    const start = moves.find(m => m.kind !== 'buff') || null;
+    const full = m => PokeAutoBot.fit(player, m.cat) >= 0.999;
+    // v44：自己屬性的控制優先（蓋歐卡 12 局：水槍＋潮旋 平均 16:54，十萬伏特＋電磁波 12:36；潮旋實際打出的傷害全場最高）
+    const own = m => !!(player && player.mon && (player.mon.types || []).includes(m.type));
+    const ctl = m => m !== start && full(m) && (m.kind === 'stun' || m.kind === 'vortex' || m.kind === 'shove');
+    const ctrl = moves.find(m => ctl(m) && own(m) && m.kind !== 'shove') || moves.find(m => ctl(m) && own(m)) ||
+                 moves.find(m => ctl(m) && m.kind === 'stun') || moves.find(ctl) || null;
+    return [start, moves.find(m => m.kind === 'buff' && m.stat === side) || null,
+            moves.find(m => m.kind === 'buff' && m.stat === 'def') || null, ctrl];
+  }
+
   scoreBond(id, player, joining) {
     const moves = (player && player.moves) || [];
     const m = moves.find(x => x.id === id);
     if (!m) return 0;
+    const r = PokeAutoBot.recipe(player).indexOf(m);
+    if (!joining) { if (r === 0) return 100; }
+    else if (r >= 1) return 100 - r * 10;              // 增攻 90 > 變硬 80 > 控制 70
+    if (joining && m.kind === 'buff' && m.stat === 'spd') return 30;
     // v41（玩家攻略：起手招升滿後依序合成「增攻、增防、控制」）：同一格的招式各自照冷卻出手，
     // 輔助招合進攻擊格 → 一邊打一邊一直有加成，不用換格子。第一步選最強的攻擊，之後要合進去的優先選輔助：
     // 速度 > 減傷 > 合這隻寶可夢類別的加攻擊 > 回血；另一類別的加攻擊沒用，排最後。
     if (m.kind === 'buff') {
       if (!joining) return 0.3;
       const side = PokeAutoBot.fit(player, 'special') >= PokeAutoBot.fit(player, 'physical') ? 'satk' : 'patk';
-      const W = { spd: 50, def: 40, regen: 20 };
+      const W = { spd: 30, def: 25, regen: 20 };
       return W[m.stat] || (m.stat === side ? 30 : m.stat === 'patk' || m.stat === 'satk' ? 0.2 : 10);
     }
     const total = moves.reduce((a, x) => a + (x.dealt || 0), 0) + 1;
