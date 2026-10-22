@@ -5045,6 +5045,8 @@
     'Viendo a {x} · ←/→ o un toque para cambiar', 'Viendo a {x} (caído) · ←/→ o un toque para cambiar'
   ]);
   const nameList = s => s.split(/\s*,\s*|\s+y\s+|\s+and\s+/).map(n => /^(tú|you)$/i.test(n) ? '你' : n).join('、');
+  const MONTH_ES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const MONTH_EN = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
   const escapeRE = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   for (const [source, target] of Object.entries(DICT)) {
     if (!target || source === target) continue;
@@ -5066,6 +5068,13 @@
     const [, lead, middle, tail] = /^(\s*)([\s\S]*?)(\s*)$/.exec(s);
     const body = middle.replace(/\s+/g, ' ');
     let result = exact.get(body) ?? lower.get(body.toLowerCase());
+    // copia local: cualquier fecha («22 de octubre de 2026», «October 22, 2026»), no sólo las que están en el
+    // diccionario (22-10-2026: la de las novedades nuevas salía «22 de 10 de 2026»)
+    if (result === undefined) {
+      const d = /^(\d{1,2}) de (\p{L}+) de (\d{4})$/u.exec(body), e = /^(\p{L}+) (\d{1,2}), (\d{4})$/u.exec(body);
+      const mo = d ? MONTH_ES.indexOf(d[2].toLowerCase()) : e ? MONTH_EN.indexOf(e[1].toLowerCase()) : -1;
+      if (mo >= 0) result = d ? `${d[3]} 年 ${mo + 1} 月 ${+d[1]} 日` : `${e[3]} 年 ${mo + 1} 月 ${+e[2]} 日`;
+    }
     if (result === undefined) {
       for (const p of patterns) {
         const match = p.re.exec(body);
