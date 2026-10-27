@@ -70,3 +70,11 @@ servidores, base de datos o costes NO van ahí.
   pregunte: analizar → informar en breve (en chino) → si es mejor con datos, commit (el dueño hace
   el push) → diseñar y lanzar ya la siguiente variante. Si no es mejor, descartarla y probar otra.
   Nunca dejar las pruebas paradas esperando un "sigue".
+
+## Sincronizar con el juego oficial (upstream)
+- `git fetch upstream` y `bash tools/sync_upstream.sh` (fusión a tres bandas fichero a fichero, sin `\r`: los ficheros
+  de upstream llevan finales de línea mezclados y, si no, todo el fichero sale en conflicto). Luego resolver los
+  `<<<<<<<` a mano. Se queda lo nuestro: salas (4-10, contraseña, lista, chat, privados, `js/net/social.js` y
+  `social-ui.js`), modo espectador, ventajas (Boost), regalos, chino. No se toma: TURN/servidores de pago, el botón de
+  YouTube (`live-ui.js`), el sello del servidor en el ranking, los recortes de coste de Firestore, `database.rules.json`
+  de upstream (su modelo de salas es otro). Reglas de Firestore: las nuestras + los cambios de upstream a mano.

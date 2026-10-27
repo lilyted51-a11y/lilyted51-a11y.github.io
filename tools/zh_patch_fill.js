@@ -36,6 +36,7 @@ for (const [k, v] of Object.entries(offCtx)) { put(k, v); if (en[k]) put(en[k], 
 console.log('oficial zh-Hant:', Object.keys(off).length + Object.keys(offCtx).length, '| ya en el parche:', Object.keys(off).filter(k => k in DICT).length, '| se añaden:', Object.keys(add).length);
 if (DRY) { console.log(Object.entries(add).slice(0, 40).map(([k, v]) => '  ' + k + ' => ' + v).join('\n')); process.exit(0); }
 const anchor = '  "Sin preparar": "未準備",\n';
+src = src.split('\r\n').join('\n');   // da igual el final de línea con que esté guardado
 if (!src.includes(anchor)) throw new Error('anchor');
 const lines = '  // ---- añadido por tools/zh_patch_fill.js (traducción oficial de upstream) ----\n' +
   Object.entries(add).map(([k, v]) => '  ' + JSON.stringify(k) + ': ' + JSON.stringify(v) + ',\n').join('');

@@ -422,7 +422,9 @@ G.Social = (() => {
    */
   async function joinRoom(id, pass = '', invited = false) {
     if (room && room.id === id) return { ok: true };
-    if (room) await leaveRoom();
+    // Copia local (27-10-2026): al cambiar de sala (aceptar una invitación con la tuya abierta) la conexión
+    // no se apaga y se enciende entre medias: a veces la sala nueva se daba por cerrada al momento.
+    if (room) await leaveRoom(true);
     rtOn();
     let open = null, host = null, max = DEFAULT_MAX, lock = null;
     try {
@@ -614,7 +616,7 @@ G.Social = (() => {
     emit('room-closed');
   }
 
-  async function leaveRoom() {
+  async function leaveRoom(keepOnline = false) {
     if (!room) return;
     const r = room;
     detachRoom();
@@ -625,8 +627,14 @@ G.Social = (() => {
     await ref.remove().catch(() => {});
     retractInvites();
     writeStatus();
-    rtOff();
+    if (!keepOnline) rtOff();
     emit('room');
+  }
+
+  /** El anfitrión echa de la sala a un compañero que no ha vuelto tras un corte (coop.js). */
+  function dropMember(u) {
+    if (!room || !room.isHost || !u || u === uid) return;
+    fb.rtdb.ref('rooms/' + room.id + '/m/' + u).remove().catch(() => {});
   }
 
   /** El anfitrión cierra la sala a nuevos jugadores al empezar la partida. */
@@ -778,7 +786,7 @@ G.Social = (() => {
 
   return {
     start, stop, claimNick, request, requestUid, accept, remove, publishProfile, getProfile, profileData,
-    createRoom, joinRoom, leaveRoom, setOpen, setMax, listRooms, setInLobby, setReady, transferHost, refreshMember, freshMembers, setPlaying, refreshPresence,
+    createRoom, joinRoom, leaveRoom, setOpen, setMax, dropMember, listRooms, setInLobby, setReady, transferHost, refreshMember, freshMembers, setPlaying, refreshPresence,
     get ready() { return rdyOn; },
     sendChat, get chat() { return chat; },
     sendDm, watchDm, markDmSeen, dmUnread, unreadDm, get dms() { return [...dms.values()]; },
