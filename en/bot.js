@@ -151,7 +151,8 @@ class PokeAutoBot {
       // 開著保命的輔助招（速度 > 減傷 > 回血），而且盡量不打人；加攻擊的輔助招在這時沒用
       const W = { spd: 3, def: 2, regen: 1.5 };
       // v41：輔助招合進攻擊格之後，那一格也會打人；保命的加成優先（×1000），同樣的加成才看哪一格打得少
-      const calmV = i => slots[i].reduce((a, m) => a + (m.kind === 'buff' ? (W[m.stat] || 0) * 1000 : -(m.dmg || 10) / Math.max(0.05, m.cd || 1)), 0);
+      const calmV = i => slots[i].reduce((a, m) => a + (m.kind === 'buff' ? (W[m.stat] || 0) * 1000 : -(m.dmg || 10) / Math.max(0.05, m.cd || 1)), 0)
+        + (slots[i].some(m => m.kind === 'melee') ? 600 : 0);   // v55：有近戰招的那格受傷 ×0.75
       let calm = p.active, cv = calmV(p.active);
       for (let i = 0; i < slots.length; i++) { const v = calmV(i); if (v > cv + 0.01) { calm = i; cv = v; } }
       best = calm;
@@ -379,6 +380,8 @@ class PokeAutoBot {
         }
         return (attacks.length >= 2 ? (atkBuff ? 1500 : 500) : 400) + tiebreak;
       }
+      // v55：還沒有近戰招（目前那一格有近戰 → 受傷 ×0.75）就學一招，排在加攻擊的輔助和高速移動之後
+      if (!boosted && card.dataset.mkind === 'melee' && attacks.length >= 1 && !attacks.some(a => a.kind === 'melee') && fit >= 0.8) return 1250 + tiebreak;
       // 留一格給輔助：攻擊招式最多 3 招
       if (attacks.length >= 3) return 300;
       // 很不合這隻寶可夢的招式（卡上寫「只剩 xx %」）：不要
@@ -439,6 +442,12 @@ class PokeAutoBot {
       const side = PokeAutoBot.fit(player, 'special') >= PokeAutoBot.fit(player, 'physical') ? 'satk' : 'patk';
       const W = { spd: 50, def: 40, regen: 20 };
       return W[m.stat] || (m.stat === side ? 30 : m.stat === 'patk' || m.stat === 'satk' ? 0.2 : 10);
+    }
+    // v55（網路攻略 + 遊戲規則 Player.hurt）：目前那一格有近戰招，受到的傷害 ×0.75。主攻擊組還沒有近戰招時，
+    // 合一招進去（排在高速移動之後、變硬之前）
+    if (joining) {
+      const grow = (player.slots || []).find(g => g.length > 1 && g.length < 4);
+      if (grow && grow.some(x => x.kind !== 'buff') && !grow.some(x => x.kind === 'melee') && m.kind === 'melee') return 45;
     }
     const total = moves.reduce((a, x) => a + (x.dealt || 0), 0) + 1;
     return ((m.evolved ? 2 : 0) + m.lvl / ((m.def && m.def.maxLvl) || 5) + 2 * (m.dealt || 0) / total) *
