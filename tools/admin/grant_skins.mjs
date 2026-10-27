@@ -26,7 +26,7 @@ try {
   if (!online) { console.log('La cuenta no está abierta en este Chrome: no se toca nada'); process.exit(2); }
   await sleep(3000);
   console.log(await ev(`(() => { const s = G.DB.save; s.skins = s.skins || {}; const out = [];
-    for (const id of Object.keys(G.Skins.SKINS)) {   // también las que no se venden (el sombrero de Kecleon) const sk = G.Skins.SKINS[id]; if (!s.skins[id]) s.skins[id] = Date.now();
+    for (const id of Object.keys(G.Skins.SKINS)) { /* también las que no se venden (el sombrero de Kecleon) */ const sk = G.Skins.SKINS[id]; if (!s.skins[id]) s.skins[id] = Date.now();
       if (G.DB.owns(sk.dex)) { G.Skins.wear(s, sk.dex, id); out.push(id + ' → puesta a #' + sk.dex); } else out.push(id + ' (no tiene #' + sk.dex + ')'); }
     G.DB.commit(true); return out.join(' · '); })()`));
   for (let i = 0; i < 4; i++) {
