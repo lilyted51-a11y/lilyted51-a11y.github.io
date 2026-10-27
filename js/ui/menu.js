@@ -497,7 +497,7 @@ G.MenuUI = (() => {
 
   /** Skins (Halloween 2026): las compradas de este Pokémon, para ponerlas o quitarlas. */
   function skinRow(dex) {
-    const s = G.DB.save, mine = G.Skins.LIST.filter(id => G.Skins.SKINS[id].dex === +dex && G.Skins.owns(s, id));
+    const s = G.DB.save, mine = Object.keys(G.Skins.SKINS).filter(id => G.Skins.SKINS[id].dex === +dex && G.Skins.owns(s, id));   // copia local: también las que no se venden
     if (!mine.length) return '';
     const on = G.Skins.worn(s, dex);
     return `<div class="mx-row"><span>${G.T('Skin')}</span><b>${on ? G.T(G.Skins.SKINS[on].name) : G.T('Sin skin')}</b>

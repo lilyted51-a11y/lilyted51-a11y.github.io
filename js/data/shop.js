@@ -92,7 +92,7 @@ G.Shop = (() => {
   /** Halloween: una skin de bruja por caramelos (sólo esos días; luego se queda para siempre). → { ok, error? } */
   function buySkin(id) {
     const s = save(), sk = G.Skins.SKINS[id], price = G.Halloween.SKIN_PRICE;
-    if (!s || !sk) return { ok: false };
+    if (!s || !sk || sk.shop === false) return { ok: false };
     if (!G.Halloween.on) return { ok: false, error: 'Las skins de bruja sólo se venden en Halloween.' };
     if (G.Skins.owns(s, id)) return { ok: false, error: 'Ya tienes esta skin.' };
     if (count('candy') < price) return { ok: false, error: 'No tienes caramelos suficientes.' };

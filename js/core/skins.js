@@ -18,14 +18,16 @@ G.Skins = (() => {
   const SKINS = {
     'bruja-gengar':  { dex: 94,  name: 'Gengar bruja' },
     'bruja-pikachu': { dex: 25,  name: 'Pikachu bruja' },
-    'bruja-umbreon': { dex: 197, name: 'Umbreon bruja' }
+    'bruja-umbreon': { dex: 197, name: 'Umbreon bruja' },
+    // Copia local: el sombrero de Kecleon (el de la tienda) también se puede llevar, pero no se vende (shop: false):
+    // lo da el administrador (tools/admin/grant_skins.mjs).
+    'hat':           { dex: 352, name: 'Kecleon bruja', shop: false }
   };
-  const HAT = { dex: 352, name: 'Kecleon bruja' };
-  const LIST = Object.keys(SKINS);
+  const LIST = Object.keys(SKINS).filter(id => SKINS[id].shop !== false);   // las de la tienda
 
   /** La skin de un id para ese Pokémon; null si no hay o no es suya (no tiene hojas). */
   function get(id, dex) {
-    const s = id === 'hat' ? HAT : SKINS[id];
+    const s = SKINS[id];
     return s && s.dex === +dex ? s : null;
   }
 
