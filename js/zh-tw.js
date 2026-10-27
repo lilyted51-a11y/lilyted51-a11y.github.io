@@ -1117,6 +1117,8 @@
   "+8 % de daño con movimientos de tipo {x}.": "{x}屬性招式傷害+8%。",
   "+8% damage with {x}-type moves.": "{x}屬性招式傷害+8%。",
   "Tienda Kecleon": "隱形龍商店",
+  // copia local: un nodo de texto que empieza por «: » (p. ej. «<b>Esfera</b>: lo que hace», resumen de la pausa) se traduce entero
+  ": {x}": "：{x}",
   "Al día con el juego oficial y arreglo de las invitaciones": "與官方版同步，並修正邀請問題",
   "Up to date with the official game, and an invite fix": "與官方版同步，並修正邀請問題",
   "Cooperativo: aceptar una invitación (ventana de abajo a la derecha) teniendo tu propia sala abierta a veces no te metía en la sala del otro. Ahora entras siempre.": "合作模式：自己開著房間時，按右下角的邀請加入別人的房間，有時會進不去。現在一定進得去。",
@@ -5442,7 +5444,7 @@
     // apodos; se traduce igual y los apodos se dejan tal cual (nameListCaptures).
     if (protectedElement?.matches('#user-pill > span') && protectedElement.textContent.trim() === 'Invitado') return false;   // copia local: sólo esa palabra, no el apodo
     // copia local: #boot (mantenimiento y «no se pudo cargar») también: no lleva apodos
-    return !!protectedElement && !protectedElement.matches('#news-body > .news-day[translate="no"], #lvl-wait, #boot');
+    return !!protectedElement && !protectedElement.matches('#news-body > .news-day[translate="no"], #lvl-wait, #boot, #over-sum [translate="no"]');
   };
   function textNode(node) {
     if (!node.parentElement || skipped(node.parentElement)) return;
