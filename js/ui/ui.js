@@ -33,9 +33,11 @@ G.UI = (() => {
   /** Un número para la barra de arriba: entero hasta 99.999 y en corto desde ahí ("250 mil", "1,2 M"). */
   function short(n) {
     n = +n || 0;
-    if (n < 1e5) return n.toLocaleString(G.I18n.locale);
-    try { return new Intl.NumberFormat(G.I18n.locale, { notation: 'compact', maximumFractionDigits: n < 1e6 ? 0 : 1 }).format(n); }
-    catch (e) { return n.toLocaleString(G.I18n.locale); }
+    // Copia local: con el parche de chino, las cifras cortas en chino (10萬, 1.2億), no «100 mil» / «1,2 M»
+    const loc = window.PSZH_DICT ? 'zh-TW' : G.I18n.locale;
+    if (n < 1e5) return n.toLocaleString(loc);
+    try { return new Intl.NumberFormat(loc, { notation: 'compact', maximumFractionDigits: n < 1e6 ? 0 : 1 }).format(n); }
+    catch (e) { return n.toLocaleString(loc); }
   }
 
   function refreshCoins() {

@@ -794,6 +794,25 @@
   "The {x} Ghost-type Pokémon from every region, with double shiny odds. Only until November 1.": "來自所有地區的 {x} 隻幽靈屬性寶可夢，異色機率加倍。僅限 11 月 1 日前。",
   "El banner de Halloween ya ha terminado.": "萬聖節卡池已結束。",
   "The Halloween banner has ended.": "萬聖節卡池已結束。",
+  // 27-10-2026 (upstream): cooperativo más estable
+  "Cooperativo más estable": "合作模式更穩定",
+  "Steadier co-op": "合作模式更穩定",
+  "Móvil y tableta: nuevo joystick «Anclado» (Ajustes → Controles → Colocar los botones). Aparece donde pones el dedo y se queda en ese sitio mientras lo mantienes, aunque alejes el dedo; al levantarlo y tocar en otro sitio, aparece allí. El «Flotante» de siempre sigue al dedo y sigue siendo el que viene puesto.": "手機與平板：新增「錨定」搖桿（設定 → 控制 → 放置按鈕）。它出現在手指按下的位置，按住期間就固定在那裡，手指移遠也不會跟著跑；放開再按別處，就會出現在那裡。原本的「浮動」搖桿會跟著手指移動，仍是預設。",
+  "Mobile and tablet: new \"Anchored\" joystick (Settings → Controls → Place the buttons). It appears where you put your finger and stays in that spot while you hold it, even if you move your finger away; lift it and touch somewhere else, and it appears there. The usual \"Floating\" one follows your finger and is still the default.": "手機與平板：新增「錨定」搖桿（設定 → 控制 → 放置按鈕）。它出現在手指按下的位置，按住期間就固定在那裡，手指移遠也不會跟著跑；放開再按別處，就會出現在那裡。原本的「浮動」搖桿會跟著手指移動，仍是預設。",
+  "Armadura Frágil, Impasible y Cobardía ya no te quitan las cargas de Agilidad (u otra subida de velocidad mejor) al recibir un golpe: antes las dejaban en una.": "脆弱盔甲、不屈之心、膽怯在受到攻擊時不再清掉你的高速移動層數（或其他更好的速度提升）：之前會掉到只剩一層。",
+  "Weak Armor, Steadfast and Rattled no longer remove your Agility charges (or any better speed boost) when you get hit: they used to drop them to one.": "脆弱盔甲、不屈之心、膽怯在受到攻擊時不再清掉你的高速移動層數（或其他更好的速度提升）：之前會掉到只剩一層。",
+  "El Chaleco Asalto ya no cuenta para el tope del 70 % de las cartas Coraza: con las cartas al máximo, el chaleco suma encima. Y si te lo quitas, no pierdes lo de las cartas.": "突擊背心不再計入護甲卡 70 % 的上限：卡片拿滿後，背心會再往上疊加。脫下背心也不會失去卡片給的減傷。",
+  "The Assault Vest no longer counts toward the 70% cap of the Armor cards: with the cards maxed, the vest adds on top. And if you take it off, you keep what the cards gave you.": "突擊背心不再計入護甲卡 70 % 的上限：卡片拿滿後，背心會再往上疊加。脫下背心也不會失去卡片給的減傷。",
+  "En ventanas muy alargadas (muy anchas y bajas), los enemigos ya no se quedan dando vueltas fuera de la pantalla sin acercarse: parecía que no salía ninguno.": "在非常寬扁的視窗（很寬又很矮）裡，敵人不再在畫面外繞圈而不靠近：之前看起來像是完全沒有敵人出現。",
+  "In very elongated windows (very wide and short), enemies no longer keep looping off screen without coming closer: it looked as if none were spawning.": "在非常寬扁的視窗（很寬又很矮）裡，敵人不再在畫面外繞圈而不靠近：之前看起來像是完全沒有敵人出現。",
+  "Test inicial: los rasgos de tu personalidad («Paciente», «Tenaz»…) salían en español en todos los idiomas. Ya salen traducidos.": "初始測驗：你的性格特質（「有耐心」、「頑強」…）在所有語言裡都顯示成西班牙文。現在會翻譯了。",
+  "Starting quiz: your personality traits (\"Patient\", \"Tenacious\"…) were shown in Spanish in every language. They are translated now.": "初始測驗：你的性格特質（「有耐心」、「頑強」…）在所有語言裡都顯示成西班牙文。現在會翻譯了。",
+  "Ranking de daño a Arceus: «Sólo amigos» enseña también a los amigos que no están en el top 50 (en Histórico); en el Histórico se guarda tu mejor daño aunque esa partida no mejore tu tiempo.": "阿爾宙斯傷害排行：「只看好友」也會顯示不在前 50 名的好友（歷史榜）；歷史榜會保存你的最佳傷害，即使那場沒有刷新你的時間。",
+  "Arceus damage leaderboard: \"Friends only\" also shows friends outside the top 50 (in All-time); All-time keeps your best damage even if that run does not beat your time.": "阿爾宙斯傷害排行：「只看好友」也會顯示不在前 50 名的好友（歷史榜）；歷史榜會保存你的最佳傷害，即使那場沒有刷新你的時間。",
+  "Móvil: al tocar «Cambiar opciones» en las cartas de nivel, a veces se elegía sola una de las cartas nuevas; y en el vínculo, tras elegir el primer movimiento, se unía solo el que quedara debajo del dedo en vez del que tocabas. Ahora sólo se elige la carta que tocas.": "手機：在升級卡片上點「更換選項」時，有時會自動選到其中一張新卡；連結時選好第一個招式後，會自動連結手指下方的那個而不是你點的那個。現在只會選你點到的卡片。",
+  "Mobile: tapping \"Change options\" on the level-up cards sometimes picked one of the new cards by itself; and in a bond, after choosing the first move, whichever move ended up under your finger was joined instead of the one you tapped. Now only the card you tap is chosen.": "手機：在升級卡片上點「更換選項」時，有時會自動選到其中一張新卡；連結時選好第一個招式後，會自動連結手指下方的那個而不是你點的那個。現在只會選你點到的卡片。",
+  "Cooperativo: con una conexión lenta, un jugador podía ver la partida minutos tarde (hasta más de 4 minutos por detrás de los demás), y en la Sentencia de Arceus era un caos. Ahora, si la conexión no da para más, el juego espera a que se ponga al día en vez de amontonar lo que falta por llegar: como mucho, la partida se para un momento («esperando al anfitrión»), pero va siempre al día.": "合作模式：連線很慢時，玩家看到的對戰可能落後好幾分鐘（比其他人慢超過 4 分鐘），在阿爾宙斯的制裁裡更是一團亂。現在若連線跟不上，遊戲會等它追上而不是把還沒到的資料堆起來：最多暫停一下（「等待主機」），但永遠是最新進度。",
+  "Co-op: with a slow connection, a player could see the run minutes late (more than 4 minutes behind the others), and Arceus's Judgment turned into chaos. Now, if the connection cannot keep up, the game waits for it to catch up instead of piling up what has yet to arrive: at worst the run pauses for a moment (\"waiting for the host\"), but it is always up to date.": "合作模式：連線很慢時，玩家看到的對戰可能落後好幾分鐘（比其他人慢超過 4 分鐘），在阿爾宙斯的制裁裡更是一團亂。現在若連線跟不上，遊戲會等它追上而不是把還沒到的資料堆起來：最多暫停一下（「等待主機」），但永遠是最新進度。",
   "Halloween se acerca": "萬聖節即將來臨",
   "Halloween is coming": "萬聖節即將來臨",
   "Evento de Halloween del 30 de octubre al 1 de noviembre (hora de España). Lo que trae, lo descubrirás jugando.": "萬聖節活動：10月30日至11月1日（西班牙時間）。會有什麼？玩了就知道。",
@@ -1117,6 +1136,7 @@
   "+8 % de daño con movimientos de tipo {x}.": "{x}屬性招式傷害+8%。",
   "+8% damage with {x}-type moves.": "{x}屬性招式傷害+8%。",
   "Tienda Kecleon": "隱形龍商店",
+  "Caramelos": "糖果",
   // copia local: «Soporesfera (tecla 5): lo que hace» (aviso al coger una esfera, en el canvas)
   "{x} ({x}): {x}": "{x}（{x}）：{x}",
   "Kecleon bruja": "巫婆變隱龍",
@@ -1710,6 +1730,10 @@
   "Fixed": "固定",
   "Ataques": "招式",
   "Attacks": "招式",
+  "Anclado": "錨定",
+  "Anchored": "錨定",
+  "Anclado: aparece donde pones el dedo y se queda ahí hasta que lo levantas.": "錨定：出現在手指按下的位置，放開前都固定在那裡。",
+  "Anchored: it appears where you put your finger and stays there until you lift it.": "錨定：出現在手指按下的位置，放開前都固定在那裡。",
   "Flotante: aparece donde pones el dedo. Fijo: siempre en el mismo sitio.": "浮動：手指按在哪就出現在哪。固定：永遠在同一位置。",
   "Floating: it appears where you put your finger. Fixed: always in the same place.": "浮動：手指按在哪就出現在哪。固定：永遠在同一位置。",
   "Restablecer": "還原預設",
@@ -5385,6 +5409,7 @@
   // copia local: el patrón más concreto primero (como G.I18n): antes "{x} Pokémon" ganaba a "Derrota a {x} Pokémon"
   patterns.sort((a, b) => b.weight - a.weight);
   const fragmentRE = new RegExp('(?<![\\p{L}\\p{N}])(' + [...fragments.keys()].sort((a,b) => b.length-a.length).map(escapeRE).join('|') + ')(?![\\p{L}\\p{N}])', 'giu');
+  const MISSES = new Set(); window.PSZH_MISSES = MISSES;
   function translate(s, depth = 0) {
     if (typeof s !== 'string' || !/[A-Za-zÀ-ž]/u.test(s) || depth > 8) return s;
     if (cache.has(s)) return cache.get(s);
@@ -5408,6 +5433,9 @@
       }
     }
     if (result === undefined) result = body.replace(fragmentRE, word => fragments.get(word.toLowerCase()) || word);
+    // copia local: lo que se queda con letras latinas (traducido a medias o nada) se apunta para la prueba
+    // tools/test/zh_sweep.mjs (window.PSZH_MISSES); así se ve TODO lo que llegó al parche y no supo traducir
+    if (/[A-Za-zÀ-ž]{3,}/.test(result) && MISSES.size < 2000) MISSES.add(body + (result === body ? '' : '  →  ' + result));
     const output = result === body ? s : lead + result + tail;
     if (cache.size > 5000) cache.clear();
     cache.set(s, output);

@@ -7,24 +7,24 @@ Normas fijas del dueño del proyecto. Se aplican SIEMPRE.
   estados de las pruebas. Nunca en inglés. (El código, los comentarios y los commits siguen como están.)
 
 ## Chino: comprobar SIEMPRE lo nuevo (obligatorio)
-Cada vez que se añade algo que ve el jugador (ataques, objetos, formas, pantallas, botones, avisos,
-mensajes de error, novedades...) hay que comprobar que sale bien en chino tradicional (el dueño juega
-en chino: con el navegador en chino el juego va en español por debajo y lo traduce `js/zh-tw.js`):
-1. Añadir la traducción en el diccionario de `js/zh-tw.js` (clave en español Y en inglés).
-   Frases armadas con trozos ('¡' + nombre + ' salvaje apareció!') necesitan un patrón con `{x}`.
-2. `node tools/zh_check.js`: novedades sin traducir tiene que dar 0; revisar las cadenas nuevas que salgan.
-3. `node tools/zh_try.js "frase tal como sale en pantalla"` para ver cómo la pinta el parche.
-4. Ojo: lo marcado con `translate="no"` el parche no lo toca (hay que permitirlo en `skipped()` si no
-   lleva apodos), y el texto del canvas que se pinta letra a letra se traduce letra a letra (ver PSZH_TITLE).
-5. Probarlo también en la versión publicada (app.min.js, sin `G` global), no sólo en dev.html.
-   Novedades: `node tools/test/news_zh.mjs <puerto>` (títulos, FECHAS y líneas en la publicada). Mirar la
-   pantalla entera tal como la ve el dueño, no sólo la frase nueva (22-10-2026: la fecha salía «22 de 10 de 2026»).
-   Partida: `node tools/test/over_zh.mjs <puerto>` (pausa y fin de partida) y `node tools/test/canvas_zh.mjs <puerto>`
-   (TODO lo que se pinta en el canvas en una partida: esferas, avisos, HUD; engancha fillText por debajo del parche).
-   Texto del canvas que el juego parte en líneas (orbTip): traducir entero antes con `window.PSZH_T` (28-10-2026). `zh_check.js` NO ve lo que va con
-   `translate="no"` ni los trozos (": ..."): tras una sincronización con upstream, pasar TODAS las pantallas
-   (menú, tienda, gacha, ranking, pausa, fin de partida, sala) con el navegador (27-10-2026: el resumen de la
-   partida y las esferas salían en español).
+El dueño juega en chino: con el navegador en chino el juego va en español por debajo y lo traduce `js/zh-tw.js`
+(diccionario con clave en español Y en inglés; frases armadas con trozos necesitan un patrón con `{x}`).
+**La regla es una sola: antes de CADA commit que toque algo que se ve, y tras CADA sincronización con upstream,
+`node tools/test/zh_sweep.mjs 9337` tiene que dar `restos en latín: 0`.** No vale mirar sólo la frase nueva ni
+fiarse de `zh_check.js`: el dueño encontró restos 6 veces (fechas, resumen de partida, esferas, cartel partido en
+líneas, «×2: ...», botón vacío) porque se comprobaba a trozos. El barrido pasa por todas las pantallas y estados
+(menú, ficha, mejoras, tienda, mochila, gacha ×10, misiones, amigos y sala, ranking, ajustes, novedades, Halloween,
+partida en pantalla estrecha con esferas y ratón encima, cartas, objeto, vínculo, pausa, fin de partida) y junta:
+1. `window.PSZH_MISSES`: todo lo que llegó al parche y no supo traducir o tradujo a medias (trozos, frases armadas,
+   líneas partidas, canvas). Es la fuente más fiable: lo apunta el propio parche.
+2. Lo que hay en `translate="no"` (el parche no lo toca; sólo nombres de jugador pueden quedar).
+3. Lo que de verdad se pinta en el canvas (gancho por debajo del parche).
+Si el juego gana una pantalla o un estado nuevo (un modal, un aviso, una fase), **añadirlo al barrido en el mismo
+commit**. Trampas conocidas: texto que el juego parte en líneas antes de pintarlo (traducir entero antes con
+`window.PSZH_T`, ver `wrap` en hud.js), texto compuesto en un solo nodo («Nombre (tecla 5): ...», «×2: ...»: patrón
+`{x}`), elementos `translate="no"` con texto del juego (permitirlos en `skipped()`), números cortos (`short` en ui.js).
+Herramientas sueltas: `node tools/zh_try.js "frase"` (cómo la pinta el parche), `node tools/zh_patch_fill.js` (coge
+lo oficial de upstream), `zh_check.js`, `news_zh.mjs`, `over_zh.mjs`, `canvas_zh.mjs` (los cubre el barrido).
 
 ## Publicar una versión
 1. Se edita `dev.html` (nunca `index.html`, que se genera).
