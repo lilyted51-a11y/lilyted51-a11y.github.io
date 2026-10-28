@@ -409,6 +409,9 @@ class PokeAutoBot {
         const P = { def: (player && (player.dmgReduce || 0) < 0.69) ? 1900 : 300, hp: 1600, rgn: 1450, spd: 1350, atk: 700, cd: 650, mag: 200, xp: 150 };
         if (P[id] != null) return P[id] + tiebreak;
       }
+      // v57：減傷不到 30% 之前，鎧甲（每張 +6%）排在攻擊、冷卻之前（v55 蓋歐卡 23 局：撐到 30 分鐘的 10 局有 9 局拿著
+      // 突擊背心 +20% 減傷，早死的 9 局只有 2 局有；道具靠運氣，減傷卡自己拿）
+      if (!boosted && id === 'def' && (player && (player.reduction || 0) < 0.30)) return 1720 + tiebreak;   // (el campo del juego es reduction)
       if (!boosted && (id === 'atk' || id === 'cd')) return (id === 'atk' ? 1700 : 1650) + tiebreak;
       return (STAT[id] || 200) + tiebreak;
     }
