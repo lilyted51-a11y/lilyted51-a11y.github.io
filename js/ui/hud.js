@@ -4,14 +4,21 @@
 G.HUD = (() => {
   const F = (w, s) => `${w} ${s}px Pixelify,"Segoe UI",system-ui,sans-serif`;
   /** Parte un texto en líneas de como mucho maxW de ancho (con la letra que tenga ctx). */
+  // Copia local: se traduce ENTERO antes de partirlo (el parche de chino traduce lo que se pinta en el canvas línea a
+  // línea, y media frase no la encuentra: «緩慢寶玉 (tecla 6): Los en...», 28-10-2026). En chino no hay espacios:
+  // cada letra china es una unidad; las palabras con letras latinas y los números siguen enteros.
+  const TOKEN = /\s+|[⺀-鿿豈-﫿＀-￯]|[^\s⺀-鿿豈-﫿＀-￯]+/g;
   function wrap(ctx, text, maxW) {
+    text = String(text);
+    if (window.PSZH_T) text = window.PSZH_T(text);
     const out = [];
     let cur = '';
-    for (const word of String(text).split(' ')) {
-      const t = cur ? cur + ' ' + word : word;
-      if (cur && ctx.measureText(t).width > maxW) { out.push(cur); cur = word; } else cur = t;
+    for (const tok of text.match(TOKEN) || []) {
+      if (/^\s+$/.test(tok)) { if (cur) cur += ' '; continue; }
+      const t = cur + tok;
+      if (cur.trim() && ctx.measureText(t).width > maxW) { out.push(cur.trim()); cur = tok; } else cur = t;
     }
-    if (cur) out.push(cur);
+    if (cur.trim()) out.push(cur.trim());
     return out;
   }
 
@@ -21,17 +28,8 @@ G.HUD = (() => {
     // canvas línea a línea, y media frase no la encuentra); en chino no hay espacios: se parte por letras.
     const T = s => (window.PSZH_T ? window.PSZH_T(s) : G.T(s));
     const o = G.Orbs.BY[id], name = T(o.name);
-    const lines = [];
-    if (full) {
-      ctx.font = F(600, 11);
-      const desc = T(o.desc), bySpace = desc.includes(' ');
-      let cur = '';
-      for (const word of (bySpace ? desc.split(' ') : [...desc])) {
-        const t = cur ? cur + (bySpace ? ' ' : '') + word : word;
-        if (ctx.measureText(t).width > 240 && cur) { lines.push(cur); cur = word; } else cur = t;
-      }
-      if (cur) lines.push(cur);
-    }
+    let lines = [];
+    if (full) { ctx.font = F(600, 11); lines = wrap(ctx, G.T(o.desc), 240); }
     ctx.font = F(800, 12);
     let bw = ctx.measureText(name).width;
     ctx.font = F(600, 11);

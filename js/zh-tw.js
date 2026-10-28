@@ -1123,6 +1123,7 @@
   "Witch Kecleon": "巫婆變隱龍",
   // copia local: un nodo de texto que empieza por «: » (p. ej. «<b>Esfera</b>: lo que hace», resumen de la pausa) se traduce entero
   ": {x}": "：{x}",
+  "×{x}: {x}": "×{x}：{x}",
   "Al día con el juego oficial y arreglo de las invitaciones": "與官方版同步，並修正邀請問題",
   "Up to date with the official game, and an invite fix": "與官方版同步，並修正邀請問題",
   "Cooperativo: aceptar una invitación (ventana de abajo a la derecha) teniendo tu propia sala abierta a veces no te metía en la sala del otro. Ahora entras siempre.": "合作模式：自己開著房間時，按右下角的邀請加入別人的房間，有時會進不去。現在一定進得去。",

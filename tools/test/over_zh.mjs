@@ -7,6 +7,8 @@ await A.go('http://localhost:8765/dev.html?dev', 8000);
 await A.ev(`document.getElementById('tap-start').click(); 1`); await sleep(1200);
 await A.ev(`document.getElementById('scr-invite').classList.add('hidden'); G.DB.playAsGuest(); const s = G.DB.save; s.partner = 1382; s.owned[1382] = { at: 1 }; G.UI.hideAll(); G.Boost.paused = false; G.Boost.debugAs('BENCH', null, true); G.Game.startRun(); G.Game.debugSpeed(3); window.__POKE_BOT_ON__ = true; 1`);
 await sleep(20000);
+// esferas (una repetida: «×2: lo que hace» va en el mismo nodo de texto)
+await A.ev(`const pl = G.Game.player; G.Orbs.got(pl, 'blowback'); G.Orbs.got(pl, 'blowback'); G.Orbs.got(pl, 'slow'); 1`); await sleep(500);
 // pausa: resumen
 await A.ev(`window.__POKE_BOT_ON__ = false; G.Game.togglePause(); 1`); await sleep(800);
 const pause = await A.ev(`(document.getElementById('scr-pause') || {}).innerText || ''`);
