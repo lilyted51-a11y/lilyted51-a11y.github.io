@@ -19,7 +19,9 @@ en chino: con el navegador en chino el juego va en español por debajo y lo trad
 5. Probarlo también en la versión publicada (app.min.js, sin `G` global), no sólo en dev.html.
    Novedades: `node tools/test/news_zh.mjs <puerto>` (títulos, FECHAS y líneas en la publicada). Mirar la
    pantalla entera tal como la ve el dueño, no sólo la frase nueva (22-10-2026: la fecha salía «22 de 10 de 2026»).
-   Partida: `node tools/test/over_zh.mjs <puerto>` (pausa y fin de partida). `zh_check.js` NO ve lo que va con
+   Partida: `node tools/test/over_zh.mjs <puerto>` (pausa y fin de partida) y `node tools/test/canvas_zh.mjs <puerto>`
+   (TODO lo que se pinta en el canvas en una partida: esferas, avisos, HUD; engancha fillText por debajo del parche).
+   Texto del canvas que el juego parte en líneas (orbTip): traducir entero antes con `window.PSZH_T` (28-10-2026). `zh_check.js` NO ve lo que va con
    `translate="no"` ni los trozos (": ..."): tras una sincronización con upstream, pasar TODAS las pantallas
    (menú, tienda, gacha, ranking, pausa, fin de partida, sala) con el navegador (27-10-2026: el resumen de la
    partida y las esferas salían en español).

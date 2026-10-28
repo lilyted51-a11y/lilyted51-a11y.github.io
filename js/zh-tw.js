@@ -1117,6 +1117,8 @@
   "+8 % de daño con movimientos de tipo {x}.": "{x}屬性招式傷害+8%。",
   "+8% damage with {x}-type moves.": "{x}屬性招式傷害+8%。",
   "Tienda Kecleon": "隱形龍商店",
+  // copia local: «Soporesfera (tecla 5): lo que hace» (aviso al coger una esfera, en el canvas)
+  "{x} ({x}): {x}": "{x}（{x}）：{x}",
   "Kecleon bruja": "巫婆變隱龍",
   "Witch Kecleon": "巫婆變隱龍",
   // copia local: un nodo de texto que empieza por «: » (p. ej. «<b>Esfera</b>: lo que hace», resumen de la pausa) se traduce entero
@@ -5495,6 +5497,7 @@
   // 內建版：審判動畫的標題是逐字畫的（每個字母分開進 fillText，「A」會被翻成「給」）。
   // 正式版的遊戲程式包過、沒有全域 G，下面的掛鉤裝不上 → 由遊戲直接問這裡要整句標題（js/systems/judgment.js）。
   window.PSZH_TITLE = s => ({ 'LA SENTENCIA': '阿爾宙斯的', 'DE ARCEUS': '審判' })[s];
+  window.PSZH_T = s => translate(s);   // copia local: para textos del canvas que el juego parte en líneas (hud.js, orbTip)
   function installJudgmentTitles() {
     const judgment = window.G?.Judgment;
     if (!judgment?.drawOverlay || judgment.drawOverlay.__pszhTitles) return;

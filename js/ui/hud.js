@@ -17,13 +17,17 @@ G.HUD = (() => {
 
   /** Cartel encima de una esfera: su nombre y, con el ratón encima, también lo que hace. */
   function orbTip(ctx, id, cx, by, full, w) {
-    const o = G.Orbs.BY[id], name = G.T(o.name);
+    // Copia local: traducido entero antes de partirlo en líneas (el parche de chino traduce lo que se pinta en el
+    // canvas línea a línea, y media frase no la encuentra); en chino no hay espacios: se parte por letras.
+    const T = s => (window.PSZH_T ? window.PSZH_T(s) : G.T(s));
+    const o = G.Orbs.BY[id], name = T(o.name);
     const lines = [];
     if (full) {
       ctx.font = F(600, 11);
+      const desc = T(o.desc), bySpace = desc.includes(' ');
       let cur = '';
-      for (const word of G.T(o.desc).split(' ')) {
-        const t = cur ? cur + ' ' + word : word;
+      for (const word of (bySpace ? desc.split(' ') : [...desc])) {
+        const t = cur ? cur + (bySpace ? ' ' : '') + word : word;
         if (ctx.measureText(t).width > 240 && cur) { lines.push(cur); cur = word; } else cur = t;
       }
       if (cur) lines.push(cur);
