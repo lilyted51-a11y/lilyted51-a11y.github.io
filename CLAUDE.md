@@ -76,6 +76,10 @@ servidores, base de datos o costes NO van ahí.
   pregunte: analizar → informar en breve (en chino) → si es mejor con datos, commit (el dueño hace
   el push) → diseñar y lanzar ya la siguiente variante. Si no es mejor, descartarla y probar otra.
   Nunca dejar las pruebas paradas esperando un "sigue".
+- **Varias sesiones a la vez (28-10-2026)**: la del bot sólo toca `en/bot.js` y lanza tandas; el juego, las
+  sincronizaciones y el chino van en otras sesiones sobre la misma carpeta. Quien cambie código del juego mientras
+  hay una tanda en marcha (Chrome 9333-9336 abiertos, `node batch.mjs` corriendo) la invalida: avisar o esperar.
+  La sesión del bot mira `git log -1` antes de cada tanda y la relanza si el juego cambió a mitad.
 
 ## Sincronizar con el juego oficial (upstream)
 - `git fetch upstream` y `bash tools/sync_upstream.sh` (fusión a tres bandas fichero a fichero, sin `\r`: los ficheros
