@@ -1,5 +1,4 @@
-/* ============ changelog.js — novedades del juego ============
- * Lo que ve la gente en el botón "Novedades" de la barra de arriba: cambios
+/* ============ changelog.js — novedades del juego ===== * Lo que ve la gente en el botón "Novedades" de la barra de arriba: cambios
  * de juego y fallos arreglados (nada de servidores ni bases de datos).
  * La fecha más nueva, arriba. En cada fecha, por apartados:
  *   new  lo nuevo · chg  cambios y ajustes · fix  fallos arreglados
@@ -15,6 +14,25 @@ G.CHANGELOG = [
     ['Todo lo nuevo del juego oficial hasta el 26-10 (ver las entradas de abajo), menos lo que necesita sus servidores. Las salas siguen siendo las nuestras: hasta 10 jugadores, contraseña, lista de salas, chat y mensajes privados.',
      'Everything new in the official game up to 10-26 (see the entries below), except what needs its servers. Rooms stay ours: up to 10 players, password, room list, chat and private messages.']
   ] },
+  { d: '2026-10-27', title: ["Cooperativo más estable", "Steadier co-op"], new: [
+    ["Móvil y tableta: nuevo joystick «Anclado» (Ajustes → Controles → Colocar los botones). Aparece donde pones el dedo y se queda en ese sitio mientras lo mantienes, aunque alejes el dedo; al levantarlo y tocar en otro sitio, aparece allí. El «Flotante» de siempre sigue al dedo y sigue siendo el que viene puesto.",
+     "Mobile and tablet: new \"Anchored\" joystick (Settings → Controls → Place the buttons). It appears where you put your finger and stays in that spot while you hold it, even if you move your finger away; lift it and touch somewhere else, and it appears there. The usual \"Floating\" one follows your finger and is still the default."]
+  ], fix: [
+    ["Armadura Frágil, Impasible y Cobardía ya no te quitan las cargas de Agilidad (u otra subida de velocidad mejor) al recibir un golpe: antes las dejaban en una.",
+     "Weak Armor, Steadfast and Rattled no longer remove your Agility charges (or any better speed boost) when you get hit: they used to drop them to one."],
+    ["El Chaleco Asalto ya no cuenta para el tope del 70 % de las cartas Coraza: con las cartas al máximo, el chaleco suma encima. Y si te lo quitas, no pierdes lo de las cartas.",
+     "The Assault Vest no longer counts toward the 70% cap of the Armor cards: with the cards maxed, the vest adds on top. And if you take it off, you keep what the cards gave you."],
+    ["En ventanas muy alargadas (muy anchas y bajas), los enemigos ya no se quedan dando vueltas fuera de la pantalla sin acercarse: parecía que no salía ninguno.",
+     "In very elongated windows (very wide and short), enemies no longer keep looping off screen without coming closer: it looked as if none were spawning."],
+    ["Test inicial: los rasgos de tu personalidad («Paciente», «Tenaz»…) salían en español en todos los idiomas. Ya salen traducidos.",
+     "Starting quiz: your personality traits (\"Patient\", \"Tenacious\"…) were shown in Spanish in every language. They are translated now."],
+    ["Ranking de daño a Arceus: «Sólo amigos» enseña también a los amigos que no están en el top 50 (en Histórico); en el Histórico se guarda tu mejor daño aunque esa partida no mejore tu tiempo.",
+     "Arceus damage leaderboard: \"Friends only\" also shows friends outside the top 50 (in All-time); All-time keeps your best damage even if that run does not beat your time."],
+    ["Móvil: al tocar «Cambiar opciones» en las cartas de nivel, a veces se elegía sola una de las cartas nuevas; y en el vínculo, tras elegir el primer movimiento, se unía solo el que quedara debajo del dedo en vez del que tocabas. Ahora sólo se elige la carta que tocas.",
+     "Mobile: tapping \"Change options\" on the level-up cards sometimes picked one of the new cards by itself; and in a bond, after choosing the first move, whichever move ended up under your finger was joined instead of the one you tapped. Now only the card you tap is chosen."],
+    ["Cooperativo: con una conexión lenta, un jugador podía ver la partida minutos tarde (hasta más de 4 minutos por detrás de los demás), y en la Sentencia de Arceus era un caos. Ahora, si la conexión no da para más, el juego espera a que se ponga al día en vez de amontonar lo que falta por llegar: como mucho, la partida se para un momento («esperando al anfitrión»), pero va siempre al día.",
+     "Co-op: with a slow connection, a player could see the run minutes late (more than 4 minutes behind the others), and Arceus's Judgment turned into chaos. Now, if the connection cannot keep up, the game waits for it to catch up instead of piling up what has yet to arrive: at worst the run pauses for a moment (\"waiting for the host\"), but it is always up to date."]
+  ]},
   { d: '2026-10-26', title: ["Halloween se acerca", "Halloween is coming"], new: [
     ["Evento de Halloween del 30 de octubre al 1 de noviembre (hora de España). Lo que trae, lo descubrirás jugando.",
      "Halloween event from October 30 to November 1 (Spain time). What it brings, you will find out by playing."],

@@ -74,17 +74,27 @@ G.Ranking = (() => {
    * manda al anfitrión (coop.js), que es quien sube la marca.
    */
   const SEAL_API = 'https://ice.pokesurvivor.com/v1/seal';
+  /*
+   * Las reglas aceptan un sello de hasta 90 s después de empezar (rt <= desde el
+   * sello + 90 s). Antes se probaba 3 veces con 6 s de espera (unos 25 s): con el
+   * servidor lento (27-10-2026: tardaba 7-8 s y fallaba a menudo) casi ninguna
+   * partida conseguía sello y no entraba en ningún ranking. Ahora se insiste
+   * mientras quepa en esos 90 s (SEAL_LAST: el último intento acaba antes).
+   */
+  const SEAL_TRIES = 8, SEAL_WAIT = 15000, SEAL_GAP = 3000, SEAL_LAST = 80000;
   let seal = null, sealRun = 0;
   function newSeal() {
     seal = null;
     return;   // copia local: no hay servidor que selle (ice.pokesurvivor.com es del juego oficial)
     const run = ++sealRun, fb = fbx(), user = fb && fb.auth.currentUser;
     if (!user || fb.emulator) return;
+    const t0 = Date.now();
     (async () => {
-      // Hasta 3 intentos al empezar (el sello tiene que ser de los primeros segundos).
-      for (let i = 0; i < 3 && run === sealRun; i++) {
-        if (i) await new Promise(r => setTimeout(r, 5000));
-        const ctl = new AbortController(), stop = setTimeout(() => ctl.abort(), 6000);
+      for (let i = 0; i < SEAL_TRIES && run === sealRun; i++) {
+        if (i) await new Promise(r => setTimeout(r, SEAL_GAP));
+        const left = SEAL_LAST - (Date.now() - t0);
+        if (left < 2000) return;
+        const ctl = new AbortController(), stop = setTimeout(() => ctl.abort(), Math.min(SEAL_WAIT, left));
         try {
           const token = await user.getIdToken();
           const r = await fetch(SEAL_API, { method: 'POST', headers: { Authorization: 'Bearer ' + token }, signal: ctl.signal });
@@ -324,10 +334,20 @@ G.Ranking = (() => {
         if (!upT && !upD) return;
         const stamp = e => Object.assign({}, e, { at: firebase.firestore.FieldValue.serverTimestamp() });
         let waiting = false, wrote = false;
-        if (!canT && !canD) {
-          // Histórico fuera de los dos top 50: sólo cuenta el tiempo (tu puesto
-          // exacto), y como mucho cada DEFER (ver arriba).
-          if (!upT) return;
+        if (!canT && !canD && !upT) {
+          // Histórico fuera de los dos top 50 y sólo mejora el daño (#356: se perdía
+          // si no mejorabas también el tiempo): se guarda ya, con el tiempo, nivel y
+          // derrotados de la marca que tenías (así lo piden las reglas).
+          const old = await col(b).doc(id).get(), o = old.exists ? old.data() : null;
+          if (o && (o.dmg || 0) >= dmg) { known[dkey] = o.dmg; return; }
+          await col(b).doc(id).set(stamp(Object.assign({}, entry, o && o.t > entry.t ? { t: o.t, lv: o.lv, kills: o.kills } : {})));
+          wrote = true;
+          // La marca de tiempo que espera para subir (DEFER) lleva ya este daño: si no, las reglas la rechazarían.
+          const dd = deferred(), dk = b + ':' + id;
+          if (dd[dk] && dd[dk].e) { dd[dk].e.dmg = Math.max(dd[dk].e.dmg || 0, dmg); saveDeferred(dd); }
+        } else if (!canT && !canD) {
+          // Histórico fuera de los dos top 50: tu puesto exacto por tiempo, como
+          // mucho cada DEFER (ver arriba).
           const e = Object.assign({}, entry, { dmg: Math.max(dmg, known[dkey] || 0) });
           if (dueOrDefer(b, id, e)) { await col(b).doc(id).set(stamp(e)); wrote = true; } else waiting = true;
         } else {
@@ -489,8 +509,35 @@ G.Ranking = (() => {
     let rows = sortedD((await view(mode, period)).dtop);
     const i = rows.findIndex(r => r.uids.includes(fb.uid));
     const me = !G.Social.me ? null : i >= 0 ? { pos: i + 1, d: rows[i].d } : { out: true };
-    if (friendsOnly) { const circle = await circleOf(fb); rows = rows.filter(r => r.uids.some(u => circle.includes(u))); }
+    if (friendsOnly) {
+      const circle = await circleOf(fb);
+      rows = rows.filter(r => r.uids.some(u => circle.includes(u)));
+      // Los amigos que no están en el top 50 de daño (#356: sólo salían los de ese
+      // top). Sólo en el histórico, el único que guarda las demás marcas; son las
+      // mismas que lee top() y se comparten (no se lee nada más).
+      if (!TOP_ONLY.has(period)) {
+        const extra = (await friendMarks(fb, mode, board(mode, period), circle)).filter(r => r.d > 0 && !rows.some(x => x.id === r.id));
+        rows = rows.concat(extra).sort((a, c) => c.d - a.d);
+      }
+    }
     return { rows: rows.slice(0, TOP), me };
+  }
+
+  /** Las marcas de tus amigos (y la tuya) en una tabla del histórico. Se guardan 2 h. */
+  async function friendMarks(fb, mode, b, circle) {
+    const ck = 'f:' + b + ':' + circle.slice().sort().join(',');
+    let extra = cacheGet(ck);
+    if (extra === undefined) {
+      if (mode === 's') {
+        const docs = await Promise.all(circle.map(u => col(b).doc(u).get().catch(() => null)));
+        extra = docs.filter(d => d && d.exists).map(d => rowOf(d.id, d.data()));
+      } else {
+        const s = await col(b).where('uids', 'array-contains-any', circle).get();
+        extra = s.docs.map(d => rowOf(d.id, d.data()));
+      }
+      cacheSet(ck, extra);
+    }
+    return extra;
   }
 
   /**
@@ -508,19 +555,7 @@ G.Ranking = (() => {
     // En diario, semanal, mensual y por Pokémon no hay marcas fuera del top 50.
     if (TOP_ONLY.has(period) || dex) return inTop;
     // Los amigos que no están en el top 50: se buscan aparte (y se guardan 2 h).
-    const ck = 'f:' + b + ':' + circle.slice().sort().join(',');
-    let extra = cacheGet(ck);
-    if (extra === undefined) {
-      if (mode === 's') {
-        const missing = circle.filter(u => !inTop.some(r => r.id === u));
-        const docs = await Promise.all(missing.map(u => col(b).doc(u).get().catch(() => null)));
-        extra = docs.filter(d => d && d.exists).map(d => rowOf(d.id, d.data()));
-      } else {
-        const s = await col(b).where('uids', 'array-contains-any', circle).get();
-        extra = s.docs.map(d => rowOf(d.id, d.data()));
-      }
-      cacheSet(ck, extra);
-    }
+    const extra = await friendMarks(fb, mode, b, circle);
     const all = new Map();
     for (const r of [...inTop, ...extra]) all.set(r.id, r);
     return [...all.values()].sort((a, c) => c.t - a.t).slice(0, TOP);
