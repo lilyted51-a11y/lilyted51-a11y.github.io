@@ -5,6 +5,13 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-28', title: ["Halloween, un día más", "Halloween, one more day"], chg: [
+    ["El evento de Halloween dura un día más: del 30 de octubre al 2 de noviembre (hora de España).",
+     "The Halloween event lasts one more day: from October 30 to November 2 (Spain time)."]
+  ], fix: [
+    ["Durante Halloween, unos segundos después de abrir el juego (y al empezar o acabar el evento), la tienda, el gacha u otra pantalla del menú se cerraban solos y te devolvían al menú. Ya no.",
+     "During Halloween, a few seconds after opening the game (and when the event starts or ends), the shop, the gacha or another menu screen closed by itself and sent you back to the menu. Not anymore."]
+  ]},
   { d: '2026-10-27', title: ['Al día con el juego oficial y arreglo de las invitaciones', 'Up to date with the official game, and an invite fix'], fix: [
     ['Cooperativo: aceptar una invitación (ventana de abajo a la derecha) teniendo tu propia sala abierta a veces no te metía en la sala del otro. Ahora entras siempre.',
      'Co-op: accepting an invitation (bottom-right window) while your own room was open sometimes did not put you in the other room. Now you always get in.'],
@@ -34,8 +41,8 @@ G.CHANGELOG = [
      "Co-op: with a slow connection, a player could see the run minutes late (more than 4 minutes behind the others), and Arceus's Judgment turned into chaos. Now, if the connection cannot keep up, the game waits for it to catch up instead of piling up what has yet to arrive: at worst the run pauses for a moment (\"waiting for the host\"), but it is always up to date."]
   ]},
   { d: '2026-10-26', title: ["Halloween se acerca", "Halloween is coming"], new: [
-    ["Evento de Halloween del 30 de octubre al 1 de noviembre (hora de España). Lo que trae, lo descubrirás jugando.",
-     "Halloween event from October 30 to November 1 (Spain time). What it brings, you will find out by playing."],
+    ["Evento de Halloween del 30 de octubre al 2 de noviembre (hora de España). Lo que trae, lo descubrirás jugando.",
+     "Halloween event from October 30 to November 2 (Spain time). What it brings, you will find out by playing."],
     ["En la pantalla principal, una cuenta atrás: desde dos semanas antes, cuánto falta para Halloween; durante el evento, cuánto queda.",
      "On the main screen, a countdown: from two weeks before, how long until Halloween; during the event, how long is left."]
   ], fix: [
