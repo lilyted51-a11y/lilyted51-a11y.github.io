@@ -5,6 +5,33 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-11-12', title: ["Cooperativo sin cortes, guardado automático y ranking al día", "Co-op without cut-offs, autosave and an up-to-date leaderboard"], chg: [
+    ["Cooperativo: si el anfitrión se va o se le corta la conexión, la partida ya no se acaba. Otro jugador pasa a ser el anfitrión y seguís juntos; si no se puede, cada uno sigue su partida con todo lo que llevaba. (Una partida que cambia de anfitrión no entra en el ranking.)",
+     "Co-op: if the host leaves or loses the connection, the run no longer ends. Another player becomes the host and you keep playing together; if that is not possible, everyone continues their own run with everything they had. (A run that changes host does not enter the leaderboard.)"],
+    ["Guardado automático: ya no hace falta el botón Guardar (lo hemos quitado). Tu progreso se guarda solo al acabar cada partida y al mejorar, comprar o tirar en el gacha. Si juegas en varios aparatos, se ponen al día al volver al juego.",
+     "Autosave: the Save button is no longer needed (we removed it). Your progress is saved automatically at the end of each run and when you upgrade, buy or pull in the gacha. If you play on several devices, they catch up when you return to the game."],
+    ["Con cuenta, las tiradas del gacha necesitan conexión a internet. Como invitado, y para jugar y comprar, nada cambia.",
+     "With an account, gacha pulls need an internet connection. As a guest, and for playing and buying, nothing changes."],
+    ["Ranking: «Sólo amigos» en Diario, Semanal y Mensual enseña ahora las 50 mejores marcas de tus amigos, aunque no estén en el top 50. Y ves tu puesto aunque estés fuera del top 50.",
+     "Leaderboard: \"Friends only\" in Daily, Weekly and Monthly now shows your friends' 50 best records, even if they are not in the top 50. And you see your rank even when you are outside the top 50."]
+  ], fix: [
+    ["Cooperativo: un jugador sin conexión (móvil apagado o sin wifi) ya no puede levantar a un compañero, ni mantener viva la partida cuando los demás han caído, ni recoger objetos, ni hacer que salgan más enemigos; y ya no hay que esperarle para elegir las cartas de nivel.",
+     "Co-op: a player without connection (phone off or no wifi) can no longer revive a teammate, keep the run alive when everyone else is down, pick up items or make more enemies spawn; and you no longer have to wait for them to choose level-up cards."],
+    ["Cooperativo: si el anfitrión cambia de pestaña o deja de responder, ya no os quedáis parados para siempre: a los 30 segundos la partida sigue con otro anfitrión.",
+     "Co-op: if the host switches tabs or stops responding, you no longer stay stuck forever: after 30 seconds the run continues with another host."],
+    ["Cooperativo: el aviso «esperando al anfitrión» no salía cuando el anfitrión dejaba de responder (la partida se paraba sin decir por qué). Ya sale.",
+     "Co-op: the \"waiting for the host\" notice did not appear when the host stopped responding (the run paused without saying why). It does now."],
+    ["Ranking: desde el 27 de octubre ninguna partida entraba en el ranking, ni en solitario ni en grupo (en el perfil sí salían). Ya entran al acabar.",
+     "Leaderboard: since October 27 no run entered the leaderboard, solo or group (they did show in your profile). They get in at the end of the run again."],
+    ["Ranking: «Sólo amigos» no cargaba. Ya carga.",
+     "Leaderboard: \"Friends only\" did not load. It does now."],
+    ["Ranking: las marcas, también las de tus amigos, se ven en pocos minutos, no tras varias horas.",
+     "Leaderboard: records, including your friends', show up within a few minutes instead of several hours."],
+    ["Ranking: si falla la conexión al acabar, tu marca se vuelve a enviar; y si no entra, ahora te avisamos.",
+     "Leaderboard: if the connection fails at the end, your record is sent again; and if it does not get in, we now tell you."],
+    ["El punto de guardado junto a tu nombre ya no se pone rojo por un fallo suelto de la conexión: se reintenta al momento y sólo sale rojo si de verdad no hay conexión. (Tu progreso nunca se perdía: se queda en el navegador y se sube después.)",
+     "The save dot next to your name no longer turns red after a single connection hiccup: it retries right away and only turns red if there really is no connection. (Your progress was never lost: it stays in the browser and is uploaded later.)"]
+  ]},
   { d: '2026-10-28', title: ["Halloween, un día más", "Halloween, one more day"], chg: [
     ["El evento de Halloween dura un día más: del 30 de octubre al 2 de noviembre (hora de España).",
      "The Halloween event lasts one more day: from October 30 to November 2 (Spain time)."]

@@ -527,24 +527,28 @@ G.DB = (() => {
    */
   const K_REV = 'ps.rev.';
   let rev = 0, lastCheck = 0;
-  // Lo último que se subió (o se leyó igual) desde aquí: si Guardar no cambia nada, no se escribe.
+  // Lo último que se subió (o se leyó igual) desde aquí: si no ha cambiado nada, no se escribe.
   // (Sin la hora del último cambio: cada guardado en el navegador la pone aunque no cambie nada más.)
   let sentCanon = '';
   const sameKey = s => canon(Object.assign({}, s, { updated: 0 }));
   const setRev = r => { rev = Number.isInteger(r) && r > 0 ? r : 0; write(K_REV + uid, rev); };
   /*
-   * Cuándo se sube a la nube (desde el 20-10-2026; los guardados eran ~1/4 de
-   * las escrituras de Firestore). SÓLO:
-   *   - con el botón Guardar (lo decide el jugador: saveNow)
-   *   - antes de recargar por una actualización (updater.js, G.DB.flush)
-   *   - al cerrar sesión
-   *   - si sales del juego con un Guardar que estaba esperando (visibilitychange)
-   * Nada más: ni cada cierto tiempo, ni al entrar, ni al acabar la partida, ni
-   * al cerrar la pestaña. Todo se guarda al momento en este navegador y al
-   * entrar se junta con lo de la nube. Se escribe sin leer antes (rev, arriba).
-   * (Antes se subía sola cada 30 min / 2 h y al cerrar la pestaña: eran
-   * millones de escrituras al día.)
+   * Cuándo se sube a la nube: SOLA (guardado automático, 05-11-2026, como en el
+   * juego oficial; el botón Guardar se quitó). Todo se guarda al momento en este
+   * navegador y además se sube:
+   *   - al acabar cada partida y al mejorar, comprar o tirar en el gacha: cada
+   *     commit() fuera de una partida programa una subida a los AUTO_MS (varios
+   *     seguidos van en una sola, y nunca dos en menos de MIN_GAP)
+   *   - al salir del juego (minimizar, cambiar de pestaña) si quedaba algo
+   *   - antes de recargar por una actualización (updater.js, G.DB.flush) y al cerrar sesión
+   * En mitad de una partida no se sube nada (tickets y shinies van al navegador
+   * y suben al acabar). Al volver al juego tras un rato fuera se lee la nube y se
+   * junta con lo de aquí (pullCloud): así dos aparatos se ponen al día solos.
+   * Se escribe sin leer antes (rev, arriba).
+   * (Del 20-10 al 05-11-2026 sólo se subía con el botón Guardar.)
    */
+  const AUTO_MS = 1500, PULL_GAP = 3 * 60e3, AWAY_MS = 30e3;
+  const inRun = () => { const st = G.Game && G.Game.state; return !!st && st !== 'ui' && st !== 'over'; };
   let syncState = 'local';           // 'ok' | 'syncing' | 'pending' | 'offline' | 'local'
   const listeners = new Set();
 
@@ -624,6 +628,7 @@ G.DB = (() => {
     if (now === before) return;
     pending = true;
     setSync('pending');
+    if (!inRun()) schedulePush(AUTO_MS);
     if (G.UI && G.UI.refreshCoins) G.UI.refreshCoins();
   }
 
@@ -667,14 +672,15 @@ G.DB = (() => {
     key = uid; user = save.name; guest = false;
     write(K_CLOUD + uid, save);
     // Si esta copia tiene algo que la nube no (cuenta nueva, progreso sin subir),
-    // se queda pendiente hasta que pulses Guardar (ya no se sube sola al entrar).
+    // se sube sola enseguida (guardado automático).
     // Se mira lo que hay, no la fecha (25-10-2026): si otro aparato guardó
     // después, la nube era "más nueva" y lo de aquí sin subir (tickets, Pokémon)
     // se daba por guardado; Guardar decía "Ya está todo guardado" y no lo subía.
     const same = remote && !opts.legacy && canon(save) === canon(fold(migrate(plain(remote))));
     if (!online) { pending = true; setSync('offline'); readTries = 0; readLater(); }
     else if (same) { sentCanon = sameKey(plain(save)); setSync('ok'); }
-    else { pending = true; setSync('pending'); }
+    else { pending = true; setSync('pending'); schedulePush(AUTO_MS); }
+    pulledAt = Date.now();
   }
 
   /*
@@ -706,8 +712,39 @@ G.DB = (() => {
       pending = !(remote && canon(save) === canon(fold(remote)));
       if (!pending) sentCanon = sameKey(plain(save));
       setSync(pending ? 'pending' : 'ok');
+      if (pending && !inRun()) schedulePush(AUTO_MS);
     }
     if (G.UI && G.UI.refreshCoins) G.UI.refreshCoins();
+  }
+
+  /*
+   * Al volver al juego (05-11-2026): si has jugado en otro aparato mientras
+   * tanto, se trae lo suyo y se junta con lo de aquí, sin recargar la página.
+   * Una lectura, como mucho cada PULL_GAP y nunca en mitad de una partida. Si
+   * nadie más ha guardado (misma rev), no se toca nada.
+   */
+  let pulledAt = 0, hiddenAt = 0;
+  const pulled = new Set();
+  async function pullCloud() {
+    if (mode !== 'cloud' || guest || !save || !uid || inRun() || pushing || navigator.onLine === false) return false;
+    if (Date.now() - pulledAt < PULL_GAP) return false;
+    pulledAt = Date.now();
+    const u = uid, r0 = rev;
+    let snap;
+    try { snap = await docRef().get(); } catch (e) { return false; }
+    if (uid !== u || !save || inRun() || pushing || rev !== r0) return false;
+    if (!snap.exists || (+snap.data().rev || 0) === r0) return false;       // nadie más ha guardado
+    const remote = migrate(snap.data().save);
+    applyInPlace(fold(merge(plain(fold(save)), plain(remote))));
+    setRev(snap.data().rev);
+    write(K_CLOUD + uid, save);
+    pending = canon(save) !== canon(fold(remote));
+    if (!pending) sentCanon = sameKey(plain(save));
+    setSync(pending ? 'pending' : 'ok');
+    if (pending) schedulePush(AUTO_MS);
+    if (G.UI && G.UI.refreshCoins) G.UI.refreshCoins();
+    pulled.forEach(fn => { try { fn(); } catch (e) { /* nada */ } });
+    return true;
   }
 
   /*
@@ -771,21 +808,27 @@ G.DB = (() => {
       clearTimeout(readT);           // (si estaba sin leer la nube: ya va a la par)
       if (uid === u) { setRev(r); sentCanon = tried; }
       write(K_OK + uid, Date.now());
-      // (Lo cambiado mientras se subía queda pendiente para el próximo Guardar.)
+      // (Lo cambiado mientras se subía sube en la siguiente.)
       setSync(pending ? 'pending' : 'ok');
+      if (pending && !inRun()) schedulePush(AUTO_MS);
       if (G.UI && G.UI.refreshCoins) G.UI.refreshCoins();
     }).catch(e => {
       console.warn('[DB] no se pudo sincronizar:', e.code || e.message);
       pending = true;
-      setSync(navigator.onLine === false || e.code === 'unavailable' ? 'offline' : 'pending');
-      // Lo pediste tú (Guardar o una actualización): se reintenta solo, con espera creciente.
-      scheduleRetry();
+      // Un fallo suelto no es "sin conexión" (08-11-2026): se reintenta al momento y el
+      // punto junto a tu nombre sólo sale rojo si no hay red o si vuelve a fallar. (Tu
+      // progreso nunca se pierde: está en el navegador y sube después.)
+      const first = fails === 0 && navigator.onLine !== false;
+      setSync(first ? 'pending' : navigator.onLine === false || e.code === 'unavailable' ? 'offline' : 'pending');
+      if (first) { fails = 1; clearTimeout(retryT); retryT = setTimeout(() => { if (pending) pushNow(RULE_GAP); }, 2500); }
+      else scheduleRetry();          // con espera creciente
     }).finally(() => { pushing = null; });
     return pushing;
   }
 
   /**
-   * Botón Guardar: sube ya lo pendiente. Si no hay nada pendiente no gasta
+   * Sube ya lo pendiente (era el botón Guardar; ahora lo usan las pruebas y quien
+   * quiera esperar a que esté en la nube). Si no hay nada pendiente no gasta
    * nada, y si se acaba de subir hace menos de 25 s (MIN_GAP) se sube en
    * cuanto se pueda. → { ok, why?: 'local'|'guest'|'done'|'wait'|'offline'|'fail', secs? }
    */
@@ -805,13 +848,20 @@ G.DB = (() => {
   }
 
   /*
-   * Sales del juego (lo minimizas, cambias de app o de pestaña) con un Guardar
-   * que estaba esperando: se sube ya, en cuanto lo dejan las reglas. Es la
-   * subida que pediste, no una de más (al salir sin pulsar Guardar no se sube nada).
+   * Sales del juego (lo minimizas, cambias de app o de pestaña) con algo sin
+   * subir: se sube ya, en cuanto lo dejan las reglas. Y al volver tras un rato
+   * fuera, se mira si otro aparato ha guardado (pullCloud).
    */
   if (typeof document !== 'undefined' && document.addEventListener) document.addEventListener('visibilitychange', () => {
-    if (document.hidden && pushT && mode === 'cloud' && !guest && save) pushNow(RULE_GAP);
+    if (mode !== 'cloud' || guest || !save) return;
+    if (document.hidden) { hiddenAt = Date.now(); if (pushT || pending) pushNow(RULE_GAP); }
+    else if (hiddenAt && Date.now() - hiddenAt > AWAY_MS) pullCloud();
   });
+  // Vuelve la red: lo pendiente sube ya (y el punto deja de estar rojo). Se va: rojo si quedaba algo.
+  if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('online', () => { if (mode === 'cloud' && !guest && save && pending) { fails = 0; pushNow(RULE_GAP); } });
+    window.addEventListener('offline', () => { if (mode === 'cloud' && !guest && save && pending) setSync('offline'); });
+  }
   // Si ya había una subida programada para antes, se respeta (no se retrasa).
   let pushDue = 0;
   function schedulePush(ms) {
@@ -928,9 +978,9 @@ G.DB = (() => {
 
   /**
    * Guarda la partida actual (no hace nada en modo invitado). En el navegador,
-   * al momento; en la nube, cuando pulses Guardar (queda pendiente: ver arriba,
-   * MODO NUBE). (Algunos lo llaman con 'run' o true, de cuando se subía antes
-   * lo urgente: ya no cambia nada.)
+   * al momento; en la nube, sola a los AUTO_MS (guardado automático: ver arriba,
+   * MODO NUBE), menos en mitad de una partida, que sube al acabar. (Algunos lo
+   * llaman con 'run' o true, de cuando se subía antes lo urgente: ya no cambia nada.)
    */
   function commit() {
     if (guest || !key || !save) return false;
@@ -939,7 +989,8 @@ G.DB = (() => {
     if (mode === 'local') return write(K_SAVE + key, save);
     write(K_CLOUD + uid, save);
     pending = true;
-    setSync('pending');                // se sube al pulsar Guardar
+    if (syncState !== 'syncing') setSync('pending');
+    if (!inRun()) schedulePush(AUTO_MS);
     return true;
   }
 
@@ -1060,9 +1111,11 @@ G.DB = (() => {
   }
 
   return {
-    ready, register, login, loginWithGoogle, playAsGuest, logout, commit, deleteAccount, flush: pushNow, saveNow, touchPick,
+    ready, register, login, loginWithGoogle, playAsGuest, logout, commit, deleteAccount, flush: pushNow, saveNow, pull: pullCloud, touchPick,
     owns, grant, ownsShiny, grantShiny, merge, setName, upgradesOf, isFav, setFav,
     onSync(fn) { listeners.add(fn); },
+    /** Se ha traído de la nube lo guardado en otro aparato (al volver al juego). */
+    onPull(fn) { pulled.add(fn); },
     onLeave(fn) { leaveHooks.push(fn); },
     /** Acceso de bajo nivel para los módulos de red (sólo en modo nube). */
     get fb() { return mode === 'cloud' ? { auth, fs, rtdb, uid, emulator: !!(G.FIREBASE_CONFIG || {}).emulator } : null; },

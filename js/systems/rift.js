@@ -190,7 +190,7 @@ G.Rift = (() => {
       keepInside();
       const boss = G.EnemyMgr.get(arena.bossId);
       if (!boss || boss.dead) { G.Coop.isHost && G.Coop.broadcast(['aw']); won(); return; }
-      const allDown = G.Game.everyone().every(p => p.dead);
+      const allDown = G.Game.everyone().every(p => p.dead || p.silent);      // (ni el compañero sin conexión)
       downT = allDown ? downT + dt : 0;
       if (downT > 1.4 || arena.t > ARENA_TIME) { G.Coop.isHost && G.Coop.broadcast(['al']); lost(); }
       return;
@@ -268,6 +268,15 @@ G.Rift = (() => {
     };
   }
 
+  /**
+   * Otro pasa a llevar la partida a mitad (cambio de anfitrión, coop.js): si estabais
+   * en la arena, el legendario del anfitrión anterior ya no está y vuelve a salir.
+   */
+  function adopt() {
+    asked = false; downT = 0; checkT = CHECK;
+    if (arena && arena.phase === 'fight') { arena.bossId = 0; spawnLegend(); }
+  }
+
   // ---------------- red ----------------
 
   function onEvent(ev) {
@@ -281,7 +290,7 @@ G.Rift = (() => {
   }
 
   return {
-    reset, update, drawable, onEvent, leftBehind, enterRequest() { if (!arena) start(); },
+    reset, update, drawable, onEvent, adopt, leftBehind, enterRequest() { if (!arena) start(); },
     get rift() { return rift; }, get arena() { return arena; },
     get inArena() { return !!arena; },
     get timeLeft() { return arena ? Math.max(0, ARENA_TIME - arena.t) : 0; },

@@ -229,6 +229,17 @@ G.Events = (() => {
     end();
   }
 
+  /**
+   * Otro pasa a llevar la partida a mitad (cambio de anfitrión, coop.js): el evento
+   * que hubiera (horda, hora dorada, Pokémon perdido) se da por acabado; de él sólo
+   * había aquí un resumen, no lo que hace falta para seguirlo.
+   */
+  function adopt() {
+    lost = null;
+    if (cur) { cur = null; if (G.Coop.isHost) G.Coop.broadcast(['ev', 'e']); }
+    nextT = Math.max(nextT, 20);
+  }
+
   // ---------------- red ----------------
 
   function onNet(ev) {
@@ -347,7 +358,7 @@ G.Events = (() => {
   }
 
   return {
-    reset, update, bag, onNet, drawables, drawHud,
+    reset, update, bag, onNet, adopt, drawables, drawHud,
     get golden() { return !!cur && cur.id === 'gold'; },
     get current() { return cur ? cur.id : null; },
     /** Para pruebas. */

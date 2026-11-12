@@ -38,6 +38,7 @@ G.RankingUI = (() => {
     G.UI.show('scr-rank', true);
     if (!G.Social.started) G.Social.start();
     $('rk-mod').classList.toggle('hidden', !G.Ranking.isAdmin());
+    G.Ranking.retry();          // marcas que no pudieron subir por la conexión (ranking.js)
     tabs();
     load();
   }
@@ -84,9 +85,10 @@ G.RankingUI = (() => {
     if (my !== token) return;
     list.innerHTML = dlist.innerHTML = '';
     if (!rows.length) {
-      // Sólo amigos en diario, semanal y mensual: ahí sólo se guarda el top 50 (ranking.js).
-      list.innerHTML = scope === 'friends' && period !== 'a' && !dex
-        ? '<p class="sub">Ninguno de tus amigos está en el top 50 de este periodo. En Histórico salen todos.</p>'
+      // Sólo amigos: por Pokémon sólo se guarda el top 50 (ranking.js); en lo demás salen todos tus amigos.
+      list.innerHTML = scope === 'friends'
+        ? (dex ? '<p class="sub">Ninguno de tus amigos está en el top 50 con este Pokémon.</p>'
+               : '<p class="sub">Ni tú ni tus amigos tenéis marca aquí todavía.</p>')
         : '<p class="sub">Todavía no hay marcas aquí. ¡Sé el primero!</p>';
     }
     const uid = G.Social.uid;

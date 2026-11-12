@@ -49,17 +49,14 @@ G.UI = (() => {
     const cn = G.Halloween.on && s ? (s.bag && s.bag.candy) || 0 : null;
     $('tickets-pill').innerHTML = `${G.Icons.html('ticket', 18)} ${short(t.t1)} &nbsp;${G.Icons.html('ticket10', 18)} ${short(t.t10)}` +
       (cn != null ? ` &nbsp;<span title="${G.T('Caramelos de Halloween')}">${G.Icons.html('candy', 18)} ${short(cn)}</span>` : '');
-    // Punto de sincronización: verde = guardado en la nube, amarillo = hay cambios
-    // sin subir (sólo se suben con Guardar, desde el 20-10-2026), rojo = sin conexión.
+    // Punto de sincronización: verde = guardado en la nube, amarillo = subiendo (se
+    // guarda solo desde el 05-11-2026; ya no hay botón Guardar), rojo = sin conexión.
     const st = G.DB.guest ? 'guest' : G.DB.syncState;
     const TIP = { ok: 'Guardado en la nube', syncing: 'Guardando…', pending: 'Guardando…',
                   offline: 'Sin conexión: se subirá al volver', local: 'Guardado sólo en este navegador', guest: 'Invitado: no se guarda' };
     $('user-pill').innerHTML = G.Icons.html(G.DB.guest ? 'user' : 'crown', 18) + ' <span translate="no">' + (G.DB.guest ? G.T('Invitado') : (G.DB.user || '')) + '</span>' +
       `<i class="sync ${st}" title="${TIP[st] || ''}"></i>`;
     $('user-pill').title = TIP[st] || '';
-    // Botón Guardar: sólo con cuenta en la nube (en local ya se guarda al momento).
-    const sb = $('btn-save');
-    sb.classList.toggle('hidden', G.DB.guest || G.DB.mode !== 'cloud');
   }
 
   let toastEl = null, toastT = 0;
@@ -257,17 +254,8 @@ G.UI = (() => {
     G.Icons.installCss();
     wireLegal();
     G.DB.onSync(() => { if (!$('topbar').classList.contains('hidden')) refreshCoins(); });
-    const sb = $('btn-save');
-    sb.innerHTML = G.Icons.html('save', 18) + ' <span>Guardar</span>';
-    sb.onclick = async () => {
-      sb.disabled = true;
-      const r = await G.DB.saveNow();
-      sb.disabled = false;
-      const MSG = { local: 'Tu partida se guarda en este navegador.', guest: 'Como invitado la partida no se guarda.',
-                    done: 'Ya está todo guardado en la nube.', offline: 'Sin conexión: se guardará en cuanto vuelva.',
-                    fail: 'No se pudo guardar. Vuelve a probar en un momento.' };
-      toast(r.why === 'wait' ? `Se guarda en la nube en ${r.secs} s.` : r.why ? MSG[r.why] : '¡Partida guardada en la nube!', 3000);
-    };
+    // Lo de otro aparato, al volver al juego (db.js, pullCloud): el menú se rehace con lo nuevo.
+    G.DB.onPull(() => { if (G.UI.isOpen('scr-menu') && G.Game.state === 'ui') G.MenuUI.open(); });
     wireSounds();
     wireBackdrops();
     refreshSoundIcon();

@@ -32,25 +32,26 @@
  *   id = tu uid (solitario) o los uid del equipo ordenados y unidos con "_".
  *
  * Ahorros:
- *   - Lo leído se guarda 2 h en el navegador (cambiar de pestaña y volver: 0).
+ *   - Lo leído se guarda 5 min en el navegador (cambiar de pestaña y volver: 0).
+ *     (2 h hasta el 07-11-2026: las marcas, también las de tus amigos, tardaban
+ *     horas en verse.)
  *   - Tus mejores marcas se recuerdan en el navegador: al acabar una partida
  *     no hay que leer nada para saber si has mejorado, y sólo se escribe
  *     donde mejoras.
  *   - El resumen sólo se toca si tu marca entra en el top 50.
- *   - En diario, semanal y mensual sólo se guardan las marcas del top 50: si
- *     no entras no se escribe nada y tu puesto sale como "fuera del top 50".
- *     Tu puesto exacto, aunque estés el 3.000, sólo en el histórico. Con mucha
- *     gente jugando, ahorra unas 6 de cada 10 escrituras del ranking.
+ *   - En el histórico de cada Pokémon sólo se guardan las marcas del top 50.
+ *     En diario, semanal, mensual e histórico se guarda la de cada uno (desde el
+ *     07-11-2026 también en los tres primeros: así «Sólo amigos» enseña a tus
+ *     amigos aunque no estén en el top 50 mundial, y ves tu puesto exacto).
  *
  * Los periodos se cuentan en hora de España (Europe/Madrid).
  */
 G.Ranking = (() => {
   const TZ = 'Europe/Madrid';
   const PERIODS = [['d', 'Diario'], ['w', 'Semanal'], ['m', 'Mensual'], ['a', 'Histórico']];
-  // Periodos en los que sólo se guarda el top 50 (ver arriba).
-  // ('p' = histórico de un Pokémon: casi cada partida entraba en el de su
-  //  Pokémon y escribía; ahora también sólo el top 50.)
-  const TOP_ONLY = new Set(['d', 'w', 'm', 'p']);
+  // Tablas en las que sólo se guarda el top 50 (ver arriba): 'p' = histórico de un
+  // Pokémon. (Hasta el 07-11-2026 también diario, semanal y mensual.)
+  const TOP_ONLY = new Set(['p']);
   const TOP = 50;
   // Las runs de menos de 2 minutos no se suben (nunca entran en un top que
   // importe y eran muchas lecturas y escrituras para nada: los que empiezan
@@ -60,9 +61,10 @@ G.Ranking = (() => {
   // tablas, casi ninguna llega a 50 marcas y aceptaban cualquier partida (2
   // escrituras cada vez; eran ~1/10 de todas las escrituras de Firestore).
   const MIN_T_MON = 600;
-  // Caché de lo leído: 2 h (era 30 min hasta el 20-10-2026). Tu marca nueva se
-  // ve al momento igual (al subirla se guarda en la caché lo que se escribió).
-  const TTL = 2 * 3600 * 1000;
+  // Caché de lo leído: 5 min (2 h del 20-10 al 07-11-2026: las marcas de los
+  // demás tardaban horas en verse). Tu marca nueva se ve al momento igual (al
+  // subirla se guarda en la caché lo que se escribió).
+  const TTL = 5 * 60 * 1000;
 
   const fbx = () => G.DB.online ? G.DB.fb : null;
 
@@ -164,8 +166,9 @@ G.Ranking = (() => {
 
   const mem = new Map();                 // clave -> { at, v }
   // Tu puesto exacto (fuera del top 50) cuesta 1 lectura por cada 1.000 marcas
-  // que tienes por delante: se guarda 6 h, y se vuelve a mirar antes si mejoras.
-  const RANK_TTL = 6 * 3600 * 1000;
+  // que tienes por delante: se guarda 10 min (6 h hasta el 07-11-2026), y se vuelve
+  // a mirar antes si mejoras.
+  const RANK_TTL = 10 * 60 * 1000;
   const ttlOf = k => (k.startsWith('r:') ? RANK_TTL : TTL);
   function cacheGet(k) {
     let c = mem.get(k);
@@ -234,9 +237,10 @@ G.Ranking = (() => {
   // Fila de otro jugador: todo limpio (ver G.U.int / str), sea lo que sea que haya en la base de datos.
   const rowOf = (id, v) => {
     const U = G.U; v = v || {};
-    return { id: U.str(String(id), 200), t: U.int(v.t, 86400), d: U.int(v.d != null ? v.d : v.dmg, 1e15), uids: U.list(v.uids, 4).map(x => U.str(x, 128)),
-             names: U.list(v.names, 4).map(x => U.str(x, 24)), dex: U.list(v.dex, 4).map(x => U.int(x, 2000)),
-             shiny: U.list(v.shiny, 4).map(x => x === true), lv: U.int(v.lv, 999) || 1, kills: U.int(v.kills, 1e9) };
+    // (Hasta 10 por equipo: nuestras salas son de 4 a 10; el juego oficial, de 4.)
+    return { id: U.str(String(id), 400), t: U.int(v.t, 86400), d: U.int(v.d != null ? v.d : v.dmg, 1e15), uids: U.list(v.uids, 10).map(x => U.str(x, 128)),
+             names: U.list(v.names, 10).map(x => U.str(x, 24)), dex: U.list(v.dex, 10).map(x => U.int(x, 20000)),
+             shiny: U.list(v.shiny, 10).map(x => x === true), lv: U.int(v.lv, 999) || 1, kills: U.int(v.kills, 1e9) };
   };
   const sorted = top => Object.entries(top || {}).map(([id, v]) => rowOf(id, v)).sort((a, b) => b.t - a.t);
   const sortedD = dtop => Object.entries(dtop || {}).map(([id, v]) => rowOf(id, v)).sort((a, b) => b.d - a.d);
@@ -259,8 +263,8 @@ G.Ranking = (() => {
    * y derrotados con sentido y el baneo (firestore.rules; el tope de 45 min se
    * quitó el 23-10-2026: en el minuto 35 Arceus rompe los objetos).
    */
-  /** Al empezar a jugar: sube las marcas del histórico que esperaban (ver DEFER). */
-  function runStarted() { flushDeferred(); }
+  /** Al empezar a jugar: sube las marcas que esperaban (ver DEFER y retry). */
+  function runStarted() { flushDeferred(); retry(); }
 
   /*
    * Tu marca del histórico FUERA del top 50 (20-10-2026): nadie la ve, sólo
@@ -269,7 +273,9 @@ G.Ranking = (() => {
    * sale al acabar o empezar otra partida pasado ese tiempo. Si entras en el
    * top 50 se sube al momento, como siempre.
    */
-  const DEFER = 6 * 3600 * 1000, DEF = 'ps.rk.def';
+  // (07-11-2026: DEFER a 0, se sube siempre al momento; con 6 h tus amigos no veían
+  //  tu marca hasta horas después. Las que esperaban de antes salen en la siguiente.)
+  const DEFER = 0, DEF = 'ps.rk.def';
   const defKey = () => DEF + '.' + (fbx() ? fbx().uid : '');
   function deferred() { try { return JSON.parse(localStorage.getItem(defKey()) || '{}'); } catch (e) { return {}; } }
   function saveDeferred(d) { try { localStorage.setItem(defKey(), JSON.stringify(d)); } catch (e) { /* lleno */ } }
@@ -306,12 +312,15 @@ G.Ranking = (() => {
   /** Guarda la entrada en cada tabla donde mejore (tiempo o daño). → periodos mejorados */
   async function store(boards, id, entry) {
     const fb = fbx();
-    const better = [];
+    const better = [], failed = [];
     const known = bests();
     const thr = thresholds();
     await Promise.all(boards.map(async ([b, period]) => {
       const key = b + ':' + id, dkey = key + '#d';
-      try {
+      // Sin red, Firestore deja la escritura esperando sin fallar: tope de STORE_MAX
+      // (cuenta como fallo de conexión y la marca se reenvía, ver send).
+      let late = 0;
+      const one = async () => {
         const topOnly = TOP_ONLY.has(period);
         // Daño a Arceus: sólo en las tablas de periodo (no en las de cada Pokémon).
         const dmg = period === 'p' ? 0 : entry.dmg || 0;
@@ -393,11 +402,67 @@ G.Ranking = (() => {
         // myRank enseña la que espera sin volver a leer nada.)
         if (!waiting) { mem.delete('r:' + b); try { localStorage.removeItem('ps.rk.c.r:' + b); } catch (e) { /* nada */ } }
         if (period && period !== 'p' && !better.includes(period)) better.push(period);
-      } catch (e) { console.warn('[Ranking] no se pudo guardar en', b, e.code || e.message); }
+      };
+      try {
+        await Promise.race([one(), new Promise((_, rej) => { late = setTimeout(() => rej({ code: 'deadline-exceeded' }), STORE_MAX); })]);
+      } catch (e) {
+        console.warn('[Ranking] no se pudo guardar en', b, e.code || e.message);
+        failed.push({ b, period, code: String(e.code || '') });
+      } finally { clearTimeout(late); }
     }));
     saveBests(known);
+    better.failed = failed;
     return better;
   }
+
+  /*
+   * Si la conexión falla al acabar la partida (07-11-2026), la marca se guarda en
+   * el navegador y se vuelve a enviar sola: a los 20 s, al volver la red, al abrir
+   * el ranking y al empezar otra partida (hasta RETRY_MAX veces en 2 días, y sólo
+   * a las tablas en las que falló). Si el servidor la rechaza en todas, o no
+   * entra tras los reintentos, se avisa (antes se quedaba fuera sin decir nada).
+   */
+  const STORE_MAX = 15000, RETRY_MAX = 6, RETRY_AGE = 48 * 3600e3, RQ = 'ps.rk.retry';
+  const rqKey = () => RQ + '.' + (fbx() ? fbx().uid : '');
+  function retryList() { try { const q = JSON.parse(localStorage.getItem(rqKey()) || '[]'); return Array.isArray(q) ? q : []; } catch (e) { return []; } }
+  function saveRetries(q) { try { if (q.length) localStorage.setItem(rqKey(), JSON.stringify(q.slice(-8))); else localStorage.removeItem(rqKey()); } catch (e) { /* lleno */ } }
+  // Fallo de conexión (se reintenta) o rechazo del servidor (no).
+  const transient = f => navigator.onLine === false || !f.code || /unavailable|deadline-exceeded|cancelled|aborted|internal|unknown|resource-exhausted|failed-precondition/.test(f.code);
+  let retryT = 0, retrying = false;
+
+  async function send(id, entry, boards, tries = 0, at = Date.now()) {
+    const better = await store(boards, id, entry);
+    const failed = better.failed || [];
+    if (failed.length) {
+      const again = failed.filter(transient);
+      if (again.length && tries < RETRY_MAX) {
+        saveRetries(retryList().concat([{ id, entry, boards: again.map(x => [x.b, x.period]), tries: tries + 1, at }]));
+        clearTimeout(retryT); retryT = setTimeout(retry, 20000 * Math.pow(2, tries));
+        if (!tries) G.UI.toast('Sin conexión: tu marca se enviará al ranking en cuanto vuelva.', 3600);
+      } else if (failed.length === boards.length) {
+        G.UI.toast('Tu marca no ha podido entrar en el ranking.', 4200);
+      }
+    }
+    announce(better);
+    return better;
+  }
+
+  /** Reenvía las marcas que no pudieron subir (ver send). */
+  async function retry() {
+    const fb = fbx();
+    if (!fb || retrying || navigator.onLine === false) return;
+    const q = retryList();
+    if (!q.length) return;
+    retrying = true;
+    saveRetries([]);
+    try {
+      for (const it of q) {
+        if (!it || !it.entry || !Array.isArray(it.boards) || Date.now() - (it.at || 0) > RETRY_AGE) continue;
+        await send(String(it.id), it.entry, it.boards, it.tries | 0, it.at);
+      }
+    } finally { retrying = false; }
+  }
+  if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('online', () => { setTimeout(retry, 1500); });
 
   function announce(better) {
     if (!better.length) return;
@@ -416,8 +481,10 @@ G.Ranking = (() => {
     const t = Math.min(86400, Math.max(1, r.t | 0));
     // Daño a Arceus: sólo desde el minuto 30, hasta 50.000 por segundo de Sentencia.
     const dmg = t < 1800 ? 0 : Math.max(0, Math.min(Math.floor(r.dmg || 0), (t - 1799) * 50000));
-    // rt: el tiempo de esta partida (t puede quedarse en el de una marca anterior mejor).
-    return { t, rt: t, lv: Math.max(1, Math.min(r.lv | 0, 10 + Math.floor(t / 4))), kills: Math.max(0, Math.min(r.kills | 0, 100 + t * 12)), dmg };
+    // (Sin "rt", el tiempo de esta partida que el juego oficial manda con su sello: nuestras
+    //  reglas —firestore.rules, validEntry— sólo admiten t, lv, kills y dmg, y con él rechazaban
+    //  TODAS las marcas, en solitario y en grupo, desde la sincronización del 27-10-2026.)
+    return { t, lv: Math.max(1, Math.min(r.lv | 0, 10 + Math.floor(t / 4))), kills: Math.max(0, Math.min(r.kills | 0, 100 + t * 12)), dmg };
   }
 
   function submitSolo(r) { return submitSoloNow(r); }
@@ -430,9 +497,7 @@ G.Ranking = (() => {
     const entry = Object.assign({ uids: [fb.uid], names: [G.Social.me.name], dex: [r.dex], shiny: [!!r.shiny] }, fit(r));
     const boards = PERIODS.map(([p]) => ['s_' + ids[p], p]);
     if (r.t >= MIN_T_MON) boards.push(['s_' + ALL + '_p' + r.dex, 'p']);
-    const better = await store(boards, fb.uid, entry);
-    announce(better);
-    return better;
+    return send(fb.uid, entry, boards);
   }
 
   /** La sube el anfitrión, con todo el equipo. */
@@ -448,9 +513,7 @@ G.Ranking = (() => {
     const ids = boardIds();
     const boards = PERIODS.map(([p]) => ['g_' + ids[p], p]);
     if (r.t >= MIN_T_MON) for (const d of new Set(entry.dex)) boards.push(['g_' + ALL + '_p' + d, 'p']);
-    const better = await store(boards, id, entry);
-    announce(better);
-    return better;
+    return send(id, entry, boards);
   }
 
   // ---------------- leer ----------------
@@ -495,7 +558,9 @@ G.Ranking = (() => {
 
   /** Tú y tus amigos con marca (como mucho 30). */
   async function circleOf(fb) {
-    await G.Social.ensureFriends();          // (la lista de amigos ya no se carga al entrar)
+    // (En el juego oficial la lista de amigos ya no se carga al entrar; aquí sí, y no hay ensureFriends:
+    //  al sincronizar el 27-10-2026 esta llamada rompía «Sólo amigos» entero.)
+    if (G.Social.ensureFriends) await G.Social.ensureFriends();
     return [fb.uid, ...G.Social.friends.filter(f => f.status === 'ok').map(f => f.uid)].slice(0, 30);
   }
 
@@ -513,8 +578,8 @@ G.Ranking = (() => {
       const circle = await circleOf(fb);
       rows = rows.filter(r => r.uids.some(u => circle.includes(u)));
       // Los amigos que no están en el top 50 de daño (#356: sólo salían los de ese
-      // top). Sólo en el histórico, el único que guarda las demás marcas; son las
-      // mismas que lee top() y se comparten (no se lee nada más).
+      // top). En todas las tablas que guardan las demás marcas (desde el 07-11-2026,
+      // también diario, semanal y mensual); son las mismas que lee top() y se comparten.
       if (!TOP_ONLY.has(period)) {
         const extra = (await friendMarks(fb, mode, board(mode, period), circle)).filter(r => r.d > 0 && !rows.some(x => x.id === r.id));
         rows = rows.concat(extra).sort((a, c) => c.d - a.d);
@@ -523,7 +588,7 @@ G.Ranking = (() => {
     return { rows: rows.slice(0, TOP), me };
   }
 
-  /** Las marcas de tus amigos (y la tuya) en una tabla del histórico. Se guardan 2 h. */
+  /** Las marcas de tus amigos (y la tuya) en una tabla. Se guardan 5 min (TTL). */
   async function friendMarks(fb, mode, b, circle) {
     const ck = 'f:' + b + ':' + circle.slice().sort().join(',');
     let extra = cacheGet(ck);
@@ -552,9 +617,9 @@ G.Ranking = (() => {
     if (!friendsOnly) return rows.slice(0, TOP);
     const circle = await circleOf(fb);
     const inTop = rows.filter(r => r.uids.some(u => circle.includes(u)));
-    // En diario, semanal, mensual y por Pokémon no hay marcas fuera del top 50.
+    // Por Pokémon no hay marcas fuera del top 50.
     if (TOP_ONLY.has(period) || dex) return inTop;
-    // Los amigos que no están en el top 50: se buscan aparte (y se guardan 2 h).
+    // Los amigos que no están en el top 50: se buscan aparte (y se guardan 5 min).
     const extra = await friendMarks(fb, mode, b, circle);
     const all = new Map();
     for (const r of [...inTop, ...extra]) all.set(r.id, r);
@@ -774,6 +839,6 @@ G.Ranking = (() => {
       t1: (v.tickets || {}).t1 || 0, t10: (v.tickets || {}).t10 || 0, owned: Object.keys(v.owned || {}).length }; });
   }
 
-  return { PERIODS, periodIds, board, runStarted, newSeal, mySeal, submitSolo, submitGroup, top, topDmg, myRank, removeMine,
+  return { PERIODS, periodIds, board, runStarted, newSeal, mySeal, submitSolo, submitGroup, retry, top, topDmg, myRank, removeMine,
            report, reported, isAdmin, reports, entryInfo, removeEntry, purgeAbove, removeEverywhere, setMarked, dismiss, markedAccounts };
 })();

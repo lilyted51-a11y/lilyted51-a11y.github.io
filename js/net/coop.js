@@ -20,6 +20,12 @@
  *                            e:[[id,x,y,vida,anim,dir,estados]], ev:[eventos],
  *                            ja:[x,y,anim,dir,daño] (Arceus, sólo en la Sentencia) }
  *   anfitrión -> todos     { k:'start', seed, host, members:[{uid,name,dex,shiny}] }
+ *
+ * Cooperativo sin cortes (08-11-2026): si el anfitrión se va, se le corta la
+ * conexión o deja de responder, la partida sigue con otro anfitrión (ver "cambio
+ * de anfitrión", abajo). Y un jugador sin conexión (silent) ya no levanta a nadie,
+ * ni mantiene viva la partida, ni recoge objetos, ni hace que salgan más enemigos,
+ * ni se le espera en las cartas de nivel.
  */
 G.Coop = (() => {
   const ANIMS = ['Idle', 'Walk', 'Attack', 'Shoot', 'Charge', 'Hurt', 'Faint'];
@@ -54,6 +60,10 @@ G.Coop = (() => {
   const WAIT_MAX = 20, HOLD_MAX = 25;   // segundos: cartas de nivel · objeto o vínculo
   let waitSince = 0, lastWaitSec = -1;  // cartas: desde cuándo se espera, último segundo avisado
   const holdSince = new Map();          // uid -> performance.now() al empezar a elegir
+  // Cambio de anfitrión (ver abajo): cuánto se espera al anfitrión que no responde,
+  // cuánto más cada candidato que el anterior, y cuánto al nuevo antes de seguir en solitario.
+  const HOST_MAX = 30000, CLAIM_STEP = 5000, FOLLOW_MAX = 20000;
+  let migrated = false, quietSince = 0, claiming = false, followSince = 0, swapNote = '';
 
   // ---------------- escalado de dificultad ----------------
 
@@ -80,6 +90,7 @@ G.Coop = (() => {
     hostAway = false; stalled = false; lastHostAt = performance.now();
     sums = {}; sumT = 1; myHold = false;
     levelSeq = 0; levelNow = 1; seenSeq = 0; doneSeq = 0; lastHo = '';
+    migrated = false; quietSince = 0; claiming = false; followSince = 0; swapNote = '';
     cfg.members.forEach((m, i) => {
       const x = (i - (cfg.members.length - 1) / 2) * 34, y = 0;
       if (m.uid === me) { pl.x = x; pl.y = y; pl.uid = me; pl.coopHost = host; pl.tagColor = COLORS[i]; return; }
@@ -89,7 +100,7 @@ G.Coop = (() => {
       p.x = x; p.y = y;
       p.net = { x, y, ang: Math.PI / 2, walk: 0, hp: p.maxHp, maxHp: p.maxHp, dead: 0, mv: G.baseStartOf(mon.dex), ml: 1, mag: 78, aim: Math.PI / 2, rev: 0 };
       G.Sprites.preload([mon.dex], 8000, p.shiny);
-      mates.set(m.uid, { uid: m.uid, name: m.name, color: COLORS[i], pl: p, connected: true, q: [], flushT: 0, xpMul: 1, lastAt: performance.now() });
+      mates.set(m.uid, { uid: m.uid, name: m.name, color: COLORS[i], pl: p, connected: true, q: [], flushT: 0, xpMul: 1, lastAt: performance.now(), wait: 0 });
     });
   }
 
@@ -103,9 +114,18 @@ G.Coop = (() => {
   function leave() {
     if (!active) return;
     if (host) {
-      // Si se va el anfitrión, la partida termina para todos.
-      emit(['ov', Object.assign(api.summary ? api.summary() : {}, { why: 'host', sums: teamSums() })]);
-      flushAll();
+      const next = successor();
+      if (next) {
+        // Cooperativo sin cortes: se va el anfitrión y la partida sigue con otro
+        // (se avisa por aquí y la sala pasa a él: Social.handOver).
+        emit(['hx', next]);
+        flushAll();
+        G.Social.handOver(next);
+      } else {
+        // No queda nadie que pueda seguir: la partida termina.
+        emit(['ov', Object.assign(api.summary ? api.summary() : {}, { why: 'host', sums: teamSums() })]);
+        flushAll();
+      }
     } else {
       outEv.push(['bye']);
       flushClient('bye');
@@ -119,6 +139,8 @@ G.Coop = (() => {
   function puppets() { const out = []; for (const m of mates.values()) if (m.connected) out.push(m.pl); return out; }
   /** Todos: tú primero. */
   function players() { return [local, ...puppets()]; }
+  /** ¿Habéis caído todos? (Un compañero sin conexión no mantiene viva la partida.) */
+  function allDown() { return !!local && local.dead && puppets().every(p => p.dead || p.silent); }
 
   /**
    * Multiplicador de la experiencia del equipo: la media de los bonus de
@@ -271,10 +293,17 @@ G.Coop = (() => {
     // Siempre: quién está eligiendo y, si hay cartas de nivel, cuáles (ver arriba).
     f.ho = holdNames();
     if (waiting.size) f.lu = [levelSeq, levelNow];
+    // Quién se ha ido (gn) y quién está sin conexión (si): cada juego lo necesita
+    // para no dejar que un jugador apagado levante a nadie, y para saber quién sigue
+    // si hay que cambiar de anfitrión.
+    const gn = [], si = [];
+    for (const o of mates.values()) { if (!o.connected) gn.push(o.uid); else if (o.pl.silent) si.push(o.uid); }
+    if (gn.length) f.gn = gn;
+    if (si.length) f.si = si;
     return f;
   }
 
-  function flushAll() { for (const m of mates.values()) if (m.connected && !G.Net.busy(m.uid)) G.Net.send(m.uid, hostFrame(m)); }
+  function flushAll() { for (const m of mates.values()) if (m.connected && !m.wait && !G.Net.busy(m.uid)) G.Net.send(m.uid, hostFrame(m)); }
 
   /*
    * Cada mensaje del invitado lleva también si está eligiendo fusión u objeto (h)
@@ -315,10 +344,20 @@ G.Coop = (() => {
       for (const [u, t0] of holdSince) if (now - t0 > HOLD_MAX * 1000) forceHold(u);
       for (const m of mates.values()) {
         if (!m.connected) continue;
+        // Tras un cambio de anfitrión: hasta que el compañero no manda algo al nuevo
+        // (ya se ha enterado del cambio) no se le envía nada, o lo perdería. Si no
+        // llega nunca, es que ha seguido por su cuenta.
+        if (m.wait) { if (now - m.wait > FOLLOW_MAX + 5000) mateGone(m.uid); continue; }
         // Un compañero que no manda nada (el móvil apagado o en segundo plano) se
         // queda quieto y nunca muere: si los enemigos y Arceus le seguían
-        // persiguiendo, el anfitrión aguantaba para siempre (25-10-2026).
-        m.pl.silent = performance.now() - m.lastAt > SILENT_MS;
+        // persiguiendo, el anfitrión aguantaba para siempre (25-10-2026). Y ya no se
+        // le espera en las cartas de nivel ni mientras "elige" (08-11-2026).
+        const sil = now - m.lastAt > SILENT_MS;
+        if (sil !== !!m.pl.silent) {
+          m.pl.silent = sil;
+          if (sil) { if (waiting.has(m.uid)) picked(m.uid); if (holds.has(m.uid)) holdOff(m.uid); }
+          if (G.Social.rearm) G.Social.rearm();
+        }
         m.flushT -= dt;
         if (m.flushT > 0) continue;
         // Si aún no ha salido lo de antes, mandar más sólo alarga la cola: se espera
@@ -329,7 +368,14 @@ G.Coop = (() => {
         G.Net.send(m.uid, hostFrame(m));
       }
     } else {
-      if (!stalled && performance.now() - lastHostAt > STALL_MS) { stalled = true; updateAway(); }
+      const now = performance.now();
+      if (!stalled && now - lastHostAt > STALL_MS) { stalled = true; updateAway(); }
+      // Sin anfitrión (no responde o se ha ido de la pestaña): si dura HOST_MAX, se le
+      // sustituye (ver "cambio de anfitrión"); tras un cambio, si el nuevo no llega, en solitario.
+      if (!(stalled || hostAway)) quietSince = 0; else if (!quietSince) quietSince = now;
+      if (followSince) {
+        if (now - followSince > FOLLOW_MAX) { solo('No se ha podido seguir en grupo: continúas en solitario con todo lo que llevabas.'); return; }
+      } else if (quietSince && !claiming && now - quietSince > HOST_MAX + CLAIM_STEP * myTurn()) claim();
       flushT -= dt;
       if (flushT <= 0) {
         flushT = rateFor(hostUid);
@@ -388,7 +434,10 @@ G.Coop = (() => {
   function gone(u) {
     stopGrace(u);
     if (host) mateGone(u);
-    else if (u === hostUid) { const cb = api.lost; end(); if (cb) cb('Se ha perdido la conexión con el anfitrión.'); }
+    // Invitado: se ha perdido la conexión con el anfitrión. La partida ya no se acaba
+    // (08-11-2026): se espera en pausa y, si no vuelve, otro pasa a ser el anfitrión
+    // (lo normal es que la sala cambie de anfitrión sola a los pocos segundos).
+    else if (u === hostUid && !stalled) { stalled = true; updateAway(); }
   }
 
   /** Anfitrión: ¿`u` sigue en esta partida (aunque se esté reconectando)? */
@@ -402,6 +451,7 @@ G.Coop = (() => {
     G.Spawner.say(m.name + ' ha dejado la partida', 2.6);
     if (waiting.has(u)) picked(u);
     if (holds.has(u)) holdOff(u);
+    if (G.Social.rearm) G.Social.rearm();       // (quién heredaría la sala si me desconecto)
   }
 
   // --- en el anfitrión ---
@@ -409,7 +459,8 @@ G.Coop = (() => {
   function onClientFrame(from, msg) {
     const m = mates.get(from);
     if (!m || !m.connected) return;
-    m.lastAt = performance.now(); m.pl.silent = false;
+    m.lastAt = performance.now(); m.wait = 0;
+    if (m.pl.silent) { m.pl.silent = false; if (G.Social.rearm) G.Social.rearm(); }
     // Lo que dice su juego manda sobre lo que se apuntó con los avisos (ver flushClient).
     if (msg.h === 0 && holds.has(from)) holdOff(from);
     else if (msg.h === 1 && !holds.has(from)) holdOn(from);
@@ -476,8 +527,8 @@ G.Coop = (() => {
 
   // --- en el invitado ---
 
-  /** Invitado: se para (o sigue) según si el anfitrión está. */
-  function updateAway() { if (api.away) api.away(hostAway || stalled ? nameOf(hostUid) : null); }
+  /** Invitado: se para (o sigue) según si el anfitrión está. (swapNote: el texto, si es por un cambio de anfitrión.) */
+  function updateAway() { if (api.away) api.away(hostAway || stalled ? nameOf(hostUid) : null, swapNote); }
 
   // Anfitrión: al irse de la pestaña avisa a todos al momento (después ya no
   // podrá mandar nada) y al volver, que sigue.
@@ -489,7 +540,18 @@ G.Coop = (() => {
 
   function onHostFrame(msg) {
     lastHostAt = performance.now();
+    if (followSince) {
+      // Ya llega el nuevo anfitrión: se sigue.
+      followSince = 0; swapNote = '';
+      G.Spawner.say('Cambio de anfitrión: la partida sigue (ya no cuenta para el ranking)', 4, true);
+    }
     if (stalled) { stalled = false; updateAway(); }
+    // Quién se ha ido y quién está sin conexión (lo sabe el anfitrión).
+    for (const m of mates.values()) {
+      const off = Array.isArray(msg.gn) && msg.gn.includes(m.uid);
+      if (off && m.connected) { m.connected = false; G.Projectiles.clearOrbs(m.pl); }
+      m.pl.silent = !off && Array.isArray(msg.si) && msg.si.includes(m.uid);
+    }
     for (const ev of msg.ev || []) applyHostEvent(ev);
     if (msg.ja) G.Judgment.netApply(msg.ja);
     // Quién elige y las cartas de nivel, aunque se haya perdido algún aviso.
@@ -560,6 +622,14 @@ G.Coop = (() => {
       case 'lr': api.resume(); break;
       case 'hp': lastHo = (ev[1] || []).join('|'); api.hold && api.hold(ev[1]); break;
       case 'ha': hostAway = !!ev[1]; updateAway(); break;
+      // El anfitrión se va y la partida sigue con otro (ev[1]): en pausa hasta que la sala cambie.
+      case 'hx':
+        if (typeof ev[1] === 'string') {
+          swapNote = ev[1] === me ? G.I18n.f('{x} se ha ido: pasas a ser el anfitrión…', nameOf(hostUid))
+                                  : G.I18n.f('{x} se ha ido: {x} pasa a ser el anfitrión…', nameOf(hostUid), nameOf(ev[1]));
+          stalled = true; updateAway();
+        }
+        break;
       case 'pz': api.hostPause && api.hostPause(!!ev[1]); break;   // pausa del anfitrión para todos
       case 'sh': api.shiny(ev[1]); break;
       case 'ov': { const cb = api.over; const d = ev[1]; if (d) takeSums(d.sums); end(); cb(d); break; }
@@ -628,7 +698,8 @@ G.Coop = (() => {
 
   function levelStart(level) {
     waiting = new Set([me]);
-    for (const m of mates.values()) if (m.connected) waiting.add(m.uid);
+    // (A quien está sin conexión no se le espera: 08-11-2026.)
+    for (const m of mates.values()) if (m.connected && !m.pl.silent && !m.wait) waiting.add(m.uid);
     levelSeq++; levelNow = level;
     waitSince = performance.now(); lastWaitSec = -1;
     emit(['lu', level, levelSeq]);
@@ -697,9 +768,149 @@ G.Coop = (() => {
 
   /** Has elegido tu carta. */
   function localPicked() {
-    if (host) picked(me);
+    if (!active) { if (api.resume) api.resume(); return; }     // (ya en solitario: no hay a quién esperar)
+    if (host) { doneSeq = seenSeq; picked(me); }
     else { doneSeq = seenSeq; outEv.push(['lp']); flushClient(true); }
   }
+
+  // ---------------- cambio de anfitrión (cooperativo sin cortes, 08-11-2026) ----------------
+  /*
+   * Si el anfitrión se va, se le corta la conexión o deja de responder, la partida
+   * ya no se acaba: otro jugador pasa a ser el anfitrión y se sigue juntos; y si no
+   * se puede, cada uno sigue su partida en solitario con todo lo que llevaba.
+   *
+   *   se va por las buenas     leave(): avisa ('hx') y deja la sala al siguiente (Social.handOver)
+   *   se le cierra el juego    la base de datos pasa la sala sola (social.js, onDisconnect)
+   *   no responde en HOST_MAX  el siguiente de la lista toma el puesto (Social.claimHost)
+   *
+   * En los tres casos cambia `host` en la sala y cada juego lo ve (Social 'host'):
+   *   el nuevo anfitrión         promote(): pasa a mandar él (enemigos, objetos, reloj...)
+   *   los demás                  follow(): se conectan a él y esperan sus envíos
+   *   el antiguo, si sigue ahí   solo(): continúa por su cuenta
+   *
+   * Los enemigos del anfitrión anterior no se heredan (cada uno sólo tenía copias,
+   * sin su comportamiento): se quitan y el nuevo anfitrión saca los suyos; el jefe o
+   * legendario que hubiera vuelve a salir (game.js, takeOver). Los objetos del suelo
+   * que veía el nuevo anfitrión se quedan. Una partida que cambia de anfitrión no
+   * entra en el ranking.
+   */
+
+  /** Anfitrión: a quién le pasaría la partida (el primero de la lista que sigue conectado), o null. */
+  function successor() {
+    if (!active || !host) return null;
+    const ok = members.filter(x => { const m = mates.get(x.uid); return m && m.connected && !m.wait; });
+    const best = ok.find(x => !mates.get(x.uid).pl.silent) || null;       // mejor uno que responda
+    return best ? best.uid : null;
+  }
+
+  /** Invitado: tu turno para sustituir al anfitrión (0 = el primero), por el orden de la sala. */
+  function myTurn() {
+    const r = G.Social.room;
+    if (!r) return 0;
+    const c = r.members.filter(m => m.uid !== r.host).map(m => m.uid);
+    const i = c.indexOf(me);
+    return i < 0 ? c.length : i;
+  }
+
+  /** Invitado: el anfitrión lleva HOST_MAX sin responder y te toca: tomas su puesto. */
+  async function claim() {
+    claiming = true;
+    const was = hostUid;
+    let ok = false;
+    try { ok = await G.Social.claimHost(); } catch (e) { ok = false; }
+    claiming = false;
+    if (!active || host || hostUid !== was) return;       // ya ha cambiado por otro lado
+    // No se ha podido (o la sala ya no existe): cada uno por su cuenta.
+    if (!ok) solo('Se ha perdido el grupo: continúas en solitario con todo lo que llevabas.');
+  }
+
+  /** Pasas a ser el anfitrión en plena partida. */
+  function promote() {
+    const old = hostUid, now = performance.now();
+    migrated = true;
+    host = true; hostUid = me;
+    // (local.coopHost se queda como estaba, a false: esta partida ya no sube al ranking.)
+    stalled = false; hostAway = false; quietSince = 0; followSince = 0; claiming = false; swapNote = '';
+    for (const u of [...graceT.keys()]) stopGrace(u);
+    outEv = []; lastHo = '';
+    for (const m of mates.values()) {
+      if (m.uid === old) { if (m.connected) { m.connected = false; G.Projectiles.clearOrbs(m.pl); } continue; }
+      if (!m.connected) continue;
+      m.q = []; m.flushT = 0; m.lastAt = now; m.state = null; m.wait = now;
+    }
+    // Lo que llevaba el anfitrión anterior.
+    const hadBoss = G.EnemyMgr.all().some(e => e.remote && e.boss && !e.dead);
+    G.EnemyMgr.clearRemote();
+    if (api.takeOver) api.takeOver(hadBoss);
+    for (const o of G.Pickups.adopt()) emit(['pk', o.id, o.kind, r1(o.x), r1(o.y), o.value]);
+    // Pausas del anterior: fuera. Si había cartas de nivel abiertas, la ronda sigue
+    // con el mismo número: quien ya eligió lo dice en su siguiente envío.
+    waiting = new Set(); holds = new Set(); holdSince.clear();
+    levelSeq = seenSeq;
+    if (api.hostPause) api.hostPause(false);
+    if (api.hold) api.hold([]);
+    if (api.away) api.away(null, '');
+    if (api.choosing && api.choosing()) holdOn(me);
+    if (api.inLevelUp && api.inLevelUp()) {
+      if (doneSeq < seenSeq) waiting.add(me);
+      for (const m of mates.values()) if (m.connected) waiting.add(m.uid);
+      levelNow = local.level; waitSince = now; lastWaitSec = -1;
+      if (waiting.size) sendWaiting(); else api.resume();
+    }
+    G.Spawner.say('Cambio de anfitrión: la partida sigue (ya no cuenta para el ranking)', 4, true);
+  }
+
+  /** Otro jugador (u) pasa a ser el anfitrión: te conectas a él y esperas sus envíos. */
+  function follow(u) {
+    const old = hostUid;
+    migrated = true;
+    hostUid = u; lastHostAt = performance.now(); followSince = lastHostAt;
+    hostAway = false; quietSince = 0; claiming = false;
+    for (const k of [...graceT.keys()]) stopGrace(k);
+    outEv = []; lastHo = '';
+    const m = mates.get(old);
+    if (m && m.connected) { m.connected = false; G.Projectiles.clearOrbs(m.pl); }
+    // Lo del anfitrión anterior: fuera (el nuevo manda lo suyo en cuanto conecte).
+    G.EnemyMgr.clearRemote();
+    G.Pickups.clear();
+    if (api.hostPause) api.hostPause(false);
+    if (api.hold) api.hold([]);
+    swapNote = G.I18n.f('Cambio de anfitrión: conectando con {x}…', nameOf(u));
+    stalled = true; updateAway();
+  }
+
+  /**
+   * Te quedas sin grupo en plena partida (no se pudo conectar con el nuevo anfitrión,
+   * la sala se cerró, o eras el anfitrión y otro ha ocupado tu puesto): sigues tu
+   * partida en solitario con todo lo que llevabas.
+   */
+  function solo(msg) {
+    if (!active) return;
+    const wasHost = host, picked_ = doneSeq >= seenSeq;
+    migrated = true;
+    if (!wasHost) { try { outEv = [['bye']]; flushClient('bye'); } catch (e) { /* nada */ } }
+    for (const m of mates.values()) G.Projectiles.clearOrbs(m.pl);
+    if (local) local.coopHost = false;             // ya no sube al ranking en grupo
+    const hadBoss = !wasHost && G.EnemyMgr.all().some(e => e.remote && e.boss && !e.dead);
+    const cb = api.solo;
+    end();                                          // (la partida sigue, ya sin red)
+    if (!wasHost) { G.EnemyMgr.clearRemote(); G.Pickups.adopt(); }
+    if (cb) cb(msg, wasHost, hadBoss, picked_);
+    if (G.Social.room) G.Social.leaveRoom();
+  }
+
+  G.Social.on(what => {
+    if (!active) return;
+    const r = G.Social.room;
+    if (what === 'host' && r) {
+      if (r.isHost) { if (!host) promote(); }
+      else if (host) solo('Otro jugador ha pasado a ser el anfitrión: continúas en solitario con todo lo que llevabas.');
+      else if (r.host !== hostUid) follow(r.host);
+    } else if (what === 'room-closed' && !host) {
+      // La sala ha desaparecido en plena partida.
+      solo('Se ha perdido el grupo: continúas en solitario con todo lo que llevabas.');
+    }
+  });
 
   /** Anfitrión: se acabó para todos. */
   function over(data) {
@@ -709,7 +920,7 @@ G.Coop = (() => {
   }
 
   return {
-    ANIMS, COLORS, begin, end, leave, keeps, tick, players, puppets, xpFactor, scaleRate, scaleHp,
+    ANIMS, COLORS, begin, end, leave, keeps, successor, tick, players, puppets, allDown, xpFactor, scaleRate, scaleHp,
     cast, hit, status, hurtShown, enemyAdded, enemyGone, enemyShot, pickupAdded, pickupGone, say,
     propBroken, collected, shinyCaught, orbUsed, levelStart, localPicked, over, holdStart, holdEnd,
     /** Anfitrión: evento para todos. Invitado: evento para el anfitrión. */
@@ -723,6 +934,8 @@ G.Coop = (() => {
     /** uid -> resumen de cada jugador (ver cleanSum), también al acabar. */
     sums: teamSums,
     get active() { return active; },
+    /** ¿Ha cambiado de anfitrión esta partida? (Entonces no entra en el ranking.) */
+    get migrated() { return migrated; },
     get isHost() { return active && host; },
     get local() { return local; }
   };

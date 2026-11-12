@@ -171,7 +171,11 @@ G.Game = (() => {
 
   /** Pausa/continúa (tecla Esc o P, o el botón de pausa del móvil). */
   let holdBy = [];                   // grupo: quién está eligiendo fusión (todo parado)
-
+  // Grupo (invitado): el anfitrión no responde, o la partida está cambiando de anfitrión
+  // (awayNote: el texto de ese cambio). (Estas dos líneas se perdieron al sincronizar el
+  // 27-10-2026: el aviso de espera fallaba y no salía.)
+  let awayBy = null, awayNote = '';
+  const awayText = () => awayNote || 'Pausa: esperando a ' + awayBy + ' (anfitrión)…';
   let pausedByHost = false;          // grupo (invitado): el anfitrión ha pausado para todos
   // Copia local: caído en grupo, la cámara sigue a un compañero vivo (←/→, A/D o un toque para cambiar).
   let specUid = null, specNext = false, spectating = null, specAlive = false;
@@ -199,7 +203,7 @@ G.Game = (() => {
 
   /** @param coop  { seed, host, members } para una partida en grupo */
   function startRun(coop = null) {
-    holdBy = []; awayBy = null; pausedByHost = false;
+    holdBy = []; awayBy = null; awayNote = ''; pausedByHost = false;
     // Halloween (systems/halloween.js): lo que sea al empezar vale toda la partida (en grupo, lo dice el anfitrión).
     G.Halloween.runStart(coop ? coop.hw : undefined);
     const save = G.DB.save;
@@ -401,9 +405,13 @@ G.Game = (() => {
         G.Spawner.say(awayBy ? awayText() : '', awayBy ? 999 : 0, true);
       }
     },
-    /** Grupo (invitado): el anfitrión se ha ido de la pestaña o no responde: todo parado. */
-    away(name) {
+    /**
+     * Grupo (invitado): el anfitrión se ha ido de la pestaña o no responde: todo parado.
+     * @param note  otro texto para el aviso (cambio de anfitrión, ver coop.js)
+     */
+    away(name, note) {
       awayBy = name || null;
+      awayNote = awayBy ? note || '' : '';
       if (awayBy) {
         if (state === 'playing') state = 'held';
         G.Spawner.say(awayText(), 999, true);
@@ -411,8 +419,40 @@ G.Game = (() => {
         if (state === 'held') state = 'playing';
         G.Spawner.say('', 0, true);
       }
+    },
+    /** Cooperativo sin cortes: pasas a ser el anfitrión en plena partida (coop.js, promote). */
+    takeOver(hadBoss) { takeOver(hadBoss); },
+    /**
+     * Cooperativo sin cortes: te quedas sin grupo y sigues tu partida en solitario, con
+     * todo lo que llevabas (coop.js, solo). `picked`: ya habías elegido tu carta de nivel.
+     */
+    solo(msg, wasHost, hadBoss, picked) {
+      holdBy = []; awayBy = null; awayNote = ''; pausedByHost = false;
+      if (!wasHost) takeOver(hadBoss);
+      G.Social.setPlaying(false);
+      if (state === 'held') state = 'playing';
+      // Cartas de nivel: si ya habías elegido, no hay a quién esperar; si no, eliges y se sigue.
+      if (state === 'levelup' && picked) coopApi.resume();
+      G.RunUI.setWaiting([], 0);
+      G.Spawner.say(msg, 5, true);
+      G.UI.toast(msg, 5000);
     }
   };
+
+  /**
+   * Pasas a mandar tú en una partida que llevaba otro (nuevo anfitrión, o en solitario
+   * tras perder el grupo). Los enemigos del anterior ya se han quitado (sólo había
+   * copias): aquí se pone al día lo demás para que el juego siga solo.
+   * @param hadBoss  había un jefe vivo: vuelve a salir
+   */
+  function takeOver(hadBoss) {
+    pendingLevels = 0; deathT = 0;
+    const special = G.Rift.inArena || G.Judgment.active;
+    G.Spawner.catchUp(time, hadBoss && !special);
+    G.Events.adopt();
+    G.Rift.adopt();
+    G.Judgment.adopt();
+  }
 
   /** Has llevado a casa a un Pokémon perdido y se une a ti (events.js). */
   G.onRescue = (dex, name) => {
@@ -542,7 +582,7 @@ G.Game = (() => {
     if (pendingLevels <= 0 || state !== 'playing') return;
     if (G.Coop.active) {
       // En grupo, las cartas salen a la vez para todos y se espera a que elijan.
-      if (G.Coop.players().every(p => p.dead)) return;
+      if (G.Coop.players().every(p => p.dead || p.silent)) return;
       pendingLevels--;
       G.Coop.levelStart(pl.level);
       return;
@@ -933,7 +973,10 @@ G.Game = (() => {
     G.World.update(dt, G.Camera);
 
     const all = everyone();
-    if (!coop || G.Coop.isHost) { G.Path.update(dt, all); G.Spawner.update(dt, all, time); }
+    // Sin los compañeros sin conexión (08-11-2026): ni salen más enemigos por ellos, ni
+    // recogen objetos, ni cuentan para los eventos.
+    const awake = coop ? all.filter(p => !p.silent) : all;
+    if (!coop || G.Coop.isHost) { G.Path.update(dt, awake); G.Spawner.update(dt, awake, time); }
     else G.Spawner.tickBanner(dt);
     G.EnemyMgr.update(dt, all);
     G.EnemyMgr.rebuildGrid();
@@ -941,12 +984,12 @@ G.Game = (() => {
     G.Projectiles.update(dt, pl, G.EnemyMgr.all());
     G.Combat.resolve(dt, pl, time);
     G.Combat.updateFields(dt);
-    G.Pickups.update(dt, all, onCollect);
+    G.Pickups.update(dt, awake, onCollect);
     G.Hazards.update(dt);
     G.Interact.update(dt, pl);
     G.Rift.update(dt, pl, time);
     G.Judgment.update(dt, pl, time);
-    G.Events.update(dt, all, time);
+    G.Events.update(dt, awake, time);
     G.Weather.update(dt, time, pl);
     G.FX.update(dt);
 
@@ -958,14 +1001,16 @@ G.Game = (() => {
 
   /** Caído en grupo: un compañero a tu lado te va levantando. */
   function reviveTick(dt) {
-    const helper = G.Coop.puppets().some(p => !p.dead && G.U.dist2(p.x, p.y, pl.x, pl.y) < 56 * 56);
+    // (Un compañero sin conexión se queda quieto donde estaba: no levanta a nadie, 08-11-2026.)
+    const helper = G.Coop.puppets().some(p => !p.dead && !p.silent && G.U.dist2(p.x, p.y, pl.x, pl.y) < 56 * 56);
     pl.reviveT = helper ? (pl.reviveT || 0) + dt : Math.max(0, (pl.reviveT || 0) - dt * 0.5);
     if (pl.reviveT >= G.Player.REVIVE_TIME) pl.revive(0.5);
   }
 
   /** Anfitrión: si caéis todos, se acaba (tras ver caer al último). */
   function checkAllDown(dt) {
-    if (G.Rift.inArena || !G.Coop.players().every(p => p.dead)) { deathT = 0; return; }
+    // (Quien está sin conexión no mantiene viva la partida: 08-11-2026.)
+    if (G.Rift.inArena || !G.Coop.players().every(p => p.dead || p.silent)) { deathT = 0; return; }
     deathT += dt;
     if (deathT > 1.6) {
       deathT = 0;

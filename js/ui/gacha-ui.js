@@ -15,6 +15,8 @@ G.GachaUI = (() => {
     // Saltar: se acaba la tragaperras y salen todas las cartas de golpe (también con Esc).
     $('pull-skip').onclick = skipNow;
     addEventListener('keydown', e => { if (e.key === 'Escape' && busy && !$('pull-fx').classList.contains('hidden')) skipNow(); });
+    // Con cuenta, tirar necesita conexión (ver pull): al irse o volver la red se actualiza el aviso.
+    for (const ev of ['online', 'offline']) addEventListener(ev, () => { if (G.UI.isOpen('scr-gacha') && !busy) refresh(); });
 
     const tabs = $('gacha-gens');
     // Halloween: la pestaña del banner Noche Espectral va la primera (sólo se ve esos días).
@@ -95,18 +97,33 @@ G.GachaUI = (() => {
       $('cost-' + n).innerHTML = c && c.t10 ? `${G.Icons.html('ticket10', 18)} ${c.t10}` : `${G.Icons.html('ticket', 18)} ${n}`;
       $('pull-' + n).disabled = !c;
     }
+    // Con cuenta y sin conexión no se puede tirar (ver pull): se avisa aquí mismo.
+    if (needsNet()) {
+      $('gacha-tickets').insertAdjacentHTML('beforeend', '<br><b class="bad">' + G.T('Sin conexión: con tu cuenta, el gacha necesita internet.') + '</b>');
+      for (const id of ['pull-10', 'pull-10b', 'pull-100', 'pull-1000']) $(id).disabled = true;
+    }
     G.UI.refreshCoins();
   }
+
+  /*
+   * Con cuenta, las tiradas necesitan conexión a internet (04-11-2026, como en el
+   * juego oficial): la tirada se sube a la nube nada más hacerla, y así no se
+   * puede tirar sin red, mirar lo que sale y recargar para repetirla. Como
+   * invitado (o con la partida sólo en este navegador) no cambia nada.
+   */
+  const needsNet = () => G.DB.online && navigator.onLine === false;
 
   const wait = ms => new Promise(r => setTimeout(r, ms));
 
   async function pull(n, use = 't1') {
     if (busy) return;
     if (!G.Gacha.isOpen(gen)) { G.UI.toast(G.T('El banner de Halloween ya ha terminado.')); refresh(); return; }
+    if (needsNet()) { G.Audio.sfx('error'); G.UI.toast('Sin conexión: con tu cuenta, el gacha necesita internet.', 3200); refresh(); return; }
     const res = G.Gacha.pull(G.DB.save, n, gen, use);
     if (!res) { G.Audio.sfx('error'); G.UI.toast('No tienes tickets suficientes: consíguelos jugando'); return; }
     G.Progress.checkAch();
     G.DB.commit(true);
+    if (G.DB.online) G.DB.flush();          // a la nube ya (ver needsNet)
     busy = true; skip = false;
 
     const best = Math.max(...res.map(r => r.rarity));

@@ -175,6 +175,19 @@ G.Spawner = (() => {
     }
   }
 
+  /**
+   * Otro pasa a llevar la partida a mitad (cambio de anfitrión, coop.js): los jefes
+   * que ya salieron no vuelven a salir (sin esto saldrían todos seguidos); el que
+   * estaba vivo (`redo`), sí, porque se fue con el anfitrión anterior.
+   */
+  function catchUp(t, redo) {
+    const B = G.Enemies.BOSSES;
+    bossIdx = 0;
+    while (bossIdx < B.length && B[bossIdx].at <= t) bossIdx++;
+    if (redo && bossIdx > 0) bossIdx--;
+    acc = 0; surgeT = Math.max(surgeT, 12);
+  }
+
   /** Unos cuantos de golpe desde un lado (al empezar una horda). */
   function burst(n) {
     const base = Math.random() * 6.2832, target = anchor() || G.Game.player, t = G.Game.st.time;
@@ -208,6 +221,6 @@ G.Spawner = (() => {
   /** Invitado en cooperativo: sólo corre el reloj del aviso. */
   function tickBanner(dt) { if (announceT > 0) announceT -= dt; }
 
-  return { reset, update, ahead, burst, outR, tickBanner, banner, say, rate, SHINY_RATE, CAP,
+  return { reset, update, catchUp, ahead, burst, outR, tickBanner, banner, say, rate, SHINY_RATE, CAP,
            debugForceShiny(n = 1) { forceShiny = n; } };
 })();

@@ -17,7 +17,9 @@
  * Se envía por el canal directo si está abierto; si no, por el relé. El que
  * recibe escucha los dos, así que no hace falta ponerse de acuerdo.
  *
- * API:  open(roomId, isHost, hostUid) · close() · send(to, msg) · toHost(msg)
+ * Cambio de anfitrión con la sala abierta (cooperativo sin cortes): rehost().
+ *
+ * API:  open(roomId, isHost, hostUid) · close() · rehost(isHost, hostUid) · send(to, msg) · toHost(msg)
  *       broadcast(msg) · on(fn(from, msg)) · onPeer(fn(uid, state))
  *       peers() · mode(uid) -> 'connecting' | 'direct' | 'relay' | 'closed'
  */
@@ -155,14 +157,29 @@ G.Net = (() => {
       if (m.sig) onSignal(m.f, m.sig);
       else deliver(m.f, m.d);
     });
-    // Invitado: hueco para el anfitrión desde ya (se sustituye al llegar su
-    // oferta). Así, si no llega nunca, se sigue por el relé y se sabe cuándo se va.
-    if (!isHost) {
-      const p = { pc: null, dc: null, mode: 'connecting', timer: 0 };
-      p.timer = setTimeout(() => { if (p.mode === 'connecting') { p.mode = ALLOW_RELAY ? 'relay' : 'failed'; emitPeer(hostId); } }, DIRECT_TIMEOUT + TURN_TIMEOUT + 3000);
-      peers.set(hostId, p);
-    }
+    if (!isHost) waitHost(hostId);
     if (turnNow() === null) turnServers();
+  }
+
+  // Invitado: hueco para el anfitrión desde ya (se sustituye al llegar su
+  // oferta). Así, si no llega nunca, se sigue por el relé y se sabe cuándo se va.
+  function waitHost(hostId) {
+    const p = { pc: null, dc: null, mode: 'connecting', timer: 0 };
+    p.timer = setTimeout(() => { if (p.mode === 'connecting') { p.mode = ALLOW_RELAY ? 'relay' : 'failed'; emitPeer(hostId); } }, DIRECT_TIMEOUT + TURN_TIMEOUT + 3000);
+    peers.set(hostId, p);
+  }
+
+  /**
+   * La sala cambia de anfitrión sin cerrarse (en la sala o en plena partida): la
+   * estrella se rehace alrededor del nuevo, con el mismo canal de señalización. Si
+   * la oferta del nuevo anfitrión ya había llegado, esa conexión se conserva (el
+   * aviso del cambio y su oferta pueden llegar en cualquier orden).
+   */
+  function rehost(host, hostId) {
+    if (!roomId) return;
+    isHost = host; hostUid = hostId;
+    for (const u of [...peers.keys()]) if (host || u !== hostId) drop(u);
+    if (!host && !peers.has(hostId)) waitHost(hostId);
   }
 
   function close() {
@@ -390,7 +407,7 @@ G.Net = (() => {
   }
 
   return {
-    open, close, syncMembers, send, toHost, broadcast,
+    open, close, rehost, syncMembers, send, toHost, broadcast,
     on(fn) { handlers.add(fn); }, off(fn) { handlers.delete(fn); },
     onPeer(fn) { peerHandlers.add(fn); },
     mode(u) { const p = peers.get(u); return p ? p.mode : 'closed'; },

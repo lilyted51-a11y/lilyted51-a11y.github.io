@@ -612,6 +612,11 @@ G.HUD = (() => {
         ctx.font = F(800, 9);
         ctx.fillStyle = Math.sin(t * 8) > 0 ? '#ff8a96' : '#ffd0d5';
         ctx.fillText('CAÍDO', lx + 116, y + 9);
+      } else if (o.silent) {
+        // Sin conexión (no manda nada): no levanta a nadie ni se le espera (coop.js).
+        ctx.font = F(800, 9);
+        ctx.fillStyle = '#ffd98a';
+        ctx.fillText('SIN CONEXIÓN', lx + 116, y + 9);
       }
       y += 15;
     }
@@ -661,7 +666,7 @@ G.HUD = (() => {
       ctx.textAlign = 'center';
       ctx.font = F(800, 20);
       ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,.75)';
-      const msg = G.Coop.players().every(p => p.dead) ? 'Habéis caído todos…' : 'Has caído: un compañero puede levantarte';
+      const msg = G.Coop.allDown() ? 'Habéis caído todos…' : 'Has caído: un compañero puede levantarte';
       ctx.strokeText(msg, w / 2, h * 0.62);
       ctx.fillStyle = '#ffb0b8';
       ctx.fillText(msg, w / 2, h * 0.62);

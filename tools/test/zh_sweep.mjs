@@ -82,6 +82,20 @@ for (let i = 0; i < 30; i++) {
 await A.ev(`const pl = G.Game.player; for (const id of ['slumber', 'blowback', 'blowback', 'slow', 'focus']) G.Orbs.got(pl, id); G.Weather.debugStart('rain', 30); 1`); await sleep(2500);
 const pos = JSON.parse(await A.ev(`(() => { const r = document.getElementById('game').getBoundingClientRect(); return JSON.stringify({ w: r.width, h: r.height }); })()`));
 for (const fx of [0.36, 0.42, 0.48, 0.54, 0.6]) for (const fy of [0.78, 0.84, 0.9]) { await A.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: Math.round(pos.w * fx), y: Math.round(pos.h * fy) }); await sleep(100); }
+// Avisos del cooperativo sin cortes, del gacha sin conexión y del ranking (12-11-2026): en una partida en solitario
+// no salen, así que se pintan aquí como los pinta el juego (aviso del centro y rótulo del HUD en el canvas, y toast).
+for (const t of ['Pikachu se ha ido: MiNG pasa a ser el anfitrión…', 'Pikachu se ha ido: pasas a ser el anfitrión…', 'Cambio de anfitrión: conectando con MiNG…',
+                 'Cambio de anfitrión: la partida sigue (ya no cuenta para el ranking)', 'Pausa: esperando a MiNG (anfitrión)…',
+                 'No se ha podido seguir en grupo: continúas en solitario con todo lo que llevabas.',
+                 'Se ha perdido el grupo: continúas en solitario con todo lo que llevabas.',
+                 'Otro jugador ha pasado a ser el anfitrión: continúas en solitario con todo lo que llevabas.']) {
+  await A.ev(`G.Spawner.say(${JSON.stringify(t)}, 2, true); 1`); await sleep(500);
+}
+await A.ev(`document.getElementById('game').getContext('2d').fillText('SIN CONEXIÓN', -500, -500); G.Spawner.say('', 0, true); 1`);
+for (const t of ['Sin conexión: con tu cuenta, el gacha necesita internet.', 'Sin conexión: tu marca se enviará al ranking en cuanto vuelva.',
+                 'Tu marca no ha podido entrar en el ranking.', 'Se ha perdido el grupo: continúas en solitario con todo lo que llevabas.']) {
+  await A.ev(`G.UI.toast(${JSON.stringify(t)}, 900); 1`); await sleep(350); await grab('toast (avisos nuevos)');
+}
 await canvas('partida (HUD, esferas, clima)');
 await A.ev(`window.__POKE_BOT_ON__ = false; G.RunUI.showItemChoice('leftovers', 'assaultvest', () => {}); 1`); await sleep(800); await grab('elegir objeto'); await A.ev(`document.querySelector('#item-cards .card').click(); 1`); await sleep(500);
 await A.ev(`(() => { const pl = G.Game.player; const loose = pl.slots.filter(s => s.length === 1).map(s => s[0]); if (loose.length >= 2) G.RunUI.showBond({ mode: 'pair', group: null, loose }, () => {}); return loose.length; })()`); await sleep(800); await grab('vínculo'); await A.ev(`G.UI.hide('scr-bond'); 1`);

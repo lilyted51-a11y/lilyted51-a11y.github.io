@@ -191,7 +191,12 @@ G.Social = (() => {
     lastBeat = Date.now();
     fb.fs.collection('pres').doc(uid).set({ on, at: fts(), room: room ? room.id : '', play: playing }).catch(() => {});
   }
-  function setPlaying(p) { if (playing !== !!p) { playing = !!p; writeStatus(); } }
+  function setPlaying(p) {
+    if (playing === !!p) return;
+    playing = !!p; writeStatus();
+    // Anfitrión: lo que pasa con la sala si se desconecta cambia al empezar y al acabar (watchRoomDisconnect).
+    if (room && room.isHost) watchRoomDisconnect();
+  }
   // Al volver a la pestaña tras un rato, un latido; al cerrarla, "desconectado".
   function onVisible() { if (document.visibilityState === 'visible' && Date.now() - lastBeat > BEAT) writeStatus(); }
   function onHide() { writeStatus(false); }
@@ -464,6 +469,8 @@ G.Social = (() => {
         .sort((a, b) => (a.uid === room.host ? -1 : b.uid === room.host ? 1 : (a.at || 0) - (b.at || 0)));
       // La lista pública de salas: el anfitrión mantiene cuántos hay.
       if (room.isHost) fb.rtdb.ref('lobby/' + id).update({ n: room.members.length, at: ts() }).catch(() => {});
+      // En plena partida: quién heredaría la sala si el anfitrión se desconecta (ver watchRoomDisconnect).
+      if (room.isHost && playing) watchRoomDisconnect();
       emit('room');
     }, () => closedRoom());
     const xref = fb.rtdb.ref('rooms/' + id + '/max');
@@ -525,12 +532,67 @@ G.Social = (() => {
     watchRoomDisconnect();
   }
 
-  /** Si se cierra el navegador, la sala (anfitrión) o tu plaza (invitado) se borran solas. */
+  /**
+   * Si se cierra el navegador, la sala (anfitrión) o tu plaza (invitado) se borran solas.
+   * Cooperativo sin cortes (08-11-2026): en plena partida la sala del anfitrión NO se
+   * borra: pasa al siguiente jugador (nextHost) y sólo se quita su plaza. Así los demás
+   * siguen jugando juntos (coop.js, "cambio de anfitrión").
+   */
   function watchRoomDisconnect() {
     if (!room) return;
-    const ref = room.isHost ? fb.rtdb.ref('rooms/' + room.id) : fb.rtdb.ref('rooms/' + room.id + '/m/' + uid);
-    ref.onDisconnect().remove();
-    if (room.isHost) fb.rtdb.ref('lobby/' + room.id).onDisconnect().remove();
+    const rref = fb.rtdb.ref('rooms/' + room.id);
+    if (!room.isHost) { rref.child('m/' + uid).onDisconnect().remove(); return; }
+    const next = playing ? nextHost() : null;
+    rref.onDisconnect().cancel().catch(() => {});
+    if (next) rref.onDisconnect().update({ host: next.uid, name: next.name || '?', ['m/' + uid]: null });
+    else rref.onDisconnect().remove();
+    fb.rtdb.ref('lobby/' + room.id).onDisconnect().remove();
+  }
+
+  /** Anfitrión: quién heredaría la sala ahora mismo (en partida, el que diga coop.js), o null. */
+  function nextHost() {
+    if (!room) return null;
+    const inRun = !!(G.Coop && G.Coop.active && G.Coop.isHost);
+    const u = inRun ? G.Coop.successor() : (room.members.find(m => m.uid !== uid) || {}).uid;
+    return (u && room.members.find(m => m.uid === u)) || null;
+  }
+
+  /**
+   * El anfitrión se va de la partida por las buenas y la deja a `to`: la sala pasa a
+   * él y sólo se quita la plaza del que se va. → true si se ha podido
+   */
+  async function handOver(to) {
+    if (!room || !room.isHost) return false;
+    const r = room, m = r.members.find(x => x.uid === to);
+    if (!m) return false;
+    detachRoom();
+    room = null; playing = false;
+    const rref = fb.rtdb.ref('rooms/' + r.id), lref = fb.rtdb.ref('lobby/' + r.id);
+    rref.onDisconnect().cancel().catch(() => {});
+    lref.onDisconnect().cancel().catch(() => {});
+    let ok = true;
+    try {
+      await rref.update({ host: to, name: m.name || '?', ['m/' + uid]: null });
+      lref.update({ host: to, name: m.name || '?', at: ts() }).catch(() => {});
+    } catch (e) { ok = false; await rref.remove().catch(() => {}); lref.remove().catch(() => {}); }   // no se pudo: se cierra como antes
+    retractInvites();
+    writeStatus();
+    rtOff();
+    emit('room');
+    return ok;
+  }
+
+  /**
+   * Invitado, en plena partida: el anfitrión lleva demasiado sin responder y tomas su
+   * puesto (database.rules.json sólo lo deja con la partida empezada). → true si eres el anfitrión
+   */
+  async function claimHost() {
+    if (!room || room.isHost || !playing) return false;
+    const r = room, old = r.host;
+    try { await fb.rtdb.ref('rooms/' + r.id + '/host').set(uid); } catch (e) { return false; }
+    // Ya soy el anfitrión (puedo escribir en toda la sala): su nombre, y fuera el anterior.
+    fb.rtdb.ref('rooms/' + r.id).update({ name: me.name, ['m/' + old]: null }).catch(() => {});
+    return true;
   }
 
   function detachRoom() {
@@ -641,7 +703,10 @@ G.Social = (() => {
   function setOpen(open) {
     if (!room || !room.isHost) return;
     fb.rtdb.ref('rooms/' + room.id + '/open').set(!!open).catch(() => {});
-    fb.rtdb.ref('lobby/' + room.id + '/open').set(!!open).catch(() => {});   // fuera de la lista mientras se juega
+    // Fuera de la lista mientras se juega. (La ficha entera, no sólo `open`: si la sala
+    // cambió de anfitrión en plena partida, la de la lista pública se rehace aquí.)
+    fb.rtdb.ref('lobby/' + room.id).update({ host: uid, name: me.name, n: room.members.length, max: room.max || DEFAULT_MAX,
+                                             lock: !!room.locked, open: !!open, at: ts() }).catch(() => {});
   }
 
   /** Actualiza tu Pokémon en la sala (si cambias de compañero). */
@@ -787,6 +852,9 @@ G.Social = (() => {
   return {
     start, stop, claimNick, request, requestUid, accept, remove, publishProfile, getProfile, profileData,
     createRoom, joinRoom, leaveRoom, setOpen, setMax, dropMember, listRooms, setInLobby, setReady, transferHost, refreshMember, freshMembers, setPlaying, refreshPresence,
+    handOver, claimHost,
+    /** Anfitrión, en partida: vuelve a apuntar quién heredaría la sala (cambia al irse o desconectarse alguien). */
+    rearm() { if (room && room.isHost && playing) watchRoomDisconnect(); },
     get ready() { return rdyOn; },
     sendChat, get chat() { return chat; },
     sendDm, watchDm, markDmSeen, dmUnread, unreadDm, get dms() { return [...dms.values()]; },

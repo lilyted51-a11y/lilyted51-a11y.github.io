@@ -66,6 +66,16 @@ G.Pickups = (() => {
     list.push(o);
   }
 
+  /**
+   * Otro pasa a llevar la partida a mitad (cambio de anfitrión, coop.js): las copias
+   * de los objetos del anfitrión anterior pasan a ser los de verdad. Los números
+   * nuevos siguen después del mayor (no se repiten). → la lista, para avisar a los demás
+   */
+  function adopt() {
+    for (const p of list) if (p.id >= nextId) nextId = p.id + 1;
+    return list;
+  }
+
   function removeId(id) {
     const i = list.findIndex(p => p.id === id);
     if (i < 0) return null;
@@ -223,5 +233,5 @@ G.Pickups = (() => {
     ctx.globalAlpha = 1;
   }
 
-  return { clear, all, dropXp, drop, update, draw, addRemote, removeId, pullAll, KIND, get count() { return list.length; } };
+  return { clear, all, dropXp, drop, update, draw, addRemote, adopt, removeId, pullAll, KIND, get count() { return list.length; } };
 })();

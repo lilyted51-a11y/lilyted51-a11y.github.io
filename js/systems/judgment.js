@@ -803,6 +803,19 @@ G.Judgment = (() => {
     }
   }
 
+  /**
+   * Otro pasa a llevar la partida a mitad (cambio de anfitrión, coop.js): Arceus sigue
+   * desde donde estaba, ahora movido desde aquí; su blanco (el enemigo invisible al
+   * que se pega) vuelve a ponerse y los legendarios siguen por donde iban.
+   */
+  function adopt() {
+    if (phase === 'cine') { const s = G.DB.save; canSkip = !!(s && s.stats && s.stats.judged > 0); return; }
+    if (phase !== 'fight' || !A) return;
+    A.net = null; A.cast = null; A.cd = 2.2;
+    bossN = downs; bossT = 1.2;
+    if (!G.EnemyMgr.all().some(e => e.arceus && !e.remote)) addTarget();
+  }
+
   // ---------------- red ----------------
 
   function onEvent(ev) {
@@ -824,7 +837,7 @@ G.Judgment = (() => {
   }
 
   return {
-    AT, reset, noteDmg, hitArceus, dress, dmgK, update, cineTick, skip, bossDown, drawable, drawAir, drawOverlay, onEvent, netState, netApply,
+    AT, reset, noteDmg, hitArceus, dress, dmgK, update, cineTick, skip, bossDown, drawable, drawAir, drawOverlay, onEvent, adopt, netState, netApply,
     get active() { return !!phase; }, capSpd,
     /** Copia local (bot): dónde está Arceus durante la pelea, su radio y si está lanzando algo. */
     get arceus() {

@@ -1117,5 +1117,19 @@ G.I18n.add({
   "El Chaleco Asalto ya no cuenta para el tope del 70 % de las cartas Coraza: con las cartas al máximo, el chaleco suma encima. Y si te lo quitas, no pierdes lo de las cartas.": "The Assault Vest no longer counts toward the 70% cap of the Armor cards: with the cards maxed, the vest adds on top. And if you take it off, you keep what the cards gave you.",
   "En ventanas muy alargadas (muy anchas y bajas), los enemigos ya no se quedan dando vueltas fuera de la pantalla sin acercarse: parecía que no salía ninguno.": "In very elongated windows (very wide and short), enemies no longer keep looping off screen without coming closer: it looked as if none were spawning.",
   "Test inicial: los rasgos de tu personalidad («Paciente», «Tenaz»…) salían en español en todos los idiomas. Ya salen traducidos.": "Starting quiz: your personality traits (\"Patient\", \"Tenacious\"…) were shown in Spanish in every language. They are translated now.",
-  "Ranking de daño a Arceus: «Sólo amigos» enseña también a los amigos que no están en el top 50 (en Histórico); en el Histórico se guarda tu mejor daño aunque esa partida no mejore tu tiempo; y si una partida no puede entrar en el ranking, ahora te lo dice.": "Arceus damage leaderboard: \"Friends only\" also shows friends outside the top 50 (in All-time); All-time keeps your best damage even if that run does not beat your time; and if a run cannot enter the leaderboard, it now tells you."
+  "Ranking de daño a Arceus: «Sólo amigos» enseña también a los amigos que no están en el top 50 (en Histórico); en el Histórico se guarda tu mejor daño aunque esa partida no mejore tu tiempo; y si una partida no puede entrar en el ranking, ahora te lo dice.": "Arceus damage leaderboard: \"Friends only\" also shows friends outside the top 50 (in All-time); All-time keeps your best damage even if that run does not beat your time; and if a run cannot enter the leaderboard, it now tells you.",
+  // 12-11-2026 (copia local): cooperativo sin cortes, guardado automático, gacha con conexión, ranking
+  "Sin conexión: con tu cuenta, el gacha necesita internet.": "No connection: with your account, the gacha needs internet.",
+  "Sin conexión: tu marca se enviará al ranking en cuanto vuelva.": "No connection: your record will be sent to the leaderboard as soon as it is back.",
+  "Tu marca no ha podido entrar en el ranking.": "Your record could not enter the leaderboard.",
+  "Ninguno de tus amigos está en el top 50 con este Pokémon.": "None of your friends is in the top 50 with this Pokémon.",
+  "Ni tú ni tus amigos tenéis marca aquí todavía.": "Neither you nor your friends have a record here yet.",
+  "{x} se ha ido: pasas a ser el anfitrión…": "{x} has left: you are becoming the host…",
+  "{x} se ha ido: {x} pasa a ser el anfitrión…": "{x} has left: {x} is becoming the host…",
+  "Cambio de anfitrión: conectando con {x}…": "Host change: connecting to {x}…",
+  "Cambio de anfitrión: la partida sigue (ya no cuenta para el ranking)": "Host change: the run goes on (it no longer counts for the leaderboard)",
+  "No se ha podido seguir en grupo: continúas en solitario con todo lo que llevabas.": "The group could not continue: you go on solo with everything you had.",
+  "Se ha perdido el grupo: continúas en solitario con todo lo que llevabas.": "The group was lost: you go on solo with everything you had.",
+  "Otro jugador ha pasado a ser el anfitrión: continúas en solitario con todo lo que llevabas.": "Another player became the host: you go on solo with everything you had.",
+  "SIN CONEXIÓN": "OFFLINE"
 });

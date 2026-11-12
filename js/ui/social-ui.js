@@ -246,8 +246,9 @@
         const room = G.Social.room;
         if (room) {
           if (what === 'host') {
-            // Copia local: nuevo anfitrión → todos se reconectan en estrella alrededor de él.
-            G.Net.close();
+            // Copia local: nuevo anfitrión → todos se reconectan en estrella alrededor de él
+            // (también en plena partida: coop.js, "cambio de anfitrión").
+            if (G.Net.open_) G.Net.rehost(room.isHost, room.host);
             G.UI.toast(room.isHost ? 'Ahora eres el anfitrión' : 'Ahora ' + (((room.members.find(m => m.uid === room.host) || {}).name) || '?') + ' es el anfitrión', 2600);
             G.Audio.sfx('select');
           }
