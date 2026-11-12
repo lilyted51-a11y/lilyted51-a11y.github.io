@@ -307,12 +307,13 @@ test('co-op cut mid-run: the guest waits for the host to reconnect instead of lo
   assert.equal(c.timers.size, 0);
   c.expire();
   assert.equal(c.lost.length, 0);
-  // a second cut that never comes back does end it, after the wait
+  // a second cut that never comes back no longer ends the run after the wait (08-11-2026, co-op
+  // without cut-offs): the guest stays in the run, paused, until the room changes host (coop.js)
   c.cut(); c.cut();
   assert.equal(c.timers.size, 1);
   c.expire();
-  assert.equal(c.lost.length, 1);
-  assert.ok(!c.G.Coop.active);
+  assert.equal(c.lost.length, 0);
+  assert.ok(c.G.Coop.active);
 });
 
 test('co-op cut mid-run: the host keeps the guest while it reconnects and removes it only if it never does', () => {

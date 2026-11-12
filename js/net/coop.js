@@ -540,12 +540,11 @@ G.Coop = (() => {
 
   function onHostFrame(msg) {
     lastHostAt = performance.now();
-    if (followSince) {
-      // Ya llega el nuevo anfitrión: se sigue.
-      followSince = 0; swapNote = '';
-      G.Spawner.say('Cambio de anfitrión: la partida sigue (ya no cuenta para el ranking)', 4, true);
-    }
+    const arrived = !!followSince;                 // ya llega el nuevo anfitrión: se sigue
+    if (arrived) { followSince = 0; swapNote = ''; }
     if (stalled) { stalled = false; updateAway(); }
+    // (Después de quitar la pausa, que borra el aviso del centro.)
+    if (arrived) G.Spawner.say('Cambio de anfitrión: la partida sigue (ya no cuenta para el ranking)', 4, true);
     // Quién se ha ido y quién está sin conexión (lo sabe el anfitrión).
     for (const m of mates.values()) {
       const off = Array.isArray(msg.gn) && msg.gn.includes(m.uid);
@@ -899,7 +898,8 @@ G.Coop = (() => {
     if (G.Social.room) G.Social.leaveRoom();
   }
 
-  G.Social.on(what => {
+  // (En las pruebas de tests/ no hay sala: sin G.Social.on no hay nada que escuchar.)
+  if (G.Social && G.Social.on) G.Social.on(what => {
     if (!active) return;
     const r = G.Social.room;
     if (what === 'host' && r) {

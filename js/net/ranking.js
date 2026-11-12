@@ -426,8 +426,9 @@ G.Ranking = (() => {
   const rqKey = () => RQ + '.' + (fbx() ? fbx().uid : '');
   function retryList() { try { const q = JSON.parse(localStorage.getItem(rqKey()) || '[]'); return Array.isArray(q) ? q : []; } catch (e) { return []; } }
   function saveRetries(q) { try { if (q.length) localStorage.setItem(rqKey(), JSON.stringify(q.slice(-8))); else localStorage.removeItem(rqKey()); } catch (e) { /* lleno */ } }
+  const offline = () => typeof navigator !== 'undefined' && navigator.onLine === false;
   // Fallo de conexión (se reintenta) o rechazo del servidor (no).
-  const transient = f => navigator.onLine === false || !f.code || /unavailable|deadline-exceeded|cancelled|aborted|internal|unknown|resource-exhausted|failed-precondition/.test(f.code);
+  const transient = f => offline() || !f.code || /unavailable|deadline-exceeded|cancelled|aborted|internal|unknown|resource-exhausted|failed-precondition/.test(f.code);
   let retryT = 0, retrying = false;
 
   async function send(id, entry, boards, tries = 0, at = Date.now()) {
@@ -450,7 +451,7 @@ G.Ranking = (() => {
   /** Reenvía las marcas que no pudieron subir (ver send). */
   async function retry() {
     const fb = fbx();
-    if (!fb || retrying || navigator.onLine === false) return;
+    if (!fb || retrying || offline()) return;
     const q = retryList();
     if (!q.length) return;
     retrying = true;

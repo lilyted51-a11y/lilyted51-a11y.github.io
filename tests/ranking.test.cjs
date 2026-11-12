@@ -68,9 +68,9 @@ test('una partida con más de 12 derrotados por segundo entra igual (antes el se
 
 test('el histórico enseña lo que ya se sabe del semanal (leído después): ya cuadran', async () => {
   const { R, store } = env();
-  const old = Date.now() - 60 * 60e3, fresh = Date.now();
+  const old = Date.now() - 3 * 60e3, fresh = Date.now();       // (la caché vale 5 min desde el 07-11-2026; antes 2 h)
   const row = (t, n) => ({ t, uids: [n], names: [n], dex: [25], lv: 50, kills: 100 });
-  // El histórico se leyó hace 1 h; el semanal, ahora, con una marca nueva de Misty.
+  // El histórico se leyó hace 3 min; el semanal, ahora, con una marca nueva de Misty.
   store.set('ps.rk.c.S:' + R.board('s', 'a'), JSON.stringify({ at: old, v: { top: { A: row(900, 'A') }, dtop: {} } }));
   store.set('ps.rk.c.S:' + R.board('s', 'w'), JSON.stringify({ at: fresh, v: { top: { M: row(1500, 'M') }, dtop: {} } }));
   const rows = await R.top('s', 'a', null, false);

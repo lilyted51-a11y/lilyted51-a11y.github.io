@@ -99,7 +99,7 @@ G.GachaUI = (() => {
     }
     // Con cuenta y sin conexión no se puede tirar (ver pull): se avisa aquí mismo.
     if (needsNet()) {
-      $('gacha-tickets').insertAdjacentHTML('beforeend', '<br><b class="bad">' + G.T('Sin conexión: con tu cuenta, el gacha necesita internet.') + '</b>');
+      $('gacha-tickets').insertAdjacentHTML('beforeend', '<br><b style="color:#ffb0b8">' + G.T('Sin conexión: con tu cuenta, el gacha necesita internet.') + '</b>');
       for (const id of ['pull-10', 'pull-10b', 'pull-100', 'pull-1000']) $(id).disabled = true;
     }
     G.UI.refreshCoins();

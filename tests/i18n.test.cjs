@@ -64,14 +64,15 @@ for (const [i, lang] of langs.entries()) {
     b.ctx.document.createElement = () => ({});
     b.load('js/ui/login.js');
     assert.equal(b.G.LoginUI.updateNotices(), true);
-    // El aviso del dueño, entero y con sus negritas: "cada 10 minutos" en todos los idiomas.
+    // El aviso de guardado automático (12-11-2026; antes, el del botón Guardar): tres párrafos, cada uno un solo
+    // trozo de texto (el parche chino traduce nodo a nodo) y una negrita. Los idiomas sin él, en inglés.
     const body = node('savenote-body');
-    assert.ok(body.innerHTML.includes('10') && !body.innerHTML.includes('30'));
-    assert.equal((body.innerHTML.match(/<b[ >]/g) || []).length, 3);
-    if (lang !== 'es') assert.ok(!body.innerHTML.includes('Debido a problemas'));
-    if (lang !== 'es' && lang !== 'en') assert.ok(!body.innerHTML.includes('Because of problems') && body.attrs.translate === 'no');
-    if (lang === 'es' || lang === 'en') assert.equal(node('savenote-title').textContent, lang === 'es' ? 'Importante: guarda tu partida' : 'Important: save your game');
-    else assert.equal(node('savenote-title').textContent, 'Importante: guarda tu partida');
+    assert.equal((body.innerHTML.match(/<p>/g) || []).length, 3);
+    assert.equal((body.innerHTML.match(/<b[ >]/g) || []).length, 1);
+    assert.ok(lang === 'es' ? body.innerHTML.includes('se guarda solo') : body.innerHTML.includes('saved automatically'));
+    if (lang !== 'es' && lang !== 'en') assert.equal(body.attrs.translate, 'no');
+    if (lang === 'es' || lang === 'en') assert.equal(node('savenote-title').textContent, lang === 'es' ? 'Guardado automático' : 'Autosave');
+    else assert.equal(node('savenote-title').textContent, 'Guardado automático');
     assert.equal(b.G.LoginUI.updateNotices(), false);
     b.G.DB.save.stats.runs = 1;
     assert.equal(b.G.LoginUI.updateNotices(), true);

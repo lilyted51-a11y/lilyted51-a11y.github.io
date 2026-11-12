@@ -70,12 +70,11 @@ G.LoginUI = (() => {
    */
   const cloud = () => G.DB.mode === 'cloud' && !G.DB.guest;
   const NOTES = [
-    { key: 'ps.savenote.1', when: cloud,              // botón Guardar (18-10-2026)
-      title: ['Importante: guarda tu partida', 'Important: save your game'],
-      body: ['<p>Debido a problemas con el guardado, a partir de ahora la partida se guarda en la nube automáticamente <b>cada 10 minutos</b>.</p>' +
-             '<p>Hemos incorporado un botón <b class="gold">Guardar</b> arriba a la derecha. Úsalo antes de cerrar el juego o de cambiar de aparato: <b>es muy importante para no perder tu partida</b>.</p>',
-             '<p>Because of problems with saving, from now on your game is saved to the cloud automatically <b>every 10 minutes</b>.</p>' +
-             '<p>We have added a <b class="gold">Save</b> button at the top right. Use it before closing the game or switching devices: <b>it is very important so you don’t lose your progress</b>.</p>'] },
+    // (El aviso del botón Guardar, 'ps.savenote.1' del 18-10-2026, se quitó con el botón: 12-11-2026.)
+    { key: 'ps.savenote.3', when: cloud,              // guardado automático, sin botón Guardar (12-11-2026)
+      title: ['Guardado automático', 'Autosave'],
+      body: ["<p><b>Tu progreso ahora se guarda solo.</b></p><p>Ya no hace falta el botón Guardar (lo hemos quitado): la partida se sube a la nube al acabar cada partida y al mejorar, comprar o tirar en el gacha. Si juegas en varios aparatos, se ponen al día al volver al juego.</p><p>El punto junto a tu nombre lo indica: verde, guardado en la nube; amarillo, guardando; rojo, sin conexión (se sube sola al volver).</p>",
+             "<p><b>Your progress is now saved automatically.</b></p><p>The Save button is no longer needed (we removed it): your game is uploaded to the cloud at the end of each run and when you upgrade, buy or pull in the gacha. If you play on several devices, they catch up when you return to the game.</p><p>The dot next to your name shows it: green, saved to the cloud; yellow, saving; red, no connection (it uploads by itself when it is back).</p>"] },
     { key: 'ps.ranknote.1', when: () => cloud() && ((G.DB.save.stats || {}).runs || 0) > 0,   // rankings desde cero (18-10-2026)
       title: ['Los rankings se han reiniciado', 'The leaderboards have been reset'],
       body: ['<p>Hemos ajustado la <b>Sentencia de Arceus</b>: huir corriendo con toda la velocidad subida y el veneno ya no sirven para aguantar para siempre.</p>' +

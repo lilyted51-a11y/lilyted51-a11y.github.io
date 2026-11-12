@@ -482,16 +482,10 @@ G.Social = (() => {
       if (!room || room.id !== id) return;
       const h = s.val();
       if (!h) { closedRoom(); return; }
-      if (h !== room.host) {
-        // Copia local: el anfitrión ha pasado el puesto a otro (transferHost).
-        const wasHost = room.isHost;
-        room.host = h; room.isHost = h === uid;
-        room.members.sort((a, b) => (a.uid === h ? -1 : b.uid === h ? 1 : (a.at || 0) - (b.at || 0)));
-        if (wasHost !== room.isHost) rewatchDisconnect(wasHost);
-        if (room.isHost) rdyOn = false;
-        emit('host');
-        emit('room');
-      }
+      // claimHost en marcha: la base de datos enseña el cambio aquí antes de que el servidor
+      // lo acepte (y lo deshace si lo rechaza). Hasta que conteste no cuenta (ver claimHost).
+      if (claiming && h === uid) return;
+      setHost(h);
     }, () => closedRoom());
     const oref = fb.rtdb.ref('rooms/' + id + '/open');
     oref.on('value', s => { if (room && room.id === id) { room.open = s.val() === true; emit('room'); } }, () => {});
@@ -508,6 +502,18 @@ G.Social = (() => {
     }, () => {});
     roomRefs = [mref, href, oref, xref, lref, cref];
     writeStatus();
+    emit('room');
+  }
+
+  /** La sala tiene otro anfitrión (transferHost, handOver, claimHost o la base de datos al desconectarse el anterior). */
+  function setHost(h) {
+    if (!room || h === room.host) return;
+    const wasHost = room.isHost;
+    room.host = h; room.isHost = h === uid;
+    room.members.sort((a, b) => (a.uid === h ? -1 : b.uid === h ? 1 : (a.at || 0) - (b.at || 0)));
+    if (wasHost !== room.isHost) rewatchDisconnect(wasHost);
+    if (room.isHost) rdyOn = false;
+    emit('host');
     emit('room');
   }
 
@@ -586,11 +592,17 @@ G.Social = (() => {
    * Invitado, en plena partida: el anfitrión lleva demasiado sin responder y tomas su
    * puesto (database.rules.json sólo lo deja con la partida empezada). → true si eres el anfitrión
    */
+  let claiming = false;
   async function claimHost() {
-    if (!room || room.isHost || !playing) return false;
+    if (!room || room.isHost || !playing || claiming) return false;
     const r = room, old = r.host;
-    try { await fb.rtdb.ref('rooms/' + r.id + '/host').set(uid); } catch (e) { return false; }
-    // Ya soy el anfitrión (puedo escribir en toda la sala): su nombre, y fuera el anterior.
+    claiming = true;
+    try { await fb.rtdb.ref('rooms/' + r.id + '/host').set(uid); }
+    catch (e) { return false; }                       // el servidor no lo acepta (o ya no hay sala)
+    finally { claiming = false; }
+    if (room !== r) return false;
+    // Aceptado: ya soy el anfitrión (puedo escribir en toda la sala): su nombre, y fuera el anterior.
+    setHost(uid);
     fb.rtdb.ref('rooms/' + r.id).update({ name: me.name, ['m/' + old]: null }).catch(() => {});
     return true;
   }

@@ -71,6 +71,15 @@ for (const go of ['dex', 'upgrades', 'shop', 'bag', 'gacha', 'goals', 'friends',
 }
 await A.ev(`G.UI.hideAll(); document.getElementById('btn-news').click(); 1`); await sleep(1500); await grab('novedades'); await misses('novedades'); await click('#news-close');
 
+// Aviso de una actualización (login.js, NOTES): sólo sale con cuenta en la nube; aquí se enseña el de guardado automático tal cual.
+await A.ev(`(() => { G.UI.hideAll(); G.MenuUI.open();
+  document.getElementById('savenote-title').textContent = 'Guardado automático';
+  document.getElementById('savenote-body').innerHTML = '<p><b>Tu progreso ahora se guarda solo.</b></p><p>Ya no hace falta el botón Guardar (lo hemos quitado): la partida se sube a la nube al acabar cada partida y al mejorar, comprar o tirar en el gacha. Si juegas en varios aparatos, se ponen al día al volver al juego.</p><p>El punto junto a tu nombre lo indica: verde, guardado en la nube; amarillo, guardando; rojo, sin conexión (se sube sola al volver).</p>';
+  document.getElementById('savenote-ok').textContent = 'Entendido';
+  document.getElementById('scr-savenote').classList.remove('hidden'); return 1; })()`); await sleep(700);
+await grab('aviso de guardado automático'); await misses('aviso de guardado automático');
+await A.ev(`document.getElementById('scr-savenote').classList.add('hidden'); 1`);
+
 // ---------- partida ----------
 await A.ev(`G.UI.hideAll(); G.DB.save.partner = 1382; G.Boost.paused = false; G.Boost.debugAs('BENCH', null, true); G.Game.startRun(); G.Game.debugSpeed(2); window.__POKE_BOT_ON__ = true; window.__canvasTexts.clear(); 1`);
 let lvSeen = false, itemSeen = false;

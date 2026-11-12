@@ -230,7 +230,7 @@
   "Furia": "狂怒",
   "Tormenta de arena": "沙暴",
   "Niebla": "霧",
-  "Diario": "冒險筆記",
+  "Diario": "今日",        // copia local: sólo se usa en el ranking (periodo de hoy); antes salía «冒險筆記»
   "Normal": "一般",
   "Código Cero": "屬性：空",
   "Huesomerang": "骨頭回力鏢",
@@ -819,6 +819,14 @@
   "El banner de Halloween ya ha terminado.": "萬聖節卡池已結束。",
   "The Halloween banner has ended.": "萬聖節卡池已結束。",
   // 12-11-2026 (copia local, como el juego oficial del 04 al 08-11): cooperativo sin cortes, guardado automático, gacha con conexión, ranking
+  "Guardado automático": "自動存檔",
+  "Autosave": "自動存檔",
+  "Tu progreso ahora se guarda solo.": "現在進度會自動存檔。",
+  "Your progress is now saved automatically.": "現在進度會自動存檔。",
+  "Ya no hace falta el botón Guardar (lo hemos quitado): la partida se sube a la nube al acabar cada partida y al mejorar, comprar o tirar en el gacha. Si juegas en varios aparatos, se ponen al día al volver al juego.": "不再需要「儲存」按鈕（已移除）：每局結束，以及升級、購買或抽轉蛋時，進度會自動上傳到雲端。若在多台裝置上玩，回到遊戲時會自動同步。",
+  "The Save button is no longer needed (we removed it): your game is uploaded to the cloud at the end of each run and when you upgrade, buy or pull in the gacha. If you play on several devices, they catch up when you return to the game.": "不再需要「儲存」按鈕（已移除）：每局結束，以及升級、購買或抽轉蛋時，進度會自動上傳到雲端。若在多台裝置上玩，回到遊戲時會自動同步。",
+  "El punto junto a tu nombre lo indica: verde, guardado en la nube; amarillo, guardando; rojo, sin conexión (se sube sola al volver).": "名字旁的圓點會顯示狀態：綠色，已存到雲端；黃色，存檔中；紅色，沒有連線（恢復後會自動上傳）。",
+  "The dot next to your name shows it: green, saved to the cloud; yellow, saving; red, no connection (it uploads by itself when it is back).": "名字旁的圓點會顯示狀態：綠色，已存到雲端；黃色，存檔中；紅色，沒有連線（恢復後會自動上傳）。",
   "Cooperativo sin cortes, guardado automático y ranking al día": "合作不中斷、自動存檔、排行榜即時更新",
   "Co-op without cut-offs, autosave and an up-to-date leaderboard": "合作不中斷、自動存檔、排行榜即時更新",
   "Cooperativo: si el anfitrión se va o se le corta la conexión, la partida ya no se acaba. Otro jugador pasa a ser el anfitrión y seguís juntos; si no se puede, cada uno sigue su partida con todo lo que llevaba. (Una partida que cambia de anfitrión no entra en el ranking.)": "合作模式：房主離開或斷線時，對局不再結束。會由另一位玩家接手當房主，大家繼續一起玩；若接不上，每個人各自帶著目前的一切繼續自己的對局。（換過房主的對局不會進入排行榜。）",
@@ -4545,7 +4553,7 @@
   "EPIC?!": "史詩？！",
   "Achievements": "成就",
   "Profile": "個人檔案",
-  "Daily": "冒險筆記",
+  "Daily": "今日",
   "Weekly": "本週",
   "Refreshes in {x}": "將於 {x} 後更新",
   "Claim": "領取",
@@ -5565,7 +5573,8 @@
     // apodos; se traduce igual y los apodos se dejan tal cual (nameListCaptures).
     if (protectedElement?.matches('#user-pill > span') && protectedElement.textContent.trim() === 'Invitado') return false;   // copia local: sólo esa palabra, no el apodo
     // copia local: #boot (mantenimiento y «no se pudo cargar») también: no lleva apodos
-    return !!protectedElement && !protectedElement.matches('#news-body > .news-day[translate="no"], #lvl-wait, #boot, #over-sum [translate="no"]');
+    // copia local: #rk-dme (tu puesto en el ranking de daño a Arceus) tampoco lleva apodos y salía en español
+    return !!protectedElement && !protectedElement.matches('#news-body > .news-day[translate="no"], #lvl-wait, #boot, #over-sum [translate="no"], #rk-dme');
   };
   function textNode(node) {
     if (!node.parentElement || skipped(node.parentElement)) return;
