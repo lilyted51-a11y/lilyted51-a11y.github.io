@@ -59,7 +59,12 @@ G.Player = class Player {
     this.bosses = 0;
     this.rerolls = 0;          // veces que ha cambiado las cartas de nivel en esta run
     this.rerollBonus = perks.rerolls || 0;   // cambios comprados en Mejoras (más el gratis)
-    this.critChance = perks.crit || 0;       // probabilidad de golpe crítico (Mejoras)
+    this.critChance = perks.crit || 0;       // probabilidad de golpe crítico (Mejoras y carta Ojo Crítico; tope 60 %)
+    this.critBonus = 0;                      // carta Golpe Brutal: + al multiplicador del crítico (tope ×3,5)
+    this.bossMul = 1;                        // carta Cazador: × al daño a jefes y legendarios
+    this.dodge = 0;                          // carta Esquiva: probabilidad de librarse de un golpe
+    this.baseDex = mon.dex;                  // con el que empezaste (el de las Mejoras y «más usados»), aunque evolucione
+    this.grown = 0;                          // saltos de evolución ya dados (niveles 20 y 40)
     this.banned = new Set();                 // movimientos vetados (Mejoras → Veto): no salen en las cartas
     this.bind = {};                          // movimiento -> hueco fijo (0-3), elegido en Mejoras
     this.coins = 0;            // monedas recogidas en esta run
@@ -97,8 +102,59 @@ G.Player = class Player {
   static get REVIVE_TIME() { return 3; }
 
   // (×2 y luego ×4 el 2026-10-10: se subía de nivel demasiado rápido.)
+  // (16-11-2026: un tercio, como el juego oficial. Se sube de nivel 3 veces más rápido; las cartas
+  //  de mejora tienen tope y la evolución llega en los niveles 20 y 40.)
   static xpFor(level) {
-    return Math.floor((8 + level * 6 + Math.pow(level, 1.75) * 1.6) * 4);
+    return Math.floor((8 + level * 6 + Math.pow(level, 1.75) * 1.6) * 4 / 3);
+  }
+
+  // ---------------- evolución en plena partida (16-11-2026) ----------------
+  /** Niveles en los que tu Pokémon evoluciona (o, si no puede, se hace más fuerte). */
+  static get GROW_LEVELS() { return [20, 40]; }
+  /** ¿Le toca ya un salto (por nivel) que aún no ha dado? */
+  growDue() { return Player.GROW_LEVELS.filter(l => this.level >= l).length > this.grown; }
+  /** A qué puede evolucionar ahora: entradas de G.DEX (data/evolutions.js). */
+  evoOptions() { return ((G.EVOS || {})[this.dex] || []).map(d => G.DEX_BY[d]).filter(m => m && G.SPRITE_META[m.dex]); }
+  /**
+   * Evoluciona a `dex`. Lo ganado en la partida se queda (vida de cartas y mejoras,
+   * ataques, objetos, habilidad); cambian la especie, sus tipos y sus stats base.
+   * @param keepLook  no cambia de aspecto ni de tipo: sólo coge los stats de la evolución
+   */
+  evolveTo(dex, keepLook) {
+    const to = G.Mons.monFor(dex), from = this.mon;
+    if (!to) return false;
+    const dHp = Math.max(0, Math.round(to.hp - from.hp));
+    this.maxHp += dHp;
+    this.hp = Math.min(this.maxHp, this.hp + dHp + this.maxHp * 0.25);
+    this.baseSpd = Math.max(this.baseSpd, to.spd);
+    this.baseAtk = Math.max(this.baseAtk, to.atk);
+    this.grown++;
+    if (keepLook) {
+      const up = k => Math.max(from[k] || 0, to[k] || 0);
+      this.mon = Object.assign({}, from, { hp: up('hp'), spd: up('spd'), atk: up('atk'), pa: up('pa'), sa: up('sa'), df: up('df'), sd: up('sd'), bst: up('bst') });
+      return true;
+    }
+    this.mon = to;
+    this.dex = to.dex;
+    this.shiny = this.shiny && G.Sprites.hasShiny(to.dex);
+    this.scale = G.Sprites.playerScale(to.dex);
+    const dir = this.anim.dir;
+    this.anim = new G.Sprites.Animator(to.dex, this.scale, this.shiny);
+    this.anim.dir = dir;
+    this.r = G.Sprites.playerRadius(to.dex);
+    this.bodyH = G.Sprites.bodyHeight(to.dex, this.scale);
+    G.Sprites.preload([to.dex], 8000, this.shiny);
+    return true;
+  }
+  /** Los que no evolucionan: más vida, ataque y un poco de velocidad. */
+  grow() {
+    const more = Math.round(this.maxHp * 0.12);
+    this.maxHp += more;
+    this.hp = Math.min(this.maxHp, this.hp + more + this.maxHp * 0.25);
+    this.baseAtk *= 1.10;
+    this.baseSpd *= 1.03;
+    this.mon = Object.assign({}, this.mon, { pa: this.mon.pa * 1.10, sa: this.mon.sa * 1.10, atk: this.mon.atk * 1.10 });
+    this.grown++;
   }
 
   cy() { return this.y; }
@@ -287,6 +343,12 @@ G.Player = class Player {
         return;
       }
       if (ab.inMul) amount *= ab.inMul(this, type, cls);
+    }
+    // Carta Esquiva (levelup.js). Lo «puro» (Arceus) no se esquiva.
+    if (!pure && this.dodge > 0 && Math.random() < this.dodge) {
+      this.invuln = 0.3;
+      G.FX.dmgText(this.x, this.y - this.bodyH - 4, '¡Esquiva!', '#bfe8ff');
+      return;
     }
     if (!pure) amount *= G.Stats.taken(this.mon, cat);
     let eff = null;

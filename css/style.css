@@ -778,6 +778,12 @@ a.plink:hover { color: var(--gold); }
 .ach-pop b { display: block; color: var(--gold); }
 .ach-pop small { color: var(--muted); }
 .card.evo { border-color: var(--gold); background: linear-gradient(90deg, rgba(255,210,63,.18), rgba(255,210,63,.04)); }
+/* Más de 5 cartas (evoluciones de Eevee, run-ui.js): dos columnas y más juntas. */
+.cards.many { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: min(860px, 92vw); }
+.cards.many .card { padding-top: 8px; padding-bottom: 8px; }
+.cards.many .card .nm { font-size: 16px; }
+.cards.many .card .ds { font-size: 12px; }
+@media (max-width: 700px) { .cards.many { grid-template-columns: 1fr; } .cards.many .card .ds { display: none; } }
 .card.evo .nm { color: var(--gold); }
 /* Vínculo (premio de los legendarios): rosa */
 .bond-title { color: #ff8ad8; }

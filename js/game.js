@@ -523,7 +523,9 @@ G.Game = (() => {
     G.Halloween.runEnd();
     save.stats.runs++;
     save.pused = save.pused || {};
-    save.pused[pl.dex] = (+save.pused[pl.dex] || 0) + 1;     // para "más usados" en la colección
+    // (El Pokémon con el que empezaste, aunque haya evolucionado en la partida.)
+    const usedDex = pl.baseDex || pl.dex;
+    save.pused[usedDex] = (+save.pused[usedDex] || 0) + 1;   // para "más usados" en la colección
     save.stats.totalKills += pl.kills;
     save.stats.bestTime = Math.max(save.stats.bestTime, Math.floor(time));
     if (coop) save.stats.bestGroupTime = Math.max(save.stats.bestGroupTime || 0, Math.floor(time));
@@ -761,7 +763,8 @@ G.Game = (() => {
       return;
     }
     if (state === 'levelup') {
-      for (let i = 0; i < 3; i++) {
+      // (Hasta 9: las cartas de evolución de Eevee son más de cuatro.)
+      for (let i = 0; i < 9; i++) {
         if (G.Input.tap('digit' + (i + 1)) || G.Input.tap('numpad' + (i + 1))) G.RunUI.pick(i);
       }
       if (G.Input.tap('keyr')) G.RunUI.reroll();

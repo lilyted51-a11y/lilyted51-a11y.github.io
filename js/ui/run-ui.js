@@ -83,9 +83,12 @@ G.RunUI = (() => {
     offers = list;
     const left = rerollsLeft();
     $('lvl-rr-n').textContent = left;
-    $('lvl-reroll').classList.toggle('hidden', left <= 0);
+    // (Las cartas de evolución no se cambian: son las que son.)
+    $('lvl-reroll').classList.toggle('hidden', left <= 0 || list.some(c => c.type === 'evolve'));
     const box = $('cards');
     box.innerHTML = '';
+    // Muchas cartas (las evoluciones de Eevee): en dos columnas y más juntas, para que quepan sin scroll.
+    box.classList.toggle('many', list.length > 5);
     list.forEach((c, i) => {
       const el = document.createElement('div');
       el.className = 'card';
@@ -94,12 +97,18 @@ G.RunUI = (() => {
         : c.type === 'up' || c.type === 'evo'
           ? `<span class="tag-chip" style="background:${c.color}">${c.tag}</span>`
           : `<span class="tag-chip" style="background:${c.color === '#ffd23f' ? '#ffd23f' : '#9fb1c9'}">${c.tag}</span>`;
-      if (c.type === 'evo') el.classList.add('evo');
+      if (c.type === 'evo' || (c.type === 'evolve' && c.color === '#ffd23f')) el.classList.add('evo');
       el.innerHTML =
         `<div class="ico" style="background:${c.color}33">${G.Icons.html(c.icon, 32)}</div>
          <div class="txt"><div class="nm">${c.title} ${tag}</div><div class="ds">${c.desc}</div></div>
          <div class="key">${i + 1}</div>`;
       el.dataset.sfx = 'none';             // el juego pone su propio sonido al elegir
+      // Evolución en plena partida: en vez del icono, el Pokémon al que evoluciona (o el que se queda).
+      if (c.type === 'evolve' && c.dex) {
+        const ico = el.querySelector('.ico');
+        ico.innerHTML = '';
+        ico.appendChild(G.UI.spriteCanvas(c.dex, 46, 46, { scale: 1, shiny: !!c.shiny }));
+      }
       // Qué es cada carta (para en/bot.js, que no puede fiarse del texto traducido).
       el.dataset.key = c.key;
       if (c.buff) el.dataset.buff = c.stat || '1';

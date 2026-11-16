@@ -91,6 +91,12 @@ for (let i = 0; i < 30; i++) {
 await A.ev(`const pl = G.Game.player; for (const id of ['slumber', 'blowback', 'blowback', 'slow', 'focus']) G.Orbs.got(pl, id); G.Weather.debugStart('rain', 30); 1`); await sleep(2500);
 const pos = JSON.parse(await A.ev(`(() => { const r = document.getElementById('game').getBoundingClientRect(); return JSON.stringify({ w: r.width, h: r.height }); })()`));
 for (const fx of [0.36, 0.42, 0.48, 0.54, 0.6]) for (const fy of [0.78, 0.84, 0.9]) { await A.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: Math.round(pos.w * fx), y: Math.round(pos.h * fy) }); await sleep(100); }
+// Evolución en plena partida y cartas de mejora nuevas (16-11-2026): las cartas de evolucionar y todas las de mejora, tal cual salen.
+await A.ev(`(() => { const p = G.Game.player; G.RunUI.showLevelUp(20, G.LevelUp.evolveCards(p, [G.DEX_BY[134], G.DEX_BY[135]]), () => {}); return 1; })()`); await sleep(900);
+await grab('cartas de evolución'); await A.ev(`G.RunUI.closeLevelUp(); G.UI.hide('scr-levelup'); 1`); await sleep(300);
+await A.ev(`(() => { const cards = G.LevelUp.STATS.map(s => ({ type: 'stat', key: 'stat:' + s.id, icon: s.icon, color: '#8fa3c4', tag: s.rare ? 'Carta rara' : 'Mejora', title: s.title, desc: s.desc, apply() {} })); G.RunUI.showLevelUp(21, cards, () => {}); return cards.length; })()`); await sleep(900);
+await grab('cartas de mejora (todas)'); await A.ev(`G.RunUI.closeLevelUp(); G.UI.hide('scr-levelup'); 1`); await sleep(300);
+for (const t of ['¡Eevee ha evolucionado a Vaporeon!', '¡Mewtwo se hace más fuerte!']) { await A.ev(`G.Spawner.say(${JSON.stringify(t)}, 2, true); 1`); await sleep(500); }
 // Avisos del cooperativo sin cortes, del gacha sin conexión y del ranking (12-11-2026): en una partida en solitario
 // no salen, así que se pintan aquí como los pinta el juego (aviso del centro y rótulo del HUD en el canvas, y toast).
 for (const t of ['Pikachu se ha ido: MiNG pasa a ser el anfitrión…', 'Pikachu se ha ido: pasas a ser el anfitrión…', 'Cambio de anfitrión: conectando con MiNG…',

@@ -18,20 +18,22 @@
  *   y del invitado al anfitrión 're' (he entrado en la grieta).
  */
 G.Rift = (() => {
-  // (0.14 hasta el 11-10-2026: más grietas para que se vean los vínculos)
-  // Menos azar (12-10-2026): cada vez que no sale, la siguiente es más
-  // probable (20 %, 40 %, 60 %, 80 %, 100 %): como mucho 2,5 min sin grieta.
-  // Desde 2 min antes de la Sentencia de Arceus (minuto 30) ya no se abren.
-  const CHECK = 30, CHANCE = 0.2, TTL = 45;
-  const ARENA_R = 11, ARENA_TIME = 120, FROM = 75;
+  // Las grietas salen a su hora (RIFT_AT, abajo), no al azar (16-11-2026; antes, una
+  // comprobación cada 30 s con probabilidad creciente).
+  const TTL = 45;
+  const ARENA_R = 11, ARENA_TIME = 120;
   let rift = null;          // { x, y, ttl, t }
   let arena = null;         // { tx, ty, r, dex, shiny, x, y, back, biome, t, phase, endT, bossId }
   let zone = null;          // dónde estaba la última arena { x, y, r } (ver leftBehind)
-  let checkT = CHECK, asked = false, downT = 0, misses = 0;
+  let checkT = 0, asked = false, downT = 0;
+  // Grietas con hora fija (16-11-2026, como el juego oficial): minutos 4, 8, 12, 16 y 25.
+  // La última sólo da vínculo si te has dejado alguna de las anteriores (wins).
+  const RIFT_AT = [240, 480, 720, 960, 1500];
+  let riftIdx = 0, wins = 0;
   const authority = () => !G.Coop.active || G.Coop.isHost;
   const TS = () => G.Tiles.T * G.Sprites.PX;
 
-  function reset() { rift = null; arena = null; zone = null; checkT = CHECK; asked = false; downT = 0; misses = 0; }
+  function reset() { rift = null; arena = null; zone = null; checkT = 0; asked = false; downT = 0; riftIdx = 0; wins = 0; }
 
   /**
    * ¿Sigue este jugador en la arena aunque aquí ya se haya vuelto al mapa?
@@ -51,13 +53,12 @@ G.Rift = (() => {
       rift.ttl -= dt;
       if (rift.ttl <= 0) { rift = null; return; }
       if (!arena && !pl.dead && G.U.dist2(pl.x, pl.y, rift.x, rift.y - 10) < 30 * 30) enter();
-    } else if (!arena && authority() && time > FROM && time < G.Judgment.AT - 120) {
+    } else if (!arena && authority() && !G.Judgment.active && riftIdx < RIFT_AT.length && time >= RIFT_AT[riftIdx]) {
+      // Le toca una grieta. Con un jefe vivo se espera a que caiga (se mira cada 5 s).
       checkT -= dt;
       if (checkT <= 0) {
-        checkT = CHECK;
-        if (G.EnemyMgr.bossAlive()) return;           // con un jefe vivo no cuenta como intento
-        if (Math.random() < CHANCE * (1 + misses)) { misses = 0; open(); }
-        else misses++;
+        checkT = 5;
+        if (!G.EnemyMgr.bossAlive() && open()) riftIdx++;
       }
     }
     if (arena) arenaTick(dt, pl);
@@ -72,8 +73,9 @@ G.Rift = (() => {
       if (!G.World.isFree(x, y, 22)) continue;
       show(x, y, TTL);
       if (G.Coop.isHost) G.Coop.broadcast(['rift', Math.round(x), Math.round(y), TTL]);
-      return;
+      return true;
     }
+    return false;
   }
 
   /** Aparece la grieta (también la que manda el anfitrión). */
@@ -112,7 +114,9 @@ G.Rift = (() => {
       tx: 5000 + Math.floor(Math.random() * 3000), ty: 5000 + Math.floor(Math.random() * 3000), r: ARENA_R,
       dex: mon.dex, shiny: G.Sprites.hasShiny(mon.dex) && Math.random() < 1 / 512,
       // La arena es la de uno de sus tipos, al azar.
-      type: forceType || G.U.pick(mon.types)
+      type: forceType || G.U.pick(mon.types),
+      // La última grieta (minuto 25) no da vínculo si ya has ganado las cuatro anteriores.
+      nb: riftIdx >= RIFT_AT.length && wins >= RIFT_AT.length - 1 ? 1 : 0
     };
     if (G.Coop.isHost) G.Coop.broadcast(['arena', cfg]);
     begin(cfg);
@@ -207,7 +211,8 @@ G.Rift = (() => {
     G.Spawner.say('¡Has vencido a ' + G.DEX_BY[arena.dex].name + '! Recoge el premio…', 3.4, true);
     G.Audio.sfx('legend');
     const pl = G.Game.player;
-    if (pl) {
+    if (authority()) wins++;
+    if (pl && !arena.nb) {
       pl.bonds++;
       G.FX.dmgText(pl.x, pl.y - pl.bodyH - 10, '¡Vínculo!', '#ff8ad8', true);
       G.FX.ring(pl.x, pl.y, 8, 90, '#ff8ad8', 0.7, 5);
@@ -273,7 +278,10 @@ G.Rift = (() => {
    * en la arena, el legendario del anfitrión anterior ya no está y vuelve a salir.
    */
   function adopt() {
-    asked = false; downT = 0; checkT = CHECK;
+    asked = false; downT = 0; checkT = 0;
+    // (Las grietas que ya tocaron no vuelven a salir.)
+    const t = G.Game.st ? G.Game.st.time : 0;
+    riftIdx = RIFT_AT.filter(x => x <= t).length;
     if (arena && arena.phase === 'fight') { arena.bossId = 0; spawnLegend(); }
   }
 

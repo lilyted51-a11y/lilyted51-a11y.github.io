@@ -5,6 +5,21 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-11-16', title: ["Cuatro cartas, evolución en plena partida y nuevo calendario", "Four cards, mid-run evolution and a new schedule"], new: [
+    ["Al subir de nivel eliges ahora entre 4 cartas en vez de 3 (teclas 1 a 4).",
+     "On level-up you now choose between 4 cards instead of 3 (keys 1 to 4)."],
+    ["Evolución en plena partida: a los niveles 20 y 40 eliges si tu Pokémon evoluciona o sigue con su aspecto (sus stats suben igual). Los que no evolucionan también se hacen más fuertes.",
+     "Mid-run evolution: at levels 20 and 40 you choose whether your Pokémon evolves or keeps its look (its stats rise either way). Those that do not evolve also get stronger."],
+    ["Cartas nuevas, todas con tope: Ojo Crítico (+2 % de crítico), Golpe Brutal (+5 % de daño de los críticos), Cazador (más daño a jefes y legendarios), Esquiva y Racha de suerte (más Pokémonedas). Y una rara, Sabiduría: +15 % de experiencia, una vez por partida.",
+     "New cards, all capped: Critical Eye (+2% crit), Brutal Blow (+5% crit damage), Hunter (more damage to bosses and legendaries), Dodge and Lucky Streak (more Pokécoins). And a rare one, Wisdom: +15% experience, once per run."]
+  ], chg: [
+    ["Subes de nivel 3 veces más rápido: cada nivel pide un tercio de la experiencia de antes.",
+     "You level up 3 times faster: each level needs a third of the experience it did before."],
+    ["Los jefes salen ahora en los minutos 2, 6, 10, 14 y 18, y las grietas, a su hora en los minutos 4, 8, 12, 16 y 25 (ya no al azar). La última grieta sólo da vínculo si te has dejado alguna de las anteriores.",
+     "Bosses now appear at minutes 2, 6, 10, 14 and 18, and rifts on schedule at minutes 4, 8, 12, 16 and 25 (no longer at random). The last rift only gives a bond if you missed one of the earlier ones."],
+    ["El crítico tiene tope: 60 % de probabilidad y ×3,5 de daño. La carta Aprendizaje (+12 % de experiencia) se cambia por Sabiduría.",
+     "Critical hits are capped: 60% chance and ×3.5 damage. The Learning card (+12% experience) is replaced by Wisdom."]
+  ]},
   { d: '2026-11-12', title: ["Cooperativo sin cortes, guardado automático y ranking al día", "Co-op without cut-offs, autosave and an up-to-date leaderboard"], chg: [
     ["Cooperativo: si el anfitrión se va o se le corta la conexión, la partida ya no se acaba. Otro jugador pasa a ser el anfitrión y seguís juntos; si no se puede, cada uno sigue su partida con todo lo que llevaba. (Una partida que cambia de anfitrión no entra en el ranking.)",
      "Co-op: if the host leaves or loses the connection, the run no longer ends. Another player becomes the host and you keep playing together; if that is not possible, everyone continues their own run with everything they had. (A run that changes host does not enter the leaderboard.)"],

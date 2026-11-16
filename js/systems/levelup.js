@@ -1,8 +1,13 @@
-/* ============ levelup.js — las tres cartas de subida de nivel ============
+/* ============ levelup.js — las cuatro cartas de subida de nivel ============
  * Tipos de carta:
- *   new   aprender un movimiento nuevo (sólo si quedan huecos de los 4; un vínculo libera huecos)
- *   up    mejorar un movimiento que ya tienes
- *   stat  mejora permanente de la run
+ *   new     aprender un movimiento nuevo (sólo si quedan huecos de los 4; un vínculo libera huecos)
+ *   up      mejorar un movimiento que ya tienes
+ *   stat    mejora permanente de la run (casi todas con tope de veces)
+ *   evolve  evolución de tu Pokémon en plena partida (niveles 20 y 40, ver Player.growDue)
+ *
+ * 16-11-2026 (como la Gran Actualización del juego oficial, hecho aquí a partir de sus
+ * guías): cuatro cartas en vez de tres, cartas nuevas de crítico, cazador, esquiva y
+ * suerte, la carta rara Sabiduría y la evolución en plena partida.
  */
 G.LevelUp = (() => {
 
@@ -21,10 +26,23 @@ G.LevelUp = (() => {
       apply: pl => pl.regenFlat += 0.9 },
     { id: 'mag',  icon: 'magnet', title: 'Imán',         desc: '+30% de radio de recogida de experiencia.',
       apply: pl => pl.magnet *= 1.30, max: 6 },
-    { id: 'xp',   icon: 'book', title: 'Aprendizaje',  desc: '+12% de experiencia ganada.',
-      apply: pl => pl.xpMul *= 1.12, max: 8 },
+    // (Antes «Aprendizaje», +12 % hasta 8 veces: con el nivel subiendo 3 veces más rápido, ahora es
+    //  una carta rara y de una sola vez.)
+    { id: 'xp',   icon: 'book', title: 'Sabiduría',    desc: '+15% de experiencia en esta partida (sólo una vez).',
+      apply: pl => pl.xpMul *= 1.15, max: 1, rare: true },
     { id: 'heal', icon: 'berry', title: 'Baya Zidra',   desc: 'Recupera el 45% de tu vida ahora mismo.',
-      apply: pl => pl.heal(pl.maxHp * 0.45) }
+      apply: pl => pl.heal(pl.maxHp * 0.45) },
+    // Crítico: tope del 60 % de probabilidad y ×3,5 de daño (combat.js).
+    { id: 'crit', icon: 'star', title: 'Ojo Crítico',   desc: '+2% de probabilidad de golpe crítico (tope: 60%).',
+      apply: pl => pl.critChance = Math.min(0.6, pl.critChance + 0.02), max: 20 },
+    { id: 'critd', icon: 'up', title: 'Golpe Brutal',   desc: '+5% de daño en los golpes críticos (tope: ×3,5).',
+      apply: pl => pl.critBonus += 0.05, max: 20 },
+    { id: 'boss', icon: 'trophy', title: 'Cazador',     desc: '+8% de daño a jefes y legendarios.',
+      apply: pl => pl.bossMul += 0.08, max: 10 },
+    { id: 'dodge', icon: 'cursor', title: 'Esquiva',    desc: '3% de probabilidad de librarte de un golpe.',
+      apply: pl => pl.dodge = Math.min(0.24, pl.dodge + 0.03), max: 8 },
+    { id: 'luck', icon: 'coin', title: 'Racha de suerte', desc: '+10% de Pokémonedas en esta partida.',
+      apply: pl => pl.coinMul *= 1.10, max: 5 }
   ];
 
   /** n elementos distintos de list, cada uno con probabilidad según weight(x). */
@@ -114,13 +132,14 @@ G.LevelUp = (() => {
     // acumulaban sin fin (velocidad, recarga y experiencia por las nubes) y el
     // juego acababa colgándose. Las que piden una evolución salen siempre.
     const room = s => !s.max || (pl.statsTaken[s.id] || 0) < s.max;
-    const pickStats = G.U.pickN(STATS.filter(s => !waiting[s.id] && room(s)), 5).concat(STATS.filter(s => waiting[s.id]));
+    const pickStats = G.U.pickN(STATS.filter(s => !waiting[s.id] && room(s)), 6).concat(STATS.filter(s => waiting[s.id]));
     for (const s of pickStats) {
       const evoFor = waiting[s.id];
       out.push({
-        w: evoFor ? 14 : pl.slots.length < pl.maxMoves ? 4 : 7,
+        w: evoFor ? 14 : s.rare ? 1.2 : pl.slots.length < pl.maxMoves ? 4 : 7,
         type: 'stat', key: 'stat:' + s.id, evoFor: !!evoFor,   // copia local: evoFor lo lee en/bot.js (data-evo)
-        icon: s.icon, color: evoFor ? '#ffd23f' : '#8fa3c4', tag: evoFor ? 'Evoluciona ' + G.T(evoFor.name, 'move') : 'Mejora',
+        icon: s.icon, color: evoFor ? '#ffd23f' : s.rare ? '#c9a6ff' : '#8fa3c4',
+        tag: evoFor ? 'Evoluciona ' + G.T(evoFor.name, 'move') : s.rare ? 'Carta rara' : 'Mejora',
         title: s.title, desc: s.desc,
         apply: p => { s.apply(p); p.statsTaken[s.id] = (p.statsTaken[s.id] || 0) + 1; }
       });
@@ -129,8 +148,51 @@ G.LevelUp = (() => {
     return out;
   }
 
-  /** Devuelve 3 cartas distintas, elegidas por peso. */
-  function offer(pl, n = 3) {
+  /**
+   * Evolución en plena partida (niveles 20 y 40): en vez de las cartas de ese nivel
+   * salen las de evolucionar (una por cada evolución que tenga: Eevee, varias) y la de
+   * seguir como está, que sube los stats igual. Los que no evolucionan se hacen más
+   * fuertes sin elegir nada (Player.grow) y sus cartas salen como siempre.
+   */
+  function evolveCards(pl, evos) {
+    G.Sprites.preload(evos.map(m => m.dex), 8000, pl.shiny);
+    const from = pl.mon.name;
+    const cards = evos.map(m => ({
+      type: 'evolve', key: 'evolve:' + m.dex, dex: m.dex, shiny: pl.shiny,
+      icon: 'up', color: '#ffd23f', tag: 'EVOLUCIÓN',
+      title: G.I18n.f('Evolucionar a {x}', G.T(m.name, 'mon')), desc: 'Cambia de aspecto y de tipo, y suben sus stats.',
+      apply: p => {
+        p.evolveTo(m.dex, false);
+        G.FX.ring(p.x, p.y, 8, 150, '#ffd23f', 0.9, 6);
+        G.FX.burst(p.x, p.y - p.bodyH * 0.5, '#fff3b0', 50, 260);
+        G.Audio.sfx('legend');
+        G.Spawner.say(G.I18n.f('¡{x} ha evolucionado a {x}!', G.T(from, 'mon'), G.T(m.name, 'mon')), 3.2, true);
+      }
+    }));
+    const first = evos[0];
+    cards.push({
+      type: 'evolve', key: 'evolve:keep', dex: pl.dex, shiny: pl.shiny,
+      icon: 'shield', color: '#8fa3c4', tag: 'Mejora',
+      title: G.I18n.f('Seguir como {x}', G.T(from, 'mon')), desc: 'Mantiene su aspecto y su tipo. Sus stats suben igual.',
+      apply: p => {
+        p.evolveTo(first.dex, true);
+        G.FX.ring(p.x, p.y, 8, 120, '#bfe8ff', 0.8, 5);
+        G.Audio.sfx('levelup');
+        G.Spawner.say(G.I18n.f('¡{x} se hace más fuerte!', G.T(from, 'mon')), 2.6, true);
+      }
+    });
+    return cards;
+  }
+
+  /** Devuelve 4 cartas distintas, elegidas por peso. */
+  function offer(pl, n = 4) {
+    if (pl.growDue && pl.growDue()) {
+      const evos = pl.evoOptions();
+      if (evos.length) return evolveCards(pl, evos);
+      pl.grow();
+      G.FX.ring(pl.x, pl.y, 8, 120, '#bfe8ff', 0.8, 5);
+      G.Spawner.say(G.I18n.f('¡{x} se hace más fuerte!', G.T(pl.mon.name, 'mon')), 2.6, true);
+    }
     const pool = candidates(pl);
     const picked = [];
     const used = new Set();
@@ -150,5 +212,5 @@ G.LevelUp = (() => {
     return picked;
   }
 
-  return { offer, STATS };
+  return { offer, evolveCards, STATS };
 })();

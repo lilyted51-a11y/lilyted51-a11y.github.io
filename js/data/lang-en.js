@@ -1131,5 +1131,24 @@ G.I18n.add({
   "No se ha podido seguir en grupo: continúas en solitario con todo lo que llevabas.": "The group could not continue: you go on solo with everything you had.",
   "Se ha perdido el grupo: continúas en solitario con todo lo que llevabas.": "The group was lost: you go on solo with everything you had.",
   "Otro jugador ha pasado a ser el anfitrión: continúas en solitario con todo lo que llevabas.": "Another player became the host: you go on solo with everything you had.",
-  "SIN CONEXIÓN": "OFFLINE"
+  "SIN CONEXIÓN": "OFFLINE",
+  // 16-11-2026 (copia local): cuatro cartas, cartas nuevas y evolución en plena partida
+  "+15% de experiencia en esta partida (sólo una vez).": "+15% experience this run (only once).",
+  "Ojo Crítico": "Critical Eye",
+  "+2% de probabilidad de golpe crítico (tope: 60%).": "+2% critical hit chance (cap: 60%).",
+  "Golpe Brutal": "Brutal Blow",
+  "+5% de daño en los golpes críticos (tope: ×3,5).": "+5% critical hit damage (cap: ×3.5).",
+  "Cazador": "Hunter",
+  "+8% de daño a jefes y legendarios.": "+8% damage to bosses and legendaries.",
+  "Esquiva": "Dodge",
+  "3% de probabilidad de librarte de un golpe.": "3% chance to avoid a hit.",
+  "Racha de suerte": "Lucky Streak",
+  "+10% de Pokémonedas en esta partida.": "+10% Pokécoins this run.",
+  "Carta rara": "Rare card",
+  "Evolucionar a {x}": "Evolve into {x}",
+  "Cambia de aspecto y de tipo, y suben sus stats.": "Its look and type change, and its stats rise.",
+  "Seguir como {x}": "Stay as {x}",
+  "Mantiene su aspecto y su tipo. Sus stats suben igual.": "It keeps its look and type. Its stats rise all the same.",
+  "¡{x} ha evolucionado a {x}!": "{x} evolved into {x}!",
+  "¡{x} se hace más fuerte!": "{x} grows stronger!"
 });
