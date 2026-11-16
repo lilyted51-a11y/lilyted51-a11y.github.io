@@ -11,14 +11,22 @@ G.CHANGELOG = [
     ["Evolución en plena partida: a los niveles 20 y 40 eliges si tu Pokémon evoluciona o sigue con su aspecto (sus stats suben igual). Los que no evolucionan también se hacen más fuertes.",
      "Mid-run evolution: at levels 20 and 40 you choose whether your Pokémon evolves or keeps its look (its stats rise either way). Those that do not evolve also get stronger."],
     ["Cartas nuevas, todas con tope: Ojo Crítico (+2 % de crítico), Golpe Brutal (+5 % de daño de los críticos), Cazador (más daño a jefes y legendarios), Esquiva y Racha de suerte (más Pokémonedas). Y una rara, Sabiduría: +15 % de experiencia, una vez por partida.",
-     "New cards, all capped: Critical Eye (+2% crit), Brutal Blow (+5% crit damage), Hunter (more damage to bosses and legendaries), Dodge and Lucky Streak (more Pokécoins). And a rare one, Wisdom: +15% experience, once per run."]
+     "New cards, all capped: Critical Eye (+2% crit), Brutal Blow (+5% crit damage), Hunter (more damage to bosses and legendaries), Dodge and Lucky Streak (more Pokécoins). And a rare one, Wisdom: +15% experience, once per run."],
+    ["Más objetos a la vez: con las Mejoras nuevas Segundo objeto y Tercer objeto llevas dos y tres en la partida. Y si ya llevas tres, puede salir la carta rara Cuarto objeto. Al encontrar uno con los huecos llenos, eliges cuál cambias.",
+     "More items at once: with the new upgrades Second item and Third item you carry two and three in a run. And if you already carry three, the rare card Fourth item may show up. When you find one with your slots full, you choose which one to swap."],
+    ["12 objetos nuevos: Botas Gruesas, Metrónomo, Hierba Copia, Capa Furtiva, Guante de Boxeo, Supertapones, Espray Bucal, Dado Trucado, Gafa Protectora, Amuleto Exp., Incienso Suerte e Incienso Raro.",
+     "12 new items: Heavy-Duty Boots, Metronome, Mirror Herb, Covert Cloak, Punching Glove, Earplugs, Throat Spray, Loaded Dice, Safety Goggles, Exp. Charm, Luck Incense and Rare Incense."],
+    ["Mejora nueva, Crítico Potente: +5 % de daño de los críticos por nivel.",
+     "New upgrade, Potent Crit: +5% critical hit damage per level."]
   ], chg: [
     ["Subes de nivel 3 veces más rápido: cada nivel pide un tercio de la experiencia de antes.",
      "You level up 3 times faster: each level needs a third of the experience it did before."],
     ["Los jefes salen ahora en los minutos 2, 6, 10, 14 y 18, y las grietas, a su hora en los minutos 4, 8, 12, 16 y 25 (ya no al azar). La última grieta sólo da vínculo si te has dejado alguna de las anteriores.",
      "Bosses now appear at minutes 2, 6, 10, 14 and 18, and rifts on schedule at minutes 4, 8, 12, 16 and 25 (no longer at random). The last rift only gives a bond if you missed one of the earlier ones."],
     ["El crítico tiene tope: 60 % de probabilidad y ×3,5 de daño. La carta Aprendizaje (+12 % de experiencia) se cambia por Sabiduría.",
-     "Critical hits are capped: 60% chance and ×3.5 damage. The Learning card (+12% experience) is replaced by Wisdom."]
+     "Critical hits are capped: 60% chance and ×3.5 damage. The Learning card (+12% experience) is replaced by Wisdom."],
+    ["Veto: ahora puedes bloquear hasta 5 movimientos (antes 3).",
+     "Veto: you can now block up to 5 moves (3 before)."]
   ]},
   { d: '2026-11-12', title: ["Cooperativo sin cortes, guardado automático y ranking al día", "Co-op without cut-offs, autosave and an up-to-date leaderboard"], chg: [
     ["Cooperativo: si el anfitrión se va o se le corta la conexión, la partida ya no se acaba. Otro jugador pasa a ser el anfitrión y seguís juntos; si no se puede, cada uno sigue su partida con todo lo que llevaba. (Una partida que cambia de anfitrión no entra en el ranking.)",

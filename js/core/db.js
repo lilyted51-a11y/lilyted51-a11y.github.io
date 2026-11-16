@@ -214,7 +214,7 @@ G.DB = (() => {
     if (s.pban && typeof s.pban === 'object') {
       for (const d of Object.keys(s.pban)) {
         const l = Array.isArray(s.pban[d]) ? s.pban[d] : [];
-        s.pban[d] = [...new Set(l.filter(id => typeof id === 'string' && (!G.Moves || G.Moves.BY_ID[id])))].slice(0, 3);
+        s.pban[d] = [...new Set(l.filter(id => typeof id === 'string' && (!G.Moves || G.Moves.BY_ID[id])))].slice(0, 5);   // (5 desde el 16-11-2026: Veto llega a 5)
       }
     } else s.pban = {};
     if (G.Upgrades) for (const d of Object.keys(s.pupg || {})) {

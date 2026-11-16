@@ -227,19 +227,30 @@ G.RunUI = (() => {
     G.UI.show('scr-over');
   }
 
-  /** Has encontrado un objeto llevando ya otro: ¿con cuál te quedas? */
+  /**
+   * Has encontrado un objeto con los huecos llenos: ¿te quedas con lo que llevas o cambias uno?
+   * @param cur   los que llevas (uno, o varios con las Mejoras Segundo / Tercer objeto)
+   * @param cb    cb(null) = te quedas como estás · cb(next, viejo) = dejas `viejo` y te pones el nuevo
+   */
   function showItemChoice(cur, next, cb) {
-    const box = $('item-cards');
+    cur = Array.isArray(cur) ? cur : [cur];
+    const box = $('item-cards'), nx = G.Items.BY[next], name = id => G.Items.BY[id].name;
     box.innerHTML = '';
-    [[cur, 'Quedarme con'], [next, 'Cambiar a']].forEach(([id, verb], i) => {
-      const it = G.Items.BY[id];
+    $('item-sub').textContent = cur.length > 1 ? G.I18n.f('Llevas {x}: no te caben más', cur.length) : G.T('Sólo puedes llevar uno');
+    // (data-item: lo lee en/bot.js para puntuar cada carta.)
+    const opts = cur.length === 1
+      ? [{ id: cur[0], title: 'Quedarme con ' + name(cur[0]), desc: G.Items.BY[cur[0]].desc, pick: () => cb(null) },
+         { id: next, title: 'Cambiar a ' + nx.name, desc: nx.desc, gold: true, pick: () => cb(next, cur[0]) }]
+      : [{ id: cur[0], title: 'Quedarme con los que llevo', desc: cur.map(name).join(' · '), pick: () => cb(null) },
+         ...cur.map(c => ({ id: next, old: c, title: G.I18n.f('Cambiar {x} por {x}', name(c), nx.name), desc: nx.desc, gold: true, pick: () => cb(next, c) }))];
+    opts.forEach((o, i) => {
       const el = document.createElement('div');
-      el.className = 'card' + (i === 1 ? ' evo' : '');
-      el.dataset.item = id;   // copia local: lo lee en/bot.js para elegir objeto
-      el.innerHTML = `<div class="ico">${G.Icons.html(id, 36)}</div>
-        <div class="txt"><div class="nm">${verb} ${it.name}</div><div class="ds">${it.desc}</div></div>
+      el.className = 'card' + (o.gold ? ' evo' : '');
+      el.dataset.item = o.id;
+      el.innerHTML = `<div class="ico">${o.old ? G.Icons.html(o.old, 22) + G.Icons.html(o.id, 30) : G.Icons.html(o.id, 36)}</div>
+        <div class="txt"><div class="nm">${o.title}</div><div class="ds">${o.desc}</div></div>
         <div class="key">${i + 1}</div>`;
-      onTap(el, () => { if (guarded() || !G.UI.isOpen('scr-item')) return; G.UI.hide('scr-item'); cb(id); });
+      onTap(el, () => { if (guarded() || !G.UI.isOpen('scr-item')) return; G.UI.hide('scr-item'); o.pick(); });
       box.appendChild(el);
     });
     G.UI.show('scr-item');
@@ -328,11 +339,12 @@ G.RunUI = (() => {
       return `<tr><td>${G.Icons.html('move:' + id, 18)} ${G.T(m.name, 'move')} <small>Nv.${lvl}</small></td>
         <td class="num">${m.cat ? n(dealt) : '—'}</td><td class="num">${m.cat ? n(dealt / secs) + '/s' : '—'}</td></tr>`;
     }).join('');
-    const mon = G.DEX_BY[s.dex], it = s.it && G.Items.BY[s.it];
+    const mon = G.DEX_BY[s.dex];
+    const its = (Array.isArray(s.its) && s.its.length ? s.its : s.it ? [s.it] : []).filter(id => G.Items.BY[id]);
     // (La frase entera en cada idioma: traducida por trozos sale rara.)
     return `<p class="sub" style="margin:6px 0" translate="no">${s.sh ? G.Icons.html('shiny', 12) + ' ' : ''}${G.I18n.f('{x} · Nv. {x} · {x} de daño en total', G.T(mon.name), s.lv, n(total))}</p>
       <table class="sum-moves"><tr><th></th><th class="num">Daño</th><th class="num">Por segundo</th></tr>${rows}</table>
-      <p class="sub" style="margin:6px 0 0">${it ? G.Icons.html(s.it, 16) + ' ' + it.name : 'Sin objeto.'}</p>`;
+      <p class="sub" style="margin:6px 0 0">${its.length ? its.map(id => G.Icons.html(id, 16) + ' ' + G.Items.BY[id].name).join(' &nbsp; ') : 'Sin objeto.'}</p>`;
   }
 
   /*
@@ -375,7 +387,7 @@ G.RunUI = (() => {
       <table class="sum-moves"><tr><th></th><th></th><th class="num">Daño</th><th class="num">Por segundo</th></tr>${moves}</table>
       <h3>Tus estadísticas</h3><div class="sum-stats">${st}</div>
       <h3>Objeto y cartas</h3>
-      <p class="sub">${it ? G.Icons.html(pl.item, 18) + ' <b>' + it.name + '</b>: ' + it.desc : 'Sin objeto.'}</p>
+      ${pl.items.length ? pl.items.map(id => '<p class="sub">' + G.Icons.html(id, 18) + ' <b>' + G.Items.BY[id].name + '</b>: ' + G.Items.BY[id].desc + '</p>').join('') : '<p class="sub">Sin objeto.</p>'}
       <div class="chips">${cards || '<span class="sub">Aún no has cogido cartas de mejora.</span>'}</div>
       <h3>Tus esferas</h3>${orbsSummary(pl)}`;
   }

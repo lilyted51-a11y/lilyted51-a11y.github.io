@@ -114,7 +114,7 @@ G.Combat = (() => {
   function fireProjectiles(pl, m) {
     const col = G.U.TYPE_COLOR[m.type];
     const vis = G.VFX.forMove(m);
-    const n = Math.max(1, m.count | 0);
+    const n = Math.max(1, m.count | 0) + dice(pl, m);
     const spread = m.spread || 0;
     for (let i = 0; i < n; i++) {
       const off = n === 1 ? 0 : (i / (n - 1) - 0.5) * spread * n;
@@ -227,7 +227,7 @@ G.Combat = (() => {
   /** Bumerán: sale hacia el enemigo, se para y vuelve a ti golpeando a la ida y a la vuelta. */
   function boomerang(pl, m) {
     const col = G.U.TYPE_COLOR[m.type], vis = G.VFX.forMove(m);
-    const n = Math.max(1, m.count | 0), spread = m.spread || 0.5;
+    const n = Math.max(1, m.count | 0) + dice(pl, m), spread = m.spread || 0.5;
     const out = m.radius / m.speed;                       // segundos de ida
     for (let i = 0; i < n; i++) {
       const a = pl.aim + (n === 1 ? 0 : (i / (n - 1) - 0.5) * spread * Math.min(n, 3));
@@ -734,6 +734,16 @@ G.Combat = (() => {
   const isCrit = pl => !ghost && pl.critChance > 0 && Math.random() < Math.min(CRIT_MAX_P, pl.critChance);
   /** Carta Cazador: × al daño a jefes y legendarios. */
   const bossK = (pl, e) => (e.boss && pl.bossMul ? pl.bossMul : 1);
+  const has = (pl, id) => !!(pl.hasItem && pl.hasItem(id));
+  /** Dado Trucado: los ataques con varios proyectiles lanzan uno más. */
+  const dice = (pl, m) => ((m.count | 0) >= 2 && has(pl, 'loadeddice') ? 1 : 0);
+  /** Objetos que cambian un golpe: Guante de Boxeo (físicos cuerpo a cuerpo) y Gafa Protectora (el clima no debilita tu ataque). */
+  function itemK(pl, type, cat, kind) {
+    let k = 1;
+    if (cat === 'physical' && (kind === 'melee' || kind === 'dash') && has(pl, 'punchingglove')) k *= 1.3;
+    if (type && has(pl, 'safetygoggles')) { const w = G.Weather.mult(type); if (w < 1) k /= w; }
+    return k;
+  }
 
   // Habilidad de quien pega (data/ability-fx.js): × al daño, crítico, estados y
   // lo que hace al golpear. (Los compañeros no la llevan aquí: pegan en su ordenador.)
@@ -752,7 +762,7 @@ G.Combat = (() => {
   const arcK = e => (e.arceus ? G.Judgment.dmgK() : 1);
 
   function hit(pl, e, dmg, col, dx, dy, knock, m) {
-    const k = typeK(m.type, e) * G.Stats.taken(e.mon, m.cat) * abilOut(pl, m, e) * arcK(e) * bossK(pl, e);
+    const k = typeK(m.type, e) * G.Stats.taken(e.mon, m.cat) * abilOut(pl, m, e) * arcK(e) * bossK(pl, e) * itemK(pl, m.type, m.cat, m.kind);
     const crit = isCrit(pl), sk = statusK(pl);
     dmg *= k * (crit ? critMul(pl) : 1);
     e.hurt(dmg, col, dx, dy, sk ? knock : 0, crit ? 'crit' : G.Types.label(G.Types.mult(m.type, e.types)));
@@ -864,7 +874,7 @@ G.Combat = (() => {
         }
 
         const crit = isCrit(pl), sk = statusK(pl);
-        const k = (p.mtype ? typeK(p.mtype, e) : 1) * G.Stats.taken(e.mon, p.mcat) * (crit ? critMul(pl) : 1) * abilOut(pl, p.src, e) * arcK(e) * bossK(pl, e);
+        const k = (p.mtype ? typeK(p.mtype, e) : 1) * G.Stats.taken(e.mon, p.mcat) * (crit ? critMul(pl) : 1) * abilOut(pl, p.src, e) * arcK(e) * bossK(pl, e) * itemK(pl, p.mtype, p.mcat, null);
         e.hurt(p.dmg * k, p.color, p.vx || (e.x - pl.x), p.vy || (e.y - pl.y), sk ? p.knock : 0,
                crit ? 'crit' : p.mtype ? G.Types.label(G.Types.mult(p.mtype, e.types)) : null);
         if (Math.random() < 0.5) G.FX.sp('impact', p.vis ? p.vis.pal : 'normal', e.x, e.y - e.bodyH * 0.5, { life: 0.12, scale: 1 });

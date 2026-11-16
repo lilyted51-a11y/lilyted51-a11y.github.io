@@ -60,7 +60,7 @@ G.Player = class Player {
     this.rerolls = 0;          // veces que ha cambiado las cartas de nivel en esta run
     this.rerollBonus = perks.rerolls || 0;   // cambios comprados en Mejoras (más el gratis)
     this.critChance = perks.crit || 0;       // probabilidad de golpe crítico (Mejoras y carta Ojo Crítico; tope 60 %)
-    this.critBonus = 0;                      // carta Golpe Brutal: + al multiplicador del crítico (tope ×3,5)
+    this.critBonus = perks.critBonus || 0;   // Mejora Crítico Potente y carta Golpe Brutal: + al multiplicador del crítico (tope ×3,5)
     this.bossMul = 1;                        // carta Cazador: × al daño a jefes y legendarios
     this.dodge = 0;                          // carta Esquiva: probabilidad de librarse de un golpe
     this.baseDex = mon.dex;                  // con el que empezaste (el de las Mejoras y «más usados»), aunque evolucione
@@ -82,7 +82,10 @@ G.Player = class Player {
     this.dead = false;
     this.power = null;         // poder de altar activo: { def, t, dur }
     this.slowT = 0;            // pegado por una trampa
-    this.item = null;          // objeto equipado (data/items.js), uno por run
+    // Objetos equipados (data/items.js). Uno de serie; dos y tres con las Mejoras Segundo y
+    // Tercer objeto, y un cuarto con la carta rara Cuarto objeto (16-11-2026; antes, sólo uno).
+    this.items = [];
+    this.itemSlots = 1 + (perks.item2 ? 1 : 0) + (perks.item2 && perks.item3 ? 1 : 0);
     this.sashT = -999;         // última vez que salvó la Banda Focus
     this.bellHeal = 0;         // curación pendiente del Cascabel Concha
     this.statsTaken = {};      // mejoras de stat cogidas (condición de evolución)
@@ -164,7 +167,9 @@ G.Player = class Player {
     // Copia local: con ventajas (G.Boost) el ataque se multiplica (y crece con el tiempo si .grow)
     const t = G.Game && G.Game.st ? G.Game.st.time : 0;
     const k = this.boost ? this.boost.atk * (this.boost.grow ? 1 + t / 95 : 1) : 1;
-    return this.baseAtk * this.atkMul * (1 + this.buffs.atk.n * this.buffs.atk.amount) * k;
+    // Metrónomo: +6 % por cada 3 s seguidos con el mismo ataque (hasta +48 %).
+    const metro = this.hasItem('metronome') ? 1 + Math.min(8, Math.floor((this.metroT || 0) / 3)) * 0.06 : 1;
+    return this.baseAtk * this.atkMul * (1 + this.buffs.atk.n * this.buffs.atk.amount) * k * metro;
   }
   /**
    * Ataque con un movimiento: el físico o el especial de tu Pokémon (ver
@@ -172,7 +177,9 @@ G.Player = class Player {
    */
   atkFor(m) {
     const cat = m && m.cat, b = cat === 'physical' ? this.buffs.patk : cat === 'special' ? this.buffs.satk : null;
-    return this.atk * G.Stats.fit(this.mon, cat) * (b ? 1 + b.n * b.amount : 1) * (m && this.monoType(m.type) ? Player.MONO_K : 1);
+    // Espray Bucal: +25 % a los especiales un rato tras cambiar de ataque (setActive).
+    const spray = cat === 'special' && this.sprayT > 0 ? 1.25 : 1;
+    return this.atk * G.Stats.fit(this.mon, cat) * (b ? 1 + b.n * b.amount : 1) * (m && this.monoType(m.type) ? Player.MONO_K : 1) * spray;
   }
   /** Monotipo (19-10-2026): los de un solo tipo pegan un +20 % con los ataques de su tipo (tienen menos variedad). */
   static get MONO_K() { return 1.2; }
@@ -181,8 +188,9 @@ G.Player = class Player {
     // (Habilidades: "steady" no se frena; speed() multiplica, ver data/ability-fx.js.)
     const ab = this.abil || {}, stuck = this.slowT > 0 && !ab.steady;
     const s = this.baseSpd * (this.boost ? this.boost.spd : 1) * this.spdMul * (1 + this.buffs.spd.n * this.buffs.spd.amount) * (stuck ? 0.5 : 1) * (ab.speed ? ab.speed(this) : 1);
-    const w = G.Weather.speedFor(this.mon.types);
-    const slow = this.inLiquid && !ab.steady ? G.World.liquidEffect(this.mon.types).slow || 1 : 1;
+    const w = this.hasItem('safetygoggles') ? 1 : G.Weather.speedFor(this.mon.types);
+    // (Botas Gruesas: el agua no frena. Gafa Protectora: la nieve tampoco.)
+    const slow = this.inLiquid && !ab.steady && !this.hasItem('heavyboots') ? G.World.liquidEffect(this.mon.types).slow || 1 : 1;
     return G.Judgment && G.Judgment.active ? G.Judgment.capSpd(s * slow * w) : s * slow * w;
   }
   get reduction() { return Math.min(0.8, this.dmgReduce + this.itemReduce + this.buffs.def.n * this.buffs.def.amount); }
@@ -237,6 +245,8 @@ G.Player = class Player {
       return;
     }
     this.active = i;
+    this.metroT = 0;                                   // Metrónomo: se empieza de cero
+    if (this.hasItem('throatspray') && !(this.sprayCd > 0)) { this.sprayT = 8; this.sprayCd = 12; }
     G.Projectiles.clearOrbs(this);
     G.Audio.sfx('select');
     for (const m of this.slots[i]) m.t = Math.min(m.t, m.cd * 0.35);
@@ -323,7 +333,7 @@ G.Player = class Player {
   // Copia local: cuánto quitaría de verdad un golpe (tipo, clima, defensa), sin aplicarlo. Lo usa el bot.
   hitFor(amount, type = null, cat = null) {
     amount *= G.Stats.taken(this.mon, cat);
-    if (type) amount *= G.Types.mult(type, this.mon.types) * G.Weather.mult(type);
+    if (type) amount *= G.Types.mult(type, this.mon.types) * this.weatherIn(type);
     const close = this.activeGroup().some(m => m.kind === 'melee') ? 0.75 : 1;
     return Math.max(1, amount * (1 - this.reduction) * close);
   }
@@ -355,7 +365,7 @@ G.Player = class Player {
     if (type) {
       const k = G.Types.mult(type, this.mon.types);
       eff = G.Types.label(k);
-      amount *= k * G.Weather.mult(type);
+      amount *= k * this.weatherIn(type);
     }
     // Con un ataque cuerpo a cuerpo activo se recibe un 25 % menos: hay que
     // estar encima de los enemigos para pegar (iban muy por detrás).
@@ -418,26 +428,49 @@ G.Player = class Player {
   }
 
   // ---------------- objeto equipado ----------------
-  hasItem(id) { return this.item === id; }
+  hasItem(id) { return this.items.includes(id); }
+  /** El primero que llevas (o null): para lo que sólo pregunta si llevas alguno. */
+  get item() { return this.items[0] || null; }
+  /** ¿Te cabe otro objeto? */
+  get itemRoom() { return this.items.length < this.itemSlots; }
 
-  /** Se pone un objeto (y se quita el que llevara). */
-  equip(id) {
-    if (this.item) G.Items.BY[this.item].off(this);
-    this.item = id;
-    if (id) G.Items.BY[id].on(this);
+  /**
+   * Se pone un objeto en un hueco libre, o en lugar de `instead`. equip(null) los quita
+   * todos. → false si no cabe o ya lo llevas
+   */
+  equip(id, instead) {
+    if (!id) { for (const x of this.items.slice()) this.unequip(x); return true; }
+    if (!G.Items.BY[id] || this.items.includes(id)) return false;
+    if (instead) this.unequip(instead);
+    if (this.items.length >= this.itemSlots) return false;
+    this.items.push(id);
+    G.Items.BY[id].on(this);
+    return true;
+  }
+  /** Se quita un objeto (y deshace lo que hacía). */
+  unequip(id) {
+    const i = this.items.indexOf(id);
+    if (i < 0) return false;
+    this.items.splice(i, 1);
+    G.Items.BY[id].off(this);
+    return true;
   }
 
   /** Cascabel Concha: un poco de vida por el daño que haces (tope 4/s). */
   onDealt(dmg) {
-    if (this.item === 'shellbell') this.bellHeal = Math.min(4, this.bellHeal + dmg * 0.04);
+    if (this.hasItem('shellbell')) this.bellHeal = Math.min(4, this.bellHeal + dmg * 0.04);
   }
 
-  /** Poder de un altar (ver systems/interact.js): se aplica y se quita solo. */
+  /** Poder de un altar (ver systems/interact.js): se aplica y se quita solo. (Hierba Copia: dura el doble.) */
   addPower(def, dur) {
     if (this.power) this.power.def.off(this);
     def.on(this);
+    if (this.hasItem('powerherb')) dur *= 2;
     this.power = { def, t: dur, dur };
   }
+
+  /** × del clima a un golpe que recibes (Gafa Protectora: el clima no hace más fuertes los golpes). */
+  weatherIn(type) { const k = G.Weather.mult(type); return this.hasItem('safetygoggles') ? Math.min(1, k) : k; }
 
   addBuff(stat, amount, dur, maxStacks) {
     const b = this.buffs[stat];
@@ -466,6 +499,10 @@ G.Player = class Player {
     if (this.slowT > 0) this.slowT -= dt;
     if (this.bellHeal > 0) { const h = Math.min(this.bellHeal, 4 * dt); this.hp = Math.min(this.maxHp, this.hp + h); this.bellHeal -= h; }
     if (this.power && (this.power.t -= dt) <= 0) { this.power.def.off(this); this.power = null; }
+    // Metrónomo (tiempo con el mismo ataque) y Espray Bucal (lo que le queda y su espera).
+    this.metroT = (this.metroT || 0) + dt;
+    if (this.sprayT > 0) this.sprayT -= dt;
+    if (this.sprayCd > 0) this.sprayCd -= dt;
     if (this.regen > 0) this.hp = Math.min(this.maxHp, this.hp + this.regen * dt);
     if (this.abil && this.abil.tick) this.abil.tick(this, dt);
     // Sequía, Llovizna...: su clima al empezar y cada 3 min, si no hay otro. En
@@ -498,7 +535,7 @@ G.Player = class Player {
     this.inLiquid = !(this.abil && this.abil.levitate) && G.World.isLiquid(this.x, this.y);
     if (this.inLiquid) {
       const le = G.World.liquidEffect(this.mon.types);
-      if (le.dmg && !(this.abil && this.abil.lavaProof)) {
+      if (le.dmg && !(this.abil && this.abil.lavaProof) && !this.hasItem('heavyboots')) {
         this.lavaTick -= dt;
         if (this.lavaTick <= 0) {
           this.lavaTick = le.every; this.invuln = 0;

@@ -80,7 +80,9 @@ G.Spawner = (() => {
   function rollShiny(dex) {
     if (!G.Sprites.hasShiny(dex)) return false;
     if (forceShiny > 0) { forceShiny--; return true; }
-    return Math.random() < SHINY_RATE;
+    // Incienso Raro: el doble de shiny salvajes (lo lleva quien manda: tú, o el anfitrión en grupo).
+    const pl = G.Game.player;
+    return Math.random() < SHINY_RATE * (pl && pl.hasItem && pl.hasItem('rareincense') ? 2 : 1);
   }
 
   // Como mucho 3 curanderos, 3 escuderos y 3 invocadores vivos a la vez

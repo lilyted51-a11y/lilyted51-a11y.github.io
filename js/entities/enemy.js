@@ -31,6 +31,8 @@
    */
   const RD_TAU = 6, BOSS_HEAL_S = 0.4, BOSS_SHIELD_S = 1.2;
   const bossDps = e => e.rd / RD_TAU;
+  /** Capa Furtiva (data/items.js): los enemigos cerca de quien la lleva no reciben curas ni escudos. */
+  const cloaked = e => G.Game.everyone().some(p => !p.dead && p.hasItem && p.hasItem('covertcloak') && G.U.dist2(p.x, p.y, e.x, e.y) < 260 * 260);
 
   /*
    * Veneno (18-10-2026): quita un % de la vida, pero con muchísima vida (los
@@ -668,7 +670,7 @@
       const k = 0.07 * Math.min(2.5, Math.pow(pow, 0.35));
       let n = 0;
       for (const e of G.EnemyMgr.queryCircle(this.x, this.y, 150)) {
-        if (e.dead || e.hp >= e.maxHp) continue;
+        if (e.dead || e.hp >= e.maxHp || cloaked(e)) continue;
         // A un jefe, como mucho lo que le quitas en 0,4 s: así nunca se vuelve inmatable.
         const heal = e.maxHp * k;
         e.hp = Math.min(e.maxHp, e.hp + (e.boss ? Math.min(heal, bossDps(e) * BOSS_HEAL_S) : heal));
@@ -682,7 +684,7 @@
     }
 
     castShields() {
-      const near = G.EnemyMgr.queryCircle(this.x, this.y, 160).filter(e => !e.dead)
+      const near = G.EnemyMgr.queryCircle(this.x, this.y, 160).filter(e => !e.dead && !cloaked(e))
         .sort((a, b) => G.U.dist2(a.x, a.y, this.x, this.y) - G.U.dist2(b.x, b.y, this.x, this.y)).slice(0, 6);
       // A un jefe, el escudo es lo que le quitas en 1,2 s (no un 35 % de su vida
       // enorme), y uno cada 6 s aunque haya varios escuderos (shieldT empieza en 8).

@@ -1,7 +1,9 @@
-/* ============ items.js — objetos equipables (uno por run) ============
+/* ============ items.js — objetos equipables ============
  * Se encuentran en los cofres (a veces en los normales, a menudo en los de
- * candado) y los sueltan los jefes. Sólo puedes llevar UNO; si encuentras
- * otro, eliges con cuál quedarte. Duran lo que dura la run.
+ * candado) y los sueltan los jefes. Llevas uno a la vez (dos y tres con las
+ * Mejoras Segundo y Tercer objeto, y un cuarto con la carta rara); si
+ * encuentras otro con los huecos llenos, eliges cuál cambias. Duran lo que
+ * dura la run.
  *
  *   on(pl)   se lo pones (lo que hace mientras lo llevas)
  *   off(pl)  se lo quitas (deshace lo de on)
@@ -33,15 +35,42 @@ G.Items = (() => {
       on: () => {}, off: () => {} },
     { id: 'assaultvest', name: 'Chaleco Asalto', desc: '+20% de reducción de daño recibido.',
       // (aparte del tope del 70 % de las cartas Coraza: ver Player.reduction)
-      on: p => { p.itemReduce += 0.2; }, off: p => { p.itemReduce -= 0.2; } }
+      on: p => { p.itemReduce += 0.2; }, off: p => { p.itemReduce -= 0.2; } },
+    // ---- 16-11-2026 (como la Gran Actualización del juego oficial; lo que hace cada uno se mira con
+    //      pl.hasItem(id) en el sitio que toca: player.js, combat.js, hazards.js, interact.js, enemy.js...) ----
+    { id: 'heavyboots', name: 'Botas Gruesas', desc: 'Las trampas no te afectan, la lava no te quema y el agua no te frena.',
+      on: () => {}, off: () => {} },
+    { id: 'metronome', name: 'Metrónomo', desc: 'Cada 3 s seguidos con el mismo ataque: +6% de daño, hasta +48%. Se pierde al cambiar de ataque.',
+      on: p => { p.metroT = 0; }, off: () => {} },
+    { id: 'powerherb', name: 'Hierba Copia', desc: 'Los poderes de los altares te duran el doble.',
+      on: () => {}, off: () => {} },
+    { id: 'covertcloak', name: 'Capa Furtiva', desc: 'Los enemigos que curan o ponen escudos no ayudan a los que tienes cerca.',
+      on: () => {}, off: () => {} },
+    { id: 'punchingglove', name: 'Guante de Boxeo', desc: '+30% de daño con los ataques físicos cuerpo a cuerpo.',
+      on: () => {}, off: () => {} },
+    { id: 'earplugs', name: 'Supertapones', desc: 'Los ataques con aviso en el suelo te quitan un 30% menos.',
+      on: () => {}, off: () => {} },
+    { id: 'throatspray', name: 'Espray Bucal', desc: '+25% de Ataque Especial durante 8 s al cambiar de ataque (cada 12 s como mucho).',
+      on: p => { p.sprayT = 0; p.sprayCd = 0; }, off: p => { p.sprayT = 0; } },
+    { id: 'loadeddice', name: 'Dado Trucado', desc: 'Los ataques con varios proyectiles lanzan uno más.',
+      on: () => {}, off: () => {} },
+    { id: 'safetygoggles', name: 'Gafa Protectora', desc: 'Los climas no te debilitan ni te frenan (sí te potencian).',
+      on: () => {}, off: () => {} },
+    { id: 'expcharm', name: 'Amuleto Exp.', desc: '+20% de experiencia y +10% de Pokémonedas.',
+      on: p => { p.xpMul *= 1.2; p.coinMul *= 1.1; }, off: p => { p.xpMul /= 1.2; p.coinMul /= 1.1; } },
+    { id: 'luckincense', name: 'Incienso Suerte', desc: '+60% de Pokémonedas, pero −15% de daño.',
+      on: p => { p.coinMul *= 1.6; p.atkMul *= 0.85; }, off: p => { p.coinMul /= 1.6; p.atkMul /= 0.85; } },
+    { id: 'rareincense', name: 'Incienso Raro', desc: 'Los shiny salvajes salen el doble de a menudo (en grupo, si lo lleva el anfitrión).',
+      on: () => {}, off: () => {} }
   ];
   const BY = {};
   for (const it of LIST) BY[it.id] = it;
 
-  /** Uno al azar, distinto del que ya llevas. */
+  /** Uno al azar, distinto de los que ya llevas (`except`: un id o una lista). */
   function roll(except) {
-    const pool = LIST.filter(i => i.id !== except);
-    return G.U.pick(pool).id;
+    const no = Array.isArray(except) ? except : [except];
+    const pool = LIST.filter(i => !no.includes(i.id));
+    return G.U.pick(pool.length ? pool : LIST).id;
   }
 
   return { LIST, BY, roll };

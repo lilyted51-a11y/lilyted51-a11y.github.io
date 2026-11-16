@@ -42,7 +42,10 @@ G.LevelUp = (() => {
     { id: 'dodge', icon: 'cursor', title: 'Esquiva',    desc: '3% de probabilidad de librarte de un golpe.',
       apply: pl => pl.dodge = Math.min(0.24, pl.dodge + 0.03), max: 8 },
     { id: 'luck', icon: 'coin', title: 'Racha de suerte', desc: '+10% de Pokémonedas en esta partida.',
-      apply: pl => pl.coinMul *= 1.10, max: 5 }
+      apply: pl => pl.coinMul *= 1.10, max: 5 },
+    // Sólo si ya puedes llevar tres (Mejoras Segundo y Tercer objeto).
+    { id: 'slot4', icon: 'bag', title: 'Cuarto objeto', desc: 'Puedes llevar un objeto más en esta partida.',
+      apply: pl => pl.itemSlots = 4, max: 1, rare: true, cond: pl => pl.itemSlots === 3 }
   ];
 
   /** n elementos distintos de list, cada uno con probabilidad según weight(x). */
@@ -131,7 +134,7 @@ G.LevelUp = (() => {
     // Cada mejora tiene un tope de veces (`max`): en partidas muy largas se
     // acumulaban sin fin (velocidad, recarga y experiencia por las nubes) y el
     // juego acababa colgándose. Las que piden una evolución salen siempre.
-    const room = s => !s.max || (pl.statsTaken[s.id] || 0) < s.max;
+    const room = s => (!s.max || (pl.statsTaken[s.id] || 0) < s.max) && (!s.cond || s.cond(pl));
     const pickStats = G.U.pickN(STATS.filter(s => !waiting[s.id] && room(s)), 6).concat(STATS.filter(s => waiting[s.id]));
     for (const s of pickStats) {
       const evoFor = waiting[s.id];

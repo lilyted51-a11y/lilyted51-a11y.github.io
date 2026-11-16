@@ -266,9 +266,11 @@ G.Judgment = (() => {
     G.Audio.sfx('land');
     if (A) G.FX.ring(A.x, A.y, 10, 1400, GOLD, 0.7, 8);
     if (!pl || !pl.item) return;
-    G.FX.dmgText(pl.x, pl.y - pl.bodyH - 16, '¡Objeto roto: ' + G.Items.BY[pl.item].name + '!', '#ffd25e', true);
+    // (Con varios objetos, se rompe el último que cogiste.)
+    const broken = pl.items[pl.items.length - 1];
+    G.FX.dmgText(pl.x, pl.y - pl.bodyH - 16, '¡Objeto roto: ' + G.Items.BY[broken].name + '!', '#ffd25e', true);
     G.FX.burst(pl.x, pl.y - pl.bodyH * 0.5, PALE, 26, 220);
-    pl.equip(null);
+    pl.unequip(broken);
   }
 
   // ---------------- cada fotograma ----------------

@@ -190,7 +190,8 @@ G.Coop = (() => {
       .map(m => [m[0], Math.floor(num(m[1], 1, 1, 99)), Math.round(num(m[2], 0, 0, 1e13)), Math.round(num(m[3], 0, 0, 86400)), m[4] ? 1 : 0]);
     const sk = typeof s.sk === 'string' && G.Skins && G.Skins.get(s.sk, dex) ? s.sk : '';
     return { dex, sh: s.sh === true, lv: Math.floor(num(s.lv, 1, 1, 9999)), t: Math.round(num(s.t, 0, 0, 86400)),
-             it: typeof s.it === 'string' && G.Items.BY[s.it] ? s.it : null, sk, mv };
+             it: typeof s.it === 'string' && G.Items.BY[s.it] ? s.it : null,
+             its: (Array.isArray(s.its) ? s.its : []).slice(0, 4).filter(x => typeof x === 'string' && G.Items.BY[x]), sk, mv };
   }
   /** La skin (Halloween) de un compañero, que va en su resumen: se le pone a su Pokémon. */
   function dressMate(u, c) { const m = mates.get(u); if (m && m.pl.anim && m.pl.dex === c.dex) m.pl.anim.skin = c.sk || null; }

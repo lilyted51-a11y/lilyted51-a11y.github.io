@@ -436,19 +436,30 @@ G.HUD = (() => {
 
     // ---------- objeto equipado (a la izquierda de los movimientos) ----------
     {
+      // Un cuadro por hueco (1 de serie; hasta 4): el primero, grande y con su nombre, pegado a los
+      // ataques; los demás, más pequeños, en una rejilla de 2 a su izquierda.
+      const slots = Math.max(1, pl.itemSlots || 1), items = pl.items || [];
+      const box = (x, y, s, id) => {
+        roundRect(ctx, x, y, s, s, s > 40 ? 12 : 8);
+        ctx.fillStyle = id ? 'rgba(40,30,10,.9)' : 'rgba(10,16,28,.55)';
+        ctx.fill();
+        ctx.lineWidth = id ? 2 : 1;
+        ctx.strokeStyle = id ? '#ffd23f' : 'rgba(140,170,210,.18)';
+        ctx.stroke();
+        if (id) { const k = Math.round(s * 0.64); G.Icons.draw(ctx, id, x + (s - k) / 2, y + (s - k) / 2, k); }
+      };
       const ix = sx - S - 18, iy = sy;
-      roundRect(ctx, ix, iy, S, S, 12);
-      ctx.fillStyle = pl.item ? 'rgba(40,30,10,.9)' : 'rgba(10,16,28,.55)';
-      ctx.fill();
-      ctx.lineWidth = pl.item ? 2 : 1;
-      ctx.strokeStyle = pl.item ? '#ffd23f' : 'rgba(140,170,210,.18)';
-      ctx.stroke();
-      if (pl.item) {
-        G.Icons.draw(ctx, pl.item, ix + (S - 36) / 2, iy + (S - 36) / 2, 36);
+      box(ix, iy, S, items[0]);
+      if (items[0] && slots === 1) {
         ctx.font = F(700, 9);
         ctx.textAlign = 'center';
         ctx.fillStyle = '#ffd23f';
-        ctx.fillText(G.Items.BY[pl.item].name, ix + S / 2, iy - 6);
+        ctx.fillText(G.Items.BY[items[0]].name, ix + S / 2, iy - 6);
+      }
+      const s2 = Math.floor((S - 4) / 2);
+      for (let i = 1; i < slots; i++) {
+        const col = Math.floor((i - 1) / 2), row = (i - 1) % 2;
+        box(ix - 6 - (col + 1) * s2 - col * 4, iy + row * (s2 + 4), s2, items[i]);
       }
     }
 

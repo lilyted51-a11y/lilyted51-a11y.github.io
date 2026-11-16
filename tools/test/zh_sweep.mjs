@@ -114,6 +114,9 @@ for (const t of ['Sin conexión: con tu cuenta, el gacha necesita internet.', 'S
 await canvas('partida (HUD, esferas, clima)');
 await A.ev(`window.__POKE_BOT_ON__ = false; G.RunUI.showItemChoice('leftovers', 'assaultvest', () => {}); 1`); await sleep(800); await grab('elegir objeto'); await A.ev(`document.querySelector('#item-cards .card').click(); 1`); await sleep(500);
 await A.ev(`(() => { const pl = G.Game.player; const loose = pl.slots.filter(s => s.length === 1).map(s => s[0]); if (loose.length >= 2) G.RunUI.showBond({ mode: 'pair', group: null, loose }, () => {}); return loose.length; })()`); await sleep(800); await grab('vínculo'); await A.ev(`G.UI.hide('scr-bond'); 1`);
+// Varios objetos a la vez (16-11-2026): la elección con los huecos llenos, y todos los objetos (nombre y lo que hacen) en la pausa.
+await A.ev(`G.RunUI.showItemChoice(['leftovers', 'metronome', 'heavyboots'], 'luckincense', () => {}); 1`); await sleep(800); await grab('elegir objeto (tres huecos)');
+await A.ev(`G.UI.hide('scr-item'); (() => { const p = G.Game.player; p.itemSlots = 40; for (const it of G.Items.LIST) p.equip(it.id); return p.items.length; })()`); await sleep(400);
 await A.ev(`G.Game.togglePause(); 1`); await sleep(800); await grab('pausa'); await A.ev(`G.Game.togglePause(); 1`); await sleep(300);
 await misses('partida');
 await A.ev(`(() => { const p = G.Game.player; p.invuln = 0; p.hurt(999999, null, true); return 1; })()`);

@@ -108,7 +108,8 @@ G.Weather = (() => {
     chipT -= dt;
     if (chipT <= 0) {
       chipT = 2;
-      if (pl && !pl.dead && hurts(pl.mon.types) && level() > 0.5) {
+      // (Gafa Protectora: ni la arena ni la nieve te desgastan.)
+      if (pl && !pl.dead && hurts(pl.mon.types) && level() > 0.5 && !pl.hasItem('safetygoggles')) {
         const d = Math.max(1, pl.maxHp * 0.012);
         if (pl.hp > d + 1) {
           pl.hp -= d;

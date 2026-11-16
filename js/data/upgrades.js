@@ -15,11 +15,16 @@ G.Upgrades = (() => {
     { id: 'moves',  icon: 'cards', name: 'Repertorio',     unit: 'Empiezas con 2 movimientos', max: 1, base: 1500, grow: 1 },
     { id: 'crit',   icon: 'star', name: 'Golpe Crítico',  unit: '+3% de críticos (x1,5 de daño)', max: 10, base: 90, grow: 1.4 },
     { id: 'reroll', icon: 'up', name: 'Cambio de cartas', unit: '+1 cambio de cartas de nivel por run', max: 5, base: 150, grow: 1.6 },
-    { id: 'ban',    icon: 'ban', name: 'Veto',           unit: 'Bloquea 1 movimiento: no te sale en las cartas', max: 3, base: 300, grow: 1.9 },
+    // (Hasta 5 desde el 16-11-2026, que ya hay muchos movimientos; antes 3.)
+    { id: 'ban',    icon: 'ban', name: 'Veto',           unit: 'Bloquea 1 movimiento: no te sale en las cartas', max: 5, base: 300, grow: 1.9 },
     // 19-10-2026: se compra una vez y luego se elige gratis (save.pstart, ver G.startMoveOf).
     { id: 'start',  icon: 'cursor', name: 'Movimiento inicial', unit: 'Eliges con qué ataque empiezas la partida', max: 1, base: 400, grow: 1 },
     // 20-10-2026: igual, para el segundo de Repertorio (save.pstart2, ver G.startMove2Of). Sin Repertorio no se compra.
-    { id: 'start2', icon: 'cursor', name: 'Segundo movimiento inicial', unit: 'Eliges el segundo ataque con el que empiezas (necesita Repertorio)', max: 1, base: 400, grow: 1, needs: 'moves' }
+    { id: 'start2', icon: 'cursor', name: 'Segundo movimiento inicial', unit: 'Eliges el segundo ataque con el que empiezas (necesita Repertorio)', max: 1, base: 400, grow: 1, needs: 'moves' },
+    // 16-11-2026 (como la Gran Actualización del juego oficial): más daño de los críticos y más objetos a la vez.
+    { id: 'critd',  icon: 'up', name: 'Crítico Potente', unit: '+5% de daño de los críticos', max: 10, base: 90, grow: 1.4 },
+    { id: 'item2',  icon: 'bag', name: 'Segundo objeto', unit: 'Puedes llevar 2 objetos a la vez en la partida', max: 1, base: 10000, grow: 1 },
+    { id: 'item3',  icon: 'bag', name: 'Tercer objeto',  unit: 'Mejora legendaria: puedes llevar 3 objetos a la vez (necesita Segundo objeto)', max: 1, base: 30000, grow: 1, needs: 'item2' }
   ];
   const BY = {};
   for (const u of LIST) BY[u.id] = u;
@@ -46,7 +51,10 @@ G.Upgrades = (() => {
       startMoves: 1 + L('moves'),
       crit: L('crit') * 0.03,
       rerolls: L('reroll'),
-      bans: L('ban')
+      bans: L('ban'),
+      critBonus: L('critd') * 0.05,
+      item2: L('item2'),
+      item3: L('item3')
     };
   }
 
