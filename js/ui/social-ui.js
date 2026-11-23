@@ -406,7 +406,7 @@
       G.Social.refreshMember();
       await G.Social.freshMembers();          // el Pokémon actual de cada uno
       const cfg = {
-        k: 'start', seed: Math.floor(Math.random() * 1e6), host: room.host,
+        k: 'start', seed: Math.floor(Math.random() * 1e6), host: room.host, mode: G.Modes.chosen(),
         members: room.members.map(m => ({ uid: m.uid, name: m.name, dex: m.dex, shiny: !!m.shiny }))
       };
       G.Social.setOpen(false);

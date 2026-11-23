@@ -1286,5 +1286,14 @@ G.I18n.add({
   "¡Un enjambre de Combee!": "A swarm of Combee!",
   "¡Munchlax está lleno! Te regala un objeto y un Caramelo Exp.": "Munchlax is full! It gives you an item and an Exp. Candy",
   "Arbusto": "Bush",
-  "MUNCHLAX · {x}/{x} · {x} s": "MUNCHLAX · {x}/{x} · {x} s"
+  "MUNCHLAX · {x}/{x} · {x} s": "MUNCHLAX · {x}/{x} · {x} s",
+  // 23-11-2026 (copia local): dificultades
+  "Difícil": "Hard",
+  "Enemigos algo más flojos; ningún golpe te quita más de un cuarto de la vida.": "Slightly weaker enemies; no hit takes more than a quarter of your health.",
+  "El reto de siempre: ×1,5 Pokémonedas y tickets.": "The usual challenge: ×1.5 Pokécoins and tickets.",
+  "Más vida, más daño y más enemigos a la vez: ×2 Pokémonedas y tickets.": "More health, more damage and more enemies at once: ×2 Pokécoins and tickets.",
+  "Vence a Eternatus en Normal para desbloquearlo": "Beat Eternatus on Normal to unlock it",
+  "Vence a Eternatus en Difícil para desbloquearlo": "Beat Eternatus on Hard to unlock it",
+  "¡Desbloqueado el modo {x}!": "Unlocked {x} mode!",
+  "×{x} {x}": "×{x} {x}"
 });

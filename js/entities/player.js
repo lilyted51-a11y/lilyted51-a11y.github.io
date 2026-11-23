@@ -397,7 +397,8 @@ G.Player = class Player {
     // Con un ataque cuerpo a cuerpo activo se recibe un 25 % menos: hay que
     // estar encima de los enemigos para pegar (iban muy por detrás).
     const close = this.activeGroup().some(m => m.kind === 'melee') ? 0.75 : 1;
-    const d = pure ? Math.max(1, amount) : Math.max(1, amount * (1 - this.reduction) * close);
+    // Ningún golpe quita más de un % de la vida (según la dificultad: systems/modes.js); Arceus (pure), aparte.
+    const d = pure ? Math.max(1, amount) : Math.min(this.maxHp * G.Modes.cap, Math.max(1, amount * (1 - this.reduction) * close));
     this.hp -= d;
     this.invuln = 0.45;
     this.flash = 0.14;

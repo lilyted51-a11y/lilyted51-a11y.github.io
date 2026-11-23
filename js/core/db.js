@@ -101,6 +101,8 @@ G.DB = (() => {
       tickets: { t1: 0, t10: 0 },   // tickets del gacha (x1 y x10)
       pity: {},               // generación del banner -> tiradas sin ★5
       legends: {},            // dex -> fecha: legendarios vencidos en grietas
+      mode: 'normal',         // dificultad elegida en el menú (systems/modes.js)
+      modes: {},              // dificultades desbloqueadas: hard / nightmare -> fecha
       arenas: {},             // tipo -> fecha: arenas de grieta ganadas
       itemsFound: {},         // id -> fecha: objetos equipables encontrados
       evoMoves: {},           // id -> fecha: movimientos evolucionados alguna vez
@@ -392,7 +394,7 @@ G.DB = (() => {
       }
     }
     // Lo conseguido nunca se pierde: unión de legendarios, arenas, objetos, logros...
-    for (const coll of ['legends', 'arenas', 'itemsFound', 'evoMoves', 'ach', 'skins']) {
+    for (const coll of ['legends', 'arenas', 'itemsFound', 'evoMoves', 'ach', 'skins', 'modes']) {
       r[coll] = r[coll] || {};
       for (const k in older[coll] || {}) if (!r[coll][k]) r[coll][k] = older[coll][k];
     }

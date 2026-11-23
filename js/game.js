@@ -206,6 +206,7 @@ G.Game = (() => {
     holdBy = []; awayBy = null; awayNote = ''; pausedByHost = false;
     // Halloween (systems/halloween.js): lo que sea al empezar vale toda la partida (en grupo, lo dice el anfitrión).
     G.Halloween.runStart(coop ? coop.hw : undefined);
+    G.Modes.start(coop ? coop.mode : null);             // la dificultad (en grupo, la del anfitrión)
     const save = G.DB.save;
     // Con su naturaleza aplicada (una copia: ver systems/mons.js).
     const mon = G.Mons.monFor(save.partner);
@@ -524,11 +525,19 @@ G.Game = (() => {
     const boosted = !!(pl.boost && pl.boost.grow);          // paquete "todo"
     const ck = boosted ? 1 : G.Boost.k('coins');             // ventaja suelta: monedas ×k
     const survival = boosted ? Math.floor(time) * 10000 : 0;
-    const coins = Math.round((parts.tiempo + parts.derrotados + parts.jefes + parts.recogidas) * mul * (boosted ? 5 : ck)) + survival;
+    const mk = G.Modes.reward;                                  // Difícil ×1,5, Pesadilla ×2 (systems/modes.js)
+    const coins = Math.round((parts.tiempo + parts.derrotados + parts.jefes + parts.recogidas) * mul * (boosted ? 5 : ck) * mk) + survival;
     const record = time > save.stats.bestTime;
 
     save.coins += coins;
     bankTickets(false);
+    // Y los tickets de la partida, también con la dificultad (lo que falta hasta ×1,5 o ×2).
+    if (mk > 1) {
+      const b1 = Math.round(pl.t1 * (mk - 1)), b10 = Math.round(pl.t10 * (mk - 1));
+      save.tickets = save.tickets || { t1: 0, t10: 0 };
+      save.tickets.t1 += b1; save.tickets.t10 += b10;
+      pl.t1 += b1; pl.t10 += b10; banked.t1 += b1; banked.t10 += b10;
+    }
     G.Halloween.runEnd();
     save.stats.runs++;
     save.pused = save.pused || {};
@@ -565,7 +574,7 @@ G.Game = (() => {
         .sort((a, b) => b.me - a.me),
       moves: pl.moves, caught,
       breakdown: Object.entries(parts).filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(' · ') +
-                 (mul > 1 ? ` · ×${mul.toFixed(2)} Fortuna` : '') + (boosted ? ' · ×5 · +' + survival.toLocaleString() + ' (' + Math.floor(time) + ' s × 10000)' : ck > 1 ? ' · ×' + ck : '')
+                 (mul > 1 ? ` · ×${mul.toFixed(2)} Fortuna` : '') + (mk > 1 ? ' · ' + G.I18n.f('×{x} {x}', String(mk).replace('.', ','), G.T(G.Modes.cur.name)) : '') + (boosted ? ' · ×5 · +' + survival.toLocaleString() + ' (' + Math.floor(time) + ' s × 10000)' : ck > 1 ? ' · ×' + ck : '')
     }, () => { pl = null; G.Flow.afterRun(); });
   }
 

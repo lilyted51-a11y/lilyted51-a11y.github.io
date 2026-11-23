@@ -1164,3 +1164,12 @@ html:lang(zh) .btn, html:lang(zh) .chip { letter-spacing: 0; }
   .topbar .btn.small { padding: 2px 4px; }
   .topbar img { width: 14px; height: 14px; }
 }
+
+/* Dificultad en el menú principal (systems/modes.js) */
+.mode-pick { margin: -2px 0 10px; text-align: center; }
+.mode-pick .seg { margin: 0 auto 4px; }
+.mode-pick .seg button { min-width: 84px; }
+.mode-pick .seg button.on { background: color-mix(in srgb, var(--mc) 26%, transparent); color: var(--mc); }
+.mode-pick .seg button.locked { opacity: .5; }
+.mode-pick .seg small { font-size: 10px; opacity: .85; }
+.mode-sub { font-size: 12px; color: var(--muted); min-height: 15px; }

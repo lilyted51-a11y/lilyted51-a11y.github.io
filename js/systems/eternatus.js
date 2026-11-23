@@ -134,7 +134,7 @@ G.Eternatus = (() => {
     const n = G.Game.everyone().length, t = G.Game.st.time;
     // Vida: unos 150 s de vuestro daño a un enemigo (como la de los legendarios de la Sentencia), con un mínimo.
     const dps = G.Judgment.singleDps ? G.Judgment.singleDps() : 0;
-    const hp = maxHp || Math.round(Math.max(60000 + t * 40, dps * 150) * (n > 1 ? G.Coop.scaleHp(n) : 1));
+    const hp = maxHp || Math.round(Math.max(60000 + t * 40, dps * 150) * (n > 1 ? G.Coop.scaleHp(n) : 1) * G.Modes.hp);
     const dex = G.SPRITE_META[DEX] ? DEX : FALLBACK;
     const def = { dex, hp, spd: 0, dmg: 0, xp: Math.round(2500 + t), behavior: 'eternatus' };
     const e = new G.Enemy(def, center.x, center.y - TS() * 2, { hp: 1, spd: 1, dmg: 1 }, true);
@@ -494,6 +494,7 @@ G.Eternatus = (() => {
   // ---------------- victoria ----------------
 
   function won() {
+    G.Modes.beatEternatus();          // desbloquea la dificultad siguiente (systems/modes.js)
     if (G.Coop.isHost) G.Coop.broadcast(['et', 'w']);
     onWon();
     // El premio (en grupo, el del equipo: lo cuenta el anfitrión y llega a todos).
