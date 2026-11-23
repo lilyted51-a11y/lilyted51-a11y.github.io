@@ -110,6 +110,7 @@ G.DB = (() => {
       legends: {},            // dex -> fecha: legendarios vencidos en grietas
       mode: 'normal',         // dificultad elegida en el menú (systems/modes.js)
       modes: {},              // dificultades desbloqueadas: hard / nightmare -> fecha
+      unlocks: {},            // premios que no se venden -> fecha (rocketTrail: la estela Team Rocket del Casino Rocket)
       arenas: {},             // tipo -> fecha: arenas de grieta ganadas
       itemsFound: {},         // id -> fecha: objetos equipables encontrados
       evoMoves: {},           // id -> fecha: movimientos evolucionados alguna vez
@@ -213,6 +214,7 @@ G.DB = (() => {
         else s[k][d] = [e[0], num(e[1])];
       }
     }
+    if (!isObj(s.unlocks)) s.unlocks = {};
     // Skins: las que existen; la puesta, de ese Pokémon ('' = ninguna) y con su fecha.
     if (!isObj(s.skins)) s.skins = {};
     for (const id of Object.keys(s.skins)) if ((G.Skins && !G.Skins.SKINS[id]) || !Number.isFinite(+s.skins[id])) delete s.skins[id];
@@ -433,7 +435,7 @@ G.DB = (() => {
       }
     }
     // Lo conseguido nunca se pierde: unión de legendarios, arenas, objetos, logros...
-    for (const coll of ['legends', 'arenas', 'itemsFound', 'evoMoves', 'ach', 'skins', 'modes', 'trails']) {
+    for (const coll of ['legends', 'arenas', 'itemsFound', 'evoMoves', 'ach', 'skins', 'modes', 'trails', 'unlocks']) {
       r[coll] = r[coll] || {};
       for (const k in older[coll] || {}) if (!r[coll][k]) r[coll][k] = older[coll][k];
     }

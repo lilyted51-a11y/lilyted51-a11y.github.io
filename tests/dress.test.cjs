@@ -22,10 +22,12 @@ function load() {
   return G;
 }
 
-test('catálogo: 56 estelas con id único, formas y precios por rareza', () => {
+test('catálogo: 56 estelas a la venta + la del Team Rocket (no se vende), id único, formas y precios por rareza', () => {
   const G = load(), T = G.Trails;
-  assert.equal(T.LIST.length, 56);
-  assert.equal(new Set(T.LIST.map(t => t.id)).size, 56);
+  assert.equal(T.LIST.filter(t => t.rar <= 4).length, 56);
+  assert.equal(T.LIST.length, 57);
+  assert.equal(T.BY.rocket.rar, 5);
+  assert.equal(new Set(T.LIST.map(t => t.id)).size, 57);
   for (const t of T.LIST) {
     assert.ok(t.em.length || t.ribbon || t.after, t.id + ' no deja nada');
     assert.equal(t.price, T.PRICE[t.rar], t.id);

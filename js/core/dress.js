@@ -100,6 +100,8 @@ G.Dress = (() => {
     const num = v => (Number.isFinite(+v) && +v > 0 ? Math.floor(+v) : 0);
     if (!s.trails || typeof s.trails !== 'object' || Array.isArray(s.trails)) s.trails = {};
     for (const id of Object.keys(s.trails)) if ((G.Trails && !G.Trails.BY[id]) || !Number.isFinite(+s.trails[id])) delete s.trails[id];
+    // La del Team Rocket se gana en el Casino Rocket (save.unlocks.rocketTrail, systems/casino.js).
+    if (s.unlocks && +s.unlocks.rocketTrail > 0 && !s.trails.rocket) s.trails.rocket = +s.unlocks.rocketTrail;
     if (!s.pdress || typeof s.pdress !== 'object' || Array.isArray(s.pdress)) s.pdress = {};
     for (const d of Object.keys(s.pdress)) {
       const e = s.pdress[d], v = Array.isArray(e) && e[0] && typeof e[0] === 'object' && !Array.isArray(e[0]) ? e[0] : null;

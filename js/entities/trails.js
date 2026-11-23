@@ -52,6 +52,7 @@ G.Trails = (() => {
     flower: ['.a.a.', 'aawaa', '.a.a.', '..o..', '.oo..'],
     fly:    ['aa...aa', 'aba.aba', '.aaoaa.', '.ab.ba.', '..a.a..'],
     bat:    ['a.....a', 'aa.o.aa', 'aaaoaaa', '.a...a.'],
+    rocketR:['aaaa.', 'abba.', 'ab.ba', 'abba.', 'ab.a.', 'ab.ba'],
     pebble: ['.aa.', 'abaa', '.oo.'],
     pumpkin:['..o..', '.aaa.', 'abaab', 'aaaaa', '.aaa.'],
     skull:  ['.aaa.', 'abaab', 'aoaoa', '.aaa.', '.a.a.'],
@@ -114,7 +115,8 @@ G.Trails = (() => {
     dragon: ['#1e0a50', '#7a3cff', '#c08aff', '#ffe8ff'],
     phoenix:['#7a1a00', '#ff5a1a', '#ffc040', '#fff6c0'],
     psy:    ['#5e0a3a', '#ff4f9a', '#ff9fcf', '#ffe8f3'],
-    abyss:  ['#08040e', '#2a1040', '#5a2a7a', '#9a6ab8']
+    abyss:  ['#08040e', '#2a1040', '#5a2a7a', '#9a6ab8'],
+    rocket: ['#14101c', '#d81e2e', '#ff5a5a', '#ffffff']
   };
   // Varias paletas para las que cambian de color en cada partícula.
   const MULTI = [P.pink, P.blue, P.yellow, P.green, P.autumn, P.toxic];
@@ -133,9 +135,10 @@ G.Trails = (() => {
    * gap: cada cuántos píxeles recorridos sale una tanda de n.
    * ribbon: cinta de colores que sigue el camino · after: sombras del sprite.
    */
-  const PRICE = { 1: 800, 2: 2000, 3: 4000, 4: 8000 };
-  const RAR_NAME = { 1: 'Común', 2: 'Rara', 3: 'Épica', 4: 'Legendaria' };
-  const RAR_COLOR = { 1: '#b8c4dc', 2: '#5fb4ff', 3: '#c47bff', 4: '#ffd23f' };
+  // Rareza 5 (Especial): no se vende; la del Team Rocket sale del Casino Rocket (systems/casino.js).
+  const PRICE = { 1: 800, 2: 2000, 3: 4000, 4: 8000, 5: 0 };
+  const RAR_NAME = { 1: 'Común', 2: 'Rara', 3: 'Épica', 4: 'Legendaria', 5: 'Especial' };
+  const RAR_COLOR = { 1: '#b8c4dc', 2: '#5fb4ff', 3: '#c47bff', 4: '#ffd23f', 5: '#ff5a5a' };
   const E = (shape, pal, mode, o = {}) => Object.assign({ shape, pal, mode, gap: 14, n: 1, life: [0.6, 1], size: 1 }, o);
   const LIST = [
     // Comunes
@@ -197,7 +200,9 @@ G.Trails = (() => {
     { id: 'fenix', name: 'Plumas de fénix', rar: 4, em: [E('feather', P.phoenix, 'fall', { gap: 12, life: [1, 1.5], size: 2 }), E('sq', P.ember, 'rise', { gap: 6, n: 2, life: [0.5, 0.9] })] },
     { id: 'psiquica', name: 'Onda psíquica', rar: 4, em: [E('ring', P.psy, 'ripple', { gap: 16, life: [0.8, 1.1] }), E('spark', P.psy, 'drift', { gap: 9, life: [0.4, 0.7] })] },
     { id: 'abismo', name: 'Abismo', rar: 4, after: 'abyss', em: [E('flame', P.abyss, 'rise', { gap: 10, life: [0.6, 1] })] },
-    { id: 'corazonesiris', name: 'Corazones arcoíris', rar: 4, em: [E('heart', [P.pink, P.blue, P.yellow, P.green, P.toxic, P.autumn], 'rise', { gap: 11, life: [1, 1.5] }), E('spark', P.white, 'drift', { gap: 10, life: [0.4, 0.7] })] }
+    { id: 'corazonesiris', name: 'Corazones arcoíris', rar: 4, em: [E('heart', [P.pink, P.blue, P.yellow, P.green, P.toxic, P.autumn], 'rise', { gap: 11, life: [1, 1.5] }), E('spark', P.white, 'drift', { gap: 10, life: [0.4, 0.7] })] },
+    // Especial: sólo del Casino Rocket (tres R en la Tragaperras Rocket)
+    { id: 'rocket', name: 'Team Rocket', rar: 5, ribbon: { cols: ['#14101c', '#d81e2e', '#14101c'], life: 0.4 }, em: [E('rocketR', P.rocket, 'rise', { gap: 24, life: [0.9, 1.3] }), E('spark', P.rocket, 'spray', { gap: 9, life: [0.25, 0.45] })] }
   ];
   const BY = {};
   for (const t of LIST) { t.price = PRICE[t.rar]; BY[t.id] = t; }
