@@ -165,7 +165,7 @@ G.Coop = (() => {
             local.dead ? 1 : 0, m ? m.id : '', m ? m.lvl : 1, r1(local.magnet), r2(local.aim), r2(local.xpMul),
             r2(local.reviveT || 0), api.choosing && api.choosing() ? 1 : 0, doneSeq,
             local.dex, local.shiny ? 1 : 0, api.watching ? api.watching() : '', r2((G.Camera && G.Camera.zoomTo) || 1),
-            G.Powers ? G.Powers.netCode(local) : 0];
+            G.Powers ? G.Powers.netCode(local) : 0, local.aura ? 1 : 0];
   }
 
   /** Número que llega por la red: si no es un número de verdad vale `def`, y si se pasa se queda en el tope. */
@@ -218,7 +218,8 @@ G.Coop = (() => {
              // copia local: Pokémon y shiny del compañero (cambio de Pokémon en la sala)
              dx: num(a[15], 0, 0, 1e6), sh: a[16] ? 1 : 0,
              wa: typeof a[17] === 'string' ? a[17].slice(0, 64) : '', zm: num(a[18], 1, 1, 1.5),
-             pw: Math.floor(num(a[19], 0, 0, 40)) };
+             pw: Math.floor(num(a[19], 0, 0, 40)),
+             au: a[20] === 1 ? 1 : 0 };            // aura de maestro (systems/mastery.js)
   }
 
   /** Anfitrión: dónde mira un invitado (él mismo, o el compañero vivo que mira estando caído). */

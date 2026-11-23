@@ -528,6 +528,8 @@ G.ShopUI = (() => {
   function render() {
     const box = $('shop-body');
     box.innerHTML = buyHtml();
+    // Fotos del día y marcos de la semana (ui/mastery-ui.js).
+    G.PhotoUI.shopSection(box, () => { Scene.cheer(); say(G.U.pick(['¡Muchas gracias!', '¡Gracias, vuelve pronto!'])); render(); });
     box.querySelectorAll('[data-buy]').forEach(b => {
       b.onclick = () => {
         const key = b.dataset.buy, r = G.Shop.buy(key);

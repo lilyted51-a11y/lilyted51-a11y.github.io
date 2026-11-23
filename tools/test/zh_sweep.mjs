@@ -50,11 +50,11 @@ const clickAll = async sel => { const n = await A.ev(`document.querySelectorAll(
 // ---------- menú y pantallas ----------
 await A.go(`http://localhost:8765/dev.html?dev&halloween=1`, 8000);
 await A.ev(`document.getElementById('tap-start').click(); 1`); await sleep(1200);
-await A.ev(`document.getElementById('scr-invite').classList.add('hidden'); G.DB.playAsGuest(); const s = G.DB.save; s.partner = 352; for (const d of [352, 94, 25, 1382, 150]) s.owned[d] = { at: 1 }; s.coins = 99999; s.tickets = { t1: 500, t10: 50 }; s.bag = { candy: 900, mint: 2, cap: 1, caph: 1 }; s.skins = { hat: Date.now(), 'bruja-gengar': Date.now() }; G.Skins.wear(s, 352, 'hat'); const u = G.DB.upgradesOf(352); for (const x of G.Upgrades.LIST) u[x.id] = x.max; G.UI.hideAll(); G.MenuUI.open(); 1`); await sleep(1500);
+await A.ev(`document.getElementById('scr-invite').classList.add('hidden'); G.DB.playAsGuest(); const s = G.DB.save; s.partner = 352; for (const d of [352, 94, 25, 1382, 150]) s.owned[d] = { at: 1 }; s.coins = 99999; s.tickets = { t1: 500, t10: 50 }; s.bag = { candy: 900, mint: 2, cap: 1, caph: 1 }; s.skins = { hat: Date.now(), 'bruja-gengar': Date.now() }; G.Skins.wear(s, 352, 'hat'); const u = G.DB.upgradesOf(352); for (const x of G.Upgrades.LIST) u[x.id] = x.max; s.mast = { 352: 60000, 94: 12000, 25: 300 }; s.mstat = { 352: { r: 40, t: 70000, k: 200000, a: 3, bt: 1900, b: 120, rf: 90, e: 2 } }; const ph = G.Photo.dailyPhotos()[0]; s.photos = { [ph.key]: Date.now() }; s.frames = { [G.Photo.weeklyFrames()[0]]: Date.now() }; G.UI.hideAll(); G.MenuUI.open(); 1`); await sleep(1500);
 await grab('menú'); await misses('menú');
-for (const go of ['dex', 'upgrades', 'shop', 'bag', 'gacha', 'goals', 'friends', 'rank', 'settings']) {
+for (const go of ['dex', 'upgrades', 'shop', 'bag', 'gacha', 'goals', 'friends', 'rank', 'mastery', 'settings']) {
   await A.ev(`G.UI.hideAll(); G.MenuUI.open(); 1`); await sleep(300);
-  const ok = await A.ev(`(() => { const b = document.querySelector('#scr-menu [data-go=${go}]'); if (b) b.click(); return !!b; })()`); await sleep(1800);
+  const ok = await A.ev(`(() => { const b = document.querySelector('#scr-menu [data-go=${go}]') || (${JSON.stringify(go)} === 'settings' && document.getElementById('btn-settings')); if (b) b.click(); return !!b; })()`); await sleep(1800);
   if (!ok) continue;
   await grab('pantalla ' + go);
   if (go === 'dex') { await A.ev(`G.MenuUI.openDex(); 1`); await sleep(1000); await grab('ficha Kecleon'); await clickAll('.mon-extra [data-extra]'); }
@@ -64,7 +64,28 @@ for (const go of ['dex', 'upgrades', 'shop', 'bag', 'gacha', 'goals', 'friends',
     await clickAll('#gacha-gens .gen-tab:not(.hidden)');
     await click('#pull-10'); await sleep(5000); await grab('gacha ×10 resultado'); await click('#pull-close');
   }
-  if (go === 'settings') await clickAll('#set-tabs .gen-tab');
+  if (go === 'settings') { await clickAll('#set-tabs .gen-tab'); await A.ev(`G.SettingsUI.close(); 1`); }
+  // Maestría (23-11-2026): la lista, buscar, la ficha con los premios (ponerse foto, título y marco) y una sin premios.
+  if (go === 'mastery') {
+    await A.ev(`(() => { const i = document.getElementById('mast-q'); i.value = 'zzz'; i.oninput(); return 1; })()`); await sleep(500); await grab('Maestría: buscar sin resultado');
+    await A.ev(`(() => { const i = document.getElementById('mast-q'); i.value = ''; i.oninput(); return 1; })()`); await sleep(500);
+    await click('#mast-list .mast-item'); await sleep(800); await grab('Maestría: ficha');
+    for (const k of ['photo', 'title', 'frame']) await click(`[data-eq=${k}]`);
+    await grab('Maestría: ficha con todo puesto');
+    await A.ev(`G.MasteryUI.open(25); 1`); await sleep(800); await grab('Maestría: ficha sin premios');
+    await A.ev(`G.MasteryUI.open(94); 1`); await sleep(800); await grab('Maestría: ficha con foto');
+    await click('#mast-back'); await sleep(500); await grab('Maestría: vuelta a la lista');
+  }
+  // Perfil con foto y marco (23-11-2026): el perfil, elegir cara, expresiones, marcos y el perfil público.
+  if (go === 'goals') {
+    await click('#goals-tabs [data-tab=profile]'); await sleep(800); await grab('perfil');
+    await click('[data-ph=photo]'); await sleep(800); await grab('perfil: elegir cara');
+    await click('#ph-grid [data-d="94"]'); await sleep(800); await grab('perfil: expresiones');
+    await click('#ph-back'); await click('#ph-back'); await sleep(500);
+    await click('[data-ph=frame]'); await sleep(800); await grab('perfil: marcos');
+    await click('#ph-back'); await sleep(500);
+    await A.ev(`G.ProfileUI.showData(G.Social.profileData()); 1`); await sleep(800); await grab('perfil público'); await A.ev(`document.getElementById('scr-profile').classList.add('hidden'); 1`);
+  }
   if (go === 'rank') { await clickAll('#rk-mode button'); await clickAll('#rk-period button'); await clickAll('#rk-scope button'); }
   if (go === 'friends') { await click('#fr-create'); await sleep(500); await grab('crear sala'); await click('section.scr [data-no]'); }
   await misses('pantalla ' + go);
@@ -174,6 +195,8 @@ await A.ev(`(() => { clearInterval(window.__etHeal); const p = G.Game.player; p.
 await A.ev(`(() => { const p = G.Game.player; p.invuln = 0; p.hurt(999999, null, true); return 1; })()`);
 for (let i = 0; i < 20; i++) { await sleep(1000); if ((await A.ev(`G.Game.state`)) === 'over') break; }
 await sleep(2500); await grab('fin de partida'); await misses('fin de partida'); await canvas('fin de partida');
+await A.ev(`(() => { const o = document.getElementById('over-stats'); o.insertAdjacentHTML('afterbegin', G.RunUI.masteryLine({ dex: 352, pts: 1234, total: 61234, got: G.Mastery.TIERS })); return 1; })()`); await sleep(800);
+await grab('fin de partida: maestría'); await misses('fin de partida: maestría');
 
 // ---------- resultado ----------
 const list = [...found.entries()];

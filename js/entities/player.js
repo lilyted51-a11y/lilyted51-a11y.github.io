@@ -730,6 +730,7 @@ G.Player = class Player {
       ctx.restore();
     }
 
+    if (G.Mastery) G.Mastery.drawAura(ctx, this);     // aura de maestro (100.000 de maestría)
     const alpha = this.invuln > 0 && !this.dead ? (Math.floor(this.invuln * 18) % 2 ? 0.45 : 1) : 1;
     this.anim.draw(ctx, this.x, this.y, { flash: this.flash > 0, softFlash: true, alpha, color: '#ffcb3d' });
     if (G.Powers) G.Powers.drawOn(ctx, this);          // aura del poder y corona Tera

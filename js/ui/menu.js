@@ -18,7 +18,7 @@ G.MenuUI = (() => {
   }
 
   function init() {
-    const ICON = { play: 'ball', dex: 'book', upgrades: 'up', shop: 'shop', bag: 'bag', gacha: 'ball4', goals: 'medal3', friends: 'friends', rank: 'trophy', settings: 'gear' };
+    const ICON = { play: 'ball', dex: 'book', upgrades: 'up', shop: 'shop', bag: 'bag', gacha: 'ball4', goals: 'medal3', friends: 'friends', rank: 'trophy', settings: 'gear', mastery: 'mastery' };
     document.querySelectorAll('#scr-menu [data-go]').forEach(b => {
       b.insertAdjacentHTML('afterbegin', `<span class="mi-ico">${G.Icons.html(ICON[b.dataset.go], 26)}</span>`);
       b.dataset.sfx = b.dataset.go === 'play' ? 'confirm' : 'click';
@@ -34,6 +34,7 @@ G.MenuUI = (() => {
         else if (go === 'friends') G.FriendsUI.open();
         else if (go === 'rank') G.RankingUI.open();
         else if (go === 'settings') G.SettingsUI.open();
+        else if (go === 'mastery') G.MasteryUI.open();
       };
     });
     document.querySelectorAll('[data-back]').forEach(b => { b.onclick = open; });
@@ -61,6 +62,11 @@ G.MenuUI = (() => {
     $('menu-partner').classList.toggle('shiny', shiny);
     $('menu-partner-name').innerHTML = mon.name + (shiny ? ' ' + G.Icons.html('shiny', 24) : '');
     $('menu-partner-info').innerHTML = G.UI.typeChips(mon.types) + ' ' + G.UI.stars(mon.rarity);
+    // Maestría del compañero (lleva a su ficha en Maestría).
+    $('menu-mast').innerHTML = G.MasteryUI.miniHtml(mon.dex);
+    G.MasteryUI.wire($('menu-mast'));
+    const mastN = Object.keys(s.mast || {}).filter(d => G.Mastery.level(+d) > 0).length;
+    if ($('menu-mast-sub')) $('menu-mast-sub').textContent = mastN ? G.I18n.f('Premios con {x} Pokémon', mastN) : G.T('Tus Pokémon y sus premios');
     // Normal / shiny a mano, aquí mismo (en el móvil no se encontraba en la ficha).
     const seg = $('menu-shiny');
     seg.classList.toggle('hidden', !G.DB.ownsShiny(mon.dex));
@@ -379,6 +385,7 @@ G.MenuUI = (() => {
         ${bar('Defensa', q.df, max.def, Math.round(q.df), 'df')}
         ${bar('Def. Esp.', q.sd, max.def, Math.round(q.sd), 'sd')}
         ${bar('Velocidad', q.spd, max.spd, Math.round(q.spd), 'spd')}
+        ${giftTo ? '' : G.MasteryUI.miniHtml(dex)}
         <p class="sub center" style="margin:6px 0 0">Pega mejor con ataques <b class="gold">${G.Stats.sideOf(q) === 'special' ? 'especiales' : 'físicos'}</b></p>
         ${startNote(q)}
         ${monExtras(dex)}
@@ -423,6 +430,7 @@ G.MenuUI = (() => {
       renderGrid(true); showDetail(dex);
     };
     if (own) wireExtras(dex, box);
+    G.MasteryUI.wire(box);
   }
 
   // ---------------- ficha: lo que hace cada ataque (24-10-2026) ----------------
