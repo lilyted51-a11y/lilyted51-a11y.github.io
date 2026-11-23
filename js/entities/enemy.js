@@ -857,6 +857,7 @@
     function add(e) {
       list.push(e);
       byId.set(e.id, e);
+      if (G.DexLog) G.DexLog.see(e);       // Pokédex de vistos (systems/dexlog.js)
       if (G.Coop.isHost) G.Coop.enemyAdded(e);
       return e;
     }
@@ -869,6 +870,7 @@
       const e = new Enemy(def, o.x, o.y, { hp: 1, spd: 1, dmg: 1 }, o.boss);
       e.id = o.id;
       e.remote = true;
+      if (G.DexLog) G.DexLog.see(e);
       if (o.shiny) e.makeShiny();
       e.maxHp = o.hp; e.hp = o.hp;
       if (o.beh === 'arceus') G.Judgment.dress(e);

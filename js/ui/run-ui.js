@@ -72,19 +72,22 @@ G.RunUI = (() => {
   }
 
   function reroll() {
-    if (!offers || rerollsLeft() <= 0) return;
+    if (!offers || rm || rerollsLeft() <= 0) return;
     const p = G.Game.player;
     p.rerolls = (p.rerolls || 0) + 1;
     G.Audio.sfx('select');
     renderCards(G.LevelUp.offer(p));
   }
 
-  function renderCards(list) {
+  function renderCards(list, step) {
     offers = list;
+    if (!step) rm = null;
     const left = rerollsLeft();
     $('lvl-rr-n').textContent = left;
-    // (Las cartas de evolución no se cambian: son las que son.)
-    $('lvl-reroll').classList.toggle('hidden', left <= 0 || list.some(c => c.type === 'evolve'));
+    // (Las cartas de evolución no se cambian: son las que son. Tampoco en los pasos del Quitamovimientos.)
+    $('lvl-reroll').classList.toggle('hidden', left <= 0 || !!step || list.some(c => c.type === 'evolve'));
+    $('lvl-step').classList.toggle('hidden', !step);
+    $('lvl-step').textContent = step || '';
     const box = $('cards');
     box.innerHTML = '';
     // Muchas cartas (las evoluciones de Eevee): en dos columnas y más juntas, para que quepan sin scroll.
@@ -94,6 +97,7 @@ G.RunUI = (() => {
       el.className = 'card';
       const tag = c.type === 'new'
         ? `<span class="tag-chip" style="background:${c.color}">Nuevo · ${c.tag}</span>${c.cat ? `<span class="tag-chip cat">${c.cat}</span>` : ''}`
+        : c.rm ? `${c.tag ? `<span class="tag-chip" style="background:${c.color}">${c.tag}</span>` : ''}${c.cat ? `<span class="tag-chip cat">${c.cat}</span>` : ''}`
         : c.type === 'up' || c.type === 'evo'
           ? `<span class="tag-chip" style="background:${c.color}">${c.tag}</span>`
           : `<span class="tag-chip" style="background:${c.color === '#ffd23f' ? '#ffd23f' : '#9fb1c9'}">${c.tag}</span>`;
@@ -122,6 +126,7 @@ G.RunUI = (() => {
 
   function pick(i) {
     if (!offers || !offers[i] || guarded()) return;
+    if ((offers[i].type === 'remove' && !offers[i].done) || offers[i].rm) { removeStep(offers[i]); return; }
     const c = offers[i], cb = offerCb;
     offers = null; offerCb = null;
     $('lvl-reroll').classList.add('hidden');
@@ -131,6 +136,63 @@ G.RunUI = (() => {
       $('cards').classList.add('done');
     } else G.UI.hide('scr-levelup');
     cb(c);
+  }
+
+  /*
+   * Quitamovimientos (23-11-2026, carta de levelup.js): dos pasos más en la misma pantalla,
+   * como el vínculo. 1) qué movimiento quitas; 2) qué pones en su hueco (otro de los de tu
+   * Pokémon: LevelUp.swapPool) o dejarlo libre. «Volver» deshace el paso. En grupo la partida
+   * sigue parada como con cualquier carta: hasta que eliges, los demás te esperan.
+   */
+  let rm = null;            // { card, base: cartas de nivel, from: movimiento que quitas }
+  function removeStep(c) {
+    const p = G.Game.player;
+    if (!p) return;
+    G.Audio.sfx('select');
+    if (c.type === 'remove') rm = { card: c, base: offers, from: null };
+    else if (c.rm === 'back') {
+      if (rm.from) rm.from = null;
+      else { const base = rm.base; rm = null; renderCards(base); return; }
+    } else if (c.rm === 'from') rm.from = c.move;
+    else {
+      // Hecho: la carta Quitamovimientos con lo elegido (apply la lleva a Player.swapMove).
+      const from = rm.from, id = c.rm === 'to' ? c.id : null, card = rm.card;
+      card.apply = pl => {
+        if (!pl.swapMove(from, id)) return;
+        G.FX.ring(pl.x, pl.y, 8, 110, '#ff9f6b', 0.7, 5);
+        G.Spawner.say(id ? G.I18n.f('{x} → {x}', G.T(from.name, 'move'), G.T(G.Moves.BY_ID[id].name, 'move'))
+                         : G.I18n.f('Has quitado {x}: queda un hueco libre', G.T(from.name, 'move')), 2.6, true);
+      };
+      // (Se queda a la vista lo elegido, como cualquier carta: en grupo, mientras eligen los demás.)
+      card.done = true;
+      card.desc = id ? G.I18n.f('{x} → {x}', G.T(from.name, 'move'), G.T(G.Moves.BY_ID[id].name, 'move'))
+                     : G.I18n.f('Has quitado {x}: queda un hueco libre', G.T(from.name, 'move'));
+      renderCards([card]);
+      pick(0);
+      return;
+    }
+    const back = { rm: 'back', key: 'rm:back', icon: 'cursor', color: '#8fa3c4', tag: '', title: 'Volver', desc: rm.from ? 'Elegir otro movimiento para quitar.' : 'Volver a las cartas.' };
+    let list;
+    if (!rm.from) {
+      list = p.moves.map(m => ({ rm: 'from', key: 'rm:from:' + m.id, move: m, icon: 'move:' + m.id, color: G.U.TYPE_COLOR[m.type],
+        tag: 'Nv.' + m.lvl, title: G.T(m.name, 'move'), desc: 'Quitar este movimiento.' }));
+    } else {
+      list = G.LevelUp.swapPool(p, rm.from).map(id => {
+        const d = G.Moves.BY_ID[id];
+        return { rm: 'to', key: 'rm:to:' + id, id, icon: 'move:' + id, color: G.U.TYPE_COLOR[d.type], tag: G.U.TYPE_NAME[d.type],
+                 cat: G.Stats.NAME[d.cat || (d.stat === 'patk' ? 'physical' : d.stat === 'satk' ? 'special' : '')] || '', title: G.T(d.name, 'move'), desc: d.desc };
+      });
+      if (p.moves.length >= 2) list.unshift({ rm: 'empty', key: 'rm:empty', icon: 'ban', color: '#8fa3c4', tag: 'Hueco libre', title: 'Dejar el hueco libre', desc: 'Podrás aprender otro movimiento en las cartas.' });
+    }
+    list.push(back);
+    renderCards(list, rm.from ? G.I18n.f('¿Qué pones en el hueco de {x}?', G.T(rm.from.name, 'move')) : G.T('¿Qué movimiento quitas?'));
+  }
+
+  /** Grupo (#45): se acabó el tiempo: la primera carta (si estabas en el Quitamovimientos, la primera de las otras). */
+  function pickFirst() {
+    if (rm) { const base = rm.base; rm = null; renderCards(base); }
+    const i = offers ? offers.findIndex(c => c.type !== 'remove') : -1;
+    pick(Math.max(0, i));
   }
 
   /** Cooperativo: quién falta por elegir. */
@@ -148,7 +210,7 @@ G.RunUI = (() => {
   }
 
   function closeLevelUp() {
-    offers = null; offerCb = null;
+    offers = null; offerCb = null; rm = null;
     $('cards').classList.remove('done');
     G.UI.hide('scr-levelup');
   }
@@ -460,5 +522,5 @@ G.RunUI = (() => {
     $('btn-quit').onclick = onQuit;
   }
 
-  return { showLevelUp, reroll, showItemChoice, showChoice, pickChoice, showBond, pickBond, bondBack, pick, setWaiting, closeLevelUp, showOver, wirePause, showPause };
+  return { showLevelUp, reroll, showItemChoice, showChoice, pickChoice, showBond, pickBond, bondBack, pick, pickFirst, setWaiting, closeLevelUp, showOver, wirePause, showPause };
 })();

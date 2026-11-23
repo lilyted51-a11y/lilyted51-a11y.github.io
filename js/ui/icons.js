@@ -20,6 +20,14 @@ G.Icons = (() => {
     tm: { pal: { b: '#7f93ff', d: '#4a5bc4', w: '#e6ecff' }, rows: [
       '....kkkk....', '..kkbbbbkk..', '.kbbwwbbbbk.', '.kbwwbbbbbk.', 'kbbwbkkbbbbk', 'kbbbk..kbbbk',
       'kbbbk..kbbbk', 'kbbbbkkbbbdk', '.kbbbbbbbdk.', '.kbbbbbbddk.', '..kkbbddkk..', '....kkkk....'] },
+    // MT vacía (23-11-2026): la misma MT, gris (borra una MT enseñada).
+    tmx: { pal: { b: '#c3cad6', d: '#7d8696', w: '#ffffff' }, rows: [
+      '....kkkk....', '..kkbbbbkk..', '.kbbwwbbbbk.', '.kbwwbbbbbk.', 'kbbwbkkbbbbk', 'kbbbk..kbbbk',
+      'kbbbk..kbbbk', 'kbbbbkkbbbdk', '.kbbbbbbbdk.', '.kbbbbbbddk.', '..kkbbddkk..', '....kkkk....'] },
+    // Quitamovimientos (23-11-2026, carta de nivel): dos flechas, un ataque sale y otro entra.
+    swap: { pal: { a: '#ff9f6b', b: '#7fd6ff' }, rows: [
+      '...k........', '..kak.......', '.kaakkkkkk..', 'kaaaaaaaaak.', '.kaakkkkkk..', '..kak.......',
+      '.......kbk..', '..kkkkkkbbk.', '.kbbbbbbbbbk', '..kkkkkkbbk.', '.......kbk..', '............'] },
     mint: { pal: { g: '#5fe08a', w: '#d6ffe2' }, rows: [
       '............', '.......kkk..', '.....kkgggk.', '....kgggwgk.', '...kgggwggk.', '..kgggwgggk.',
       '..kggwgggk..', '.kggwgggk...', '.kgwgggk....', '.kwkkkk.....', 'kk..........', 'k...........'] },

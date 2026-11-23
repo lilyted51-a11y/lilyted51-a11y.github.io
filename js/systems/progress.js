@@ -171,6 +171,7 @@ G.Progress = (() => {
 
   /** Un enemigo ha caído (anfitrión, solitario o copia en el invitado). */
   function kill(e) {
+    if (G.DexLog) G.DexLog.kill(e);         // Pokédex de derrotados (systems/dexlog.js)
     // Los legendarios de la Sentencia de Arceus no cuentan como jefes (ni para
     // misiones ni para logros de jefes): tienen su propio contador.
     if (G.Judgment.active && e.boss) { G.Judgment.bossDown(); event('kill', { types: e.types || [], boss: false, legend: 0 }); return; }

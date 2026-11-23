@@ -2,7 +2,8 @@
  * (20-10-2026, del PR #236 de TheAdro7, adaptado: sin niveles ni caramelos.)
  *
  * Se compra con Pokémonedas y lo comprado va a la Mochila:
- *   save.bag[id]     Menta, Cápsula Habilidad y Cápsula Habilidad Oculta
+ *   save.bag[id]     Menta, Cápsula Habilidad, Cápsula Habilidad Oculta y MT vacía
+ *                    (23-11-2026: borra una MT enseñada, G.Mons.forget)
  *   save.tms[move]   MT sin usar (cada una se gasta al enseñarla: G.Mons.teach)
  * Las dos van en la libreta de las monedas (core/db.js): lo gastado en un
  * aparato no reaparece al fusionar con otro.
@@ -19,11 +20,13 @@ G.Shop = (() => {
             desc: 'Cambia la habilidad de un Pokémon por otra de las suyas (no la oculta).' },
     caph: { name: 'Cápsula Habilidad Oculta', icon: 'capsuleh', price: 5000, hidden: true,
             desc: 'Cambia la habilidad de un Pokémon por cualquiera de las suyas, también la oculta.' },
+    tmx:  { name: 'MT vacía', icon: 'tmx', price: 1000,
+            desc: 'Borra una MT que le hayas enseñado a un Pokémon. Si tenías ese ataque vetado, se quita también el veto.' },
     // Halloween (25-10-2026): no se vende; se consigue jugando esos días y se gasta en las skins.
     candy: { name: 'Caramelo de Halloween', icon: 'candy', price: 0, event: true,
              desc: 'Lo sueltan los Pokémon Fantasma y las calabazas en Halloween. Con ellos se compran las skins de bruja en la Tienda Kecleon.' }
   };
-  const ORDER = ['mint', 'cap', 'caph'];
+  const ORDER = ['mint', 'cap', 'caph', 'tmx'];
   const DAILY = 8;
 
   const save = () => G.DB.save;

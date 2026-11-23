@@ -660,7 +660,7 @@ G.ShopUI = (() => {
       return `<p class="sub center" style="margin:24px 0">${G.T('Tu Mochila está vacía.')}<br><br>
             <button class="btn gold" data-go-shop>${G.Icons.html('shop', 16)} ${G.T('Ir a la Tienda Kecleon')}</button></p>` + irisHtml();
     }
-    let h = `<p class="sub" style="margin:10px 0">${G.T('Para usarlo, abre la colección, elige un Pokémon y pulsa Menta, Cápsula o Enseñar MT en su ficha.')}
+    let h = `<p class="sub" style="margin:10px 0">${G.T('Para usarlo, abre la colección, elige un Pokémon y pulsa Menta, Cápsula, Enseñar MT o MT vacía en su ficha.')}
       <button class="btn small" data-go-dex>${G.Icons.html('book', 14)} ${G.T('Ir a la colección')}</button></p><div class="upg">`;
     for (const id of items) {
       const it = G.Shop.ITEMS[id];

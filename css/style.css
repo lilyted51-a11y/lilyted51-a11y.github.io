@@ -1209,3 +1209,9 @@ html:lang(zh) .btn, html:lang(zh) .chip { letter-spacing: 0; }
   .trail-item canvas { width: 96px; height: auto; }
 }
 @media (max-width: 600px) { #scr-wardrobe { padding-top: 92px; } }
+
+/* Pokédex de vistos y derrotados (23-11-2026, systems/dexlog.js) */
+#dex-total .dex-log { font-size: 13px; margin-left: 6px; white-space: nowrap; }
+#dex-detail .dex-log { margin: 0 0 4px; font-size: 13px; }
+/* Quitamovimientos: el paso en el que estás (run-ui.js) */
+#lvl-step { margin: 0 0 8px; }
