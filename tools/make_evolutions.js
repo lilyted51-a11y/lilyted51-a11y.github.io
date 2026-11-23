@@ -29,9 +29,10 @@ const URL = 'https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/cs
   eval(fs.readFileSync(path.join(root, 'js/data/sprites-meta.js'), 'utf8'));
   const have = new Set(G.DEX.filter(p => p.dex <= 1025 && G.SPRITE_META[p.dex]).map(p => p.dex));
   const rows = fs.readFileSync(src, 'utf8').trim().split(/\r?\n/).slice(1).map(l => l.split(','));
-  const evo = {};
+  const evo = {}, baby = [];
   for (const r of rows) {
     const id = +r[0], from = +r[3];
+    if (r[11] === '1' && have.has(id)) baby.push(id);          // is_baby (Pichu, Togepi...)
     if (!from || !have.has(id) || !have.has(from)) continue;
     (evo[from] = evo[from] || []).push(id);
   }
@@ -41,11 +42,14 @@ const URL = 'https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/cs
  * A qué evoluciona cada Pokémon: número de la Pokédex -> los de sus evoluciones
  * (Eevee tiene varias). Datos de PokeAPI; sólo las que el juego tiene.
  * Lo usa la evolución en plena partida (entities/player.js, systems/levelup.js).
+ * G.EVO_BABY: los bebés (Pichu, Togepi...): no cuentan como «primera fase» de su familia
+ * (Pikachu empieza con su propia fuerza, no con la de Pichu: ver G.Mons.ladderFor).
  */
 G.EVOS = {
 ${body}
 };
+G.EVO_BABY = [${baby.sort((a, b) => a - b).join(', ')}];
 `;
   fs.writeFileSync(path.join(root, 'js/data/evolutions.js'), out);
-  console.log('ok:', keys.length, 'Pokémon con evolución,', keys.reduce((a, k) => a + evo[k].length, 0), 'evoluciones');
+  console.log('ok:', keys.length, 'Pokémon con evolución,', keys.reduce((a, k) => a + evo[k].length, 0), 'evoluciones,', baby.length, 'bebés');
 })().catch(e => { console.error(e.message); process.exit(1); });

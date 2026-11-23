@@ -1186,5 +1186,10 @@ G.I18n.add({
   "Puedes llevar un objeto más en esta partida.": "You can carry one more item this run.",
   "Llevas {x}: no te caben más": "You carry {x}: no room for more",
   "Quedarme con los que llevo": "Keep the ones I carry",
-  "Cambiar {x} por {x}": "Swap {x} for {x}"
+  "Cambiar {x} por {x}": "Swap {x} for {x}",
+  // 23-11-2026 (copia local): cartas sin tope, fuerza al empezar
+  "-8% de recarga en todos los movimientos (cada vez un poco menos).": "-8% cooldown on all moves (a little less each time).",
+  "Empieza la partida con {x} de vida.": "Starts the run with {x} HP.",
+  "Empieza con la fuerza de su primera fase ({x} de vida) y llega a la suya en el nivel 40.": "Starts with the strength of its first stage ({x} HP) and reaches its own at level 40.",
+  "Empieza con el 65 % de su fuerza ({x} de vida) y llega al 100 % en el nivel 40.": "Starts at 65% of its strength ({x} HP) and reaches 100% at level 40."
 });

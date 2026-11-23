@@ -5,6 +5,18 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-11-23', title: ["Más niveles, cartas sin límite y fuerza al empezar", "More levels, unlimited cards and starting strength"], chg: [
+    ["Subir de nivel cuesta un 25 % menos de experiencia que hasta ahora.",
+     "Levelling up now takes 25% less experience than before."],
+    ["Las cartas de mejora Vigor, Potencia, Carrera, Reflejos, Coraza, Síntesis, Imán, Ojo Crítico, Golpe Brutal y Cazador ya no tienen un número máximo de veces: siguen saliendo mientras te sirvan. Reflejos rebaja la recarga cada vez un poco menos, la parte de Coraza no pasa del 70 % y el crítico conserva sus topes.",
+     "The Vigor, Power, Sprint, Reflexes, Armor, Synthesis, Magnet, Critical Eye, Brutal Blow and Hunter upgrade cards no longer have a maximum number of uses: they keep showing up while they are useful. Reflexes cuts the cooldown a little less each time, Armor's share stays at 70% at most and critical hits keep their caps."],
+    ["Vuelve la carta Aprendizaje (+12 % de experiencia, hasta 15 veces). Sabiduría se queda como carta rara.",
+     "The Learning card is back (+12% experience, up to 15 times). Wisdom stays as a rare card."],
+    ["Cada Pokémon empieza la partida con una fuerza según su familia: los ya evolucionados, con la de su primera fase, y alcanzan la suya en el nivel 40; los que no evolucionan, con el 65 % y llegan al 100 % en el nivel 40. Los que evolucionan durante la partida no cambian. La ficha de cada Pokémon lo indica.",
+     "Each Pokémon starts a run with a strength that depends on its family: already-evolved ones start with that of their first stage and reach their own at level 40; those that do not evolve start at 65% and reach 100% at level 40. Those that evolve during the run are unchanged. Each Pokémon's sheet shows it."],
+    ["En grupo, el cofre con candado reparte su nivel entre los jugadores: medio nivel con dos, un tercio con tres, y así. En solitario sigue dando un nivel entero.",
+     "In a group, the locked chest splits its level between the players: half a level with two, a third with three, and so on. Solo, it still gives a whole level."]
+  ]},
   { d: '2026-11-16', title: ["Cartas, evolución y objetos: la partida cambia de ritmo", "Cards, evolution and items: runs change pace"], new: [
     ["Cada subida de nivel ofrece cuatro cartas para elegir (antes eran tres). Se pueden elegir con las teclas 1 a 4.",
      "Every level-up now offers four cards to pick from (it used to be three). You can pick them with keys 1 to 4."],

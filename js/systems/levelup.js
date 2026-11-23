@@ -14,31 +14,35 @@ G.LevelUp = (() => {
   const STATS = [
     { id: 'hp',   icon: 'heart', title: 'Vigor',        desc: '+20 de vida máxima (y la recupera).',
       apply: pl => pl.addMaxHp(20) },
+    // (23-11-2026, como el juego oficial: las de stat no tienen tope de veces; sólo dejan de salir cuando ya
+    //  no sirven: Coraza al 70 %, Ojo Crítico al 60 %, Golpe Brutal en ×3,5, Imán muy grande.)
     { id: 'atk',  icon: 'fist', title: 'Potencia',     desc: '+10% de daño con todos los movimientos.',
-      apply: pl => pl.atkMul *= 1.10, max: 40 },
+      apply: pl => pl.atkMul *= 1.10 },
     { id: 'spd',  icon: 'boot', title: 'Carrera',      desc: '+7% de velocidad de movimiento.',
-      apply: pl => pl.spdMul *= 1.07, max: 8 },
-    { id: 'cd',   icon: 'clock', title: 'Reflejos',     desc: '-8% de recarga en todos los movimientos.',
-      apply: pl => pl.cdMul *= 0.92, max: 10 },
+      apply: pl => pl.spdMul *= 1.07 },
+    // Cada vez un poco menos (la recarga nunca llega a cero): -8 %, -7,3 %, -6,7 %...
+    { id: 'cd',   icon: 'clock', title: 'Reflejos',     desc: '-8% de recarga en todos los movimientos (cada vez un poco menos).',
+      apply: pl => pl.cdMul *= 1 - 0.08 / (1 + 0.1 * (pl.statsTaken.cd || 0)) },
     { id: 'def',  icon: 'shield', title: 'Coraza',       desc: '+6% de reducción de daño recibido.',
-      apply: pl => pl.dmgReduce = Math.min(0.7, pl.dmgReduce + 0.06), max: 12 },
+      apply: pl => pl.dmgReduce = Math.min(0.7, pl.dmgReduce + 0.06), cond: pl => pl.dmgReduce < 0.7 },
     { id: 'rgn',  icon: 'sprout', title: 'Síntesis',     desc: '+0.9 de vida regenerada por segundo.',
       apply: pl => pl.regenFlat += 0.9 },
     { id: 'mag',  icon: 'magnet', title: 'Imán',         desc: '+30% de radio de recogida de experiencia.',
-      apply: pl => pl.magnet *= 1.30, max: 6 },
-    // (Antes «Aprendizaje», +12 % hasta 8 veces: con el nivel subiendo 3 veces más rápido, ahora es
-    //  una carta rara y de una sola vez.)
-    { id: 'xp',   icon: 'book', title: 'Sabiduría',    desc: '+15% de experiencia en esta partida (sólo una vez).',
+      apply: pl => pl.magnet *= 1.30, cond: pl => pl.magnet < 1600 },
+    // Aprendizaje (hasta 15 veces) y la rara Sabiduría (una vez), como el juego oficial desde el 23-11-2026.
+    { id: 'xp',   icon: 'book', title: 'Aprendizaje',  desc: '+12% de experiencia ganada.',
+      apply: pl => pl.xpMul *= 1.12, max: 15 },
+    { id: 'wis',  icon: 'book', title: 'Sabiduría',    desc: '+15% de experiencia en esta partida (sólo una vez).',
       apply: pl => pl.xpMul *= 1.15, max: 1, rare: true },
     { id: 'heal', icon: 'berry', title: 'Baya Zidra',   desc: 'Recupera el 45% de tu vida ahora mismo.',
       apply: pl => pl.heal(pl.maxHp * 0.45) },
     // Crítico: tope del 60 % de probabilidad y ×3,5 de daño (combat.js).
     { id: 'crit', icon: 'star', title: 'Ojo Crítico',   desc: '+2% de probabilidad de golpe crítico (tope: 60%).',
-      apply: pl => pl.critChance = Math.min(0.6, pl.critChance + 0.02), max: 20 },
+      apply: pl => pl.critChance = Math.min(0.6, pl.critChance + 0.02), cond: pl => pl.critChance < 0.6 },
     { id: 'critd', icon: 'up', title: 'Golpe Brutal',   desc: '+5% de daño en los golpes críticos (tope: ×3,5).',
-      apply: pl => pl.critBonus += 0.05, max: 20 },
+      apply: pl => pl.critBonus += 0.05, cond: pl => 1.5 + (pl.critBonus || 0) < 3.5 },
     { id: 'boss', icon: 'trophy', title: 'Cazador',     desc: '+8% de daño a jefes y legendarios.',
-      apply: pl => pl.bossMul += 0.08, max: 10 },
+      apply: pl => pl.bossMul += 0.08 },
     { id: 'dodge', icon: 'cursor', title: 'Esquiva',    desc: '3% de probabilidad de librarte de un golpe.',
       apply: pl => pl.dodge = Math.min(0.24, pl.dodge + 0.03), max: 8 },
     { id: 'luck', icon: 'coin', title: 'Racha de suerte', desc: '+10% de Pokémonedas en esta partida.',
@@ -178,7 +182,8 @@ G.LevelUp = (() => {
       icon: 'shield', color: '#8fa3c4', tag: 'Mejora',
       title: G.I18n.f('Seguir como {x}', G.T(from, 'mon')), desc: 'Mantiene su aspecto y su tipo. Sus stats suben igual.',
       apply: p => {
-        p.evolveTo(first.dex, true);
+        // (Si empezó más flojo, sube por su escalera de fuerza; si no, coge los stats de la evolución.)
+        if (p.ladder) p.stepLadder(); else p.evolveTo(first.dex, true);
         G.FX.ring(p.x, p.y, 8, 120, '#bfe8ff', 0.8, 5);
         G.Audio.sfx('levelup');
         G.Spawner.say(G.I18n.f('¡{x} se hace más fuerte!', G.T(from, 'mon')), 2.6, true);
@@ -192,7 +197,7 @@ G.LevelUp = (() => {
     if (pl.growDue && pl.growDue()) {
       const evos = pl.evoOptions();
       if (evos.length) return evolveCards(pl, evos);
-      pl.grow();
+      pl.stepLadder();
       G.FX.ring(pl.x, pl.y, 8, 120, '#bfe8ff', 0.8, 5);
       G.Spawner.say(G.I18n.f('¡{x} se hace más fuerte!', G.T(pl.mon.name, 'mon')), 2.6, true);
     }

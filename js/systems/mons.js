@@ -125,6 +125,54 @@ G.Mons = (() => {
     return true;
   }
 
+  // ---------------- fuerza al empezar la partida (23-11-2026, como el juego oficial) ----------------
+  /*
+   * Escalera de fuerza: con qué stats empieza tu Pokémon y a cuáles llega en los niveles 20 y 40
+   * (entities/player.js, stepLadder). → [al empezar, nivel 20, nivel 40] o null
+   *   - primera fase con evolución (Charmander, Pikachu): null, crece evolucionando (cartas)
+   *   - ya evolucionado (Charizard): empieza con la fuerza de su primera fase (Charmander), en el 20 la
+   *     de la fase de en medio y en el 40 la suya. Los bebés (Pichu) no cuentan como primera fase.
+   *   - sin evolución (Mewtwo): empieza con el 65 % de sus stats base y llega al 100 % en el 40.
+   * Con su naturaleza: la fuerza de las fases anteriores se saca en proporción a la suya.
+   */
+  let PRE = null, BABY = null;
+  function preOf(dex) {
+    if (!PRE) { PRE = {}; for (const [f, list] of Object.entries(G.EVOS || {})) for (const t of list) PRE[t] = +f; }
+    return PRE[dex] || 0;
+  }
+  /** La familia hasta él, de la primera fase (sin bebés) a él. */
+  function lineOf(dex) {
+    if (!BABY) BABY = new Set(G.EVO_BABY || []);
+    const out = [dex];
+    for (let d = preOf(dex); d && !BABY.has(d) && out.length < 4; d = preOf(d)) out.unshift(d);
+    return out;
+  }
+  const KEYS = ['hp', 'spd', 'pa', 'sa', 'df', 'sd'];
+  // (Vida y velocidad, en números enteros como las de G.DEX.)
+  const withAtk = o => Object.assign(o, { hp: Math.round(o.hp), spd: Math.round(o.spd), atk: Math.max(o.pa, o.sa) });
+  const statsOf = m => withAtk(Object.fromEntries(KEYS.map(k => [k, m[k]])));
+  const mix = (a, b, k) => withAtk(Object.fromEntries(KEYS.map(x => [x, a[x] + (b[x] - a[x]) * k])));
+  /** El k (0..1) de sus stats BASE, en las unidades del juego (tools/fetch_pokedex.py: vida = 70 + base × 0,45...). */
+  const weaken = (m, k) => withAtk({ hp: 70 + (m.hp - 70) * k, spd: 78 + (m.spd - 78) * k, pa: 0.70 + (m.pa - 0.70) * k,
+                                     sa: 0.70 + (m.sa - 0.70) * k, df: m.df * k, sd: m.sd * k });
+  /** Los stats de otra fase (dex) en proporción a los de `mon` (con su naturaleza). */
+  function asStage(mon, dex) {
+    const me = G.DEX_BY[mon.dex], st = G.DEX_BY[dex];
+    if (!me || !st) return statsOf(mon);
+    return withAtk(Object.fromEntries(KEYS.map(k => [k, me[k] ? mon[k] * st[k] / me[k] : mon[k]])));
+  }
+  function ladderFor(mon) {
+    if (!mon || !G.EVOS) return null;
+    const line = lineOf(mon.dex), evolves = !!(G.EVOS[mon.dex] || []).length, own = statsOf(mon);
+    if (line.length === 1) {
+      if (evolves) return null;
+      const s0 = weaken(mon, 0.65);
+      return [s0, mix(s0, own, 0.5), own];
+    }
+    const s0 = asStage(mon, line[0]);
+    return [s0, line.length >= 3 ? asStage(mon, line[line.length - 2]) : mix(s0, own, 0.5), own];
+  }
+
   return { name, natureOf, setNature, rolledNature, monFor, abilityOf, abilityChoices, setAbility, abilityName,
-           slots, taught, learnable, canLearn, teach, natural };
+           slots, taught, learnable, canLearn, teach, natural, ladderFor, lineOf };
 })();

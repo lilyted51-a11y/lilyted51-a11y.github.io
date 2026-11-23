@@ -324,6 +324,15 @@ G.MenuUI = (() => {
     return cell;
   }
 
+  /** Con qué fuerza empieza la partida (G.Mons.ladderFor). */
+  function startNote(q) {
+    const l = G.Mons.ladderFor(q), hp = Math.round(l ? l[0].hp : q.hp);
+    const txt = !l ? G.I18n.f('Empieza la partida con {x} de vida.', hp)
+      : G.Mons.lineOf(q.dex).length > 1 ? G.I18n.f('Empieza con la fuerza de su primera fase ({x} de vida) y llega a la suya en el nivel 40.', hp)
+      : G.I18n.f('Empieza con el 65 % de su fuerza ({x} de vida) y llega al 100 % en el nivel 40.', hp);
+    return `<p class="sub center" style="margin:2px 0 0">${txt}</p>`;
+  }
+
   // Variante que se está viendo en la ficha (normal o shiny).
   let viewShiny = false;
 
@@ -371,6 +380,7 @@ G.MenuUI = (() => {
         ${bar('Def. Esp.', q.sd, max.def, Math.round(q.sd), 'sd')}
         ${bar('Velocidad', q.spd, max.spd, Math.round(q.spd), 'spd')}
         <p class="sub center" style="margin:6px 0 0">Pega mejor con ataques <b class="gold">${G.Stats.sideOf(q) === 'special' ? 'especiales' : 'físicos'}</b></p>
+        ${startNote(q)}
         ${monExtras(dex)}
         ${p.types.length === 1 ? `<p class="sub center" style="margin:2px 0 0">Monotipo: +20 % de daño con sus ataques de tipo ${G.U.TYPE_NAME[p.types[0]]}</p>` : ''}
         <p style="font-size:14px;margin:10px 0 4px">Empieza con <b class="gold">${G.T(G.Moves.BY_ID[G.startMoveOf(dex)].name, 'move')}</b></p>

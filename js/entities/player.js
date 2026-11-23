@@ -105,10 +105,10 @@ G.Player = class Player {
   static get REVIVE_TIME() { return 3; }
 
   // (×2 y luego ×4 el 2026-10-10: se subía de nivel demasiado rápido.)
-  // (16-11-2026: un tercio, como el juego oficial. Se sube de nivel 3 veces más rápido; las cartas
-  //  de mejora tienen tope y la evolución llega en los niveles 20 y 40.)
+  // (×4 hasta el 16-11-2026; ×4/3 hasta el 23-11; ahora ×1, como el juego oficial: se sube de nivel
+  //  4 veces más rápido que al principio. La evolución llega en los niveles 20 y 40.)
   static xpFor(level) {
-    return Math.floor((8 + level * 6 + Math.pow(level, 1.75) * 1.6) * 4 / 3);
+    return Math.floor(8 + level * 6 + Math.pow(level, 1.75) * 1.6);
   }
 
   // ---------------- evolución en plena partida (16-11-2026) ----------------
@@ -138,6 +138,7 @@ G.Player = class Player {
       return true;
     }
     this.mon = to;
+    this.ladder = null;                  // (evolucionado: ya tiene la fuerza de su nueva forma)
     this.dex = to.dex;
     this.shiny = this.shiny && G.Sprites.hasShiny(to.dex);
     this.scale = G.Sprites.playerScale(to.dex);
@@ -149,7 +150,24 @@ G.Player = class Player {
     G.Sprites.preload([to.dex], 8000, this.shiny);
     return true;
   }
-  /** Los que no evolucionan: más vida, ataque y un poco de velocidad. */
+  /**
+   * Un paso de la escalera de fuerza (G.Mons.ladderFor: los ya evolucionados y los que no evolucionan
+   * empiezan más flojos y llegan a su fuerza en el nivel 40). Sin escalera, grow().
+   */
+  stepLadder() {
+    const t = this.ladder && this.ladder[Math.min(this.ladder.length - 1, this.grown + 1)];
+    if (!t) { this.grow(); return; }
+    const dHp = Math.max(0, Math.round(t.hp - this.mon.hp));
+    this.maxHp += dHp;
+    this.hp = Math.min(this.maxHp, this.hp + dHp + this.maxHp * 0.25);
+    this.baseSpd = Math.max(this.baseSpd, t.spd);
+    this.baseAtk = Math.max(this.baseAtk, t.atk);
+    const up = k => Math.max(this.mon[k] || 0, t[k] || 0);
+    this.mon = Object.assign({}, this.mon, { hp: up('hp'), spd: up('spd'), pa: up('pa'), sa: up('sa'), df: up('df'), sd: up('sd'), atk: up('atk') });
+    this.grown++;
+  }
+
+  /** Sin escalera ni evolución (p. ej. tras evolucionar a la última fase antes de tiempo): más vida y ataque. */
   grow() {
     const more = Math.round(this.maxHp * 0.12);
     this.maxHp += more;

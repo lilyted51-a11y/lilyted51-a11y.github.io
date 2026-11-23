@@ -231,7 +231,10 @@ G.Game = (() => {
     time = 0; pendingLevels = 0;
     runReal = performance.now(); tampered = false;
 
-    pl = new G.Player(mon, perks, !!save.partnerShiny && G.DB.ownsShiny(mon.dex));
+    // Fuerza al empezar (G.Mons.ladderFor): los ya evolucionados y los que no evolucionan empiezan más flojos.
+    const ladder = G.Mons.ladderFor(mon);
+    pl = new G.Player(ladder ? Object.assign({}, mon, ladder[0]) : mon, perks, !!save.partnerShiny && G.DB.ownsShiny(mon.dex));
+    pl.ladder = ladder;
     G.Orbs.reset();
     pl.setAbility(G.Mons.abilityOf(mon.dex).id);
     pl.anim.skin = G.Skins.worn(save, mon.dex) || null;      // su disfraz (core/skins.js)
@@ -283,7 +286,9 @@ G.Game = (() => {
   function levelXp() {
     if (!pl) return 20;
     const k = (G.Coop.active ? G.Coop.xpFactor() : 1) * (pl.xpMul || 1);
-    return Math.ceil((pl.xpNext - pl.xp + 1) / k);
+    // En grupo, el nivel se reparte entre los que jugáis (23-11-2026): medio con dos, un tercio con tres...
+    const n = G.Coop.active ? Math.max(1, G.Coop.players().length) : 1;
+    return Math.ceil((pl.xpNext - pl.xp + 1) / k / n);
   }
 
   // Destello de pantalla completa (viaje a la grieta).

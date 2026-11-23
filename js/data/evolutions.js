@@ -2,6 +2,8 @@
  * A qué evoluciona cada Pokémon: número de la Pokédex -> los de sus evoluciones
  * (Eevee tiene varias). Datos de PokeAPI; sólo las que el juego tiene.
  * Lo usa la evolución en plena partida (entities/player.js, systems/levelup.js).
+ * G.EVO_BABY: los bebés (Pichu, Togepi...): no cuentan como «primera fase» de su familia
+ * (Pikachu empieza con su propia fuerza, no con la de Pichu: ver G.Mons.ladderFor).
  */
 G.EVOS = {
   1: [2],
@@ -432,3 +434,4 @@ G.EVOS = {
   1011: [1019],
   1012: [1013]
 };
+G.EVO_BABY = [172, 173, 174, 175, 236, 238, 239, 240, 298, 360, 406, 433, 438, 439, 440, 446, 447, 458, 848];
