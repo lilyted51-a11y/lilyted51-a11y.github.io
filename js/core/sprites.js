@@ -111,7 +111,8 @@ G.Sprites = (() => {
     const hs = [];
     for (const d of dexes) for (const a of ANIMS) {
       const s = sheet(d, a, shiny); if (s) hs.push(s);
-      const ks = skin && G.Skins && G.Skins.get(skin, d) ? sheet(d, a, shiny, skin) : null; if (ks) hs.push(ks);
+      const sk = skin && G.Skins && G.Skins.get(skin, d);
+      const ks = sk && !sk.tint ? sheet(d, a, shiny, skin) : null; if (ks) hs.push(ks);   // (las de color no tienen hojas)
     }
     return new Promise(res => {
       const t0 = performance.now();
@@ -268,7 +269,8 @@ G.Sprites = (() => {
       const k = PX * this.scale;
       // Disfraz: la hoja con el disfraz pintado (más grande: lleva margen para
       // el sombrero). Mientras carga, el Pokémon sin él.
-      const ks = this.skin && G.Skins && G.Skins.get(this.skin, this.dex) ? sheet(this.dex, this.cur, this.shiny, this.skin) : null;
+      const sk = this.skin && G.Skins && G.Skins.get(this.skin, this.dex);
+      const ks = sk && !sk.tint ? sheet(this.dex, this.cur, this.shiny, this.skin) : null;
       let own = true;
       if (ks && ks.ready && m) { s = ks; m = padded(m); }
       else if (s && !s.ready) {
@@ -290,8 +292,10 @@ G.Sprites = (() => {
       const dx = Math.round(x - m.ax * k), dy = Math.round(y - m.ay * k);
       const prev = ctx.globalAlpha;
       if (alpha < 1) ctx.globalAlpha = prev * alpha;
+      // Skin de color (core/skins.js): la misma hoja, pintada con sus colores.
+      const img = sk && sk.tint ? G.Skins.tinted(s.img, sk.tint) : s.img;
       // Destello: blanco entero (enemigos) o medio blanco encima (tu Pokémon).
-      if (!opts.flash || opts.softFlash) ctx.drawImage(s.img, sx, sy, m.w, m.h, dx, dy, m.w * k, m.h * k);
+      if (!opts.flash || opts.softFlash) ctx.drawImage(img, sx, sy, m.w, m.h, dx, dy, m.w * k, m.h * k);
       if (opts.flash) {
         if (opts.softFlash) ctx.globalAlpha = prev * alpha * 0.55;
         ctx.drawImage(white(s.img), sx, sy, m.w, m.h, dx, dy, m.w * k, m.h * k);

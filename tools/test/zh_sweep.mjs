@@ -169,6 +169,51 @@ await pwAgain(0); await pwOpen(); await pwTap('power:tera'); await grab('Teracri
 await pwTap('?'); await pwUse('Teracristal');
 await pwAgain(0); await pwOpen(); await pwTap('power:dyna'); await pwUse('Dinamax');
 console.log('poderes: pantallas abiertas', pwSeen.filter(Boolean).length + '/' + pwSeen.length, JSON.stringify(pwSeen));
+
+// ---------- El Team Rocket y su Casino Rocket (23-11-2026): el secuestro, la entrada y los 4 juegos, con lo que puede salir ----------
+const cas = async where => { await grab('casino: ' + where); await misses('casino: ' + where); await canvas('casino: ' + where); };
+const casClick = async sel => { await A.ev(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (b) b.click(); return !!b; })()`); };
+for (let i = 0; i < 20 && (await A.ev(`G.Game.state`)) !== 'playing'; i++) { await A.ev(`(() => { if (G.SettingsUI.isOpen) G.SettingsUI.close(); if (G.Game.state === 'paused') G.Game.togglePause(); return 1; })()`); await sleep(400); await etPick(); }
+await A.ev(`(() => { window.__POKE_BOT_ON__ = false; G.DB.save.coins = Math.max(G.DB.save.coins, 50000); delete G.DB.save.skins['obsidiana-mewtwo']; return G.Casino.debugOpen(); })()`); await sleep(1500);
+await cas('secuestro');
+await casClick('#cas-body [data-a=in]'); await sleep(800); await cas('entrada');
+await A.ev(`G.CasinoUI.debugView('slots'); 1`); await sleep(500); await cas('tragaperras');
+for (const r of [['ball', 'pika', 'seven'], ['berry', 'ball', 'berry'], ['pika', 'pika', 'pika'], ['rocket', 'rocket', 'rocket']]) {
+  await A.ev(`G.Casino.debugRig({ slots: ${JSON.stringify(r)} }); document.getElementById('cas-spin').click(); 1`); await sleep(2700); await cas('tragaperras ' + r.join('/'));
+}
+await A.ev(`(() => { window.__cc = G.DB.save.coins; G.DB.save.coins = 3; document.getElementById('cas-spin').click(); return 1; })()`); await sleep(400); await cas('tragaperras sin monedas');
+await A.ev(`(() => { G.DB.save.coins = window.__cc; window.__od = Object.getOwnPropertyDescriptor(G.DB, 'online'); Object.defineProperty(G.DB, 'online', { get: () => true, configurable: true }); return 1; })()`);
+await A.send('Network.enable'); await A.send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+await A.ev(`document.getElementById('cas-spin').click(); 1`); await sleep(400); await cas('tragaperras sin conexión');
+await A.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+await A.ev(`(() => { Object.defineProperty(G.DB, 'online', window.__od); return 1; })()`);
+await A.ev(`G.CasinoUI.debugView('voltorb'); 1`); await sleep(500); await cas('Voltorb escondido');
+await A.ev(`G.Casino.debugRig({ voltorb: [0, 1, 2, 3, 4] }); 1`); await casClick('.vf-tile[data-i="10"]'); await sleep(300); await casClick('.vf-tile[data-i="11"]'); await sleep(300); await cas('Voltorb: dos buenas');
+await casClick('#vf-cash'); await sleep(400); await cas('Voltorb: plantarse');
+await casClick('#vf-again'); await sleep(300); await A.ev(`G.Casino.debugRig({ voltorb: [0, 1, 2, 3, 4] }); 1`); await casClick('.vf-tile[data-i="12"]'); await sleep(200); await casClick('.vf-tile[data-i="2"]'); await sleep(400); await cas('Voltorb: boom');
+await A.ev(`G.CasinoUI.debugView('race'); 1`); await sleep(1200); await cas('carrera');
+await A.ev(`G.Casino.debugRig({ race: 1 }); document.querySelectorAll('.rc-pick')[1].click(); document.getElementById('rc-go').click(); 1`); await sleep(2500); await cas('carrera en marcha');
+for (let i = 0; i < 20 && (await A.ev(`!!G.CasinoUI.state.running`)); i++) await sleep(500);
+await sleep(300); await cas('carrera ganada');
+await casClick('#rc-go'); await sleep(400);
+await A.ev(`G.Casino.debugRig({ race: 0 }); document.querySelectorAll('.rc-pick')[4].click(); document.getElementById('rc-go').click(); 1`); await sleep(500);
+for (let i = 0; i < 20 && (await A.ev(`!!G.CasinoUI.state.running`)); i++) await sleep(500);
+await sleep(300); await cas('carrera perdida');
+const pkIn = `(() => { const s = G.CasinoUI.state, p = s.p; p.x = 180; p.y = s.cv.height / 2 + 22; p.tx = p.x; p.ty = p.y; p.wait = 5; p.vis = 1; return 1; })()`;
+const pkOut = `(() => { const s = G.CasinoUI.state, p = s.p; p.x = 20; p.y = 40; p.tx = p.x; p.ty = p.y; p.wait = 5; p.vis = 1; return 1; })()`;
+const pkReady = async () => { for (let i = 0; i < 30 && !(await A.ev(`G.CasinoUI.state.p.vis >= 1 && !G.CasinoUI.state.ball`)); i++) await sleep(200); };
+const pkThrow = async (inside, ok, where) => { await pkReady(); await A.ev(inside ? pkIn : pkOut); await A.ev(`G.Casino.debugRig({ pika: ${ok} }); document.getElementById('pk-go').click(); 1`); await sleep(2300); if (where) await cas(where); };
+await A.ev(`G.CasinoUI.debugView('pika'); 1`); await sleep(1500); await cas('¡Atrapa a Pikachu!');
+await casClick('#pk-go'); await sleep(500); await cas('Pikachu: jugando');
+await pkThrow(false, false, 'Pikachu: fuera del aro'); await pkThrow(true, false, 'Pikachu: se escapa de la bola');
+await pkThrow(true, true, 'Pikachu: plan 2'); await pkThrow(true, true, 'Pikachu: plan 3'); await pkThrow(true, true, 'Pikachu: skin conseguida');
+await A.ev(`G.CasinoUI.debugView('pika'); 1`); await sleep(1200); await cas('Pikachu (ya con la skin)');
+await casClick('#pk-go'); await sleep(400);
+await pkThrow(true, true); await pkThrow(true, true); await pkThrow(true, true, 'Pikachu: premio en monedas');
+await casClick('#pk-go'); await sleep(400);
+await pkThrow(false, false); await pkThrow(false, false); await pkThrow(false, false, 'Pikachu: se ha escapado');
+await A.ev(`G.Input.virtual('escape'); 1`); await sleep(600); await A.ev(`G.Input.virtual('escape'); 1`); await sleep(1200);
+console.log('casino:', await A.ev(`'abierto ' + G.Casino.isOpen + ' · estado ' + G.Game.state + ' · estela ' + !!G.DB.save.unlocks.rocketTrail + ' · skin ' + !!G.DB.save.skins['obsidiana-mewtwo']`));
 await A.ev(`(() => { clearInterval(window.__etHeal); const p = G.Game.player; p.maxHp = window.__hp0 || 100; p.hp = 1; return 1; })()`);
 
 await A.ev(`(() => { const p = G.Game.player; p.invuln = 0; p.hurt(999999, null, true); return 1; })()`);

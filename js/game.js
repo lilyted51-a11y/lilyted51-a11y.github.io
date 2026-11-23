@@ -222,6 +222,7 @@ G.Game = (() => {
     G.Spawner.reset();
     G.Rift.reset();
     G.Judgment.reset();
+    G.Casino.reset();
     G.Eternatus.reset();
     G.Events.reset();
     G.Weather.reset();
@@ -552,6 +553,7 @@ G.Game = (() => {
     const judge = G.Judgment.summary();
     if (judge) G.Progress.event('judgeEnd', judge);
     G.Judgment.reset();
+    G.Casino.reset();
     G.Eternatus.reset();
     G.Progress.event('runEnd', { time, level: pl.level, coins: pl.coins, types: pl.mon.types, group: coop });
     G.Progress.checkAch();
@@ -807,6 +809,8 @@ G.Game = (() => {
       if (['space', 'enter', 'escape'].some(k => G.Input.tap(k))) G.Judgment.skip();
       return;
     }
+    // El Casino Rocket (systems/casino.js) lleva sus propias teclas.
+    if (G.Casino.isOpen) { G.Casino.keys(); return; }
     if (state === 'levelup') {
       // (Hasta 9: las cartas de evolución de Eevee son más de cuatro.)
       for (let i = 0; i < 9; i++) {

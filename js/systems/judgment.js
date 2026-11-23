@@ -314,7 +314,11 @@ G.Judgment = (() => {
   function update(dt, pl, time) {
     if (!phase) {
       sampleDps(dt);                        // (para la vida del primer legendario)
-      if (authority() && time >= AT && !G.Rift.inArena) start();
+      if (authority() && time >= AT && !G.Rift.inArena) {
+        // Antes, 1 de cada 3 partidas en solitario: el Casino Rocket (systems/casino.js); la Sentencia espera.
+        if (G.Casino && G.Casino.gate()) return;
+        start();
+      }
       return;
     }
     if (phase !== 'fight') return;
