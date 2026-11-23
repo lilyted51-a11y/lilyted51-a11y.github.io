@@ -8,6 +8,7 @@
  *   value   datos -> cuánto vale; con mode 'max' se queda el mayor, con
  *           'add' (por defecto) se suma (1 si no hay value)
  *   param   'type': sortea un tipo Pokémon para la misión
+ *   reward  { coins, t1, t10, egg }: egg = un huevo (las semanales; su clase la decide systems/eggs.js)
  */
 G.MissionDefs = (() => {
   const T = t => G.U.TYPE_NAME[t];
@@ -37,17 +38,17 @@ G.MissionDefs = (() => {
   ];
 
   const weekly = [
-    { id: 'wkill', ev: 'kill', goals: [4000, 6000], reward: { t10: 1, coins: 800 },
+    { id: 'wkill', ev: 'kill', goals: [4000, 6000], reward: { t10: 1, egg: 1, coins: 800 },
       text: n => `Derrota a ${n.toLocaleString('es')} Pokémon` },
-    { id: 'wrift', ev: 'rift', goals: [1, 2], reward: { t10: 1, coins: 1000 },
+    { id: 'wrift', ev: 'rift', goals: [1, 2], reward: { t10: 1, egg: 1, coins: 1000 },
       text: n => (n === 1 ? 'Gana una pelea en una grieta' : `Gana ${n} peleas en grietas`) },
-    { id: 'wboss', ev: 'kill', match: d => d.boss, goals: [4, 6], reward: { t10: 1, coins: 900 },
+    { id: 'wboss', ev: 'kill', match: d => d.boss, goals: [4, 6], reward: { t10: 1, egg: 1, coins: 900 },
       text: n => `Derrota a ${n} jefes` },
-    { id: 'wsurvive', ev: 'runEnd', mode: 'max', value: min, goals: [12, 15], reward: { t10: 1, coins: 1000 },
+    { id: 'wsurvive', ev: 'runEnd', mode: 'max', value: min, goals: [12, 15], reward: { t10: 1, egg: 1, coins: 1000 },
       text: n => `Aguanta ${n} minutos en una run` },
-    { id: 'wevolve', ev: 'evolve', goals: [3, 5], reward: { t10: 1, coins: 900 },
+    { id: 'wevolve', ev: 'evolve', goals: [3, 5], reward: { t10: 1, egg: 1, coins: 900 },
       text: n => `Evoluciona ${n} movimientos` },
-    { id: 'wdaily', ev: 'missionDone', match: d => d.daily, goals: [8, 12], reward: { t10: 1, coins: 800 },
+    { id: 'wdaily', ev: 'missionDone', match: d => d.daily, goals: [8, 12], reward: { t10: 1, egg: 1, coins: 800 },
       text: n => `Completa ${n} misiones diarias` }
   ];
 

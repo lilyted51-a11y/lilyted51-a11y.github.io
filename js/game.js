@@ -100,7 +100,7 @@ G.Game = (() => {
   let trapped = false;
   function needsTrap() {
     if (state !== 'ui') return true;
-    return BACK_SCREENS.some(shown) || ['scr-settings', 'scr-news', 'scr-support', 'scr-profile', 'pull-fx'].some(shown);
+    return BACK_SCREENS.some(shown) || ['scr-settings', 'scr-news', 'scr-support', 'scr-profile', 'pull-fx', 'egg-fx'].some(shown);
   }
   function ensureTrap() {
     if (trapped || !needsTrap() || !window.history || !history.pushState) return;
@@ -114,7 +114,7 @@ G.Game = (() => {
       if (state === 'playing' && !G.Judgment.cinematic && !G.UI.isOpen('scr-pause')) togglePause();
       return;
     }
-    if (shown('pull-fx')) return;                                  // la tirada del gacha
+    if (shown('pull-fx') || shown('egg-fx')) return;               // la tirada del gacha, un huevo abriéndose
     if (shown('scr-profile')) { document.getElementById('scr-profile').classList.add('hidden'); return; }
     if (G.SettingsUI.isOpen) { G.SettingsUI.close(); return; }
     if (shown('scr-news')) { G.NewsUI.close(); return; }
@@ -843,7 +843,7 @@ G.Game = (() => {
       // Esc en una subpantalla del menú vuelve al menú (el Vestidor, a donde se abrió).
       if (G.Input.tap('escape') && G.UI.isOpen('scr-wardrobe')) { G.WardrobeUI.back(); return; }
       if (G.Input.tap('escape') && !G.UI.isOpen('scr-profile') && ['scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-friends', 'scr-rank', 'scr-goals'].some(G.UI.isOpen)
-          && document.getElementById('pull-fx').classList.contains('hidden')) G.MenuUI.open();
+          && document.getElementById('pull-fx').classList.contains('hidden') && document.getElementById('egg-fx').classList.contains('hidden')) G.MenuUI.open();
       return;
     }
     if (G.Input.tap('escape') || G.Input.tap('keyp')) { togglePause(); return; }

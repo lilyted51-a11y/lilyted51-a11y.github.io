@@ -70,6 +70,7 @@ for (const go of ['dex', 'wardrobe', 'upgrades', 'shop', 'bag', 'gacha', 'goals'
   if (go === 'shop') { await clickAll('#scr-shop .gen-tab'); }
   if (go === 'gacha') {
     await clickAll('#gacha-gens .gen-tab:not(.hidden)');
+    await A.ev(`G.DB.save.stats.x10 = 9; 1`);   // (la décima ×10 trae un huevo místico)
     await click('#pull-10'); await sleep(5000); await grab('gacha ×10 resultado'); await click('#pull-close');
   }
   if (go === 'settings') await clickAll('#set-tabs .gen-tab');
@@ -77,6 +78,20 @@ for (const go of ['dex', 'wardrobe', 'upgrades', 'shop', 'bag', 'gacha', 'goals'
   if (go === 'friends') { await click('#fr-create'); await sleep(500); await grab('crear sala'); await click('section.scr [data-no]'); }
   await misses('pantalla ' + go);
 }
+// ---------- Huevos (23-11-2026): Mochila con huevos de las tres clases, la eclosión (normal y shiny) y el menú ----------
+await A.ev(`(() => { const s = G.DB.save, E = G.Eggs; const a = E.add('rift'), b = E.add('mission', 'w2026-48-wrift'), c = E.add('gacha'); E.add('rift');
+  Object.assign(s.eggs[a.id], { p: 99999, d: 1027, s: 0 }); Object.assign(s.eggs[c.id], { p: 99999, d: 1037, s: 1 }); s.eggs[b.id].p = 1300;
+  window.__eggs = [a.id, c.id]; G.UI.hideAll(); G.MenuUI.open(); return 1; })()`); await sleep(800);
+await grab('menú (con huevos)');
+await A.ev(`document.querySelector('#scr-menu [data-go=bag]').click(); 1`); await sleep(1200); await grab('Mochila con huevos'); await misses('Mochila con huevos');
+for (const i of [0, 1]) {
+  await A.ev(`(() => { const b = document.querySelector('[data-egg="' + __eggs[${i}] + '"]'); if (b) b.click(); return !!b; })()`); await sleep(1000);
+  await grab('huevo abriéndose'); await sleep(2600); await grab('huevo abierto #' + i); await misses('huevo abierto #' + i);
+  await click('#egg-close');
+}
+await grab('Mochila tras abrir'); await misses('Mochila tras abrir');
+await A.ev(`(() => { G.UI.hideAll(); G.MenuUI.open(); return 1; })()`); await sleep(600);
+await A.ev(`(() => { G.UI.toast(G.T('Sin conexión: con tu cuenta, abrir huevos necesita internet.'), 900); return 1; })()`); await sleep(350); await grab('toast (huevos sin conexión)');
 await A.ev(`G.UI.hideAll(); document.getElementById('btn-news').click(); 1`); await sleep(1500); await grab('novedades'); await misses('novedades'); await click('#news-close');
 
 // ---------- Vestidor y estelas (23-11-2026): cada Pokémon, versión, aspecto, skin, efectos, estelas, tienda y ficha ----------
@@ -135,6 +150,7 @@ for (const t of ['Sin conexión: con tu cuenta, el gacha necesita internet.', 'S
                  'Tu marca no ha podido entrar en el ranking.', 'Se ha perdido el grupo: continúas en solitario con todo lo que llevabas.']) {
   await A.ev(`G.UI.toast(${JSON.stringify(t)}, 900); 1`); await sleep(350); await grab('toast (avisos nuevos)');
 }
+await A.ev(`G.Eggs.riftWon(); 1`); await sleep(600);   // «¡Huevo!» sobre tu Pokémon; llega al acabar la partida (resumen)
 await canvas('partida (HUD, esferas, clima)');
 await A.ev(`window.__POKE_BOT_ON__ = false; G.RunUI.showItemChoice('leftovers', 'assaultvest', () => {}); 1`); await sleep(800); await grab('elegir objeto'); await A.ev(`document.querySelector('#item-cards .card').click(); 1`); await sleep(500);
 await A.ev(`(() => { const pl = G.Game.player; const loose = pl.slots.filter(s => s.length === 1).map(s => s[0]); if (loose.length >= 2) G.RunUI.showBond({ mode: 'pair', group: null, loose }, () => {}); return loose.length; })()`); await sleep(800); await grab('vínculo'); await A.ev(`G.UI.hide('scr-bond'); 1`);
