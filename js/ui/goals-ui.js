@@ -151,8 +151,10 @@
       s.profile = s.profile || { favs: [], title: '' };
       const P = s.profile;
       box.insertAdjacentHTML('beforeend', `<p class="sub">${G.DB.online ? 'Así te ven los demás jugadores (desde el ranking y la lista de amigos).'
-        : 'Tu perfil se publica cuando juegas con una cuenta online.'}</p>
-        <h3>Tus 3 Pokémon favoritos</h3>`);
+        : 'Tu perfil se publica cuando juegas con una cuenta online.'}</p>`);
+      // Foto y marco (ui/mastery-ui.js).
+      G.PhotoUI.editor(box, () => { tab = 'profile'; render(); });
+      box.insertAdjacentHTML('beforeend', `<h3>Tus 3 Pokémon favoritos</h3>`);
       const favs = document.createElement('div');
       favs.className = 'fav-slots';
       for (let i = 0; i < 3; i++) {
@@ -168,7 +170,7 @@
       }
       box.appendChild(favs);
 
-      const titles = G.Progress.titles();
+      const titles = G.Progress.titles().concat(G.Mastery.titles());     // y los de maestro (systems/mastery.js)
       box.insertAdjacentHTML('beforeend', `<h3 style="margin-top:14px">Título</h3>`);
       const sel = document.createElement('select');
       sel.className = 'field';
@@ -250,7 +252,7 @@
       const b = d.best || {};
       const body = $('prof-body');
       body.innerHTML = `
-        <div class="prof-head"><h2 translate="no">${esc(d.name || '???')}</h2>${d.title ? `<span class="prof-title">${esc(d.title)}</span>` : ''}</div>
+        <div class="prof-head">${G.PhotoUI.profileHead(d)}<h2 ${G.DB.guest && d.name === G.DB.user ? '' : 'translate="no"'}>${esc(d.name || '???')}</h2>${d.title ? `<span class="prof-title">${esc(d.title)}</span>` : ''}</div>
         <div class="fav-slots view" id="prof-favs"></div>
         <div class="prof-marks">
           <div><span>Mejor tiempo</span><b>${fmt(b.solo || 0)}</b></div>

@@ -95,7 +95,7 @@ G.Game = (() => {
    * cierra la ventana de encima). En el menú principal no hay entrada de más:
    * «atrás» sale de la web, como siempre.
    */
-  const BACK_SCREENS = ['scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-friends', 'scr-rank', 'scr-goals', 'scr-lobby', 'scr-mod', 'scr-chal'];
+  const BACK_SCREENS = ['scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-friends', 'scr-rank', 'scr-goals', 'scr-lobby', 'scr-mod', 'scr-chal', 'scr-mastery'];
   const shown = id => { const el = document.getElementById(id); return !!el && !el.classList.contains('hidden'); };
   let trapped = false;
   function needsTrap() {
@@ -250,6 +250,8 @@ G.Game = (() => {
     pl.setAbility(ch ? G.Challenge.abilityOf(ch) : G.Mons.abilityOf(mon.dex).id);
     pl.anim.skin = ch ? null : G.Skins.worn(save, mon.dex) || null;      // su disfraz (core/skins.js)
     if (!ch) G.Dress.applyRun(pl, save, mon.dex);             // Vestidor: estela, efecto y aspecto (core/dress.js; en el desafío, no: el Pokémon es prestado)
+    G.Mastery.runStart(pl, mon.dex);                          // maestría del elegido (y su aura, systems/mastery.js)
+    if (ch) pl.noMastery = true;                              // el desafío no da maestría (el Pokémon es prestado)
     pl.candy = 0;
     banked = { t1: 0, t10: 0, cn: 0 };
     t10Sec = 0;
@@ -571,6 +573,8 @@ G.Game = (() => {
     G.Eternatus.reset();
     G.Progress.event('runEnd', { time, level: pl.level, coins: pl.coins, types: pl.mon.types, group: coop });
     G.Progress.checkAch();
+    // Maestría del Pokémon que elegiste (sólo si la partida es limpia; ver clean()).
+    const mastery = G.Mastery.runEnd(pl, time, clean());
     // A la nube al acabar la partida (como mucho cada 30 min); si la marca entra
     // en un top (hoy, semana o mes), enseguida (abajo, tras subirla al ranking).
     G.DB.commit('run');
@@ -587,7 +591,7 @@ G.Game = (() => {
     if (sent) sent.catch(() => {});
 
     G.RunUI.showOver({
-      dead, time, level: pl.level, kills: pl.kills, bosses: pl.bosses, coins, record, t1: pl.t1, t10: pl.t10, candy: pl.candy || 0, judge,
+      dead, time, level: pl.level, kills: pl.kills, bosses: pl.bosses, coins, record, t1: pl.t1, t10: pl.t10, candy: pl.candy || 0, judge, mastery,
       team: (coop ? team : [{ uid: meUid }]).filter(m => sums[m.uid]).map(m => ({ name: m.name, me: m.uid === meUid, sum: sums[m.uid] }))
         .sort((a, b) => b.me - a.me),
       moves: pl.moves, caught,
@@ -859,7 +863,7 @@ G.Game = (() => {
     if (state === 'ui') {
       // Esc en una subpantalla del menú vuelve al menú (el Vestidor, a donde se abrió).
       if (G.Input.tap('escape') && G.UI.isOpen('scr-wardrobe')) { G.WardrobeUI.back(); return; }
-      if (G.Input.tap('escape') && !G.UI.isOpen('scr-profile') && ['scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-friends', 'scr-rank', 'scr-goals'].some(G.UI.isOpen)
+      if (G.Input.tap('escape') && !G.UI.isOpen('scr-profile') && ['scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-friends', 'scr-rank', 'scr-goals', 'scr-mastery'].some(G.UI.isOpen)
           && document.getElementById('pull-fx').classList.contains('hidden') && document.getElementById('egg-fx').classList.contains('hidden')) G.MenuUI.open();
       return;
     }
@@ -1357,7 +1361,7 @@ G.Flow = {
   boot() {
     G.UI.initChrome();
     G.LoginUI.init(); G.TestUI.init(); G.MenuUI.init(); G.GachaUI.init();
-    G.SocialUI.init(); G.RankingUI.init(); G.ModUI.init(); G.GoalsUI.init(); G.ProfileUI.init(); G.SettingsUI.init(); G.SupportUI.init(); G.NewsUI.init(); G.Updater.init();
+    G.SocialUI.init(); G.RankingUI.init(); G.ModUI.init(); G.GoalsUI.init(); G.ProfileUI.init(); G.MasteryUI.init(); G.SettingsUI.init(); G.SupportUI.init(); G.NewsUI.init(); G.Updater.init();
     G.ChallengeUI.init();         // desafío semanal (ui/challenge-ui.js)
     // Tu nombre arriba a la derecha abre tu perfil.
     document.getElementById('user-pill').onclick = () => G.GoalsUI.open('profile');

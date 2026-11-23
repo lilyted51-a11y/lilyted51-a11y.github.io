@@ -167,7 +167,8 @@ G.Coop = (() => {
             local.dex, local.shiny ? 1 : 0, api.watching ? api.watching() : '', r2((G.Camera && G.Camera.zoomTo) || 1),
             G.Powers ? G.Powers.netCode(local) : 0,
             // Vestidor (23-11-2026): estela, efecto y aspecto, para que los demás los vean.
-            ...(G.Dress ? G.Dress.netCode(local) : ['', '', 0])];
+            ...(G.Dress ? G.Dress.netCode(local) : ['', '', 0]),
+            local.aura ? 1 : 0];                 // aura de maestro (systems/mastery.js)
   }
 
   /** Número que llega por la red: si no es un número de verdad vale `def`, y si se pasa se queda en el tope. */
@@ -223,7 +224,8 @@ G.Coop = (() => {
              pw: Math.floor(num(a[19], 0, 0, 40)),
              // Vestidor: estela, efecto y aspecto (G.Dress.applyNet sólo acepta los que existen)
              tr: typeof a[20] === 'string' ? a[20].slice(0, 24) : '', fx: typeof a[21] === 'string' ? a[21].slice(0, 12) : '',
-             lk: Math.floor(num(a[22], 0, 0, 1e5)) };
+             lk: Math.floor(num(a[22], 0, 0, 1e5)),
+             au: a[23] === 1 ? 1 : 0 };            // aura de maestro (systems/mastery.js)
   }
 
   /** Anfitrión: dónde mira un invitado (él mismo, o el compañero vivo que mira estando caído). */

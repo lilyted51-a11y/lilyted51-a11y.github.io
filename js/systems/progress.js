@@ -138,6 +138,7 @@ G.Progress = (() => {
     const s = G.DB.save;
     if (!s) return;
     ensure(s);
+    G.Mastery.note(kind);                 // grietas, Eternatus y Arceus de esta partida (systems/mastery.js)
     const S = s.stats;
     switch (kind) {
       case 'kill':

@@ -793,14 +793,14 @@ G.Social = (() => {
     const s = G.DB.save, st = s.stats, prof = s.profile || {};
     const unlocked = G.AchDefs.LIST.filter(a => s.ach && s.ach[a.id]);
     const medals = unlocked.slice().sort((a, b) => (b.tier - a.tier) || (s.ach[b.id] - s.ach[a.id])).slice(0, 8).map(a => a.id);
-    return {
+    return Object.assign({
       name: me ? me.name : G.DB.user,
       favs: (prof.favs || []).slice(0, 3).map(f => ({ dex: f.dex | 0, shiny: !!f.shiny })),
       title: prof.title || '',
       best: { solo: st.bestTime | 0, group: st.bestGroupTime | 0, level: st.bestLevel | 0, bosses: st.bossesTotal | 0,
               legends: Object.keys(s.legends || {}).length, kills: st.totalKills | 0, medals: unlocked.length },
       medals
-    };
+    }, G.Photo.pub(s));       // foto y marco (core/photo.js): photo [dex, expresión], frame
   }
 
   let pubT = 0, pubAt = 0, pubLast = '';
@@ -826,9 +826,18 @@ G.Social = (() => {
       if (key === pubLast) return;
       pubLast = key; pubAt = Date.now();
       try { localStorage.setItem(lsKey, key); } catch (e) { /* nada */ }
-      fb.fs.collection('profiles').doc(uid).set(Object.assign(d, {
+      const doc = x => fb.fs.collection('profiles').doc(uid).set(Object.assign(x, {
         name: me.name, lower: me.name.toLowerCase(), at: firebase.firestore.FieldValue.serverTimestamp()
-      })).catch(e => { pubLast = ''; console.warn('[Social] perfil:', e.code || e.message); });
+      }));
+      // Foto y marco (23-11-2026): si el servidor aún tiene las reglas de antes (sin photo / frame),
+      // se sube el perfil sin ellos para no dejarlo sin poner al día.
+      doc(Object.assign({}, d)).catch(e => {
+        if (e && e.code === 'permission-denied' && 'photo' in d) {
+          const old = Object.assign({}, d); delete old.photo; delete old.frame;
+          return doc(old);
+        }
+        throw e;
+      }).catch(e => { pubLast = ''; console.warn('[Social] perfil:', e.code || e.message); });
     }, 800);
   }
 
@@ -840,7 +849,8 @@ G.Social = (() => {
       favs: U.list(d.favs, 3).filter(f => f && G.DEX_BY[U.int(f.dex)]).map(f => ({ dex: U.int(f.dex), shiny: f.shiny === true })),
       best: { solo: U.int(b.solo, 86400), group: U.int(b.group, 86400), level: U.int(b.level, 999), bosses: U.int(b.bosses, 1e9),
               legends: U.int(b.legends, 999), kills: U.int(b.kills, 1e12), medals: U.int(b.medals, 999) },
-      medals: U.list(d.medals, 8).map(x => U.str(x, 40))
+      medals: U.list(d.medals, 8).map(x => U.str(x, 40)),
+      ph: G.Photo.fromPub(d)        // foto y marco, o null (perfiles de antes)
     };
   }
 

@@ -228,6 +228,15 @@ G.RunUI = (() => {
     return true;
   }
 
+  /** Maestría que ha ganado tu Pokémon (systems/mastery.js) y los premios nuevos. */
+  function masteryLine(m) {
+    const loc = G.I18n.locale, mon = G.DEX_BY[m.dex];
+    return `<div style="grid-column:1/-1"><span>${G.I18n.f('Maestría de {x}', mon.name)}</span>
+      <b class="gold">${G.Icons.html('mastery', 18)} +${m.pts.toLocaleString(loc)}</b>
+      <div style="font-size:12px;color:var(--muted)">${G.I18n.f('Total: {x}', m.total.toLocaleString(loc))}</div>
+      ${m.got.map(t => `<div class="gold">${G.I18n.f('¡Nuevo premio de maestría: {x}!', G.T(t.name))}</div>`).join('')}</div>`;
+  }
+
   function showOver(r, onBack) {
     $('over-title').textContent = r.dead ? 'Has caído…' : 'Run terminada';
     $('over-stats').innerHTML = `
@@ -243,6 +252,7 @@ G.RunUI = (() => {
       <div style="grid-column:1/-1"><span>Pokémonedas ganadas</span>
         <b class="gold"><span class="coin"></span> +${r.coins}</b>
         <div style="font-size:12px;color:var(--muted)">${r.breakdown}</div></div>
+      ${r.mastery ? masteryLine(r.mastery) : ''}
       ${r.t1 || r.t10 ? `<div style="grid-column:1/-1"><span>Tickets del gacha</span><b>
         ${r.t1 ? G.Icons.html('ticket', 22) + ' +' + r.t1 + ' ' : ''}${r.t10 ? G.Icons.html('ticket10', 22) + ' +' + r.t10 + ' ×10' : ''}</b></div>` : ''}
       ${r.candy ? `<div style="grid-column:1/-1"><span>Caramelos de Halloween</span><b>${G.Icons.html('candy', 22)} +${r.candy}</b></div>` : ''}
@@ -526,5 +536,5 @@ G.RunUI = (() => {
     $('btn-quit').onclick = onQuit;
   }
 
-  return { showLevelUp, reroll, showItemChoice, showChoice, pickChoice, showBond, pickBond, bondBack, pick, pickFirst, setWaiting, closeLevelUp, showOver, wirePause, showPause };
+  return { showLevelUp, reroll, showItemChoice, showChoice, pickChoice, showBond, pickBond, bondBack, pick, pickFirst, setWaiting, closeLevelUp, showOver, wirePause, showPause, masteryLine };
 })();

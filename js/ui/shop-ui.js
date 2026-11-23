@@ -538,6 +538,8 @@ G.ShopUI = (() => {
     tabs.querySelectorAll('[data-tab]').forEach(b => { b.onclick = () => { shopTab = b.dataset.tab; render(); }; });
     if (shopTab === 'trails') { renderTrails(box); return; }
     box.innerHTML = buyHtml();
+    // Fotos del día y marcos de la semana (ui/mastery-ui.js).
+    G.PhotoUI.shopSection(box, () => { Scene.cheer(); say(G.U.pick(['¡Muchas gracias!', '¡Gracias, vuelve pronto!'])); render(); });
     box.querySelectorAll('[data-buy]').forEach(b => {
       b.onclick = () => {
         const key = b.dataset.buy, r = G.Shop.buy(key);

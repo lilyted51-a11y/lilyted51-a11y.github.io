@@ -121,6 +121,12 @@ G.DB = (() => {
       eggsOpen: {},
       chal: null,             // desafío semanal: { w: 'w2026-48', at, t, tk } (systems/challenge.js)
       profile: { favs: [], title: '' },   // perfil público: 3 favoritos y título
+      profile: { favs: [], title: '' },   // perfil público: 3 favoritos y título (y photo { d, e }, frame: core/photo.js)
+      // Maestría y foto del perfil (23-11-2026, systems/mastery.js y core/photo.js):
+      mast: {},               // dex -> puntos de maestría
+      mstat: {},              // dex -> { r, t, k, a, bt, b, rf, e }: sus números con ese Pokémon
+      photos: {},             // 'especie/expresión' -> fecha: fotos compradas en la Tienda Kecleon
+      frames: {},             // id -> fecha: marcos comprados
       stats: { runs: 0, bestTime: 0, bestLevel: 0, totalKills: 0, pulls: 0, coinsEarned: 0, shinies: 0,
                bossesTotal: 0, riftWins: 0, evolutions: 0, missionsDone: 0, groupRuns: 0, bestGroupTime: 0 }
     };
@@ -216,6 +222,9 @@ G.DB = (() => {
       }
     }
     if (!isObj(s.unlocks)) s.unlocks = {};
+    // Maestría, fotos y marcos (23-11-2026).
+    if (G.Mastery) G.Mastery.sanitize(s);
+    if (G.Photo) G.Photo.sanitize(s);
     // Skins: las que existen; la puesta, de ese Pokémon ('' = ninguna) y con su fecha.
     if (!isObj(s.skins)) s.skins = {};
     for (const id of Object.keys(s.skins)) if ((G.Skins && !G.Skins.SKINS[id]) || !Number.isFinite(+s.skins[id])) delete s.skins[id];
@@ -445,7 +454,7 @@ G.DB = (() => {
       }
     }
     // Lo conseguido nunca se pierde: unión de legendarios, arenas, objetos, logros...
-    for (const coll of ['legends', 'arenas', 'itemsFound', 'evoMoves', 'ach', 'skins', 'modes', 'trails', 'unlocks']) {
+    for (const coll of ['legends', 'arenas', 'itemsFound', 'evoMoves', 'ach', 'skins', 'modes', 'trails', 'unlocks', 'photos', 'frames']) {
       r[coll] = r[coll] || {};
       for (const k in older[coll] || {}) if (!r[coll][k]) r[coll][k] = older[coll][k];
     }
@@ -474,6 +483,14 @@ G.DB = (() => {
     // de los dos aparatos (nunca vuelve), lo más aguantado y el ticket ya cobrado.
     r.chal = mergeChal(a.chal, b.chal);
     for (const k in older.stats || {}) r.stats[k] = Math.max(r.stats[k] || 0, older.stats[k] || 0);
+    // Maestría: el mayor de cada número de cada Pokémon (systems/mastery.js).
+    r.mast = r.mast || {};
+    for (const d in older.mast || {}) r.mast[d] = Math.max(+r.mast[d] || 0, +older.mast[d] || 0);
+    r.mstat = r.mstat || {};
+    for (const d in older.mstat || {}) {
+      const x = r.mstat[d] = r.mstat[d] || {}, y = older.mstat[d] || {};
+      for (const k in y) x[k] = Math.max(+x[k] || 0, +y[k] || 0);
+    }
     if (r.starter == null) r.starter = older.starter;
     if (r.personality == null) r.personality = older.personality;
     if (r.partner == null || !r.owned[r.partner]) { r.partner = older.partner; r.partnerShiny = older.partnerShiny; }
