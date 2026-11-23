@@ -506,6 +506,7 @@ G.Coop = (() => {
         case 'hs': holdOn(from); break;
         case 'he': holdOff(from); break;
         case 're': G.Rift.enterRequest(); break;
+        case 'jx': G.Judgment.onMate(from, ev); break;     // Sentencia: lo que le ha pasado a un invitado (el ataque roto)
         case 'bye': mateGone(from); break;
         case 'sm': { const c = cleanSum(ev[1]); if (c) { sums[from] = c; dressMate(from, c); } break; }
         case 'seal': if (Number.isSafeInteger(ev[1]) && typeof ev[2] === 'string' && /^[0-9a-f]{64}$/.test(ev[2])) m.seal = { s: ev[1], g: ev[2] }; break;
@@ -638,7 +639,7 @@ G.Coop = (() => {
       case 'ov': { const cb = api.over; const d = ev[1]; if (d) takeSums(d.sums); end(); cb(d); break; }
       case 'sms': takeSums(ev[1]); break;
       case 'rift': case 'riftx': case 'arena': case 'aw': case 'al': G.Rift.onEvent(ev); break;
-      case 'jd': case 'jk': case 'jb': G.Judgment.onEvent(ev); break;
+      case 'jd': case 'jk': case 'jb': case 'jx': G.Judgment.onEvent(ev); break;
       case 'et': G.Eternatus.onEvent(ev); break;
       case 'wx': G.Weather.onEvent(ev); break;
       case 'ev': G.Events.onNet(ev); break;

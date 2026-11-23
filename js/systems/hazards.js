@@ -61,6 +61,8 @@ G.Hazards = (() => {
 
   function detonate(h) {
     const near = G.Camera.sees(h.x, h.y, 120);
+    // Los de Arceus (23-11-2026): sus efectos, más vistosos, los pone judgment.js.
+    if (h.pure && G.Judgment && G.Judgment.boom && G.Judgment.boom(h, near)) return;
     if (h.vis === 'pillar') {
       // Pilar de luz que cae del cielo.
       G.FX.beam(h.x, h.y, -Math.PI / 2, 420, h.r * 1.1, h.color, G.VFX.forType('electric'));
@@ -83,6 +85,8 @@ G.Hazards = (() => {
     for (const h of list) {
       if (h.hit) continue;
       const k = Math.min(1, h.t / h.delay);
+      // Los de Arceus (23-11-2026): sellos dorados y franjas redondeadas (judgment.js).
+      if (h.pure && G.Judgment && G.Judgment.drawWarn) { G.Judgment.drawWarn(ctx, h, k); continue; }
       ctx.save();
       if (h.kind === 'zone') {
         ctx.globalAlpha = 0.16;

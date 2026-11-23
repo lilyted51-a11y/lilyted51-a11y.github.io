@@ -315,7 +315,9 @@ G.Combat = (() => {
     const ca = Math.cos(pl.aim), sa = Math.sin(pl.aim);
     const sx = pl.x, sy = pl.y;
     let len = 0;
-    for (let d = 8; d <= m.radius; d += 8) {
+    // (Gravedad de Arceus, 23-11-2026: mientras dura no se embiste.)
+    const lim = !ghost && G.Judgment && G.Judgment.grounded ? 0 : m.radius;
+    for (let d = 8; d <= lim; d += 8) {
       if (!G.World.isFree(sx + ca * d, sy + sa * d, pl.r * 0.8, true)) break;
       len = d;
     }

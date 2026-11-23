@@ -40,7 +40,7 @@ G.AchDefs = (() => {
     // La Sentencia de Arceus (minuto 30, ver systems/judgment.js).
     { id: 'judge', cat: 'supervivencia', tier: 2, name: 'La Sentencia', desc: 'Llega a la Sentencia de Arceus (minuto 30).', value: st('judged'), goal: 1, reward: { t10: 1 }, title: 'Juzgado' },
     { id: 'judge60', cat: 'supervivencia', tier: 3, name: 'Ante el Creador', desc: 'Aguanta 1 minuto ante Arceus.', value: st('judgeTime'), goal: 60, reward: { t10: 2 }, title: 'Elegido de Arceus' },
-    { id: 'judgeBoss', cat: 'supervivencia', tier: 3, name: 'Desafío divino', desc: 'Derrota a 3 legendarios ante Arceus en una partida.', value: st('judgeBosses'), goal: 3, reward: { t10: 2 } },
+    { id: 'judgeBoss', cat: 'supervivencia', tier: 3, name: 'Desafío divino', desc: 'Aguanta 5 minutos ante Arceus.', value: st('judgeTime'), goal: 300, reward: { t10: 2 } },   // (23-11-2026: ya no acuden legendarios)
     { id: 'runs50', cat: 'supervivencia', tier: 2, name: 'Explorador', desc: 'Juega 50 runs.', value: st('runs'), goal: 50, reward: { t10: 1 }, title: 'Explorador' },
 
     // ---------- combate ----------

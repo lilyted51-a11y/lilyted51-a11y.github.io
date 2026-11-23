@@ -91,6 +91,9 @@ for (let i = 0; i < 30; i++) {
 await A.ev(`const pl = G.Game.player; for (const id of ['slumber', 'blowback', 'blowback', 'slow', 'focus']) G.Orbs.got(pl, id); G.Weather.debugStart('rain', 30); 1`); await sleep(2500);
 const pos = JSON.parse(await A.ev(`(() => { const r = document.getElementById('game').getBoundingClientRect(); return JSON.stringify({ w: r.width, h: r.height }); })()`));
 for (const fx of [0.36, 0.42, 0.48, 0.54, 0.6]) for (const fy of [0.78, 0.84, 0.9]) { await A.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: Math.round(pos.w * fx), y: Math.round(pos.h * fy) }); await sleep(100); }
+// (Antes, sin el bot y sin cartas abiertas: si salían unas de verdad debajo de éstas de prueba, la partida se quedaba en 'levelup' para siempre.)
+await A.ev(`window.__POKE_BOT_ON__ = false; 1`);
+for (let i = 0; i < 20 && (await A.ev(`G.Game.state`)) !== 'playing'; i++) { await A.ev(`(() => { if (G.UI.isOpen('scr-levelup')) G.RunUI.pick(0); if (G.UI.isOpen('scr-item')) { const c = document.querySelector('#item-cards .card'); if (c) c.click(); } return 1; })()`); await sleep(500); }
 // Evolución en plena partida y cartas de mejora nuevas (16-11-2026): las cartas de evolucionar y todas las de mejora, tal cual salen.
 await A.ev(`(() => { const p = G.Game.player; G.RunUI.showLevelUp(20, G.LevelUp.evolveCards(p, [G.DEX_BY[134], G.DEX_BY[135]]), () => {}); return 1; })()`); await sleep(900);
 await grab('cartas de evolución'); await A.ev(`G.RunUI.closeLevelUp(); G.UI.hide('scr-levelup'); 1`); await sleep(300);
@@ -169,7 +172,25 @@ await pwAgain(0); await pwOpen(); await pwTap('power:tera'); await grab('Teracri
 await pwTap('?'); await pwUse('Teracristal');
 await pwAgain(0); await pwOpen(); await pwTap('power:dyna'); await pwUse('Dinamax');
 console.log('poderes: pantallas abiertas', pwSeen.filter(Boolean).length + '/' + pwSeen.length, JSON.stringify(pwSeen));
-await A.ev(`(() => { clearInterval(window.__etHeal); const p = G.Game.player; p.maxHp = window.__hp0 || 100; p.hp = 1; return 1; })()`);
+
+// ---------- La Sentencia de Arceus en la Sala del Origen (23-11-2026): llegada, los ataques nuevos y sus avisos, Aspas
+// Doradas, suelo roto, objetos rotos, ataque roto y juzgado (lo de los compañeros, con el aviso que les llega) ----------
+for (let i = 0; i < 30 && (await A.ev(`G.Game.state`)) !== 'playing'; i++) { await A.ev(`(() => { const l = document.querySelectorAll('#power-cards .card'); if (G.UI.isOpen('scr-power') && l.length) l[l.length - 1].click(); return 1; })()`); await etPick(); await sleep(500); }
+console.log('Sentencia (empieza):', await A.ev(`(() => { try { G.Powers.stop(G.Game.player); const s = G.DB.save; s.stats = s.stats || {}; s.stats.judged = 1; const p = G.Game.player; p.itemSlots = 4; for (const id of ['amuletcoin', 'leftovers']) p.equip(id); p.maxMoves = Math.max(p.maxMoves, p.moves.length + 1); p.addMove('quick-attack'); const h0 = p.hurt; p.hurt = function (a, ...r) { return h0.call(this, Math.min(a, this.maxHp * 0.05), ...r); }; G.Halloween.runStart(false); G.Judgment.debugStart(); G.Halloween.runStart(true); return G.Game.state + ' activa=' + G.Judgment.active; } catch (e) { return 'ERR ' + e.message; } })()`)); await sleep(1500);
+await A.ev(`G.Judgment.skip(); 1`);
+for (let i = 0; i < 30 && !(await A.ev(`!!G.Judgment.arceus`)); i++) { await sleep(500); await etPick(); }
+await sleep(1500); await canvas('Sentencia (llegada)'); await misses('Sentencia (llegada)');
+for (const id of ['rain', 'cross', 'nova', 'extreme', 'future', 'gravity', 'hyper', 'plates']) { await A.ev(`G.Judgment.debugCast('${id}'); 1`); await sleep(id === 'gravity' || id === 'plates' ? 1500 : 700); }
+await A.ev(`G.Judgment.debugCrack(6); 1`); await sleep(2800);
+for (const t of [28, 58, 88, 118, 148, 298, 418]) { await A.ev(`G.Judgment.debugAt(${t}); 1`); await sleep(2600); await canvas('Sentencia ' + t + ' s'); await etPick(); }
+await A.ev(`G.Judgment.debugRip(); 1`); await sleep(1500);
+await A.ev(`(() => { G.Judgment.onEvent(['jx', 'm', 'otro', 'agility']); return 1; })()`); await sleep(800);
+await A.ev(`(() => { G.Judgment.onEvent(['jx', 'r', 'otro']); G.Judgment.onEvent(['jx', 'm', 'otro', '']); return 1; })()`); await sleep(800);
+await A.ev(`(() => { G.Judgment.onEvent(['jx', 'j', 'otro']); return 1; })()`); await sleep(800);
+await A.ev(`G.Judgment.debugJudge(); 1`); await sleep(1200);
+await canvas('Sentencia (avisos)'); await grab('Sentencia'); await misses('Sentencia');
+console.log('Sentencia:', await A.ev(`JSON.stringify(Object.assign({}, G.Judgment.summary(), G.Judgment.debug))`));
+await A.ev(`(() => { delete G.Game.player.hurt; clearInterval(window.__etHeal); const p = G.Game.player; p.maxHp = window.__hp0 || 100; p.hp = 1; return 1; })()`);
 
 await A.ev(`(() => { const p = G.Game.player; p.invuln = 0; p.hurt(999999, null, true); return 1; })()`);
 for (let i = 0; i < 20; i++) { await sleep(1000); if ((await A.ev(`G.Game.state`)) === 'over') break; }
