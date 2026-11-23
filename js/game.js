@@ -221,6 +221,7 @@ G.Game = (() => {
     G.Spawner.reset();
     G.Rift.reset();
     G.Judgment.reset();
+    G.Eternatus.reset();
     G.Events.reset();
     G.Weather.reset();
     G.Path.clear();
@@ -457,6 +458,7 @@ G.Game = (() => {
     G.Events.adopt();
     G.Rift.adopt();
     G.Judgment.adopt();
+    G.Eternatus.adopt();
   }
 
   /** Has llevado a casa a un Pokémon perdido y se une a ti (events.js). */
@@ -539,6 +541,7 @@ G.Game = (() => {
     const judge = G.Judgment.summary();
     if (judge) G.Progress.event('judgeEnd', judge);
     G.Judgment.reset();
+    G.Eternatus.reset();
     G.Progress.event('runEnd', { time, level: pl.level, coins: pl.coins, types: pl.mon.types, group: coop });
     G.Progress.checkAch();
     // A la nube al acabar la partida (como mucho cada 30 min); si la marca entra
@@ -943,7 +946,7 @@ G.Game = (() => {
     }
 
     const b = Math.floor(time / 240);
-    if (b !== biome && !G.Rift.inArena && !G.Judgment.active) {
+    if (b !== biome && !G.Rift.inArena && !G.Judgment.active && !G.Eternatus.active) {
       biome = b;
       G.World.setBiome(G.Tiles.runBiome(b));
       G.Audio.sfx('biome');
@@ -999,6 +1002,7 @@ G.Game = (() => {
     G.Interact.update(dt, pl);
     G.Rift.update(dt, pl, time);
     G.Judgment.update(dt, pl, time);
+    G.Eternatus.update(dt, pl, time);
     G.Events.update(dt, awake, time);
     G.Weather.update(dt, time, pl);
     G.FX.update(dt);
@@ -1097,6 +1101,7 @@ G.Game = (() => {
     G.Combat.drawAirFields(ctx);
     G.FX.draw(ctx);
     G.Judgment.drawAir(ctx);
+    G.Eternatus.drawAir(ctx);
     ctx.restore();
 
     G.Weather.draw(ctx, w, h, frameDt);
@@ -1110,6 +1115,7 @@ G.Game = (() => {
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, w, h);
     }
+    if (!G.Judgment.cinematic) G.Eternatus.drawOverlay(ctx, w, h);
     if (!G.Judgment.cinematic) G.HUD.draw(ctx, w, h, pl, st);
     G.Judgment.drawOverlay(ctx, w, h);
     G.Touch.draw(ctx);

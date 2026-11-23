@@ -53,7 +53,7 @@ G.Rift = (() => {
       rift.ttl -= dt;
       if (rift.ttl <= 0) { rift = null; return; }
       if (!arena && !pl.dead && G.U.dist2(pl.x, pl.y, rift.x, rift.y - 10) < 30 * 30) enter();
-    } else if (!arena && authority() && !G.Judgment.active && riftIdx < RIFT_AT.length && time >= RIFT_AT[riftIdx]) {
+    } else if (!arena && authority() && !G.Judgment.active && !G.Eternatus.active && riftIdx < RIFT_AT.length && time >= RIFT_AT[riftIdx]) {
       // Le toca una grieta. Con un jefe vivo se espera a que caiga (se mira cada 5 s).
       checkT -= dt;
       if (checkT <= 0) {
@@ -299,6 +299,8 @@ G.Rift = (() => {
 
   return {
     reset, update, drawable, onEvent, adopt, leftBehind, enterRequest() { if (!arena) start(); },
+    /** Quita la grieta del mapa si la hay (al ir a la pelea de Eternatus), sin tocar el calendario. */
+    hidePortal() { rift = null; asked = false; },
     get rift() { return rift; }, get arena() { return arena; },
     get inArena() { return !!arena; },
     get timeLeft() { return arena ? Math.max(0, ARENA_TIME - arena.t) : 0; },

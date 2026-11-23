@@ -800,7 +800,8 @@ G.Combat = (() => {
           continue;
         }
         if (G.U.dist2(p.x, p.y, pl.x, pl.y) < (p.r + pl.r) * (p.r + pl.r)) {
-          pl.hurt(p.dmg, p.mtype, false, p.cat);
+          // (pct: los orbes de Eternatus quitan un % de la vida.)
+          pl.hurt(p.pct ? Math.max(p.dmg, pl.maxHp * p.pct) : p.dmg, p.pct ? null : p.mtype, false, p.pct ? null : p.cat);
           G.FX.burst(p.x, p.y - G.LIFT, p.color, 7, 110);
           projectiles.splice(i, 1);
         }
@@ -903,7 +904,8 @@ G.Combat = (() => {
     if (pl.dead) return;
     for (const e of G.EnemyMgr.queryCircle(pl.x, pl.y, pl.r + 40)) {
       if (G.U.dist2(e.x, e.y, pl.x, pl.y) > (e.r + pl.r) * (e.r + pl.r)) continue;
-      if (e.arceus || e.touchCd > 0 || e.behavior === 'thief' || e.stunT > 0 || e.sleepT > 0 || (e.net && e.net.st & 16)) continue;
+      // (Eternatus y sus núcleos: lo de tocarle lo lleva systems/eternatus.js.)
+      if (e.arceus || e.eternatus || e.etCore || e.touchCd > 0 || e.behavior === 'thief' || e.stunT > 0 || e.sleepT > 0 || (e.net && e.net.st & 16)) continue;
       e.touchCd = 0.55;
       e.strike(pl);
       pl.hurt(e.dmg, e.atkType, false, e.cat);

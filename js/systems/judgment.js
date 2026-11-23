@@ -127,6 +127,8 @@ G.Judgment = (() => {
 
   /** Quien manda: elige la arena y los legendarios, y avisa a todos. */
   function start() {
+    // (Si la pelea con Eternatus sigue a las 30:00, se acaba sin premio: llega Arceus.)
+    if (G.Eternatus.active) G.Eternatus.abort();
     // (Arceus nunca sale de legendario más, ni con el gran Gengar de jefe: BOSS aquí aún es el de la partida anterior.)
     const pool = G.DEX.filter(p => p.leg && p.dex !== ARCEUS_B.dex && G.SPRITE_META[p.dex]);
     const q = [];
@@ -841,6 +843,8 @@ G.Judgment = (() => {
   return {
     AT, reset, noteDmg, hitArceus, dress, dmgK, update, cineTick, skip, bossDown, drawable, drawAir, drawOverlay, onEvent, adopt, netState, netApply,
     get active() { return !!phase; }, capSpd,
+    /** Vuestro daño a un enemigo por segundo, de los últimos 30 s (para la vida de Eternatus). */
+    singleDps,
     /** Copia local (bot): dónde está Arceus durante la pelea, su radio y si está lanzando algo. */
     get arceus() {
       if (phase !== 'fight' || !A) return null;

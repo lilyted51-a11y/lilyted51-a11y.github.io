@@ -106,7 +106,12 @@ G.Tiles = (() => {
     // árboles muertos, con un claro donde aterriza (clear). No es de ninguna grieta.
     judgment: { name: 'Ruinas del Juicio', floor: '#4a4240', wall: '#2e2829', liquid: 'lava', liq: '#e8a82a', foam: '#fff1b8', prop: 'dead',
                 leaf: '#3e3633', trunk: '#2a2321', flowers: ['#8a7f76', '#e8a82a', '#5a514c'], grass: '#5e544c', rock: '#6a625c',
-                pools: 0, pillars: 0.03, props: { tree: 0.012, rock: 0.02 }, weather: null, clear: 4.5 }
+                pools: 0, pillars: 0.03, props: { tree: 0.012, rock: 0.02 }, weather: null, clear: 4.5 },
+    // La arena de Eternatus Eternamax al minuto 20 (systems/eternatus.js): la Cima de la Torre, de
+    // noche y con cristales rojos; columnas para cubrirse de los orbes y un claro donde flota él.
+    eternatus: { name: 'Cima de la Torre', floor: '#3a2a3e', wall: '#1e1424', liquid: 'swamp', liq: '#7a2a5a', foam: '#ff9ab0', prop: 'crystal',
+                leaf: '#ff3b5c', trunk: '#4a2440', flowers: ['#ff3b5c', '#b04dff', '#5a3a5e'], grass: '#4a3050', rock: '#5a4060',
+                pools: 0, pillars: 0.035, props: { tree: 0.006 }, weather: null, clear: 6.5 }
   };
   const ARENA_TYPES = Object.keys(ARENA_THEMES);
 
@@ -134,6 +139,7 @@ G.Tiles = (() => {
   }
   for (const t of ARENA_TYPES) BIOMES.push(arenaBiome(ARENA_THEMES[t]));
   BIOMES[ARENA + ARENA_TYPES.indexOf('judgment')].name = ARENA_THEMES.judgment.name;
+  BIOMES[ARENA + ARENA_TYPES.indexOf('eternatus')].name = ARENA_THEMES.eternatus.name;
 
   // ---------------- Halloween (30-10 al 2-11, systems/halloween.js) ----------------
   /*

@@ -119,6 +119,23 @@ await A.ev(`G.RunUI.showItemChoice(['leftovers', 'metronome', 'heavyboots'], 'lu
 await A.ev(`G.UI.hide('scr-item'); (() => { const p = G.Game.player; p.itemSlots = 40; for (const it of G.Items.LIST) p.equip(it.id); return p.items.length; })()`); await sleep(400);
 await A.ev(`G.Game.togglePause(); 1`); await sleep(800); await grab('pausa'); await A.ev(`G.Game.togglePause(); 1`); await sleep(300);
 await misses('partida');
+
+// ---------- Eternatus Eternamax (minuto 20, 23-11-2026): aviso, las 4 fases, oscuridad, núcleos, victoria ----------
+await A.ev(`(() => { window.__POKE_BOT_ON__ = false; const p = G.Game.player; window.__hp0 = p.maxHp; p.maxHp = 1e7; p.hp = 1e7; window.__etHeal = setInterval(() => { const q = G.Game.player; if (q && !q.dead) q.hp = q.maxHp; }, 200); G.Game.debugTime(1196); return 1; })()`);
+const etHit = n => A.ev(`(() => { const b = G.Eternatus.boss; if (b) for (let i = 0; i < ${n}; i++) b.hurt(1e12, '#fff', 0, 0, 0); for (const c of G.EnemyMgr.all().filter(e => e.etCore && !e.dead && ${n} > 90)) c.hurt(1e12, '#fff', 0, 0, 0); return 1; })()`);
+const etPick = () => A.ev(`(() => { if (G.UI.isOpen('scr-levelup')) G.RunUI.pick(0); if (G.UI.isOpen('scr-item')) { const c = document.querySelector('#item-cards .card'); if (c) c.click(); } return 1; })()`);
+for (let i = 0; i < 12; i++) { await sleep(1000); await etPick(); if ((await A.ev(`G.Eternatus.phase`)) === 'p1') break; }
+await sleep(4000); await canvas('Eternatus fase 1');
+await etHit(20); await sleep(2500); await canvas('Eternatus fase 2 (núcleos)');
+await etHit(99); await sleep(800); await etPick(); await etHit(20); await sleep(1500); await etPick();
+for (let i = 0; i < 30; i++) { await sleep(500); await etPick(); if (await A.ev(`G.Eternatus.fx.some(f => f.kind === 'dark' || f.kind === 'vortex')`)) break; }
+await sleep(1500); await canvas('Eternatus fase 3');
+await etHit(20); await sleep(2500); await etPick(); await canvas('Eternatus: Rayo Eternamax');
+await etHit(99); await sleep(1000); await etPick(); await canvas('Eternatus aturdido');
+await etHit(20); for (let i = 0; i < 20; i++) { await sleep(600); await etPick(); if (!(await A.ev(`G.Eternatus.active`))) break; }
+await canvas('Eternatus: victoria y vuelta'); await misses('Eternatus');
+await A.ev(`(() => { clearInterval(window.__etHeal); const p = G.Game.player; p.maxHp = window.__hp0 || 100; p.hp = 1; return 1; })()`);
+
 await A.ev(`(() => { const p = G.Game.player; p.invuln = 0; p.hurt(999999, null, true); return 1; })()`);
 for (let i = 0; i < 20; i++) { await sleep(1000); if ((await A.ev(`G.Game.state`)) === 'over') break; }
 await sleep(2500); await grab('fin de partida'); await misses('fin de partida'); await canvas('fin de partida');

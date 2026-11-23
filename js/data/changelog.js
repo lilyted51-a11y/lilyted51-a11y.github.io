@@ -5,7 +5,14 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
-  { d: '2026-11-23', title: ["Más niveles, cartas sin límite y fuerza al empezar", "More levels, unlimited cards and starting strength"], chg: [
+  { d: '2026-11-23', title: ["Eternatus en el minuto 20, más niveles y cartas sin límite", "Eternatus at minute 20, more levels and unlimited cards"], new: [
+    ["Al minuto 20 el cielo se vuelve rojo y el grupo viaja a la Cima de la Torre para enfrentarse a Eternatus Eternamax, enorme y en tres fases: rayos que barren la arena, charcos tóxicos, coronas de orbes, cuatro núcleos que le protegen y hay que romper, la arena que se cierra, la Noche Oscura y un remolino que te arrastra.",
+     "At minute 20 the sky turns red and the group travels to the Tower Summit to face Eternamax Eternatus, huge and in three phases: beams that sweep the arena, toxic puddles, crowns of orbs, four cores that shield it and must be broken, an arena that closes in, Night Shade and a whirlpool that drags you."],
+    ["Con poca vida carga el Rayo Eternamax durante 8 segundos: rompe a tiempo el Núcleo Eterno para dejarle aturdido y más vulnerable, o ponte en uno de los círculos de luz. Ningún golpe suyo quita más del 30 % de tu vida, y ningún golpe tuyo le quita más del 10 % de la suya.",
+     "At low health it charges the Eternabeam for 8 seconds: break the Eternal Core in time to stun it and make it more vulnerable, or stand in one of the circles of light. None of its hits takes more than 30% of your health, and none of yours takes more than 10% of its own."],
+    ["Ganarle da 600 Pokémonedas, un ticket ×10 y el botín de un jefe. Si caes jugando en solitario, la partida termina; en grupo os podéis levantar entre vosotros. Si la pelea sigue en el minuto 30, llega la Sentencia de Arceus.",
+     "Beating it gives 600 Pokécoins, a ×10 ticket and boss loot. If you fall playing solo, the run ends; in a group you can revive each other. If the fight is still going at minute 30, Arceus's Judgment arrives."]
+  ], chg: [
     ["Subir de nivel cuesta un 25 % menos de experiencia que hasta ahora.",
      "Levelling up now takes 25% less experience than before."],
     ["Las cartas de mejora Vigor, Potencia, Carrera, Reflejos, Coraza, Síntesis, Imán, Ojo Crítico, Golpe Brutal y Cazador ya no tienen un número máximo de veces: siguen saliendo mientras te sirvan. Reflejos rebaja la recarga cada vez un poco menos, la parte de Coraza no pasa del 70 % y el crítico conserva sus topes.",

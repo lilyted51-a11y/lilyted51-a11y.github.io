@@ -129,6 +129,8 @@
     /** @param eff  'super' | 'weak' | null (tabla de tipos, sólo para enseñarlo) */
     hurt(amount, color = '#fff', dirX = 0, dirY = 0, knock = 0, eff = null) {
       if (this.dead) return;
+      // Eternatus (quien manda): inmune con núcleos, un 10 % como mucho y sin saltarse fases.
+      if (this.eternatus && !this.remote) { amount = G.Eternatus.filterHit(this, amount); if (!(amount > 0)) return; }
       const d = Math.max(1, Math.round(amount));
       // Arceus en la Sentencia: no cae nunca; el golpe suma a su cuenta de daño
       // (la lleva quien manda: el invitado se lo manda al anfitrión).
@@ -868,6 +870,8 @@
       if (o.shiny) e.makeShiny();
       e.maxHp = o.hp; e.hp = o.hp;
       if (o.beh === 'arceus') G.Judgment.dress(e);
+      else if (o.beh === 'eternatus') G.Eternatus.dress(e);
+      else if (o.beh === 'etcore' || o.beh === 'etcore2') G.Eternatus.dressCore(e);
       e.net = { x: o.x, y: o.y, vx: 0, vy: 0, age: 0, dir: 0, anim: 0, st: 0 };
       list.push(e);
       byId.set(e.id, e);
@@ -1041,11 +1045,11 @@
         // Jefe lejísimos de todos (salió junto a un compañero que aún volvía de la
         // grieta, o se quedó atrás): a los 4 s vuelve a salir cerca, fuera de la vista.
         // Si no, no se le encontraba y, con un jefe vivo, no salen grietas.
-        if (e.boss && !e.judge && !G.Rift.inArena) {
+        if (e.boss && !e.judge && !e.eternatus && !G.Rift.inArena) {
           e.lagT = G.U.dist2(e.x, e.y, near.x, near.y) > bossFar * bossFar ? e.lagT + dt : 0;
           if (e.lagT > 4) { e.lagT = 0; G.Spawner.ahead(e, near); }
         }
-        if (e.boss || e.shiny || e.arceus || G.Rift.inArena) continue;
+        if (e.boss || e.shiny || e.arceus || e.etCore || G.Rift.inArena) continue;
         // Rezagados: los que se quedan atrás mientras corres y llevan un rato
         // FUERA DE LA VISTA (de todos) vuelven a salir por delante de ti. Así
         // no se puede huir sin más, y nunca desaparece uno que estés viendo.
