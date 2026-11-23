@@ -49,6 +49,10 @@ G.Icons = (() => {
     shop: { pal: { g: '#5fe08a', w: '#f4f8ff', b: '#b07a4a', y: '#ffd23f' }, rows: [
       '............', 'kkkkkkkkkkkk', 'kgwgwgwgwgwk', 'kgwgwgwgwgwk', 'kkkkkkkkkkkk', '.kbbbbbbbbk.',
       '.kbkkkbbbbk.', '.kbkwkbyybk.', '.kbkwkbyybk.', '.kbkwkbbbbk.', '.kbkwkbbbbk.', 'kkkkkkkkkkkk'] },
+    // Vestidor (23-11-2026, copia local): una camiseta.
+    shirt: { pal: { b: '#5f8cff', w: '#cfe0ff', d: '#3a5ac0', y: '#ffd23f' }, rows: [
+      '............', '..kkk..kkk..', '.kbbbkkbbbk.', 'kbbwbbbbbbbk', 'kbwbbbbbbbbk', 'kkkkbbbbkkkk',
+      '...kbbbbk...', '...kbbbbk...', '...kbybbk...', '...kbbbbk...', '...kbbbdk...', '...kkkkkk...'] },
     gear: { pal: { g: '#c9d6ff', d: '#7f93c9' }, rows: [
       '....kkkk....', '.kk.kggk.kk.', '.kgkkggkkgk.', '..kggggggk..', 'kkggkkkkggkk', 'kgggk..kgddk',
       'kgggk..kgddk', 'kkggkkkkddkk', '..kggddddk..', '.kgkkddkkdk.', '.kk.kddk.kk.', '....kkkk....'] },

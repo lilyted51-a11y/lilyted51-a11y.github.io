@@ -6,6 +6,12 @@
  */
 G.CHANGELOG = [
   { d: '2026-11-23', title: ["Eternatus y sus poderes, Munchlax, objetos de un solo uso y cartas sin límite", "Eternatus and its powers, Munchlax, one-use items and unlimited cards"], new: [
+    ["Vestidor, en el menú (y con un botón en la ficha de cada Pokémon): para cada Pokémon eliges su versión normal o shiny, su aspecto (las formas que sólo cambian el dibujo), su skin, un efecto (brillos, aura de su tipo, halo de luz o aura oscura) y su estela, y lo ves dando vueltas antes de jugar.",
+     "Dressing Room, in the menu (and with a button on each Pokémon's page): for each Pokémon you choose its normal or shiny version, its look (forms that only change the sprite), its skin, an effect (sparkles, type aura, halo of light or dark aura) and its trail, and you can watch it walk around before playing."],
+    ["56 estelas para lo que deja tu Pokémon al moverse: huellas, hojas, burbujas, corazones, estrellas, arcoíris, sombras, cometas y muchas más. Se compran una vez en la nueva pestaña Estelas de la Tienda Kecleon (12 distintas cada semana, las mismas para todos) y valen para todos tus Pokémon. En grupo, los demás ven la tuya.",
+     "56 trails for what your Pokémon leaves behind as it moves: footprints, leaves, bubbles, hearts, stars, rainbows, shadows, comets and many more. Buy each one once in the Kecleon Shop's new Trails tab (12 different ones each week, the same for everyone) and it works for all your Pokémon. In a group, the others see yours."],
+    ["Ajustes → Gráficos: estelas de todos, sólo la tuya o ninguna; estelas ligeras (la mitad de partículas) y efectos de los Pokémon sí o no.",
+     "Settings → Graphics: everyone's trails, only yours or none; light trails (half the particles) and Pokémon effects on or off."],
     ["Al minuto 20 el cielo se vuelve rojo y el grupo viaja a la Cima de la Torre para enfrentarse a Eternatus Eternamax, enorme y en tres fases: rayos que barren la arena, charcos tóxicos, coronas de orbes, cuatro núcleos que le protegen y hay que romper, la arena que se cierra, la Noche Oscura y un remolino que te arrastra.",
      "At minute 20 the sky turns red and the group travels to the Tower Summit to face Eternamax Eternatus, huge and in three phases: beams that sweep the arena, toxic puddles, crowns of orbs, four cores that shield it and must be broken, an arena that closes in, Night Shade and a whirlpool that drags you."],
     ["Con poca vida carga el Rayo Eternamax durante 8 segundos: rompe a tiempo el Núcleo Eterno para dejarle aturdido y más vulnerable, o ponte en uno de los círculos de luz. Ningún golpe suyo quita más del 30 % de tu vida, y ningún golpe tuyo le quita más del 10 % de la suya.",
@@ -25,6 +31,10 @@ G.CHANGELOG = [
     ["Fin de partida: botón «Volver a jugar» para empezar otra al momento con el mismo Pokémon y la misma dificultad.",
      "End of run: a «Play again» button to start another one right away with the same Pokémon and difficulty."]
   ], chg: [
+    ["Las estelas ya no vienen de serie: se consiguen en la Tienda Kecleon. Los jefes y los legendarios de la grieta dejan la suya, de su tipo, y los shiny enemigos siguen con sus brillos.",
+     "Trails no longer come by default: you get them at the Kecleon Shop. Bosses and rift legendaries leave their own, in their type's colors, and shiny enemies keep their sparkles."],
+    ["La skin de cada Pokémon se pone y se quita ahora en el Vestidor.",
+     "Each Pokémon's skin is now put on and taken off in the Dressing Room."],
     ["Subir de nivel cuesta un 25 % menos de experiencia que hasta ahora.",
      "Levelling up now takes 25% less experience than before."],
     ["Las cartas de mejora Vigor, Potencia, Carrera, Reflejos, Coraza, Síntesis, Imán, Ojo Crítico, Golpe Brutal y Cazador ya no tienen un número máximo de veces: siguen saliendo mientras te sirvan. Reflejos rebaja la recarga cada vez un poco menos, la parte de Coraza no pasa del 70 % y el crítico conserva sus topes.",

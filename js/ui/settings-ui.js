@@ -86,6 +86,11 @@ G.SettingsUI = (() => {
         + toggle('minimap', 'Minimapa', 'Radar en la esquina: jefes, legendarios, grieta, cofres grandes, shinies y compañeros.')
         + toggle('calm', 'Menos sacudidas y destellos', 'La cámara tiembla menos y los fogonazos son suaves.')
         + toggle('fps', 'Mostrar FPS', 'Fotogramas por segundo, en la esquina de abajo.')
+        + section('Efectos y estelas', 'Lo que eliges para cada Pokémon en el Vestidor.')
+        + `<div class="set-row"><div class="grow"><b>${esc(G.T('Estelas en la partida'))}</b><small>${esc(G.T('Lo que dejan los Pokémon al moverse: las de todos, sólo la tuya o ninguna.'))}</small></div></div>`
+        + choice('trails', [['all', 'Todas'], ['mine', 'Sólo la mía'], ['off', 'Ninguna']])
+        + toggle('trailLite', 'Estelas ligeras', 'La mitad de partículas en las estelas, por si el juego va a tirones.')
+        + toggle('dressFx', 'Efectos de los Pokémon', 'Brillos, auras y halos elegidos en el Vestidor (los tuyos y los de tus compañeros).')
         + (canFull() ? `<div class="set-row"><div class="grow"><b>Pantalla completa</b><small>Sin barras del navegador.</small></div>
              <button class="btn small" id="set-full">${isFull() ? 'Salir' : 'Activar'}</button></div>`
            : iosTip() ? `<div class="set-row"><div class="grow"><b>Pantalla completa</b><small>${esc(IOS_TIP)}</small></div></div>` : '');

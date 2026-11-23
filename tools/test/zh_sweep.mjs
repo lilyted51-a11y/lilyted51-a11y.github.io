@@ -52,7 +52,7 @@ await A.go(`http://localhost:8765/dev.html?dev&halloween=1`, 8000);
 await A.ev(`document.getElementById('tap-start').click(); 1`); await sleep(1200);
 await A.ev(`document.getElementById('scr-invite').classList.add('hidden'); G.DB.playAsGuest(); const s = G.DB.save; s.partner = 352; for (const d of [352, 94, 25, 1382, 150]) s.owned[d] = { at: 1 }; s.coins = 99999; s.tickets = { t1: 500, t10: 50 }; s.bag = { candy: 900, mint: 2, cap: 1, caph: 1 }; s.skins = { hat: Date.now(), 'bruja-gengar': Date.now() }; G.Skins.wear(s, 352, 'hat'); const u = G.DB.upgradesOf(352); for (const x of G.Upgrades.LIST) u[x.id] = x.max; G.UI.hideAll(); G.MenuUI.open(); 1`); await sleep(1500);
 await grab('menú'); await misses('menú');
-for (const go of ['dex', 'upgrades', 'shop', 'bag', 'gacha', 'goals', 'friends', 'rank', 'settings']) {
+for (const go of ['dex', 'wardrobe', 'upgrades', 'shop', 'bag', 'gacha', 'goals', 'friends', 'rank', 'settings']) {
   await A.ev(`G.UI.hideAll(); G.MenuUI.open(); 1`); await sleep(300);
   const ok = await A.ev(`(() => { const b = document.querySelector('#scr-menu [data-go=${go}]'); if (b) b.click(); return !!b; })()`); await sleep(1800);
   if (!ok) continue;
@@ -71,6 +71,20 @@ for (const go of ['dex', 'upgrades', 'shop', 'bag', 'gacha', 'goals', 'friends',
 }
 await A.ev(`G.UI.hideAll(); document.getElementById('btn-news').click(); 1`); await sleep(1500); await grab('novedades'); await misses('novedades'); await click('#news-close');
 
+// ---------- Vestidor y estelas (23-11-2026): cada Pokémon, versión, aspecto, skin, efectos, estelas, tienda y ficha ----------
+await A.ev(`(() => { const s = G.DB.save; s.owned[412] = { at: 1 }; s.shiny[25] = { at: 1 }; for (const t of G.Trails.LIST) s.trails[t.id] = Date.now(); G.Dress.set(s, 352, { tr: 'arcoiris', fx: 'aura' }); G.UI.hideAll(); G.MenuUI.open(); return 1; })()`); await sleep(500);
+for (const d of [352, 25, 412, 94]) {
+  await A.ev(`G.WardrobeUI.open(${d}, 'dex'); 1`); await sleep(1000); await grab('Vestidor ' + d);
+  await clickAll('#wd-opts .chip[data-k=sh]:not([disabled])'); await clickAll('#wd-opts .chip[data-k=lk]'); await clickAll('#wd-opts .chip[data-k=sk]'); await clickAll('#wd-opts .chip[data-k=fx]');
+}
+await clickAll('#wd-opts .chip[data-k=tr]');
+await A.ev(`(() => { const q = document.getElementById('wd-q'); q.value = 'zzzz'; q.dispatchEvent(new Event('input')); return 1; })()`); await sleep(500); await grab('Vestidor sin resultados');
+await A.ev(`G.WardrobeUI.back(); 1`); await sleep(1000); await grab('ficha (botón del Vestidor)');
+await A.ev(`G.ShopUI.open('trails'); 1`); await sleep(1500); await grab('tienda: estelas (compradas)');
+await A.ev(`(() => { G.DB.save.trails = {}; G.ShopUI.render(); return 1; })()`); await sleep(800); await grab('tienda: estelas (a la venta)');
+await A.ev(`G.ShopUI.open('items'); 1`); await sleep(500);
+await misses('Vestidor y estelas');
+
 // Aviso de una actualización (login.js, NOTES): sólo sale con cuenta en la nube; aquí se enseña el de guardado automático tal cual.
 await A.ev(`(() => { G.UI.hideAll(); G.MenuUI.open();
   document.getElementById('savenote-title').textContent = 'Guardado automático';
@@ -81,6 +95,8 @@ await grab('aviso de guardado automático'); await misses('aviso de guardado aut
 await A.ev(`document.getElementById('scr-savenote').classList.add('hidden'); 1`);
 
 // ---------- partida ----------
+// (con estela y efecto del Vestidor, 23-11-2026)
+await A.ev(`(() => { const s = G.DB.save; s.trails.corazonesiris = Date.now(); G.Dress.set(s, 1382, { tr: 'corazonesiris', fx: 'halo' }); return 1; })()`);
 await A.ev(`G.UI.hideAll(); G.DB.save.partner = 1382; G.Boost.paused = false; G.Boost.debugAs('BENCH', null, true); G.Game.startRun(); G.Game.debugSpeed(2); window.__POKE_BOT_ON__ = true; window.__canvasTexts.clear(); 1`);
 let lvSeen = false, itemSeen = false;
 for (let i = 0; i < 30; i++) {

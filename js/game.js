@@ -215,6 +215,7 @@ G.Game = (() => {
     G.UI.hideAll();
     G.UI.chrome(false);
     G.FX.clear();
+    G.Trails.clear();
     G.Projectiles.clear();
     G.Combat.clearFields();
     G.EnemyMgr.clear();
@@ -240,6 +241,7 @@ G.Game = (() => {
     G.Orbs.reset();
     pl.setAbility(G.Mons.abilityOf(mon.dex).id);
     pl.anim.skin = G.Skins.worn(save, mon.dex) || null;      // su disfraz (core/skins.js)
+    G.Dress.applyRun(pl, save, mon.dex);                     // Vestidor: estela, efecto y aspecto (core/dress.js)
     pl.candy = 0;
     banked = { t1: 0, t10: 0, cn: 0 };
     t10Sec = 0;
@@ -266,7 +268,7 @@ G.Game = (() => {
     }
     G.Camera.x = pl.x; G.Camera.y = pl.y; G.Camera.shake = 0;
     // Hojas de sprites locales: el compañero y los primeros enemigos.
-    G.Sprites.preload([mon.dex], 8000, pl.shiny, pl.anim.skin || '');
+    G.Sprites.preload([pl.anim.dex], 8000, pl.anim.shiny, pl.anim.skin || '');
     G.Audio.music(G.BIOME_MUSIC[0]);
     // Ranking: sube las marcas del histórico que estaban esperando (ver DEFER en ranking.js).
     G.Ranking.newSeal();          // el sello del ranking de esta partida (también el invitado)
@@ -836,7 +838,8 @@ G.Game = (() => {
       return;
     }
     if (state === 'ui') {
-      // Esc en una subpantalla del menú vuelve al menú.
+      // Esc en una subpantalla del menú vuelve al menú (el Vestidor, a donde se abrió).
+      if (G.Input.tap('escape') && G.UI.isOpen('scr-wardrobe')) { G.WardrobeUI.back(); return; }
       if (G.Input.tap('escape') && !G.UI.isOpen('scr-profile') && ['scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-friends', 'scr-rank', 'scr-goals'].some(G.UI.isOpen)
           && document.getElementById('pull-fx').classList.contains('hidden')) G.MenuUI.open();
       return;
@@ -1058,6 +1061,7 @@ G.Game = (() => {
     G.Events.update(dt, awake, time);
     G.Weather.update(dt, time, pl);
     G.FX.update(dt);
+    G.Trails.run(dt, all);                 // estelas y efectos (entities/trails.js)
 
     G.Audio.music(G.Judgment.active ? G.Judgment.music : G.Rift.inArena ? 'rift' : G.EnemyMgr.bossAlive() ? 'boss' : G.BIOME_MUSIC[biome % G.BIOME_MUSIC.length]);
     if (!coop || G.Coop.isHost) maybeLevelUp();
@@ -1094,6 +1098,7 @@ G.Game = (() => {
     G.Hazards.draw(ctx);
     G.Combat.drawGroundFields(ctx);
     G.Pickups.draw(ctx);
+    if (pl && state !== 'ui') G.Trails.drawUnder(ctx);     // estelas en el suelo (entities/trails.js)
 
     // Todo lo que tiene "pies" se ordena por Y: objetos, enemigos, jugador.
     const items = [];
@@ -1149,6 +1154,7 @@ G.Game = (() => {
     ctx.scale(G.Camera.scale, G.Camera.scale);
     G.Camera.apply(ctx);
     drawScene(G.Camera, G.Coop.active ? [pl, ...G.Coop.puppets()] : [pl]);
+    G.Trails.drawAir(ctx);
     G.Projectiles.draw(ctx);
     G.Combat.drawAirFields(ctx);
     G.FX.draw(ctx);

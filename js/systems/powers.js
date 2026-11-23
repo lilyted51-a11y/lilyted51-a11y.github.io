@@ -196,7 +196,7 @@ G.Powers = (() => {
     if (!judge) pl.hp = Math.min(pl.maxHp, pl.hp * 2);
     pl.atkMul *= 1.4;
     const dir = pl.anim.dir;
-    pl.anim = new G.Sprites.Animator(pl.dex, pl.scale * 2, pl.shiny);
+    pl.anim = new G.Sprites.Animator(pl.dynaSave.anim.dex, pl.scale * 2, pl.dynaSave.anim.shiny);   // (con su aspecto del Vestidor)
     pl.anim.dir = dir; pl.anim.skin = pl.dynaSave.skin;
     pl.r = pl.dynaSave.r * 1.3;
     pl.bodyH = pl.dynaSave.bodyH * 2;
@@ -209,7 +209,7 @@ G.Powers = (() => {
     pl.maxHp = s.maxHp;
     pl.atkMul /= 1.4;
     const dir = pl.anim.dir;
-    pl.anim = new G.Sprites.Animator(pl.dex, pl.scale, pl.shiny);
+    pl.anim = new G.Sprites.Animator(s.anim.dex, pl.scale, s.anim.shiny);
     pl.anim.dir = dir; pl.anim.skin = s.skin;
     pl.r = s.r; pl.bodyH = s.bodyH;
     pl.dyna = false; pl.dynaSave = null;
@@ -305,11 +305,11 @@ G.Powers = (() => {
     p.netPw = code;
     if (code === 1 && !wasDyna) {
       p.netScale0 = p.scale; const dir = p.anim.dir;
-      p.anim = new G.Sprites.Animator(p.dex, p.scale * 2, p.shiny); p.anim.dir = dir;
+      p.anim = new G.Sprites.Animator(p.anim.dex, p.scale * 2, p.anim.shiny); p.anim.dir = dir;
       p.bodyH *= 2;
     } else if (code !== 1 && wasDyna) {
       const dir = p.anim.dir;
-      p.anim = new G.Sprites.Animator(p.dex, p.netScale0 || p.scale, p.shiny); p.anim.dir = dir;
+      p.anim = new G.Sprites.Animator(p.anim.dex, p.netScale0 || p.scale, p.anim.shiny); p.anim.dir = dir;
       p.bodyH /= 2;
     }
     p.tera = code >= 10 ? (code === 40 ? 'stellar' : TYPES[code - 10]) : null;

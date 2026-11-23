@@ -215,8 +215,9 @@
       <div class="menu-list">
         <button class="menu-item play" data-go="play">Jugar<small>Entra en la mazmorra</small></button>
         <button class="menu-item" data-go="dex">Pokémon<small id="menu-dex-count">Tu colección</small></button>
+        <button class="menu-item" data-go="wardrobe">Vestidor<small>Shiny, aspecto, skin, efectos y estela</small></button>
         <button class="menu-item" data-go="upgrades">Mejoras<small>Haz más fuerte cada run</small></button>
-        <button class="menu-item" data-go="shop">Tienda Kecleon<small>Mentas, Cápsulas y MT</small></button>
+        <button class="menu-item" data-go="shop">Tienda Kecleon<small>Mentas, Cápsulas, MT y estelas</small></button>
         <button class="menu-item" data-go="bag">Mochila<small id="menu-bag-sub">Vacía</small></button>
         <button class="menu-item" data-go="gacha">Gacha<small>9 regiones · Pokémon y shinies</small></button>
         <button class="menu-item" data-go="goals">Misiones<small id="menu-goals-sub">Misiones, logros y perfil</small></button>
@@ -535,7 +536,23 @@
         <button class="btn small ghost" data-back>Volver</button>
       </div>
       <p class="sub" style="margin:8px 0 0" id="shop-hello">¡Bienvenido! Mentas, Cápsulas y MT. Lo que compres va a tu Mochila (en el menú principal); úsalo desde la ficha de cada Pokémon en la colección.</p>
+      <div class="gen-tabs" id="shop-tabs"></div>
       <div id="shop-body"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== Vestidor (23-11-2026, copia local; ver ui/wardrobe-ui.js): versión, aspecto, skin, efectos y estela de cada Pokémon ====== -->
+<section id="scr-wardrobe" class="scr dim hidden">
+  <div class="box wide wd-box">
+    <div class="row between"><h2>Vestidor</h2><button class="btn small ghost" id="wd-back">Volver</button></div>
+    <div class="wd-pick">
+      <input id="wd-q" class="field" type="search" maxlength="24" spellcheck="false" autocomplete="off" placeholder="Buscar Pokémon: nombre, chino o número">
+      <div id="wd-list" class="wd-list"></div>
+    </div>
+    <div class="wd-main">
+      <div class="wd-stage"><canvas id="wd-stage" width="440" height="240"></canvas><div class="wd-name" id="wd-name"></div></div>
+      <div id="wd-opts" class="wd-opts"></div>
     </div>
   </div>
 </section>
@@ -698,6 +715,7 @@
 <script defer src="js/core/gamepad.js"></script>
 <script defer src="js/core/sprites.js"></script>
 <script defer src="js/core/skins.js"></script>
+<script defer src="js/core/dress.js"></script>
 <script defer src="js/systems/halloween.js"></script>
 <script defer src="js/core/camera.js"></script>
 <!-- datos de juego -->
@@ -721,6 +739,7 @@
 <!-- entidades -->
 <script defer src="js/entities/vfx.js"></script>
 <script defer src="js/entities/fx.js"></script>
+<script defer src="js/entities/trails.js"></script>
 <script defer src="js/entities/projectile.js"></script>
 <script defer src="js/entities/enemy.js"></script>
 <script defer src="js/entities/pickup.js"></script>
@@ -762,6 +781,7 @@
 <script defer src="js/ui/slots.js"></script>
 <script defer src="js/ui/gacha-ui.js"></script>
 <script defer src="js/ui/shop-ui.js"></script>
+<script defer src="js/ui/wardrobe-ui.js"></script>
 <script defer src="js/ui/run-ui.js"></script>
 <script defer src="js/ui/social-ui.js"></script>
 <script defer src="js/ui/chat-ui.js"></script>

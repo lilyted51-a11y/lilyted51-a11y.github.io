@@ -1173,3 +1173,39 @@ html:lang(zh) .btn, html:lang(zh) .chip { letter-spacing: 0; }
 .mode-pick .seg button.locked { opacity: .5; }
 .mode-pick .seg small { font-size: 10px; opacity: .85; }
 .mode-sub { font-size: 12px; color: var(--muted); min-height: 15px; }
+
+/* ============ Vestidor y estelas (23-11-2026, copia local: ui/wardrobe-ui.js, entities/trails.js) ============ */
+#scr-wardrobe .wd-box { width: min(980px, 100%); }
+.wd-pick { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.wd-pick .field { width: min(320px, 100%); }
+.wd-list { display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 8px; }
+.wd-cell { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; width: 72px; padding: 4px 2px; cursor: pointer;
+  background: rgba(0,0,0,.22); border: 2px solid transparent; border-radius: 8px; color: inherit; font: inherit; }
+.wd-cell:hover { border-color: var(--edge); }
+.wd-cell.on { border-color: var(--gold); background: rgba(255,210,63,.12); }
+.wd-cell small { font-size: 11px; max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+.wd-cell canvas { image-rendering: pixelated; }
+.wd-more { align-self: center; flex: 0 0 auto; margin: 0 8px; font-size: 12px; }
+.wd-main { display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: 14px; margin-top: 6px; align-items: start; }
+.wd-stage { position: relative; }
+.wd-stage canvas { width: 100%; height: auto; display: block; border-radius: 10px; image-rendering: pixelated; border: 2px solid rgba(255,255,255,.12); }
+.wd-name { position: absolute; left: 10px; top: 8px; display: flex; align-items: center; gap: 6px; text-shadow: 0 1px 2px #000; }
+.wd-opts { display: flex; flex-direction: column; gap: 8px; }
+.wd-sec h4 { margin: 0 0 4px; font-size: 14px; color: var(--muted); }
+.wd-sec .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.wd-sec .chip[disabled] { opacity: .45; cursor: default; }
+.wd-note { margin: 4px 0 0; font-size: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.wd-foot { margin-top: 4px; }
+.wd-foot .btn { width: 100%; }
+.trail-grid { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+.trail-item { grid-template-columns: 132px 1fr auto !important; }
+.rar-dot { display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 2px; vertical-align: middle; }
+.trail-item canvas { border-radius: 6px; image-rendering: pixelated; }
+@media (max-width: 760px) {
+  .wd-main { grid-template-columns: 1fr; }
+  .wd-stage { width: fit-content; max-width: 100%; margin: 0 auto; }
+  .wd-stage canvas { width: auto; max-width: 100%; max-height: 44vh; }
+  .trail-item { grid-template-columns: 96px 1fr auto !important; }
+  .trail-item canvas { width: 96px; height: auto; }
+}
+@media (max-width: 600px) { #scr-wardrobe { padding-top: 92px; } }
