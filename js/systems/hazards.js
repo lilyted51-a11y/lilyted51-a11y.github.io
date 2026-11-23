@@ -49,7 +49,10 @@ G.Hazards = (() => {
         if (pl && !pl.dead && inside(h, pl.x, pl.y, pl.r) && !(h.boom && pl.abil && pl.abil.damp)) {
           pl.invuln = 0;
           // (Supertapones: los ataques con aviso en el suelo quitan un 30 % menos.)
-          pl.hurt((h.pct ? Math.max(h.dmg, pl.maxHp * h.pct) : h.dmg) * (pl.hasItem('earplugs') ? 0.7 : 1), h.type, !!h.pure, h.cat);
+          // Los de Arceus (pure) también se rebajan con la reducción de daño, pero mucho menos: como mucho
+          // un 30 % con la reducción al 80 % (el oficial del 16-11). Tocarle sigue quitando lo mismo.
+          const red = h.pure ? 1 - Math.min(0.8, pl.reduction) * 0.375 : 1;
+          pl.hurt((h.pct ? Math.max(h.dmg, pl.maxHp * h.pct) : h.dmg) * (pl.hasItem('earplugs') ? 0.7 : 1) * red, h.type, !!h.pure, h.cat);
         }
       }
       if (h.hit && h.t >= h.delay + h.end) list.splice(i, 1);

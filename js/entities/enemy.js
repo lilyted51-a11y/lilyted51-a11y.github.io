@@ -231,6 +231,8 @@
         for (let i = 0; i < 10; i++) G.Pickups.drop('coin', this.x + G.U.rand(-40, 40), this.y + G.U.rand(-30, 30), 5);
         // Los jefes siempre sueltan un objeto equipable.
         G.Pickups.drop('item', this.x - 26, this.y - 10, G.Items.roll());
+        // Uno de un solo uso (systems/consum.js): el legendario de la grieta siempre; un jefe, 1 de cada 3.
+        if (this.legend || Math.random() < 0.35) G.Pickups.drop('use', this.x + 26, this.y - 10, G.Consum.roll());
       }
       G.Pickups.dropXp(this.x, this.y, this.xp, this.boss, !!this.legend, !!this.judge);
       // Halloween: caramelos, con el ritmo que deja systems/halloween.js (los Fantasma

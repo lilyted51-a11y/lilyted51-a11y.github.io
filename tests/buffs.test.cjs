@@ -31,7 +31,7 @@ test('stacking still works as before when the new one is at least as good', () =
   assert.deepEqual(q.buffs.spd, { n: 2, t: 3, amount: 0.1 });
 });
 
-test('Assault Vest does not count toward the 70% cap of the Armor cards, and taking it off loses nothing (#340)', () => {
+test('Assault Vest does not count toward the 80% cap of the Armor cards, and taking it off loses nothing (#340)', () => {
   const H = {};
   new Function('G', source('js/data/items.js'))(H);
   new Function('G', source('js/systems/levelup.js'))(H);
@@ -39,9 +39,13 @@ test('Assault Vest does not count toward the 70% cap of the Armor cards, and tak
   const p = { dmgReduce: 0, itemReduce: 0, buffs: { def: { n: 0, t: 0, amount: 0 } } };
   Object.defineProperty(p, 'reduction', Object.getOwnPropertyDescriptor(G.Player.prototype, 'reduction'));
   vest.on(p);
-  for (let i = 0; i < 12; i++) card.apply(p);
-  assert.equal(Math.round(p.dmgReduce * 100), 70, 'the cards alone reach 70%');
+  for (let i = 0; i < 10; i++) if (card.cond(p)) card.apply(p);
+  assert.equal(Math.round(p.dmgReduce * 100), 60, 'the vest does not stop the cards');
+  assert.ok(card.cond(p), 'the card is still offered with the vest on');
+  for (let i = 0; i < 10; i++) if (card.cond(p)) card.apply(p);
+  assert.equal(Math.round(p.dmgReduce * 100), 80, 'the cards alone reach 80% (official 16-11)');
+  assert.ok(!card.cond(p), 'then the card stops showing up');
   assert.equal(Math.round(p.reduction * 100), 80, 'with the vest on top (overall limit 80%)');
   vest.off(p);
-  assert.equal(Math.round(p.reduction * 100), 70, 'taking the vest off keeps the cards');
+  assert.equal(Math.round(p.reduction * 100), 80, 'taking the vest off keeps the cards');
 });

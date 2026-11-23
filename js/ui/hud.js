@@ -103,6 +103,7 @@ G.HUD = (() => {
     ctx.textAlign = 'center';
     ctx.fillText(Math.ceil(pl.hp) + ' / ' + Math.round(pl.maxHp), px + 48 + 84, py + 26);
     G.Powers.drawHud(ctx, pl, px + 48, py + 30, 168);          // el poder (systems/powers.js)
+    G.Consum.drawHud(ctx, pl, px + 48, py + (pl.powerId ? 38 : 30));   // bayas guardadas (systems/consum.js)
     G.Powers.touchButton(ctx, pl, w - 58, h - 150);
 
     // buffs activos

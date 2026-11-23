@@ -5,7 +5,7 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
-  { d: '2026-11-23', title: ["Eternatus en el minuto 20, sus poderes, más niveles y cartas sin límite", "Eternatus at minute 20 and its powers, more levels and unlimited cards"], new: [
+  { d: '2026-11-23', title: ["Eternatus y sus poderes, Munchlax, objetos de un solo uso y cartas sin límite", "Eternatus and its powers, Munchlax, one-use items and unlimited cards"], new: [
     ["Al minuto 20 el cielo se vuelve rojo y el grupo viaja a la Cima de la Torre para enfrentarse a Eternatus Eternamax, enorme y en tres fases: rayos que barren la arena, charcos tóxicos, coronas de orbes, cuatro núcleos que le protegen y hay que romper, la arena que se cierra, la Noche Oscura y un remolino que te arrastra.",
      "At minute 20 the sky turns red and the group travels to the Tower Summit to face Eternamax Eternatus, huge and in three phases: beams that sweep the arena, toxic puddles, crowns of orbs, four cores that shield it and must be broken, an arena that closes in, Night Shade and a whirlpool that drags you."],
     ["Con poca vida carga el Rayo Eternamax durante 8 segundos: rompe a tiempo el Núcleo Eterno para dejarle aturdido y más vulnerable, o ponte en uno de los círculos de luz. Ningún golpe suyo quita más del 30 % de tu vida, y ningún golpe tuyo le quita más del 10 % de la suya.",
@@ -15,7 +15,11 @@ G.CHANGELOG = [
     ["Al vencer a Eternatus eliges un poder para el resto de la partida: Megaevolución (o su forma de poder), Dinamax, Pulsera Z o Teracristal. Se activa con F (B en el mando, botón redondo en el móvil), dura unos segundos y se recarga solo. En grupo, cada uno elige el suyo.",
      "After beating Eternatus you choose a power for the rest of the run: Mega Evolution (or its power form), Dynamax, Z-Ring or Terastal. Trigger it with F (B on a gamepad, a round button on mobile); it lasts a few seconds and recharges by itself. In a group, everyone picks their own."],
     ["Megaevolución: 40 s con los tipos, el aspecto y la fuerza de esa forma. Dinamax: 12 s gigante, con el doble de vida, más daño, golpes que salpican y aplastando a los Pokémon normales. Pulsera Z: 15 s lanzando grandes Z y, al final, un movimiento Z que golpea a toda la pantalla. Teracristal: 30 s del tipo elegido, con sus ataques de ese tipo mucho más fuertes (Astral: todos un poco más). La nueva carta Poder rápido acorta la recarga.",
-     "Mega Evolution: 40 s with the types, look and strength of that form. Dynamax: 12 s as a giant, with double health, more damage, splashing hits and crushing normal Pokémon. Z-Ring: 15 s throwing big Zs and, at the end, a Z-Move that hits the whole screen. Terastal: 30 s as the chosen type, with its attacks of that type much stronger (Stellar: all of them a bit stronger). The new Quick Power card shortens the cooldown."]
+     "Mega Evolution: 40 s with the types, look and strength of that form. Dynamax: 12 s as a giant, with double health, more damage, splashing hits and crushing normal Pokémon. Z-Ring: 15 s throwing big Zs and, at the end, a Z-Move that hits the whole screen. Terastal: 30 s as the chosen type, with its attacks of that type much stronger (Stellar: all of them a bit stronger). The new Quick Power card shortens the cooldown."],
+    ["Nuevo evento, Munchlax hambriento: pide una baya, y al pasar por encima de los arbustos se sacuden y sueltan la suya (dos esconden un enjambre de Combee). Llévale 3 de las que pide antes de dos minutos y medio y os regala un objeto y un Caramelo Exp. a cada uno.",
+     "New event, Hungry Munchlax: it asks for a berry, and walking over bushes shakes them so they drop theirs (two hide a swarm of Combee). Bring it 3 of the kind it wants within two and a half minutes and it gives each of you an item and an Exp. Candy."],
+    ["Objetos de un solo uso, que no ocupan hueco: el Caramelo Exp. sube un nivel y los Mochis (Vida, Ataque, Velocidad y Defensa) dan un +5 % hasta acabar la partida; las bayas se guardan y se gastan solas cuando hacen falta: Zidra cura, Atania da más daño con poca vida y Meloc quita los frenazos. Salen de los cofres con candado, los jefes, los legendarios de la grieta y, a veces, de los cofres pequeños.",
+     "One-use items that take no slot: the Exp. Candy gives a level and the Mochis (Health, Muscle, Swift and Resist) give +5% for the rest of the run; berries are kept and used by themselves when needed: Sitrus heals, Liechi gives more damage at low health and Pecha removes slowdowns. They come from locked chests, bosses, rift legendaries and sometimes small chests."]
   ], chg: [
     ["Subir de nivel cuesta un 25 % menos de experiencia que hasta ahora.",
      "Levelling up now takes 25% less experience than before."],
@@ -26,10 +30,16 @@ G.CHANGELOG = [
     ["Cada Pokémon empieza la partida con una fuerza según su familia: los ya evolucionados, con la de su primera fase, y alcanzan la suya en el nivel 40; los que no evolucionan, con el 65 % y llegan al 100 % en el nivel 40. Los que evolucionan durante la partida no cambian. La ficha de cada Pokémon lo indica.",
      "Each Pokémon starts a run with a strength that depends on its family: already-evolved ones start with that of their first stage and reach their own at level 40; those that do not evolve start at 65% and reach 100% at level 40. Those that evolve during the run are unchanged. Each Pokémon's sheet shows it."],
     ["En grupo, el cofre con candado reparte su nivel entre los jugadores: medio nivel con dos, un tercio con tres, y así. En solitario sigue dando un nivel entero.",
-     "In a group, the locked chest splits its level between the players: half a level with two, a third with three, and so on. Solo, it still gives a whole level."]
+     "In a group, the locked chest splits its level between the players: half a level with two, a third with three, and so on. Solo, it still gives a whole level."],
+    ["La reducción de daño llega ahora hasta el 80 % (la carta Coraza sale mientras no lo tengas), y también rebaja los ataques de Arceus, pero mucho menos: como mucho un 30 % con la reducción al máximo. Tocarle sigue quitando lo mismo.",
+     "Damage reduction now goes up to 80% (the Armor card shows up until you have it), and it also lowers Arceus's attacks, but much less: at most 30% with maximum reduction. Touching him still takes the same."]
   ], fix: [
     ["Desde el minuto 12 el mapa se teñía con los colores y los charcos de las arenas de grieta. Ahora sigue alternando sus propios paisajes.",
-     "From minute 12 on, the map took on the colors and puddles of the rift arenas. It now keeps alternating its own landscapes."]
+     "From minute 12 on, the map took on the colors and puddles of the rift arenas. It now keeps alternating its own landscapes."],
+    ["El Remolino Infinito de Eternatus podía mandar a tu Pokémon fuera del mapa (desaparecía y no se podía jugar).",
+     "Eternatus's Infinite Whirlpool could send your Pokémon off the map (it vanished and the run could not go on)."],
+    ["Un altar ya usado se volvía a encender al regresar más tarde a esa zona del mapa; y el Pokémon perdido te espera quieto mientras estás en una grieta (antes se iba andando y se le acababa el tiempo).",
+     "An altar you had used came back on when you returned to that part of the map later; and the lost Pokémon now waits for you while you are in a rift (it used to wander off and run out of time)."]
   ]},
   { d: '2026-11-16', title: ["Cartas, evolución y objetos: la partida cambia de ritmo", "Cards, evolution and items: runs change pace"], new: [
     ["Cada subida de nivel ofrece cuatro cartas para elegir (antes eran tres). Se pueden elegir con las teclas 1 a 4.",

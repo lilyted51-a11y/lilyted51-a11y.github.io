@@ -43,6 +43,7 @@ G.World = (() => {
   let fade = null;                         // { from, images, t }
   const MAX_IMAGES = 48, MAX_DATA = 400;
   const broken = new Set();                // props destruidos: "tx,ty"
+  const usedAltars = new Set();            // altares ya usados: "tx,ty" (al volver a la zona siguen apagados)
   let nextPropId = 1;
 
   // ---------------- ruido ----------------
@@ -171,6 +172,7 @@ G.World = (() => {
       if (!type) continue;
 
       const p = makeProp(type, tx, ty, kind);
+      if (type === 'altar' && usedAltars.has(tx + ',' + ty)) p.used = true;
       c.props.push(p);
       if (p.solid) c.propAt.set(tx + ',' + ty, p);
     }
@@ -431,6 +433,7 @@ G.World = (() => {
       G.Pickups.dropXp(p.x, p.y, 20);
       if (Math.random() < (G.Boost.on ? 0.6 : 0.08)) G.Pickups.drop('item', p.x, p.y - 12, G.Items.roll());   // copia local: 60 % con ventajas
       if (Math.random() < 0.35) G.Pickups.drop('sphere', p.x - 12, p.y - 12, G.Orbs.roll());
+      if (Math.random() < 0.06) G.Pickups.drop('use', p.x + 12, p.y - 12, G.Consum.roll());
       return;
     }
     if (p.type === 'bigchest') {
@@ -446,6 +449,7 @@ G.World = (() => {
       if (G.Boost.on || Math.random() < 0.5) G.Pickups.drop('item', p.x + 14, p.y - 14, G.Items.roll());   // copia local: seguro con ventajas
       G.Pickups.drop('sphere', p.x - 14, p.y - 14, G.Orbs.roll());
       if (Math.random() < 0.5) G.Pickups.drop('sphere', p.x, p.y - 20, G.Orbs.roll());
+      G.Pickups.drop('use', p.x + 18, p.y - 22, G.Consum.roll());          // uno de un solo uso, siempre
       G.Pickups.dropXp(p.x, p.y, G.Game.levelXp());
       G.Progress.event('chest');
       return;
@@ -600,7 +604,7 @@ G.World = (() => {
 
   function reset(s) {
     seed = (s | 0) || 1;
-    data.clear(); images.clear(); broken.clear();
+    data.clear(); images.clear(); broken.clear(); usedAltars.clear();
     fade = null; arena = null;
   }
 
@@ -672,6 +676,8 @@ G.World = (() => {
     kindAt, isWall, isLiquid, isFree, collide, projectileBlock, clearShot, propsInCircle, nearestBreakable,
     damageProp, breakAt, specialsNear, update,
     breakProp(p) { if (!broken.has(p.tx + ',' + p.ty)) destroyProp(p); },
+    /** Un altar usado: se apunta para que siga apagado si la zona se vuelve a generar. */
+    altarUsed(p) { p.used = true; usedAltars.add(p.tx + ',' + p.ty); },
     /** Arena de la grieta: { tx, ty, r } (en tiles) o null. */
     setArena(a) {
       arena = a;

@@ -384,6 +384,7 @@ G.Game = (() => {
     },
     lost(msg) { G.UI.toast(msg, 3600); endRun(false); },
     item(id) { offerItem(id); },
+    use(id) { if (pl) G.Consum.take(pl, id); },
     /** El anfitrión te da una esfera que has cogido. */
     orb(id) { if (pl && state !== 'over') G.Orbs.got(pl, id); },
     /** Grupo: quién está eligiendo fusión. Mientras haya alguien, todo parado. */
@@ -647,6 +648,12 @@ G.Game = (() => {
    * Una elección que para la partida (en grupo, para todos), como el vínculo: show(done), y done()
    * al terminar. La usa el poder de Eternatus (systems/powers.js). → false si ahora no se puede
    */
+  /** Caramelo Exp. (systems/consum.js): la experiencia justa para subir un nivel. */
+  function giveLevel() {
+    if (!pl || pl.dead) return;
+    pendingLevels += pl.gainXp((pl.xpNext - pl.xp + 0.5) / (pl.xpMul || 1));
+  }
+
   function choose(show) {
     if (!pl || (state !== 'playing' && state !== 'held')) return false;
     state = 'choice';
@@ -661,7 +668,7 @@ G.Game = (() => {
 
   // ---------------- recogida ----------------
 
-  const PICK_SFX = { xp: 'xp', xpBig: 'xp', coin: 'coin', heal: 'heal', bomb: 'break', magnet: 'confirm', ticket: 'shiny', ticket10: 'legend', item: 'legend', sphere: 'confirm' };
+  const PICK_SFX = { xp: 'xp', xpBig: 'xp', coin: 'coin', heal: 'heal', bomb: 'break', magnet: 'confirm', ticket: 'shiny', ticket10: 'legend', item: 'legend', sphere: 'confirm', use: 'confirm' };
 
   /*
    * Cooperativo: la elección de objeto y las cartas de nivel no pueden taparse.
@@ -736,6 +743,10 @@ G.Game = (() => {
     }
     if (p.kind === 'item') {
       if (mine) offerItem(p.value);
+      return;
+    }
+    if (p.kind === 'use') {                 // de un solo uso (systems/consum.js); el de un compañero se lo manda coop.js
+      if (mine) G.Consum.take(pl, p.value);
       return;
     }
     if (p.kind === 'sphere') {
@@ -908,6 +919,7 @@ G.Game = (() => {
         // Tu poder (systems/powers.js): cuál y si está listo
         power: pl.powerId ? { id: pl.powerId, ready: G.Powers.ready(pl), on: pl.powerOn } : null,
         lost: G.Events.lostInfo,     // Pokémon perdido: ir a por él y llevarlo a la marca
+        munch: G.Events.munchInfo,   // Munchlax hambriento: arbustos y a quién llevar las bayas
         // Compañeros (cooperativo): dónde están y si han caído (el bot va a levantarlos)
         mates: G.Coop.active ? G.Coop.puppets().map(m => ({ x: m.x, y: m.y, dead: !!m.dead, reviveT: m.reviveT || 0 })) : [],
         specials: G.World.specialsNear(pl.x, pl.y, 600),   // manantiales, altares, cofres grandes, trampas
@@ -1033,6 +1045,7 @@ G.Game = (() => {
     G.Judgment.update(dt, pl, time);
     G.Eternatus.update(dt, pl, time);
     G.Powers.update(dt, pl);
+    G.Consum.update(dt, pl);
     G.Events.update(dt, awake, time);
     G.Weather.update(dt, time, pl);
     G.FX.update(dt);
@@ -1266,7 +1279,9 @@ G.Game = (() => {
   })();
 
   return {
-    init, startRun, everyone, levelXp, flash, offerBond, choose,
+    init, startRun, everyone, levelXp, flash, offerBond, choose, giveLevel,
+    /** Un objeto equipable para ti (premio de Munchlax, events.js): como si lo cogieras del suelo. */
+    giveItem(id) { offerItem(id); },
     /** Para pruebas: salta el reloj de la run. */
     debugTime(t) { tampered = true; time = t; t10Sec = Math.floor(t); },
     /** Halloween: caramelos de golpe (al llegar al gran Gengar; en grupo, los da el anfitrión a todos). */

@@ -194,7 +194,8 @@ G.Player = class Player {
     const k = this.boost ? this.boost.atk * (this.boost.grow ? 1 + t / 95 : 1) : 1;
     // Metrónomo: +6 % por cada 3 s seguidos con el mismo ataque (hasta +48 %).
     const metro = this.hasItem('metronome') ? 1 + Math.min(8, Math.floor((this.metroT || 0) / 3)) * 0.06 : 1;
-    return this.baseAtk * this.atkMul * (1 + this.buffs.atk.n * this.buffs.atk.amount) * k * metro;
+    const liechi = this.liechiT > 0 ? 1.3 : 1;          // Baya Atania (systems/consum.js)
+    return this.baseAtk * this.atkMul * (1 + this.buffs.atk.n * this.buffs.atk.amount) * k * metro * liechi;
   }
   /**
    * Ataque con un movimiento: el físico o el especial de tu Pokémon (ver
@@ -211,11 +212,12 @@ G.Player = class Player {
   monoType(type) { return this.mon.types.length === 1 && type === this.mon.types[0]; }
   get spd() {
     // (Habilidades: "steady" no se frena; speed() multiplica, ver data/ability-fx.js.)
-    const ab = this.abil || {}, stuck = this.slowT > 0 && !ab.steady;
+    // (Baya Meloc, systems/consum.js: freeT, unos segundos sin frenazos.)
+    const ab = this.abil || {}, free = this.freeT > 0, stuck = this.slowT > 0 && !ab.steady && !free;
     const s = this.baseSpd * (this.boost ? this.boost.spd : 1) * this.spdMul * (1 + this.buffs.spd.n * this.buffs.spd.amount) * (stuck ? 0.5 : 1) * (ab.speed ? ab.speed(this) : 1);
-    const w = this.hasItem('safetygoggles') ? 1 : G.Weather.speedFor(this.mon.types);
+    const w = this.hasItem('safetygoggles') || free ? 1 : G.Weather.speedFor(this.mon.types);
     // (Botas Gruesas: el agua no frena. Gafa Protectora: la nieve tampoco.)
-    const slow = this.inLiquid && !ab.steady && !this.hasItem('heavyboots') ? G.World.liquidEffect(this.mon.types).slow || 1 : 1;
+    const slow = this.inLiquid && !ab.steady && !free && !this.hasItem('heavyboots') ? G.World.liquidEffect(this.mon.types).slow || 1 : 1;
     return G.Judgment && G.Judgment.active ? G.Judgment.capSpd(s * slow * w) : s * slow * w;
   }
   get reduction() { return Math.min(0.8, this.dmgReduce + this.itemReduce + this.buffs.def.n * this.buffs.def.amount); }

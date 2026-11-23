@@ -23,7 +23,8 @@ G.Pickups = (() => {
     ticket10: { color: '#c47bff', glow: '#8a3fd0', r: 8 },
     item:     { color: '#ffd23f', glow: '#c08a10', r: 9 },      // value = id del objeto
     sphere:   { color: '#c9b8ff', glow: '#7e5be0', r: 8 },      // value = id de la esfera (orbs.js)
-    candy:    { color: '#ff8a2a', glow: '#b04a10', r: 7 }       // caramelo de Halloween (value = cuántos)
+    candy:    { color: '#ff8a2a', glow: '#b04a10', r: 7 },      // caramelo de Halloween (value = cuántos)
+    use:      { color: '#ffffff', glow: '#7fb8ff', r: 8 }       // de un solo uso (value = id; systems/consum.js)
   };
   /** Probabilidad de que un Pokémon normal suelte un ticket del gacha. */
   // Copia local: con G.Boost.on el botín sube (valores de la derecha); si no, el original.
@@ -215,6 +216,17 @@ G.Pickups = (() => {
           ctx.beginPath(); ctx.arc(p.x, y, 16, 0, 6.2832); ctx.fill();
           ctx.globalAlpha = 1;
           G.Icons.draw(ctx, 'orb:' + p.value, p.x - sz / 2, y - sz / 2 - 1, sz);
+          continue;
+        }
+        if (p.kind === 'use') {
+          // De un solo uso: brillo de su color.
+          const d = G.Consum.DEF[p.value] || {};
+          G.Consum.icons();
+          ctx.globalAlpha = 0.3 + Math.sin(p.t * 1.5) * 0.12;
+          ctx.fillStyle = d.col || k.glow;
+          ctx.beginPath(); ctx.arc(p.x, y, 15, 0, 6.2832); ctx.fill();
+          ctx.globalAlpha = 1;
+          G.Icons.draw(ctx, 'use:' + p.value, p.x - 11, y - 12, 22);
           continue;
         }
         if (p.kind === 'item') {

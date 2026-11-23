@@ -24,7 +24,7 @@ G.LevelUp = (() => {
     { id: 'cd',   icon: 'clock', title: 'Reflejos',     desc: '-8% de recarga en todos los movimientos (cada vez un poco menos).',
       apply: pl => pl.cdMul *= 1 - 0.08 / (1 + 0.1 * (pl.statsTaken.cd || 0)) },
     { id: 'def',  icon: 'shield', title: 'Coraza',       desc: '+6% de reducción de daño recibido.',
-      apply: pl => pl.dmgReduce = Math.min(0.7, pl.dmgReduce + 0.06), cond: pl => pl.dmgReduce < 0.7 },
+      apply: pl => pl.dmgReduce = Math.min(0.8, pl.dmgReduce + 0.06), cond: pl => pl.dmgReduce < 0.8 },   // (sólo las cartas: el Chaleco Asalto no cuenta, #340)
     { id: 'rgn',  icon: 'sprout', title: 'Síntesis',     desc: '+0.9 de vida regenerada por segundo.',
       apply: pl => pl.regenFlat += 0.9 },
     { id: 'mag',  icon: 'magnet', title: 'Imán',         desc: '+30% de radio de recogida de experiencia.',

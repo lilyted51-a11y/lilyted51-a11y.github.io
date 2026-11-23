@@ -780,6 +780,18 @@ class PokeAutoBot {
     // 迷路的寶可夢：先走過去碰牠，牠跟上後帶到綠色標記（獎勵：回血、金幣、抽獎券，有機會加入收藏）
     const lost = !arc && !rift && s.lost && (s.lost.state === 'wait' || s.lost.mine) && hpFrac >= 0.3 ? s.lost : null;
     const lostGoal = lost ? (lost.state === 'wait' ? { x: lost.x, y: lost.y } : { x: lost.tx, y: lost.ty }) : null;
+    // 小卡比獸（肚子餓）：先去搖最近、還沒搖過的樹叢；手上的樹果夠了（或樹叢都搖完）就拿去給牠
+    //（樹叢裡是什麼樹果、哪叢有三蜜蜂，玩家看不到，bot 也不看）
+    let munchGoal = null;
+    const mu = !arc && !rift && !lost && s.munch && hpFrac >= 0.3 ? s.munch : null;
+    if (mu) {
+      const left = mu.bushes.filter(b => !b.shaken);
+      if (mu.carry > 0 && (mu.carry + mu.got >= mu.need || !left.length)) munchGoal = { x: mu.x, y: mu.y };
+      else {
+        let bd = Infinity;
+        for (const b of left) { const db = Math.hypot(b.x - p.x, b.y - p.y); if (db < bd) { bd = db; munchGoal = { x: b.x, y: b.y }; } }
+      }
+    }
     // 寶藏怪（喵喵＝金幣、賽富豪＝十連券）：15 秒內打倒，不然就跑掉
     let thief = null;
     if (!arc) for (const e of thieves) if (!thief || Math.hypot(e.x - p.x, e.y - p.y) < Math.hypot(thief.x - p.x, thief.y - p.y)) thief = e;
@@ -813,7 +825,7 @@ class PokeAutoBot {
     // 「不殺怪」時不追目標（只在要打頭目時才追）：以前保持射程和找路都朝著要打的那隻怪，等於一直把自己拉回怪群
     const bossWin = enemies.some(e => e.boss && !e.judge && Math.hypot(e.x - p.x, e.y - p.y) < 320) && hpFrac >= 0.4;
     const hunt = !this.pacifist || bossWin;
-    let pathGoal = rift ? null : downed || spring || thief || lostGoal || (chestMode && bigChest) || (calm && pickGoal) || (hunt ? tgt : null);
+    let pathGoal = rift ? null : downed || spring || thief || lostGoal || munchGoal || (chestMode && bigChest) || (calm && pickGoal) || (hunt ? tgt : null);
     if (arc) {
       const da = Math.hypot(arc.x - p.x, arc.y - p.y);
       if (da > 320) {
@@ -842,6 +854,7 @@ class PokeAutoBot {
       let riftBest = rf ? this.fieldDist(rf, s.TS, x, y) : 0;   // 這條路線上離裂縫最近的一點
       let mateBest = downed ? Math.hypot(downed.x - x, downed.y - y) : 0;   // 路線上離倒地隊友最近的一點（速度快會走過頭）
       let lostBest = lostGoal ? Math.hypot(lostGoal.x - x, lostGoal.y - y) : 0;
+      let munchBest = munchGoal ? Math.hypot(munchGoal.x - x, munchGoal.y - y) : 0;
       let thiefBest = thief ? Math.hypot(thief.x - x, thief.y - y) : 0;
       let pgBest = pickGoal ? Math.hypot(pickGoal.x - x, pickGoal.y - y) : 0;
       let chestBest = bigChest ? Math.hypot(bigChest.x - x, bigChest.y - y) : 0;   // 路線上離大寶箱最近的一點
@@ -878,6 +891,7 @@ class PokeAutoBot {
         if (rf) riftBest = Math.min(riftBest, this.fieldDist(rf, s.TS, x, y));
         if (downed) mateBest = Math.min(mateBest, Math.hypot(downed.x - x, downed.y - y));
         if (lostGoal) lostBest = Math.min(lostBest, Math.hypot(lostGoal.x - x, lostGoal.y - y));
+        if (munchGoal) munchBest = Math.min(munchBest, Math.hypot(munchGoal.x - x, munchGoal.y - y));
         if (pickGoal) pgBest = Math.min(pgBest, Math.hypot(pickGoal.x - x, pickGoal.y - y));
         if (bigChest) chestBest = Math.min(chestBest, Math.hypot(bigChest.x - x, bigChest.y - y));
         if (spring) springBest = Math.min(springBest, Math.hypot(spring.x - x, spring.y - y));
@@ -1019,6 +1033,7 @@ class PokeAutoBot {
       if (pickGoal) cost += Math.max(0, Math.min(Math.hypot(pickGoal.x - x, pickGoal.y - y), pgBest + 10) - mag) * (calm ? 0.35 : 0.1);
       // 迷路的寶可夢：碰到牠／帶到標記
       if (lostGoal) cost += Math.max(0, Math.min(Math.hypot(lostGoal.x - x, lostGoal.y - y), lostBest + 10) - (lost.state === 'wait' ? 18 : 30)) * 0.9;
+      if (munchGoal) cost += Math.max(0, Math.min(Math.hypot(munchGoal.x - x, munchGoal.y - y), munchBest + 10) - 16) * 0.8;
       // 寶藏怪（喵喵掉金幣、賽富豪掉 ×10 扭蛋券）：不會攻擊、會逃跑、時間到會消失 → 全力追
       for (const e of thieves) cost -= (e.def && e.def.loot === 'ticket10' ? 60 : 30) * 40 / (Math.hypot(e.x - x, e.y - y) + 30);
       // 最近的那隻：用預測的逃跑位置追，越近分數越高（射程內就會被自動瞄準）
@@ -1102,7 +1117,7 @@ PokeAutoBot.QUALITY = { projectile: 1, chain: 1, meteor: 0.95, beam: 0.9, boomer
                         homing: 1, bounce: 0.95, charge: 0.85, stun: 0.85, vortex: 0.8, quake: 0.75, shove: 0.6, spin: 0.55 };
 PokeAutoBot.D8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 // 撿東西的價值（heal 依血量另算）
-PokeAutoBot.PICK = { xp: 1.2, xpBig: 2.5, coin: 0.8, magnet: 4, bomb: 2, ticket: 10, ticket10: 16, item: 9 };
+PokeAutoBot.PICK = { xp: 1.2, xpBig: 2.5, coin: 0.8, magnet: 4, bomb: 2, ticket: 10, ticket10: 16, item: 9, use: 9 };
 
 // 啟動：只有遊戲標記為「有特權的帳號」（js/core/boost.js）才建立 bot；
 // 遊戲每一幀會呼叫 __POKE_BOT_TICK__。登出後按鈕會收起來。

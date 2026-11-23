@@ -231,8 +231,11 @@ G.Enemies = (() => {
     return out;
   }
 
+  /** Un Pokémon concreto con los stats del tramo del segundo t (el enjambre de Combee de Munchlax, events.js). */
+  function defOf(dex, t) { const ti = tierAt(t), p = G.DEX_BY[dex]; return p ? defFor(p, TIERS[ti], ti) : null; }
+
   return {
-    TIERS, BOSS_SLOTS, rollRun, scale, bossScale, bagAt, upcomingDex, candidates, hordeTypes, hordeDefs,
+    TIERS, BOSS_SLOTS, rollRun, scale, bossScale, bagAt, upcomingDex, candidates, hordeTypes, hordeDefs, defOf,
     get BOSSES() { if (!bosses) rollRun(); return bosses; },
     get cast() { if (!cast) rollRun(); return cast; }
   };

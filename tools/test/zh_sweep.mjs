@@ -120,6 +120,21 @@ await A.ev(`G.UI.hide('scr-item'); (() => { const p = G.Game.player; p.itemSlots
 await A.ev(`G.Game.togglePause(); 1`); await sleep(800); await grab('pausa'); await A.ev(`G.Game.togglePause(); 1`); await sleep(300);
 await misses('partida');
 
+// ---------- Objetos de un solo uso y Munchlax hambriento (23-11-2026) ----------
+await A.ev(`(() => { const p = G.Game.player; G.Consum.IDS.forEach((id, i) => G.Pickups.drop('use', p.x - 150 + i * 40, p.y + 60, id)); return 1; })()`); await sleep(800);
+await canvas('objetos de un solo uso (suelo)');
+await A.ev(`(() => { const p = G.Game.player; for (const id of G.Consum.IDS) G.Consum.take(p, id); p.invuln = 0; p.hp = Math.max(1, p.maxHp * 0.2); p.slowT = 2; return 1; })()`); await sleep(1500);
+await canvas('objetos de un solo uso (usados)'); await misses('objetos de un solo uso');
+await A.ev(`G.Events.debugStart('munch'); 1`); await sleep(2500);
+await canvas('Munchlax'); await misses('Munchlax');
+await A.ev(`(() => { const m = G.Events.munchInfo, p = G.Game.player; if (!m) return 0; for (const b of m.bushes.filter(b => b.kind !== m.want)) { p.x = b.x; p.y = b.y; } p.x = m.x + 10; p.y = m.y; return 1; })()`); await sleep(1500);
+await canvas('Munchlax (sin la buena)'); await misses('Munchlax (sin la buena)');
+for (let i = 0; i < 4; i++) { await A.ev(`(() => { const m = G.Events.munchInfo, p = G.Game.player; const b = m && m.bushes.find(b => b.kind === m.want && !b.shaken); if (b) { p.x = b.x; p.y = b.y; } return 1; })()`); await sleep(500); }
+await A.ev(`(() => { const m = G.Events.munchInfo, p = G.Game.player; if (m) { p.x = m.x + 10; p.y = m.y; } return 1; })()`); await sleep(2000);
+await canvas('Munchlax (premio)'); await grab('Munchlax (premio)'); await misses('Munchlax (premio)');
+for (let i = 0; i < 6 && (await A.ev(`G.UI.isOpen('scr-item') || G.UI.isOpen('scr-levelup')`)); i++) { await A.ev(`(() => { if (G.UI.isOpen('scr-levelup')) G.RunUI.pick(0); const c = document.querySelector('#item-cards .card'); if (G.UI.isOpen('scr-item') && c) c.click(); return 1; })()`); await sleep(1500); }
+await A.ev(`(() => { for (const e of G.EnemyMgr.all()) if (e.dex === 415) e.dead = true; return 1; })()`);
+
 // ---------- Eternatus Eternamax (minuto 20, 23-11-2026): aviso, las 4 fases, oscuridad, núcleos, victoria ----------
 await A.ev(`(() => { window.__POKE_BOT_ON__ = false; const p = G.Game.player; window.__hp0 = p.maxHp; p.maxHp = 1e7; p.hp = 1e7; window.__etHeal = setInterval(() => { const q = G.Game.player; if (q && !q.dead) q.hp = q.maxHp; }, 200); G.Game.debugTime(1196); return 1; })()`);
 const etHit = n => A.ev(`(() => { const b = G.Eternatus.boss; if (b) for (let i = 0; i < ${n}; i++) b.hurt(1e12, '#fff', 0, 0, 0); for (const c of G.EnemyMgr.all().filter(e => e.etCore && !e.dead && ${n} > 90)) c.hurt(1e12, '#fff', 0, 0, 0); return 1; })()`);
@@ -134,6 +149,7 @@ await etHit(20); await sleep(2500); await etPick(); await canvas('Eternatus: Ray
 await etHit(99); await sleep(1000); await etPick(); await canvas('Eternatus aturdido');
 await etHit(20); for (let i = 0; i < 20; i++) { await sleep(600); await etPick(); if (!(await A.ev(`G.Eternatus.active`))) break; }
 await canvas('Eternatus: victoria y vuelta'); await misses('Eternatus');
+console.log('Eternatus:', await A.ev(`(G.Eternatus.phase || 'acabado') + ' · estado ' + G.Game.state + ' · pantallas ' + [...document.querySelectorAll('section.scr')].filter(x => !x.classList.contains('hidden')).map(x => x.id).join(',') + ' · poder pendiente ' + !!G.Powers.pending + ' · t ' + Math.round(G.Game.st.time)`));
 
 // ---------- Los poderes (tras vencer a Eternatus, 23-11-2026): elegir, formas, tipos y cada uno puesto ----------
 const pwSeen = [];
