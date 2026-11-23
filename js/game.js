@@ -947,6 +947,10 @@ G.Game = (() => {
         arceus: G.Judgment.arceus,   // la Sentencia: huir de él
         // Eternatus (minuto 20): círculos de luz, remolino, charcos y nubes rojas (en/bot.js)
         eternatus: G.Eternatus.active ? { phase: G.Eternatus.phase, fx: G.Eternatus.fx, boss: G.Eternatus.boss, center: G.Eternatus.center, fogR: G.Eternatus.fogR } : null,
+        // Legendario de la grieta (systems/legend.js): fase, formas que se mueven (wave/ring/orb/whirl/bar,
+        // con su posición de ahora px/py), el definitivo que carga y si un punto queda tapado de él
+        legend: G.Legend.active ? { phase: G.Legend.phase, type: G.Legend.type, boss: G.Legend.boss, center: G.Legend.center, R: G.Legend.radius,
+                                    movers: G.Legend.movers, ult: G.Legend.ult, covers: G.Legend.covers, covered: (x, y) => G.Legend.covered(x, y) } : null,
         // Tu poder (systems/powers.js): cuál y si está listo
         power: pl.powerId ? { id: pl.powerId, ready: G.Powers.ready(pl), on: pl.powerOn } : null,
         lost: G.Events.lostInfo,     // Pokémon perdido: ir a por él y llevarlo a la marca
@@ -1181,6 +1185,7 @@ G.Game = (() => {
     G.FX.draw(ctx);
     G.Judgment.drawAir(ctx);
     G.Eternatus.drawAir(ctx);
+    G.Legend.drawAir(ctx);
     ctx.restore();
 
     G.Weather.draw(ctx, w, h, frameDt);
@@ -1196,6 +1201,7 @@ G.Game = (() => {
     }
     if (!G.Judgment.cinematic) G.Eternatus.drawOverlay(ctx, w, h);
     if (!G.Judgment.cinematic) G.Challenge.drawDark(ctx, w, h, pl);     // desafío «Noche cerrada»
+    if (!G.Judgment.cinematic) G.Legend.drawOverlay(ctx, w, h);
     if (!G.Judgment.cinematic) G.HUD.draw(ctx, w, h, pl, st);
     G.Judgment.drawOverlay(ctx, w, h);
     G.Touch.draw(ctx);

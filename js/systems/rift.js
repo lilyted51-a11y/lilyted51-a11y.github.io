@@ -11,6 +11,9 @@
  *   pierdes  (caéis todos o se acaba el tiempo) volvéis sin premio, con algo
  *            de vida; la partida sigue
  *
+ * La pelea en sí (tres fases, sus cinco ataques de tipo y el definitivo) va en
+ * systems/legend.js (23-11-2026).
+ *
  * Mientras dura la arena, los enemigos del mapa se guardan (EnemyMgr.stash) y
  * no aparecen nuevos; al volver todo sigue como estaba.
  *
@@ -22,7 +25,8 @@ G.Rift = (() => {
   // Las grietas salen a su hora (RIFT_AT, abajo), no al azar (16-11-2026; antes, una
   // comprobación cada 30 s con probabilidad creciente).
   const TTL = 45;
-  const ARENA_R = 11, ARENA_TIME = 120;
+  // 150 s (antes 120): con las tres fases y el ataque definitivo (legend.js), la pelea dura más.
+  const ARENA_R = 11, ARENA_TIME = 150;
   let rift = null;          // { x, y, ttl, t }
   let arena = null;         // { tx, ty, r, dex, shiny, x, y, back, biome, t, phase, endT, bossId }
   let zone = null;          // dónde estaba la última arena { x, y, r } (ver leftBehind)
@@ -34,7 +38,7 @@ G.Rift = (() => {
   const authority = () => !G.Coop.active || G.Coop.isHost;
   const TS = () => G.Tiles.T * G.Sprites.PX;
 
-  function reset() { rift = null; arena = null; zone = null; checkT = 0; asked = false; downT = 0; riftIdx = 0; wins = 0; egg = false; }
+  function reset() { rift = null; arena = null; zone = null; checkT = 0; asked = false; downT = 0; riftIdx = 0; wins = 0; egg = false; G.Legend.reset(); }
 
   /**
    * ¿Sigue este jugador en la arena aunque aquí ya se haya vuelto al mapa?
@@ -135,6 +139,7 @@ G.Rift = (() => {
     });
     zone = { x: arena.x, y: arena.y, r: (cfg.r + 10) * ts };
     rift = null; asked = false; downT = 0;
+    G.Legend.begin(cfg, arena);
     if (authority()) G.EnemyMgr.stash(); else G.EnemyMgr.clearRemote();
     G.Projectiles.clear();
     G.Combat.clearFields();
@@ -174,6 +179,7 @@ G.Rift = (() => {
     if (arena.shiny) e.makeShiny();
     G.EnemyMgr.add(e);
     arena.bossId = e.id;
+    G.Legend.attach(e);          // sus fases, sus ataques de tipo y el definitivo
     G.Spawner.say('¡' + e.name + (e.shiny ? ' shiny' : '') + ' te esperaba en la grieta!', 3.2);
     G.Camera.kick(1.1);
     G.Audio.sfx('boss');
@@ -191,6 +197,7 @@ G.Rift = (() => {
 
   function arenaTick(dt, pl) {
     arena.t += dt;
+    G.Legend.update(dt, pl);
     if (arena.phase === 'fight') {
       if (!authority()) return;
       keepInside();
@@ -208,6 +215,7 @@ G.Rift = (() => {
   function won() {
     if (!arena || arena.phase !== 'fight') return;
     arena.phase = 'won'; arena.endT = 5;
+    G.Legend.stop();
     G.Progress.event('rift', { type: arena.type });
     G.Pickups.pullAll();
     G.Spawner.say('¡Has vencido a ' + G.DEX_BY[arena.dex].name + '! Recoge el premio…', 3.4, true);
@@ -225,6 +233,7 @@ G.Rift = (() => {
   function lost() {
     if (!arena || arena.phase !== 'fight') return;
     arena.phase = 'lost'; arena.endT = 1.2;
+    G.Legend.stop();
     G.Spawner.say('La grieta os ha expulsado…', 2.6, true);
     G.Audio.sfx('back');
   }
@@ -234,6 +243,7 @@ G.Rift = (() => {
     const pl = G.Game.player;
     const a = arena;
     arena = null;
+    G.Legend.reset();
     G.World.setBiome(a.biome, true);
     G.Weather.clear();
     // Invitado: no se borra nada. El anfitrión avisa de los de la arena que se
@@ -285,7 +295,7 @@ G.Rift = (() => {
     // (Las grietas que ya tocaron no vuelven a salir.)
     const t = G.Game.st ? G.Game.st.time : 0;
     riftIdx = RIFT_AT.filter(x => x <= t).length;
-    if (arena && arena.phase === 'fight') { arena.bossId = 0; spawnLegend(); }
+    if (arena && arena.phase === 'fight') { G.Legend.adopt(); arena.bossId = 0; spawnLegend(); }
   }
 
   // ---------------- red ----------------

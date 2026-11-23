@@ -77,6 +77,7 @@ G.World = (() => {
     if (ad < arena_outer()) {
       if (ad >= arena.r) return WALL;
       if (arenaSafe(tx, ty)) return FLOOR;
+      if (arena.cols && arena.cols.some(c => tx - c[0] >= 0 && tx - c[0] <= 1 && ty - c[1] >= 0 && ty - c[1] <= 1)) return WALL;
       const th = arena.th;
       // Columnas de 2×2 (cobertura) y charcos según el tipo de la arena.
       if (th.pillars && ad < arena.r - 2 && H(tx >> 1, ty >> 1, seed + 31 + arena.tx) < th.pillars) return WALL;
@@ -683,6 +684,13 @@ G.World = (() => {
       arena = a;
       if (!a) return;
       a.th = G.Tiles.ARENA_THEMES[a.type] || G.Tiles.ARENA_THEMES.normal;
+      // Grieta (23-11-2026): siempre 7 columnas de 2×2 a media distancia del centro, para esconderse del
+      // ataque definitivo del legendario (systems/legend.js); con la semilla, en el mismo sitio para todos.
+      // (Las arenas de Arceus y Eternatus, no.)
+      a.cols = a.type === 'judgment' || a.type === 'eternatus' ? null : Array.from({ length: 7 }, (_, i) => {
+        const an = H(a.tx, a.ty, seed + 55) * 6.2832 + i * 6.2832 / 7, d = a.r * 0.6;
+        return [Math.round(a.tx + Math.cos(an) * d - 0.5), Math.round(a.ty + Math.sin(an) * d - 0.5)];
+      });
       // Olvida los chunks de esa zona (si se hubieran generado antes).
       const R = a.r + 9;
       for (const k of [...data.keys(), ...images.keys()]) {

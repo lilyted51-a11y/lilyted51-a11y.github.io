@@ -1552,5 +1552,16 @@ G.I18n.add({
   "Tu puesto en el desafío de esta semana: {x}": "Your rank in this week's challenge: {x}",
   "Aún no tienes marca en el desafío de esta semana.": "You don't have a record in this week's challenge yet.",
   "Aguantaste 3 minutos: ticket ×10 conseguido.": "You lasted 3 minutes: ×10 ticket earned.",
-  "No llegaste a los 3 minutos: sin ticket ×10.": "You didn't reach 3 minutes: no ×10 ticket."
+  "No llegaste a los 3 minutos: sin ticket ×10.": "You didn't reach 3 minutes: no ×10 ticket.",
+  // 23-11-2026 (copia local): los legendarios de la grieta pelean de verdad (systems/legend.js)
+  "FASE 1 · TANTEO": "PHASE 1 · PROBING",
+  "FASE 2 · FURIA": "PHASE 2 · FURY",
+  "FASE 3 · TODO O NADA": "PHASE 3 · ALL OR NOTHING",
+  "ATAQUE DEFINITIVO": "ULTIMATE ATTACK",
+  "ATAQUE DEFINITIVO · {x} s": "ULTIMATE ATTACK · {x} s",
+  "¡A CUBIERTO!": "IN COVER!",
+  "AL DESCUBIERTO: ESCÓNDETE": "EXPOSED: TAKE COVER",
+  "¡{x} se pone serio! Fase 2": "{x} gets serious! Phase 2",
+  "¡{x} lo da todo! Fase 3": "{x} goes all out! Phase 3",
+  "¡{x} prepara {x}! Escóndete detrás de una columna, un árbol o una roca": "{x} is charging {x}! Hide behind a pillar, a tree or a rock"
 });

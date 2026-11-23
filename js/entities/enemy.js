@@ -131,6 +131,8 @@
       if (this.dead) return;
       // Eternatus (quien manda): inmune con núcleos, un 10 % como mucho y sin saltarse fases.
       if (this.eternatus && !this.remote) { amount = G.Eternatus.filterHit(this, amount); if (!(amount > 0)) return; }
+      // El legendario de la grieta (quien manda): un 10 % como mucho y sin saltarse fases (systems/legend.js).
+      if (this.legend && !this.remote) { amount = G.Legend.filterHit(this, amount); if (!(amount > 0)) return; }
       const d = Math.max(1, Math.round(amount));
       // Arceus en la Sentencia: no cae nunca; el golpe suma a su cuenta de daño
       // (la lleva quien manda: el invitado se lo manda al anfitrión).

@@ -216,6 +216,32 @@ await canvas('Munchlax (premio)'); await grab('Munchlax (premio)'); await misses
 for (let i = 0; i < 6 && (await A.ev(`G.UI.isOpen('scr-item') || G.UI.isOpen('scr-levelup')`)); i++) { await A.ev(`(() => { if (G.UI.isOpen('scr-levelup')) G.RunUI.pick(0); const c = document.querySelector('#item-cards .card'); if (G.UI.isOpen('scr-item') && c) c.click(); return 1; })()`); await sleep(1500); }
 await A.ev(`(() => { for (const e of G.EnemyMgr.all()) if (e.dex === 415) e.dead = true; return 1; })()`);
 
+// ---------- El legendario de la grieta (23-11-2026, systems/legend.js): sus 5 ataques, las 3 fases y el definitivo ----------
+// (Si el bot ha caído antes, o las cartas de prueba de arriba han dejado la partida parada en 'levelup' sin pantalla,
+//  partida nueva: lo que queda del barrido necesita una partida en marcha.)
+for (let i = 0; i < 6 && (await A.ev(`G.UI.isOpen('scr-levelup') || G.UI.isOpen('scr-item')`)); i++) { await A.ev(`(() => { if (G.UI.isOpen('scr-levelup')) G.RunUI.pick(0); const c = document.querySelector('#item-cards .card'); if (G.UI.isOpen('scr-item') && c) c.click(); return 1; })()`); await sleep(1000); }
+if ((await A.ev(`G.Game.state`)) !== 'playing') { await A.ev(`G.UI.hideAll(); G.Game.startRun(); 1`); await sleep(2500); }
+await A.ev(`(() => { window.__POKE_BOT_ON__ = false; window.__rfHeal = setInterval(() => { const q = G.Game.player; if (q && !q.dead) q.hp = q.maxHp; if (G.UI.isOpen('scr-levelup')) G.RunUI.pick(0); const c = document.querySelector('#item-cards .card'); if (G.UI.isOpen('scr-item') && c) c.click(); }, 200); for (const e of G.EnemyMgr.all()) if (e.boss) e.dead = true; G.Rift.debugArena('ghost'); return 1; })()`);
+for (let i = 0; i < 20 && (await A.ev(`!G.Legend.boss`)); i++) await sleep(500);
+await sleep(2500); await canvas('grieta: entrada'); await misses('grieta: entrada');
+for (let i = 0; i < 5; i++) { await A.ev(`(() => { const b = G.Legend.boss; if (b && b.ai) b.ai.cd = 9; G.Legend.debugCast(${i}); return 1; })()`); await sleep(1000); }
+await canvas('grieta: fase 1 y los 5 ataques');
+const rfHit = n => A.ev(`(() => { const b = G.Legend.boss; if (b) for (let i = 0; i < ${n}; i++) b.hurt(1e12, '#fff', 0, 0, 0); return 1; })()`);
+await rfHit(6); await sleep(2000); await canvas('grieta: fase 2'); await misses('grieta: fase 2');
+await rfHit(6); await sleep(1000); await canvas('grieta: fase 3');
+for (let i = 0; i < 12 && !(await A.ev(`!!G.Legend.ult`)); i++) await sleep(300);
+await A.ev(`(() => { const p = G.Game.player, u = G.Legend.ult; if (!u) return 0; for (let k = 0; k < 60; k++) { const a = k * 2.4, d = 70 + k * 3; const x = u.x + Math.cos(a) * d, y = u.y + Math.sin(a) * d; if (G.World.isFree(x, y, p.r) && !G.Legend.covered(x, y)) { p.x = x; p.y = y; break; } } return 1; })()`);
+await sleep(1200); await canvas('grieta: ataque definitivo (al descubierto)');
+await A.ev(`(() => { const p = G.Game.player, u = G.Legend.ult; if (!u) return 0; for (const c of G.Legend.covers) { const d = Math.hypot(c.x - u.x, c.y - u.y); if (d < 60) continue; const x = c.x + (c.x - u.x) / d * (c.r + p.r + 8), y = c.y + (c.y - u.y) / d * (c.r + p.r + 8); if (G.World.isFree(x, y, p.r) && G.Legend.covered(x, y)) { p.x = x; p.y = y; return 1; } } return 0; })()`);
+await sleep(800); await canvas('grieta: ataque definitivo (a cubierto)');
+for (let i = 0; i < 25 && (await A.ev(`!!G.Legend.ult`)); i++) await sleep(300);
+await sleep(800); await canvas('grieta: tras el definitivo'); await misses('grieta: definitivo');
+await rfHit(12); await sleep(800); await A.ev(`(() => { G.Game.player.bonds = 0; return 1; })()`);
+for (let i = 0; i < 20 && (await A.ev(`G.Rift.inArena`)); i++) await sleep(500);
+await canvas('grieta: victoria'); await misses('grieta: victoria');
+console.log('grieta:', await A.ev(`'en la arena ' + G.Rift.inArena + ' · pelea ' + G.Legend.active + ' · estado ' + G.Game.state`));
+await A.ev(`clearInterval(window.__rfHeal); 1`);
+
 // ---------- Eternatus Eternamax (minuto 20, 23-11-2026): aviso, las 4 fases, oscuridad, núcleos, victoria ----------
 await A.ev(`(() => { window.__POKE_BOT_ON__ = false; const p = G.Game.player; window.__hp0 = p.maxHp; p.maxHp = 1e7; p.hp = 1e7; window.__etHeal = setInterval(() => { const q = G.Game.player; if (q && !q.dead) q.hp = q.maxHp; }, 200); G.Game.debugTime(1196); return 1; })()`);
 const etHit = n => A.ev(`(() => { const b = G.Eternatus.boss; if (b) for (let i = 0; i < ${n}; i++) b.hurt(1e12, '#fff', 0, 0, 0); for (const c of G.EnemyMgr.all().filter(e => e.etCore && !e.dead && ${n} > 90)) c.hurt(1e12, '#fff', 0, 0, 0); return 1; })()`);

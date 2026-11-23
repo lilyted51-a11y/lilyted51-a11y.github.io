@@ -645,6 +645,7 @@ G.Coop = (() => {
       case 'rift': case 'riftx': case 'arena': case 'aw': case 'al': G.Rift.onEvent(ev); break;
       case 'jd': case 'jk': case 'jb': G.Judgment.onEvent(ev); break;
       case 'et': G.Eternatus.onEvent(ev); break;
+      case 'lg': G.Legend.onEvent(ev); break;     // el legendario de la grieta (systems/legend.js)
       case 'wx': G.Weather.onEvent(ev); break;
       case 'ev': G.Events.onNet(ev); break;
       case 'hz': G.Hazards.add(ev[1], true); break;
