@@ -13,6 +13,9 @@
  * Lo visual es suave a propósito: un tinte leve y pocas partículas.
  *
  * Cooperativo: lo decide el anfitrión y lo manda con 'wx'.
+ *
+ * Desafío semanal (systems/challenge.js, 23-11-2026): lock(clima) lo deja puesto toda la
+ * partida; si algo lo quita (la arena de una grieta, Eternatus), vuelve en cuanto se pueda.
  */
 G.Weather = (() => {
   const KINDS = {
@@ -37,11 +40,12 @@ G.Weather = (() => {
   const FROM = 120, CHECK = 60, CHANCE = 0.18;
 
   let cur = null;           // { kind, t, dur }
+  let locked = null;        // desafío semanal: el clima fijo de toda la partida
   let checkT = CHECK, chipT = 0;
   let parts = [];
   const authority = () => !G.Coop.active || G.Coop.isHost;
 
-  function reset() { cur = null; checkT = CHECK; chipT = 0; parts = []; }
+  function reset() { cur = null; locked = null; checkT = CHECK; chipT = 0; parts = []; }
 
   function def() { return cur ? KINDS[cur.kind] : null; }
 
@@ -93,6 +97,9 @@ G.Weather = (() => {
     if (cur) {
       cur.t += dt;
       if (cur.t >= cur.dur) cur = null;
+    } else if (locked) {
+      // Desafío semanal: el clima fijo vuelve (sin aviso) en cuanto no hay otro.
+      cur = { kind: locked, t: 3, dur: 1e9 };
     } else if (authority() && time > FROM && !G.Rift.inArena && !G.Judgment.active) {
       checkT -= dt;
       if (checkT <= 0) {
@@ -171,12 +178,20 @@ G.Weather = (() => {
 
   return {
     KINDS, reset, update, draw, mult, speedFor, hurts, onEvent,
-    get current() { return cur && level() > 0 ? Object.assign({ left: Math.max(0, cur.dur - cur.t) }, cur, KINDS[cur.kind]) : null; },
+    get current() { return cur && level() > 0 ? Object.assign({ left: Math.max(0, cur.dur - cur.t), fixed: !!locked && cur.kind === locked }, cur, KINDS[cur.kind]) : null; },
     get vignette() { return cur && cur.kind === 'fog' ? level() : 0; },
     /** Pone un clima ya (la arena de la grieta; no se manda: cada uno lo pone). */
     force(kind, dur) { start(kind, dur); },
     /** Quita el clima de golpe (al salir de la arena). */
     clear() { cur = null; parts.length = 0; },
-    debugStart(kind = 'rain', dur = 60) { start(kind, dur); if (G.Coop.isHost) G.Coop.broadcast(['wx', kind, dur]); }
+    /** Desafío semanal: este clima toda la partida (null lo quita). */
+    lock(kind) {
+      locked = kind && KINDS[kind] ? kind : null;
+      if (locked) start(locked, 1e9);
+      else if (cur && cur.dur > 1e8) stop();
+    },
+    get locked() { return locked; },
+    // (Con el clima fijo del desafío, ni las habilidades ni la Mega lo cambian.)
+    debugStart(kind = 'rain', dur = 60) { if (locked) return; start(kind, dur); if (G.Coop.isHost) G.Coop.broadcast(['wx', kind, dur]); }
   };
 })();

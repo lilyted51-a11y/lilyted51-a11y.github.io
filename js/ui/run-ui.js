@@ -235,6 +235,9 @@ G.RunUI = (() => {
       <div><span>Nivel</span><b>${r.level}</b></div>
       <div><span>Derrotados</span><b>${r.kills}</b></div>
       <div><span>Jefes</span><b>${r.bosses}</b></div>
+      ${r.challenge ? `<div style="grid-column:1/-1" class="over-ch"><span>Desafío semanal</span><strong class="ch-over">${G.U.esc(r.challenge.label)}</strong>
+        <div style="font-size:12px;color:var(--muted)">${G.U.esc(r.challenge.desc)}</div>
+        <div style="font-size:12px">${G.U.esc(r.challenge.tk ? G.T('Aguantaste 3 minutos: ticket ×10 conseguido.') : G.T('No llegaste a los 3 minutos: sin ticket ×10.'))}</div></div>` : ''}
       ${r.judge ? `<div style="grid-column:1/-1"><span>${r.judge.gengar ? 'Ante el gran Gengar' : 'Ante Arceus'}</span><b class="gold">${G.U.mmss(r.judge.time)} · ${r.judge.bosses} ${r.judge.bosses === 1 ? 'legendario' : 'legendarios'}</b></div>
         <div style="grid-column:1/-1"><span>${r.judge.gengar ? 'Daño a Gengar' : 'Daño a Arceus'}</span><b class="gold">${(r.judge.dmg || 0).toLocaleString(G.I18n.locale)}</b></div>` : ''}
       <div style="grid-column:1/-1"><span>Pokémonedas ganadas</span>

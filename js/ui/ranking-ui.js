@@ -4,6 +4,8 @@
  * en el top. Lo leído se guarda 2 h (ver ranking.js).
  * Dos mitades (23-10-2026): a la izquierda el daño a Arceus y a la derecha el
  * tiempo aguantado. Salen de la misma lectura (el mismo resumen).
+ * Desafío semanal (23-11-2026, systems/challenge.js): tercera pestaña, con la tabla de la semana
+ * (sólo tiempo, sin periodos ni filtro por Pokémon) y arriba el desafío de esta semana.
  */
 G.RankingUI = (() => {
   const $ = G.UI.$;
@@ -33,8 +35,10 @@ G.RankingUI = (() => {
     tabs(); load();
   }
 
-  function open() {
+  /** @param m  pestaña con la que se abre ('c': el desafío semanal) */
+  function open(m) {
     if (!G.SocialUI.needOnline()) return;
+    if (m) { mode = m; if (m === 'c' && dex) { dex = null; $('rk-poke').value = ''; } }
     G.UI.show('scr-rank', true);
     if (!G.Social.started) G.Social.start();
     $('rk-mod').classList.toggle('hidden', !G.Ranking.isAdmin());
@@ -54,8 +58,20 @@ G.RankingUI = (() => {
         box.appendChild(b);
       }
     };
-    mk($('rk-mode'), [['s', `<b>${G.Icons.html('user', 16)} Solo</b>`], ['g', `<b>${G.Icons.html('friends', 16)} Grupo</b>`]],
-       mode, k => { mode = k; }, 'gen-tab');
+    mk($('rk-mode'), [['s', `<b>${G.Icons.html('user', 16)} Solo</b>`], ['g', `<b>${G.Icons.html('friends', 16)} Grupo</b>`],
+                      ['c', `<b>${G.Icons.html('trophy', 16)} Desafío semanal</b>`]],
+       mode, k => { mode = k; if (k === 'c' && dex) { dex = null; $('rk-poke').value = ''; } }, 'gen-tab');
+    // Desafío semanal: sin periodos, sin filtro por Pokémon y sin daño a Arceus; arriba, el de esta semana.
+    const ch = mode === 'c';
+    $('rk-period').classList.toggle('hidden', ch);
+    $('rk-poke').classList.toggle('hidden', ch);
+    $('rk-clear').classList.toggle('hidden', ch || !dex);
+    $('rk-split').classList.toggle('one', ch);
+    $('rk-ch').classList.toggle('hidden', !ch);
+    if (ch) {
+      const c = G.Challenge.thisWeek(), mon = G.DEX_BY[c.dex];
+      $('rk-ch').innerHTML = `${G.Icons.html('trophy', 16)} <span>${esc(G.I18n.f('Esta semana: {x} · {x}', mon ? G.T(mon.name) : '?', G.Challenge.label(c)))}</span>`;
+    }
     mk($('rk-period'), G.Ranking.PERIODS, period, k => {
       period = k;
       if (k !== 'a' && dex) { dex = null; $('rk-poke').value = ''; $('rk-clear').classList.add('hidden'); }
@@ -71,6 +87,7 @@ G.RankingUI = (() => {
     list.innerHTML = dlist.innerHTML = '<p class="sub">Cargando…</p>';
     $('rk-me').innerHTML = $('rk-dme').innerHTML = '';
     let rows = [], me = null, dmg = { rows: [], me: null };
+    if (mode === 'c') { loadChallenge(my); return; }
     try {
       [rows, me, dmg] = await Promise.all([
         G.Ranking.top(mode, period, dex, scope === 'friends'),
@@ -130,6 +147,33 @@ G.RankingUI = (() => {
       : me ? (en ? `<span translate="no">Your best ${where} rank ${pn}: <b class="gold">${pos}</b> · ${fmt(me.t)}</span>`
                  : `Tu mejor puesto ${pn} ${where}: <b class="gold">${pos}</b> · ${fmt(me.t)}`)
       : (en ? `<span translate="no">You don't have a ${where} record ${pn} yet.</span>` : `Aún no tienes marca ${pn} ${where}.`);
+  }
+
+  /** Desafío semanal: la tabla de esta semana (sólo tiempo aguantado) y tu puesto. */
+  async function loadChallenge(my) {
+    const list = $('rk-list');
+    let rows = [], me = null;
+    try {
+      [rows, me] = await Promise.all([
+        G.Ranking.top('s', 'c', null, scope === 'friends'),
+        G.Social.me ? G.Ranking.myRank('s', 'c') : Promise.resolve(null)
+      ]);
+    } catch (e) {
+      if (my !== token) return;
+      list.innerHTML = '<p class="sub">No se pudo cargar el ranking (' + esc(e.code || e.message) + ').</p>';
+      return;
+    }
+    if (my !== token) return;
+    list.innerHTML = '';
+    if (!rows.length) list.innerHTML = scope === 'friends' ? '<p class="sub">Ni tú ni tus amigos tenéis marca en el desafío de esta semana.</p>'
+      : '<p class="sub">Todavía nadie ha jugado el desafío de esta semana. ¡Sé el primero!</p>';
+    const uid = G.Social.uid, b = G.Ranking.board('s', 'c'), done = G.Ranking.reported();
+    rows.forEach((r, i) => list.appendChild(rowEl(r, i + 1, r.uids.includes(uid), b, done)));
+    const rk = $('rk-me');
+    rk.removeAttribute('translate');
+    rk.innerHTML = !G.Social.me ? esc(G.T('Elige un apodo (en Amigos) para salir en el ranking.'))
+      : me && !me.out ? esc(G.I18n.f('Tu puesto en el desafío de esta semana: {x}', '#' + (me.capped ? '1000+' : me.pos))) + ' · ' + fmt(me.t)
+      : esc(G.T('Aún no tienes marca en el desafío de esta semana.'));
   }
 
   const num = n => (n || 0).toLocaleString(G.I18n.locale);

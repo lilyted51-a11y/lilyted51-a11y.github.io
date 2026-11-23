@@ -129,15 +129,20 @@ G.Enemies = (() => {
    * En el primero no hay más personalidades (para ir aprendiendo).
    */
   function castFor(tier) {
-    const all = candidates(tier);
+    // Desafío semanal «Todos de tipo …» (systems/challenge.js): sólo los de ese tipo.
+    const only = G.Challenge && G.Challenge.onlyType;
+    const all = candidates(tier).filter(p => !only || p.types.includes(only));
     const kind = p => behaviorOf(p);
     // Primero el tipo de apoyo (a partes iguales) y luego el Pokémon.
     const kinds = SUPPORT.filter(k => all.some(p => kind(p) === k));
     const sk = kinds.length ? kinds[Math.floor(Math.random() * kinds.length)] : null;
     const pick = sk ? G.U.pickN(all.filter(p => kind(p) === sk), 1) : [];
     if (tier.from > 0) pick.push(...G.U.pickN(all.filter(p => !PLAIN.includes(kind(p)) && !SUPPORT.includes(kind(p))), 1));
-    if (tier.from === 0) return pick.concat(G.U.pickN(all.filter(p => !pick.includes(p) && PLAIN.includes(kind(p))), tier.cast - pick.length));
-    return pick.concat(G.U.pickN(all.filter(p => !pick.includes(p)), tier.cast - pick.length));
+    const out = tier.from === 0 ? pick.concat(G.U.pickN(all.filter(p => !pick.includes(p) && PLAIN.includes(kind(p))), tier.cast - pick.length))
+                                : pick.concat(G.U.pickN(all.filter(p => !pick.includes(p)), tier.cast - pick.length));
+    // (Con un solo tipo puede no haber bastantes de los normales: se completa con los que haya.)
+    if (only && out.length < tier.cast) out.push(...G.U.pickN(all.filter(p => !out.includes(p)), tier.cast - out.length));
+    return out;
   }
 
   let cast = null;      // [{ from, list: [def] }]
@@ -150,7 +155,7 @@ G.Enemies = (() => {
       list: castFor(tier).map(p => defFor(p, tier, ti))
     }));
     // Halloween (systems/halloween.js): en cada tramo, dos Pokémon Fantasma más de su nivel.
-    if (G.Halloween && G.Halloween.inRun) cast.forEach((tier, ti) => {
+    if (G.Halloween && G.Halloween.inRun && !(G.Challenge && G.Challenge.onlyType)) cast.forEach((tier, ti) => {
       const have = new Set(tier.list.map(d => d.dex));
       const ghosts = candidates(TIERS[ti]).filter(p => p.types.includes('ghost') && !have.has(p.dex));
       for (const p of G.U.pickN(ghosts, 2)) tier.list.push(defFor(p, TIERS[ti], ti));
@@ -163,7 +168,11 @@ G.Enemies = (() => {
     const used = new Set();
     bosses = BOSS_SLOTS.map(slot => {
       const ok = p => !p.leg && G.SPRITE_META[p.dex] && !used.has(p.dex);
-      let pool = G.DEX.filter(p => ok(p) && !p.excl && p.bst >= slot.bst[0] && p.bst <= slot.bst[1]);
+      // (Desafío «Todos de tipo …»: también los jefes, si hay de ese tipo con esa fuerza.)
+      const only = G.Challenge && G.Challenge.onlyType, ofType = p => !only || p.types.includes(only);
+      let pool = G.DEX.filter(p => ok(p) && !p.excl && ofType(p) && p.bst >= slot.bst[0] && p.bst <= slot.bst[1]);
+      if (!pool.length && only) pool = G.DEX.filter(p => ok(p) && !p.excl && ofType(p) && p.bst >= 450);
+      if (!pool.length) pool = G.DEX.filter(p => ok(p) && !p.excl && p.bst >= slot.bst[0] && p.bst <= slot.bst[1]);
       if (!pool.length) pool = G.DEX.filter(p => ok(p) && !p.excl && p.bst >= 580);
       const p = G.U.pick(pool);
       used.add(p.dex);
@@ -198,7 +207,9 @@ G.Enemies = (() => {
   /** Tipos con bastantes Pokémon en el tramo actual para una horda (events.js). */
   function hordeTypes(t) {
     const all = candidates(TIERS[tierAt(t)]).filter(p => !NO_HORDE.has(behaviorOf(p)));
-    return Object.keys(G.U.TYPE_COLOR).filter(ty => all.filter(p => p.types.includes(ty)).length >= 3);
+    // (Desafío «Todos de tipo …»: la horda, también de ese tipo.)
+    const only = G.Challenge && G.Challenge.onlyType;
+    return Object.keys(G.U.TYPE_COLOR).filter(ty => (!only || ty === only) && all.filter(p => p.types.includes(ty)).length >= 3);
   }
   /** Hasta 4 Pokémon de un tipo, con los stats del tramo actual. */
   function hordeDefs(type, t) {

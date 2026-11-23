@@ -457,6 +457,7 @@ G.Player = class Player {
   }
 
   heal(amount) {
+    if (G.Challenge && G.Challenge.noHeal) return;                     // desafío semanal «Sin curaciones»
     if (this.abil && this.abil.healMul) amount *= this.abil.healMul;     // Gula, Recogida
     const before = this.hp;
     this.hp = Math.min(this.maxHp, this.hp + amount);

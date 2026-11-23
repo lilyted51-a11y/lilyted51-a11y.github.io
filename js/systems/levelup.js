@@ -32,7 +32,7 @@ G.LevelUp = (() => {
     { id: 'def',  icon: 'shield', title: 'Coraza',       desc: '+6% de reducción de daño recibido.',
       apply: pl => pl.dmgReduce = Math.min(0.8, pl.dmgReduce + 0.06), cond: pl => pl.dmgReduce < 0.8 },   // (sólo las cartas: el Chaleco Asalto no cuenta, #340)
     { id: 'rgn',  icon: 'sprout', title: 'Síntesis',     desc: '+0.9 de vida regenerada por segundo.',
-      apply: pl => pl.regenFlat += 0.9 },
+      apply: pl => pl.regenFlat += 0.9, cond: () => !(G.Challenge && G.Challenge.noHeal) },   // (desafío «Sin curaciones»: no sale)
     { id: 'mag',  icon: 'magnet', title: 'Imán',         desc: '+30% de radio de recogida de experiencia.',
       apply: pl => pl.magnet *= 1.30, cond: pl => pl.magnet < 1600 },
     // Aprendizaje (hasta 15 veces) y la rara Sabiduría (una vez), como el juego oficial desde el 23-11-2026.
@@ -41,7 +41,7 @@ G.LevelUp = (() => {
     { id: 'wis',  icon: 'book', title: 'Sabiduría',    desc: '+15% de experiencia en esta partida (sólo una vez).',
       apply: pl => pl.xpMul *= 1.15, max: 1, rare: true },
     { id: 'heal', icon: 'berry', title: 'Baya Zidra',   desc: 'Recupera el 45% de tu vida ahora mismo.',
-      apply: pl => pl.heal(pl.maxHp * 0.45) },
+      apply: pl => pl.heal(pl.maxHp * 0.45), cond: () => !(G.Challenge && G.Challenge.noHeal) },
     // Crítico: tope del 60 % de probabilidad y ×3,5 de daño (combat.js).
     { id: 'crit', icon: 'star', title: 'Ojo Crítico',   desc: '+2% de probabilidad de golpe crítico (tope: 60%).',
       apply: pl => pl.critChance = Math.min(0.6, pl.critChance + 0.02), cond: pl => pl.critChance < 0.6 },

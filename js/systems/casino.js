@@ -270,7 +270,8 @@ G.Casino = (() => {
   const botOn = () => typeof window !== 'undefined' && !!window.__POKE_BOT_ON__;
   function eligible() {
     const pl = G.Game && G.Game.player;
-    return !!(pl && !pl.dead && save() && !(G.Coop && G.Coop.active) && !botOn());
+    // Ni en grupo, ni con el bot, ni en el desafío semanal (systems/challenge.js: su ranking es de tiempo).
+    return !!(pl && !pl.dead && save() && !(G.Coop && G.Coop.active) && !botOn() && !(G.Challenge && G.Challenge.cur));
   }
   /**
    * Lo llama la Sentencia (judgment.js) justo antes de empezar: → true si ahora toca el casino
