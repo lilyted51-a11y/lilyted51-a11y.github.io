@@ -32,7 +32,12 @@ G.World = (() => {
   const TS = T * G.Sprites.PX;             // tamaño de tile en mundo (32)
   const CW = N * TS;                       // tamaño de chunk en mundo (512)
   const FLOOR = 0, WALL = 1, LIQUID = 2;
-  const KIND = ['floor', 'wall', 'liquid'];
+  // VOID (23-11-2026): el vacío de la Sala del Origen (systems/judgment.js): alrededor de la plataforma
+  // y en los agujeros del suelo. No se pisa (como una pared), pero los disparos pasan por encima y no se pinta
+  // (se ve el cielo de debajo).
+  const VOID = 3;
+  const KIND = ['floor', 'wall', 'liquid', 'void'];
+  const holes = new Set();                 // agujeros del suelo: "tx,ty"
 
   let seed = 1, biome = 0;
   let arena = null;                        // { tx, ty, r } en tiles
@@ -74,6 +79,7 @@ G.World = (() => {
 
   function terrainRaw(tx, ty) {
     const ad = arenaDist(tx, ty);
+    if (arena && arena.th.sky && (ad >= arena.r || holes.has(tx + ',' + ty))) return VOID;
     if (ad < arena_outer()) {
       if (ad >= arena.r) return WALL;
       if (arenaSafe(tx, ty)) return FLOOR;
@@ -241,7 +247,7 @@ G.World = (() => {
   /** ¿Se puede pasar por esta casilla andando? (pathing.js) */
   function walkable(tx, ty) {
     const t = terrainAt(tx, ty);
-    if (t === WALL) return false;
+    if (t === WALL || t === VOID) return false;
     if (t === LIQUID && (LIQ[liquidKind()] || {}).dmg) return false;   // lava, veneno, descarga
     const p = propAtTile(tx, ty);
     return !(p && p.solid);
@@ -252,7 +258,7 @@ G.World = (() => {
     const t0x = tileOf(x - r), t1x = tileOf(x + r), t0y = tileOf(y - r), t1y = tileOf(y + r);
     for (let ty = t0y; ty <= t1y; ty++) for (let tx = t0x; tx <= t1x; tx++) {
       const t = terrainAt(tx, ty);
-      if (t === WALL || (!allowLiquid && t === LIQUID)) return false;
+      if (t === WALL || t === VOID || (!allowLiquid && t === LIQUID)) return false;
       const p = propAtTile(tx, ty);
       if (p && G.U.dist2(x, y, p.x, p.y) < (r + p.r) ** 2) return false;
     }
@@ -308,7 +314,8 @@ G.World = (() => {
     for (let pass = 0; pass < 2; pass++) {
       const t0x = tileOf(e.x - r), t1x = tileOf(e.x + r), t0y = tileOf(e.y - r), t1y = tileOf(e.y + r);
       for (let ty = t0y; ty <= t1y; ty++) for (let tx = t0x; tx <= t1x; tx++) {
-        if (terrainAt(tx, ty) === WALL) {
+        const tt = terrainAt(tx, ty);
+        if (tt === WALL || tt === VOID) {
           // Punto más cercano de la caja del tile al centro del círculo.
           const bx0 = tx * TS, by0 = ty * TS, bx1 = bx0 + TS, by1 = by0 + TS;
           const qx = G.U.clamp(e.x, bx0, bx1), qy = G.U.clamp(e.y, by0, by1);
@@ -469,7 +476,7 @@ G.World = (() => {
     // interpola por píxel para que las manchas tengan bordes orgánicos.
     const S = 6 * G.Tiles.T;
     const dirtField = (gx, gy) => fbm(gx / S, gy / S, seed + 303);
-    img = G.Tiles.paintChunk(cx, cy, N, at, dirtField, bi, seed);
+    img = G.Tiles.paintChunk(cx, cy, N, at, dirtField, bi, seed, arena);
     if (cache.size > MAX_IMAGES) cache.delete(cache.keys().next().value);
     cache.set(k, img);
     return img;
@@ -605,7 +612,7 @@ G.World = (() => {
 
   function reset(s) {
     seed = (s | 0) || 1;
-    data.clear(); images.clear(); broken.clear(); usedAltars.clear();
+    data.clear(); images.clear(); broken.clear(); usedAltars.clear(); holes.clear();
     fade = null; arena = null;
   }
 
@@ -677,6 +684,21 @@ G.World = (() => {
     kindAt, isWall, isLiquid, isFree, collide, projectileBlock, clearShot, propsInCircle, nearestBreakable,
     damageProp, breakAt, specialsNear, update,
     breakProp(p) { if (!broken.has(p.tx + ',' + p.ty)) destroyProp(p); },
+    /** ¿Vacío aquí? (fuera de la Sala del Origen o en uno de sus agujeros) */
+    isVoid(x, y) { return terrainAt(tileOf(x), tileOf(y)) === VOID; },
+    /**
+     * Agujero en el suelo (la Sala del Origen se rompe, systems/judgment.js): esa casilla pasa a ser vacío.
+     * Se rehace la imagen de su chunk y de los de al lado (el borde dorado y el canto de la losa).
+     */
+    setHole(tx, ty) {
+      const k = tx + ',' + ty;
+      if (holes.has(k)) return;
+      holes.add(k);
+      const cx = Math.floor(tx / N), cy = Math.floor(ty / N);
+      const c = data.get(cx + ',' + cy);
+      if (c) c.terr[(ty - cy * N) * N + (tx - cx * N)] = VOID;
+      for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++) images.delete(Math.floor((tx + a) / N) + ',' + Math.floor((ty + b) / N));
+    },
     /** Un altar usado: se apunta para que siga apagado si la zona se vuelve a generar. */
     altarUsed(p) { p.used = true; usedAltars.add(p.tx + ',' + p.ty); },
     /** Arena de la grieta: { tx, ty, r } (en tiles) o null. */

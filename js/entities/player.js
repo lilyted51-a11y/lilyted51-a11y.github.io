@@ -433,15 +433,16 @@ G.Player = class Player {
     if (!this.remote) G.Pad.rumble(0.25 + Math.min(0.75, d / this.maxHp * 3), 140);
     G.FX.dmgText(this.x, this.y - this.bodyH - 4, '-' + Math.round(d), eff === 'super' ? '#ff3048' : eff === 'weak' ? '#c9a0a8' : '#ff6b7a', eff === 'super');
     G.FX.burst(this.x, this.y - this.bodyH * 0.5, '#ff5f6d', 6, 90);
-    // Banda Focus: aguanta el golpe con 1 de vida (una vez cada 60 s).
-    if (this.hp <= 0 && this.hasItem('focussash') && performance.now() - this.sashT > 60000) {
+    // Banda Focus: aguanta el golpe con 1 de vida (una vez cada 60 s). Ni ella ni Robustez valen contra
+    // Arceus (pure, 23-11-2026, como el juego oficial).
+    if (this.hp <= 0 && !pure && this.hasItem('focussash') && performance.now() - this.sashT > 60000) {
       this.sashT = performance.now();
       this.hp = 1; this.invuln = 1.2;
       G.FX.dmgText(this.x, this.y - this.bodyH - 16, '¡Banda Focus!', '#ff9a3d', true);
       G.FX.ring(this.x, this.y, 6, 70, '#ff9a3d', 0.5, 4);
     }
     // Robustez (habilidad): lo mismo, una vez cada 90 s.
-    if (this.hp <= 0 && ab && ab.sturdy && performance.now() - this.sturdyAt > 90000) {
+    if (this.hp <= 0 && !pure && ab && ab.sturdy && performance.now() - this.sturdyAt > 90000) {
       this.sturdyAt = performance.now();
       this.hp = 1; this.invuln = 1.2;
       G.FX.dmgText(this.x, this.y - this.bodyH - 16, '¡Robustez!', '#c9b48a', true);

@@ -1643,5 +1643,26 @@ G.I18n.add({
   "Esa foto ya no está a la venta.": "That photo is no longer on sale.",
   "Ya tienes esta foto.": "You already have this photo.",
   "Ese marco ya no está a la venta.": "That frame is no longer on sale.",
-  "Ya tienes este marco.": "You already have this frame."
+  "Ya tienes este marco.": "You already have this frame.",
+  // 23-11-2026 (copia local): la Sentencia de Arceus en la Sala del Origen
+  "Sala del Origen": "Hall of Origin",
+  "Cruz Sagrada": "Holy Cross",
+  "Onda Divina": "Divine Wave",
+  "Gravedad": "Gravity",
+  "Sentencia de las Tablas": "Judgment of the Plates",
+  "Aspas Doradas": "Golden Blades",
+  "¡Nuevo ataque de {x}: {x}!": "New attack from {x}: {x}!",
+  "¡Aspas Doradas! Cruza el carril por los huecos": "Golden Blades! Cross the lane through the gaps",
+  "¡Otro carril de Aspas Doradas, más dentro y al revés!": "Another lane of Golden Blades, further in and spinning the other way!",
+  "¡La Sala del Origen se agrieta! No pises los agujeros": "The Hall of Origin is cracking! Don't step into the holes",
+  "¡Gravedad! Vas más lento y no puedes embestir": "Gravity! You are slower and cannot dash",
+  "¡Arceus te ha roto {x}!": "Arceus broke your {x}!",
+  "¡Arceus te sujeta con un rayo dorado!": "Arceus holds you with a golden beam!",
+  "¡Arceus le ha roto a {x} su {x}!": "Arceus broke {x}'s {x}!",
+  "¡Arceus sujeta a {x}!": "Arceus holds {x} in place!",
+  "¡Arceus te ha juzgado! Ya no te pueden levantar": "Arceus has judged you! You can no longer be revived",
+  "¡Arceus juzga a {x}! Ya no se le puede levantar": "Arceus judges {x}! They can no longer be revived",
+  "SENTENCIA · {x}": "JUDGMENT · {x}",
+  "Rompe un objeto en {x} s": "Breaks an item in {x} s",
+  "Aguanta 5 minutos ante Arceus.": "Survive 5 minutes against Arceus."
 });

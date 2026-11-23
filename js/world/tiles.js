@@ -111,7 +111,14 @@ G.Tiles = (() => {
     // noche y con cristales rojos; columnas para cubrirse de los orbes y un claro donde flota él.
     eternatus: { name: 'Cima de la Torre', floor: '#3a2a3e', wall: '#1e1424', liquid: 'swamp', liq: '#7a2a5a', foam: '#ff9ab0', prop: 'crystal',
                 leaf: '#ff3b5c', trunk: '#4a2440', flowers: ['#ff3b5c', '#b04dff', '#5a3a5e'], grass: '#4a3050', rock: '#5a4060',
-                pools: 0, pillars: 0.035, props: { tree: 0.006 }, weather: null, clear: 6.5 }
+                pools: 0, pillars: 0.035, props: { tree: 0.006 }, weather: null, clear: 6.5 },
+    // La Sala del Origen (23-11-2026), la arena de Arceus al minuto 30 (systems/judgment.js): una plataforma
+    // redonda de mármol con aros de oro que flota sobre un mar de nubes. sky: alrededor no hay paredes sino
+    // vacío (world.js, VOID), que no se pinta: debajo, el cielo, las nubes y las columnas de luz que dibuja
+    // judgment.js. marble: el suelo se pinta con losas de mármol (paintMarble) en lugar de hierba y tierra.
+    origin: { name: 'Sala del Origen', floor: '#e2d9c6', wall: '#d9b65c', liquid: 'water', liq: '#9fd8ff', prop: 'crystal',
+                leaf: '#ffe9a0', trunk: '#c9a64a', flowers: ['#ffd25e', '#fff3c8', '#b8862e'], grass: '#e0d6bf', rock: '#d8cfbd',
+                pools: 0, pillars: 0, props: {}, weather: null, sky: true, marble: true }
   };
   const ARENA_TYPES = Object.keys(ARENA_THEMES);
 
@@ -125,7 +132,7 @@ G.Tiles = (() => {
   function arenaBiome(th) {
     const f = th.floor, w = th.wall, L = th.liq;
     return {
-      name: 'Grieta · ' + th.name, liquid: th.liquid,
+      name: 'Grieta · ' + th.name, liquid: th.liquid, marble: !!th.marble,
       floor: [f, shade(f, 0.05), shade(f, -0.06)], dirt: [shade(f, -0.16), shade(f, -0.12), shade(f, -0.2)],
       speck: shade(f, -0.25), light: shade(f, 0.22), flowers: th.flowers,
       wallTop: [w, shade(w, 0.07), shade(w, -0.07)], wallLight: shade(w, 0.32), wallEdge: shade(w, -0.7),
@@ -140,6 +147,7 @@ G.Tiles = (() => {
   for (const t of ARENA_TYPES) BIOMES.push(arenaBiome(ARENA_THEMES[t]));
   BIOMES[ARENA + ARENA_TYPES.indexOf('judgment')].name = ARENA_THEMES.judgment.name;
   BIOMES[ARENA + ARENA_TYPES.indexOf('eternatus')].name = ARENA_THEMES.eternatus.name;
+  BIOMES[ARENA + ARENA_TYPES.indexOf('origin')].name = ARENA_THEMES.origin.name;
 
   // ---------------- Halloween (30-10 al 2-11, systems/halloween.js) ----------------
   /*
@@ -251,8 +259,9 @@ G.Tiles = (() => {
     return (x, y) => mask[(y + 1) * W + x] === 1;
   }
 
-  function paintChunk(cx, cy, n, at, dirtField, bi, seed = 0) {
+  function paintChunk(cx, cy, n, at, dirtField, bi, seed = 0, arena = null) {
     const B = BIOMES[bi];
+    if (B.marble) return paintMarbleChunk(cx, cy, n, at, B, arena);
     const P = Pix(n * T, n * T);
     const C = {};
     for (const k of ['floor', 'dirt', 'wallTop', 'wallFace', 'flowers', 'grass'])
@@ -278,6 +287,69 @@ G.Tiles = (() => {
       }
     }
     return P.canvas();
+  }
+
+  // ---------------- la Sala del Origen (23-11-2026) ----------------
+  /*
+   * Suelo de la arena de Arceus (systems/judgment.js): losas de mármol de 2×2 casillas (las mismas que
+   * luego se caen) con juntas claras y vetas, aros de oro alrededor del centro y su rueda en medio, y un
+   * borde dorado donde empieza el vacío. Bajo el borde sur de la plataforma (y de cada agujero) se ve el
+   * canto de la losa. El vacío no se pinta: deja ver el cielo que judgment.js dibuja por debajo.
+   */
+  const RINGS = [46, 122, 204, 296];      // aros de oro: radio en píxeles de arte desde el centro de la arena
+  function paintMarbleChunk(cx, cy, n, at, B, arena) {
+    const P = Pix(n * T, n * T);
+    const f0 = B.floor[0];
+    const C = { m: B.floor.map(h => pack(h)), vein: pack(shade(f0, -0.2)), vein2: pack(shade(f0, -0.1)),
+                joint: pack(shade(f0, -0.28)), hi: pack(shade(f0, 0.55)), gold: pack(B.flowers[0]), goldHi: pack(B.flowers[1]),
+                goldDk: pack(B.flowers[2]), edge: pack('#3a2a10'), face: pack(shade(f0, -0.36)), faceDk: pack(shade(f0, -0.56)) };
+    const ax = arena ? arena.tx : 0, ay = arena ? arena.ty : 0;
+    const tx0 = cx * n, ty0 = cy * n;
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+      const tx = tx0 + i, ty = ty0 + j, ox = i * T, oy = j * T;
+      if (at(tx, ty) === 'void') { if (at(tx, ty - 1) !== 'void') paintLedge(P, C, ox, oy, tx); continue; }
+      const vw = at(tx - 1, ty) === 'void', ve = at(tx + 1, ty) === 'void', vn = at(tx, ty - 1) === 'void', vs = at(tx, ty + 1) === 'void';
+      for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+        const gx = tx * T + x, gy = ty * T + y;
+        const lx = (tx - ax) * T + x, ly = (ty - ay) * T + y;
+        // Mármol: tono suave por zonas, con vetas que serpentean.
+        const band = vnoise(gx / 14, gy / 14, 41) * 0.8 + H(gx, gy, 43) * 0.2;
+        let col = C.m[band < 0.38 ? 2 : band < 0.66 ? 0 : 1];
+        const v = Math.abs(vnoise(gx / 22, gy / 22, 44) * 0.7 + vnoise(gx / 7, gy / 7, 45) * 0.3 - 0.5);
+        if (v < 0.012) col = C.vein; else if (v < 0.026 && H(gx, gy, 46) < 0.6) col = C.vein2;
+        // Juntas de las losas (cada 2 casillas, como las que se caen).
+        const sx = (lx + T) & 31, sy = (ly + T) & 31;
+        if (sx === 0 || sy === 0) col = C.joint; else if (sx === 1 || sy === 1) col = C.hi;
+        // Aros de oro y la rueda del centro.
+        const rx = lx - T / 2 + 0.5, ry = ly - T / 2 + 0.5, d = Math.hypot(rx, ry);
+        for (const R of RINGS) { const e = Math.abs(d - R); if (e < 1) col = C.gold; else if (e < 2) col = d > R ? C.goldDk : C.goldHi; }
+        if (d < 32) {
+          if (d < 6) col = C.gold; else if (d < 7.5) col = C.goldDk;
+          else if (d > 28) col = d < 30 ? C.gold : C.goldDk;
+          else if (Math.abs(Math.sin(Math.atan2(ry, rx) * 6)) < 0.1) col = C.gold;
+        }
+        // Borde dorado donde empieza el vacío.
+        if ((vw && x < 2) || (ve && x > T - 3) || (vn && y < 2)) col = (vw && x === 0) || (ve && x === T - 1) || (vn && y === 0) ? C.edge : C.gold;
+        else if (vs && y === T - 1) col = C.goldHi;
+        P.set(ox + x, oy + y, col);
+      }
+    }
+    return P.canvas();
+  }
+  /** Ruido de valor suave (para las vetas del mármol). */
+  function vnoise(x, y, s) {
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    const a = H(xi, yi, s), b = H(xi + 1, yi, s), c = H(xi, yi + 1, s), d = H(xi + 1, yi + 1, s);
+    return (a + (b - a) * u) * (1 - v) + (c + (d - c) * u) * v;
+  }
+  /** Canto de la plataforma bajo una casilla de suelo: la losa vista de lado, sobre el vacío. */
+  function paintLedge(P, C, ox, oy, tx) {
+    for (let y = 0; y < 8; y++) for (let x = 0; x < T; x++) {
+      let col = y < 2 ? C.gold : y === 7 ? C.faceDk : C.face;
+      if (y >= 2 && y < 7 && H(tx * T + x, y, 47) < 0.1) col = C.faceDk;
+      P.set(ox + x, oy + y, col);
+    }
   }
 
   function paintFloor(P, C, ox, oy, tx, ty, dirtAt, at) {

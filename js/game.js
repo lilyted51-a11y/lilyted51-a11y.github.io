@@ -1100,6 +1100,8 @@ G.Game = (() => {
 
   /** Caído en grupo: un compañero a tu lado te va levantando. */
   function reviveTick(dt) {
+    // (Juzgado por Arceus, 23-11-2026: a la segunda caída en la Sentencia ya no te levantan.)
+    if (pl.judged) { pl.reviveT = 0; return; }
     // (Un compañero sin conexión se queda quieto donde estaba: no levanta a nadie, 08-11-2026.)
     const helper = G.Coop.puppets().some(p => !p.dead && !p.silent && G.U.dist2(p.x, p.y, pl.x, pl.y) < 56 * 56);
     pl.reviveT = helper ? (pl.reviveT || 0) + dt : Math.max(0, (pl.reviveT || 0) - dt * 0.5);
@@ -1124,6 +1126,7 @@ G.Game = (() => {
     const t = performance.now() / 1000;
     G.World.drawGround(ctx, cam);
     G.World.drawLiquid(ctx, cam, t);
+    G.Judgment.drawFloor(ctx);          // Sala del Origen: grietas, carriles de las Aspas, sellos
     G.Hazards.draw(ctx);
     G.Combat.drawGroundFields(ctx);
     G.Pickups.draw(ctx);
@@ -1178,6 +1181,7 @@ G.Game = (() => {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
     ctx.imageSmoothingEnabled = false;
+    G.Judgment.drawSky(ctx, w, h);      // Sala del Origen: cielo, nubes y columnas de luz bajo la plataforma
 
     ctx.save();
     ctx.scale(G.Camera.scale, G.Camera.scale);
