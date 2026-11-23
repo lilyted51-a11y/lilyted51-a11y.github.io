@@ -819,6 +819,10 @@
   "El banner de Halloween ya ha terminado.": "萬聖節卡池已結束。",
   "The Halloween banner has ended.": "萬聖節卡池已結束。",
   // 23-11-2026 (copia local): dificultades
+  "Volver a jugar": "再玩一次",
+  "Play again": "再玩一次",
+  "Fin de partida: botón «Volver a jugar» para empezar otra al momento con el mismo Pokémon y la misma dificultad.": "結算畫面新增「再玩一次」按鈕，可以用同一隻寶可夢、同一難度馬上開始下一局。",
+  "End of run: a «Play again» button to start another one right away with the same Pokémon and difficulty.": "結算畫面新增「再玩一次」按鈕，可以用同一隻寶可夢、同一難度馬上開始下一局。",
   "Difícil": "困難",
   "Hard": "困難",
   "Enemigos algo más flojos; ningún golpe te quita más de un cuarto de la vida.": "敵人稍弱；任何一擊都不會扣超過四分之一的血量。",

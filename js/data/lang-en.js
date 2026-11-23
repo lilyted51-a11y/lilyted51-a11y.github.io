@@ -1288,6 +1288,7 @@ G.I18n.add({
   "Arbusto": "Bush",
   "MUNCHLAX · {x}/{x} · {x} s": "MUNCHLAX · {x}/{x} · {x} s",
   // 23-11-2026 (copia local): dificultades
+  "Volver a jugar": "Play again",
   "Difícil": "Hard",
   "Enemigos algo más flojos; ningún golpe te quita más de un cuarto de la vida.": "Slightly weaker enemies; no hit takes more than a quarter of your health.",
   "El reto de siempre: ×1,5 Pokémonedas y tickets.": "The usual challenge: ×1.5 Pokécoins and tickets.",

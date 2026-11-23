@@ -215,6 +215,9 @@ G.RunUI = (() => {
     // Con compañeros, la caja es algo más ancha (las tablas de daño caben mejor).
     $('scr-over').querySelector('.box').style.width = r.team && r.team.length > 1 ? 'min(560px,100%)' : 'min(480px,100%)';
     $('btn-again').onclick = onBack;
+    // Volver a jugar al momento, con el mismo Pokémon y la misma dificultad (en sala, la sala se encarga).
+    $('btn-replay').classList.toggle('hidden', !!G.Social.room);
+    $('btn-replay').onclick = () => { onBack(); if (!G.Social.room && G.UI.isOpen('scr-menu')) G.Flow.play(); };
     if (r.caught && r.caught.length) {
       const row = $('over-caught');
       for (const c of r.caught) {
