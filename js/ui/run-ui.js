@@ -281,7 +281,10 @@ G.RunUI = (() => {
       if (tabs) r.team.forEach((p, i) => {
         const b = document.createElement('button');
         b.className = 'chip';
-        b.textContent = p.me ? 'Tú' : p.name;            // (textContent: el nombre de otro jugador nunca es HTML)
+        // (textContent: el nombre de otro jugador nunca es HTML. Con translate="no" el parche del chino no
+        //  toca la pestaña, así que «Tú» va ya traducido.)
+        const me = G.T('Tú');
+        b.textContent = p.me ? (window.PSZH_T ? window.PSZH_T(me) : me) : p.name;
         b.setAttribute('translate', 'no');
         b.onclick = () => show(i);
         tabs.appendChild(b);

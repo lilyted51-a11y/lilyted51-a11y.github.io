@@ -1689,6 +1689,10 @@
   "Eternatus's Infinite Whirlpool could send your Pokémon off the map (it vanished and the run could not go on).": "無極汰那的無限漩渦可能把你的寶可夢甩出地圖（角色消失、無法繼續）。",
   "Un altar ya usado se volvía a encender al regresar más tarde a esa zona del mapa; y el Pokémon perdido te espera quieto mientras estás en una grieta (antes se iba andando y se le acababa el tiempo).": "已經用過的祭壇，之後回到那一帶會重新亮起；迷路的寶可夢現在會在你進裂隙時原地等你（以前會自己走掉、時間也會用完）。",
   "An altar you had used came back on when you returned to that part of the map later; and the lost Pokémon now waits for you while you are in a rift (it used to wander off and run out of time).": "已經用過的祭壇，之後回到那一帶會重新亮起；迷路的寶可夢現在會在你進裂隙時原地等你（以前會自己走掉、時間也會用完）。",
+  "La Gran Actualización: Eternatus y sus poderes, dificultades, Vestidor y estelas, huevos, Maestría, desafío semanal, Casino Rocket, grietas y Sentencia nuevas": "大型更新：無極汰那與四種力量、難度、更衣室與拖尾、蛋、精通、每週挑戰、火箭隊賭場、全新裂隙與審判",
+  "The Great Update: Eternatus and its powers, difficulties, Dressing Room and trails, eggs, Mastery, weekly challenge, Rocket Casino, new rifts and Judgment": "大型更新：無極汰那與四種力量、難度、更衣室與拖尾、蛋、精通、每週挑戰、火箭隊賭場、全新裂隙與審判",
+  "En el resumen de una partida en grupo, la pestaña «Tú» salía sin traducir en chino.": "多人遊戲結算畫面中，「你」這個分頁之前沒有翻成中文。",
+  "In the summary of a group run, the «You» tab was not translated into Chinese.": "多人遊戲結算畫面中，「你」這個分頁之前沒有翻成中文。",
   "Eternatus y sus poderes, Munchlax, objetos de un solo uso y cartas sin límite": "無極汰那與四種力量、小卡比獸、一次性道具、卡片不設次數",
   "Eternatus and its powers, Munchlax, one-use items and unlimited cards": "無極汰那與四種力量、小卡比獸、一次性道具、卡片不設次數",
   // 23-11-2026 (copia local): los poderes de Eternatus

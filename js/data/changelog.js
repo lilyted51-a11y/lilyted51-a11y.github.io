@@ -5,7 +5,7 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
-  { d: '2026-11-23', title: ["Eternatus y sus poderes, Munchlax, objetos de un solo uso y cartas sin límite", "Eternatus and its powers, Munchlax, one-use items and unlimited cards"], new: [
+  { d: '2026-11-23', title: ["La Gran Actualización: Eternatus y sus poderes, dificultades, Vestidor y estelas, huevos, Maestría, desafío semanal, Casino Rocket, grietas y Sentencia nuevas", "The Great Update: Eternatus and its powers, difficulties, Dressing Room and trails, eggs, Mastery, weekly challenge, Rocket Casino, new rifts and Judgment"], new: [
     ["Vestidor, en el menú (y con un botón en la ficha de cada Pokémon): para cada Pokémon eliges su versión normal o shiny, su aspecto (las formas que sólo cambian el dibujo), su skin, un efecto (brillos, aura de su tipo, halo de luz o aura oscura) y su estela, y lo ves dando vueltas antes de jugar.",
      "Dressing Room, in the menu (and with a button on each Pokémon's page): for each Pokémon you choose its normal or shiny version, its look (forms that only change the sprite), its skin, an effect (sparkles, type aura, halo of light or dark aura) and its trail, and you can watch it walk around before playing."],
     ["56 estelas para lo que deja tu Pokémon al moverse: huellas, hojas, burbujas, corazones, estrellas, arcoíris, sombras, cometas y muchas más. Se compran una vez en la nueva pestaña Estelas de la Tienda Kecleon (12 distintas cada semana, las mismas para todos) y valen para todos tus Pokémon. En grupo, los demás ven la tuya.",
@@ -91,6 +91,8 @@ G.CHANGELOG = [
     ["En el menú principal, Maestría ocupa el sitio de Ajustes, que siguen en el engranaje de arriba.",
      "In the main menu, Mastery takes the place of Settings, which are still under the gear at the top."]
   ], fix: [
+    ["En el resumen de una partida en grupo, la pestaña «Tú» salía sin traducir en chino.",
+     "In the summary of a group run, the «You» tab was not translated into Chinese."],
     ["Desde el minuto 12 el mapa se teñía con los colores y los charcos de las arenas de grieta. Ahora sigue alternando sus propios paisajes.",
      "From minute 12 on, the map took on the colors and puddles of the rift arenas. It now keeps alternating its own landscapes."],
     ["El Remolino Infinito de Eternatus podía mandar a tu Pokémon fuera del mapa (desaparecía y no se podía jugar).",
