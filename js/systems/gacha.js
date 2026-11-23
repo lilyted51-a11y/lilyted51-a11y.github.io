@@ -11,6 +11,8 @@
  * Amuleto Iris: uno por generación. Se tiene al completar su Pokédex (todos sus
  *   Pokémon, legendarios incluidos). No se guarda aparte: sale de lo que tienes.
  * Repetidos: se convierten en Pokémonedas (los shiny repetidos, el triple).
+ * Huevos (23-11-2026, systems/eggs.js): uno cada 10 tiradas ×10 (la ×100 cuenta
+ *   como 10 y la ×1000 como 100); salen en .eggs del resultado.
  * Halloween (30-10 al 2-11, systems/halloween.js): banner Noche Espectral
  *   (gen 10, SPOOKY): los Pokémon Fantasma de todas las regiones, con shiny al
  *   doble (2 %) y su propio pity. No tiene Amuleto Iris ni está en BANNERS.
@@ -118,8 +120,10 @@ G.Gacha = (() => {
       if (!costOf(save, 100, use)) return null;
       const hadIris = hasIris(save, gen);
       const out = [];
-      for (let k = 0; k < 10; k++) out.push(...pull(save, 10, gen, use));
+      const eggs = [];
+      for (let k = 0; k < 10; k++) { const r = pull(save, 10, gen, use); out.push(...r); eggs.push(...(r.eggs || [])); }
       out.iris = !hadIris && hasIris(save, gen) ? gen : 0;
+      out.eggs = eggs;
       return out;
     }
     const cost = costOf(save, n, use);
@@ -167,6 +171,7 @@ G.Gacha = (() => {
     }
     save.stats.pulls = (save.stats.pulls || 0) + n;
     out.iris = !hadIris && hasIris(save, gen) ? gen : 0;
+    out.eggs = G.Eggs ? G.Eggs.fromPulls(save, Math.floor(n / 10)) : [];
     return out;
   }
 

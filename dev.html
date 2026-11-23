@@ -610,6 +610,14 @@
   <button id="pull-close" class="btn gold hidden">Continuar</button>
 </div>
 
+<!-- Huevos: la eclosión (js/ui/eggs-ui.js) -->
+<div id="egg-fx" class="hidden">
+  <p class="egg-title" id="egg-title"></p>
+  <canvas id="egg-cv" width="96" height="96" title="Toca para abrirlo ya"></canvas>
+  <div class="pull-results" id="egg-out"></div>
+  <button id="egg-close" class="btn gold hidden">Continuar</button>
+</div>
+
 <!-- ====== Durante la run ====== -->
 <section id="scr-levelup" class="scr dim hidden">
   <div class="box center">
@@ -728,6 +736,7 @@
 <script defer src="js/systems/spawner.js"></script>
 <script defer src="js/systems/levelup.js"></script>
 <script defer src="js/systems/gacha.js"></script>
+<script defer src="js/systems/eggs.js"></script>
 <script defer src="js/systems/interact.js"></script>
 <script defer src="js/systems/rift.js"></script>
 <script defer src="js/systems/judgment.js"></script>
@@ -756,6 +765,7 @@
 <script defer src="js/ui/slots.js"></script>
 <script defer src="js/ui/gacha-ui.js"></script>
 <script defer src="js/ui/shop-ui.js"></script>
+<script defer src="js/ui/eggs-ui.js"></script>
 <script defer src="js/ui/run-ui.js"></script>
 <script defer src="js/ui/social-ui.js"></script>
 <script defer src="js/ui/chat-ui.js"></script>

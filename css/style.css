@@ -1164,3 +1164,22 @@ html:lang(zh) .btn, html:lang(zh) .chip { letter-spacing: 0; }
   .topbar .btn.small { padding: 2px 4px; }
   .topbar img { width: 14px; height: 14px; }
 }
+
+/* ---------- Huevos (23-11-2026, js/ui/eggs-ui.js): Mochila y eclosión ---------- */
+.egg-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,.12); overflow: hidden; margin: 5px 0 1px; max-width: 260px; }
+.egg-bar > i { display: block; height: 100%; background: var(--ec, #5fe08a); }
+.egg-ready .ic img { animation: egg-wob 1.8s ease-in-out infinite; transform-origin: 50% 90%; }
+@keyframes egg-wob { 0%, 64%, 100% { transform: rotate(0); } 70% { transform: rotate(-12deg); } 78% { transform: rotate(10deg); } 86% { transform: rotate(-6deg); } 93% { transform: rotate(3deg); } }
+#egg-fx {
+  position: fixed; inset: 0; z-index: 41; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 14px 10px; overflow-y: auto;
+  background: radial-gradient(circle at 50% 42%, rgba(70,48,130,.97), rgba(8,6,20,.99) 70%);
+}
+#egg-fx.hidden { display: none; }
+#egg-cv { width: 288px; height: 288px; image-rendering: pixelated; cursor: pointer; max-width: 70vw; max-height: 52vh; object-fit: contain; }
+#egg-cv.hidden { display: none; }
+.egg-title { margin: 0; font-size: 20px; font-weight: 700; color: var(--gold); text-align: center; text-shadow: 0 2px 0 #000; }
+.egg-card { width: 190px; }
+#egg-close { box-shadow: 0 4px 18px rgba(0,0,0,.6); }
+#egg-fx.flash::after { content: ''; position: fixed; inset: 0; background: #fff; pointer-events: none; animation: egg-flash .45s ease-out forwards; }
+@keyframes egg-flash { from { opacity: 1; } to { opacity: 0; } }

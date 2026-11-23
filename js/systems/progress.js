@@ -20,6 +20,8 @@
  * Misiones: 3 diarias + 2 semanales, sorteadas con una semilla de la fecha y
  * la cuenta (en cualquier ordenador salen las mismas). El premio se recoge
  * a mano; los logros se dan solos al conseguirlos.
+ * Huevos (23-11-2026, systems/eggs.js): cada semanal recogida da uno, y al acabar
+ * cada partida su tiempo incuba los que tienes.
  */
 G.Progress = (() => {
   const TYPES = Object.keys(G.U.TYPE_NAME);
@@ -87,6 +89,8 @@ G.Progress = (() => {
     if (!s || m.claimed || !done(m)) return false;
     m.claimed = true;
     grant(G.MissionDefs.BY[m.id].reward);
+    // Su huevo, con id de la semana y la misión: recogida en dos aparatos, sigue siendo uno.
+    if (G.MissionDefs.BY[m.id].reward.egg && G.Eggs) G.Eggs.fromMission(s.missions.week, m.id);
     s.stats.missionsDone = (s.stats.missionsDone || 0) + 1;
     event('missionDone', { daily: !weekly });
     G.DB.commit(true);
@@ -121,6 +125,7 @@ G.Progress = (() => {
 
   function rewardText(r) {
     const p = [];
+    if (r.egg) p.push(G.Icons.html('egg:' + G.Eggs.FROM.mission, 12) + ' <span>' + G.T(G.Eggs.KINDS[G.Eggs.FROM.mission].name) + '</span>');
     if (r.t10) p.push(G.Icons.html('ticket10', 12) + ' ' + r.t10 + ' ×10');
     if (r.t1) p.push(G.Icons.html('ticket', 12) + ' ' + r.t1);
     if (r.coins) p.push('<span class="coin"></span> ' + r.coins);
@@ -152,6 +157,7 @@ G.Progress = (() => {
         break;
       case 'runEnd':
         if (d.group) S.groupRuns = (S.groupRuns || 0) + 1;
+        if (G.Eggs) G.Eggs.runEnd(d.time);          // incuba los huevos (y llega el de la grieta)
         break;
       case 'judge':
         S.judged = (S.judged || 0) + 1;

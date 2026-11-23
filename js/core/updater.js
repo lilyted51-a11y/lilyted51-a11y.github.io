@@ -45,6 +45,8 @@ G.Updater = (() => {
     if (['scr-gacha', 'scr-upgrades', 'scr-settings'].some(id => document.getElementById(id) && G.UI.isOpen(id))) return false;
     const fx = document.getElementById('pull-fx');
     if (fx && !fx.classList.contains('hidden')) return false;             // tirada del gacha en marcha
+    const egg = document.getElementById('egg-fx');
+    if (egg && !egg.classList.contains('hidden')) return false;           // un huevo abriéndose
     const a = document.activeElement;
     if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return false;   // escribiendo (contraseña, apodo...)
     return true;

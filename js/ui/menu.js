@@ -128,6 +128,8 @@ G.MenuUI = (() => {
     if (items || tms) parts.push(G.I18n.f('Objetos: {x} · MT: {x}', items, tms));
     if (candy) parts.push(G.I18n.f('Caramelos: {x}', candy));
     if (iris) parts.push(G.I18n.f('Amuletos Iris: {x}', iris));
+    const eggs = G.EggsUI ? G.EggsUI.menuText() : '';
+    if (eggs) parts.push(eggs);
     $('menu-bag-sub').textContent = parts.join(' · ') || G.T('Vacía');
   }
 

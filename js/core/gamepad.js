@@ -53,6 +53,8 @@ G.Pad = (() => {
     // Continuar (25-10-2026).
     const fx = document.getElementById('pull-fx');
     if (fx && !fx.classList.contains('hidden')) return fx;
+    const egg = document.getElementById('egg-fx');           // (lo mismo al abrir un huevo, 23-11-2026)
+    if (egg && !egg.classList.contains('hidden')) return egg;
     let top = null, tz = -Infinity;
     for (const s of document.querySelectorAll('.scr:not(.hidden)')) {
       const z = parseInt(getComputedStyle(s).zIndex, 10) || 0;
@@ -179,7 +181,7 @@ G.Pad = (() => {
         // Al cerrar una tirada del gacha no se deja nada elegido: lo primero era
         // «Tirar» y, pulsando A seguido para pasar las animaciones, se encadenaban
         // tiradas sin querer (25-10-2026). El siguiente A sólo enseña la selección.
-        if (scr && scr.id === 'pull-fx') { hideFocus(); return; }
+        if (scr && (scr.id === 'pull-fx' || scr.id === 'egg-fx')) { hideFocus(); return; }
         setFocus(firstOf(list)); return;
       }
       let best = null, bd = Infinity;

@@ -81,6 +81,7 @@ G.GachaUI = (() => {
        <p class="note">· La tirada ×10 garantiza al menos una Épica.<br>
        · A las ${G.Gacha.PITY_5} tiradas sin Legendaria en un banner, la siguiente lo es.<br>
        · Los repetidos dan Pokémonedas. Los shiny no se repiten.<br>
+       · ${G.I18n.f('Cada 10 tiradas ×10, un huevo místico (te faltan {x}).', G.Eggs.toNext(s))}<br>
        · Los tickets se consiguen jugando: algunos Pokémon los sueltan al caer, y
          los jefes y los legendarios de las grietas, a veces, tickets ×10.</p>`;
 
@@ -188,6 +189,13 @@ G.GachaUI = (() => {
         <div><b>${G.I18n.f('¡Amuleto Iris de {x}!', name)}</b>
         <div class="sub">${G.I18n.f('Has completado la Pokédex de {x}: en su banner, los shiny salen el doble (2 %). Lo tienes en la Mochila.', name)}</div></div></div>`);
       G.Audio.sfx('shinyGet');
+    }
+    // Huevos (23-11-2026): uno cada 10 tiradas ×10, a la Mochila.
+    if (res.eggs && res.eggs.length) {
+      out.insertAdjacentHTML('beforeend', `<div class="iris-get">${G.Icons.html('egg:m', 36)}
+        <div><b>${res.eggs.length > 1 ? G.I18n.f('¡{x} huevos místicos!', res.eggs.length) : G.T('¡Huevo místico!')}</b>
+        <div class="sub">${G.T('Uno por cada 10 tiradas ×10. Lo tienes en la Mochila: se incuba mientras juegas.')}</div></div></div>`);
+      G.Audio.sfx('chest');
     }
     $('pull-close').classList.remove('hidden');
     busy = false;

@@ -4,7 +4,8 @@
  * jugador. Dura GRIETA_TTL segundos; si entras, te lleva (con todo el grupo)
  * a una arena cerrada en el Mundo Distorsión, contra un Pokémon LEGENDARIO.
  *
- *   ganas    el legendario suelta tickets (el ×10, la mitad de las veces) y monedas, y cada uno se lleva un
+ *   ganas    el legendario suelta tickets (el ×10, la mitad de las veces) y monedas (el primero de la
+ *            partida, también un huevo para cada uno: llega al acabarla, systems/eggs.js), y cada uno se lleva un
  *            VÍNCULO (fusiona movimientos, ver Player.fuse); a los pocos
  *            segundos volvéis al mapa donde estabais y se elige la fusión
  *   pierdes  (caéis todos o se acaba el tiempo) volvéis sin premio, con algo
@@ -29,11 +30,11 @@ G.Rift = (() => {
   // Grietas con hora fija (16-11-2026, como el juego oficial): minutos 4, 8, 12, 16 y 25.
   // La última sólo da vínculo si te has dejado alguna de las anteriores (wins).
   const RIFT_AT = [240, 480, 720, 960, 1500];
-  let riftIdx = 0, wins = 0;
+  let riftIdx = 0, wins = 0, egg = false;
   const authority = () => !G.Coop.active || G.Coop.isHost;
   const TS = () => G.Tiles.T * G.Sprites.PX;
 
-  function reset() { rift = null; arena = null; zone = null; checkT = 0; asked = false; downT = 0; riftIdx = 0; wins = 0; }
+  function reset() { rift = null; arena = null; zone = null; checkT = 0; asked = false; downT = 0; riftIdx = 0; wins = 0; egg = false; }
 
   /**
    * ¿Sigue este jugador en la arena aunque aquí ya se haya vuelto al mapa?
@@ -213,6 +214,7 @@ G.Rift = (() => {
     G.Audio.sfx('legend');
     const pl = G.Game.player;
     if (authority()) wins++;
+    if (!egg && G.Eggs) { egg = true; G.Eggs.riftWon(); }
     if (pl && !arena.nb) {
       pl.bonds++;
       G.FX.dmgText(pl.x, pl.y - pl.bodyH - 10, '¡Vínculo!', '#ff8ad8', true);

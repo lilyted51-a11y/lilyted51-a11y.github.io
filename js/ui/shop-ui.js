@@ -468,7 +468,9 @@ G.ShopUI = (() => {
   function openBag() {
     G.UI.show('scr-bag', true);
     const box = $('bag-body');
-    box.innerHTML = bagHtml();
+    // Huevos (23-11-2026, ui/eggs-ui.js), lo primero.
+    box.innerHTML = G.EggsUI.bagHtml() + bagHtml();
+    G.EggsUI.wire(box);
     const go = box.querySelector('[data-go-dex]');
     if (go) go.onclick = () => G.MenuUI.openDex();
     const shop = box.querySelector('[data-go-shop]');
@@ -608,7 +610,7 @@ G.ShopUI = (() => {
     if (G.Shop.count('candy') > 0) items.push('candy');
     const tms = Object.keys(s.tms || {}).filter(id => G.Moves.BY_ID[id] && s.tms[id] > 0).sort((a, b) => moveName(a).localeCompare(moveName(b)));
     if (!items.length && !tms.length) {
-      return `<p class="sub center" style="margin:24px 0">${G.T('Tu Mochila está vacía.')}<br><br>
+      return `<p class="sub center" style="margin:24px 0">${G.T(G.Eggs.count() ? 'No tienes objetos ni MT.' : 'Tu Mochila está vacía.')}<br><br>
             <button class="btn gold" data-go-shop>${G.Icons.html('shop', 16)} ${G.T('Ir a la Tienda Kecleon')}</button></p>` + irisHtml();
     }
     let h = `<p class="sub" style="margin:10px 0">${G.T('Para usarlo, abre la colección, elige un Pokémon y pulsa Menta, Cápsula o Enseñar MT en su ficha.')}

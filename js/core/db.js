@@ -106,6 +106,9 @@ G.DB = (() => {
       evoMoves: {},           // id -> fecha: movimientos evolucionados alguna vez
       ach: {},                // id -> fecha: logros conseguidos
       missions: {},           // misiones del día / semana (systems/progress.js)
+      // Huevos (23-11-2026, systems/eggs.js): los que tienes (id -> { k, f, at, p, d, s }) y los ya abiertos (id -> [dex, shiny, fecha]).
+      eggs: {},
+      eggsOpen: {},
       profile: { favs: [], title: '' },   // perfil público: 3 favoritos y título
       stats: { runs: 0, bestTime: 0, bestLevel: 0, totalKills: 0, pulls: 0, coinsEarned: 0, shinies: 0,
                bossesTotal: 0, riftWins: 0, evolutions: 0, missionsDone: 0, groupRuns: 0, bestGroupTime: 0 }
@@ -172,6 +175,15 @@ G.DB = (() => {
         s[k][id] = Math.min(999, num(s[k][id]));
         if (!s[k][id] || !ok(id)) delete s[k][id];
       }
+    }
+    // Huevos: los que tienen forma de huevo (clase, progreso y Pokémon), sin los ya abiertos.
+    if (!isObj(s.eggsOpen)) s.eggsOpen = {};
+    for (const id of Object.keys(s.eggsOpen)) if (!/^[a-z0-9-]{1,40}$/.test(id) || !Array.isArray(s.eggsOpen[id])) delete s.eggsOpen[id];
+    if (!isObj(s.eggs)) s.eggs = {};
+    for (const id of Object.keys(s.eggs)) {
+      const e = s.eggs[id];
+      if (!/^[a-z0-9-]{1,40}$/.test(id) || !isObj(e) || !['c', 'r', 'm'].includes(e.k) || s.eggsOpen[id]) { delete s.eggs[id]; continue; }
+      e.p = num(e.p); e.at = num(e.at); e.d = num(e.d); e.s = e.s ? 1 : 0;
     }
     // MT aprendidas: movimientos que existen, sin repetir.
     if (!isObj(s.ptm)) s.ptm = {};
@@ -323,6 +335,7 @@ G.DB = (() => {
    * Fusiona dos versiones de la misma partida (p. ej. una jugada sin
    * conexión y la de la nube). Nunca se pierde nada conseguido:
    *   - colecciones (owned, shiny): unión
+   *   - huevos: unión (el mayor progreso de cada uno), menos los abiertos en cualquiera de las dos
    *   - mejoras y estadísticas: el máximo de cada una
    *   - monedas, tickets, Mochila y MT: la libreta (arriba)
    *   - compañero, pity...: los de la versión más reciente
@@ -396,6 +409,15 @@ G.DB = (() => {
       r[coll] = r[coll] || {};
       for (const k in older[coll] || {}) if (!r[coll][k]) r[coll][k] = older[coll][k];
     }
+    // Huevos (systems/eggs.js): unión, el mayor progreso de cada uno, y el abierto en cualquier aparato ya no vuelve.
+    const eo = r.eggsOpen = Object.assign({}, older.eggsOpen || {}, r.eggsOpen || {});
+    const eg = r.eggs = r.eggs || {};
+    for (const id in older.eggs || {}) {
+      const o = older.eggs[id];
+      if (!eg[id]) eg[id] = JSON.parse(JSON.stringify(o));
+      else eg[id].p = Math.max(num(eg[id].p), num(o && o.p));
+    }
+    for (const id in eo) delete eg[id];
     // Misiones del mismo día/semana: el mayor progreso y lo ya recogido.
     const mo = older.missions || {}, mr = r.missions = r.missions || {};
     for (const [per, list] of [['day', 'daily'], ['week', 'weekly']]) {
