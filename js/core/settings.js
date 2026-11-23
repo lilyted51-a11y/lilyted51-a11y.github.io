@@ -13,6 +13,9 @@
  *   gamepad     true/false                        jugar con mando (gamepad.js)
  *   padRumble   true/false                        que el mando vibre al recibir daño
  *   aimManual   true/false                        apuntar a mano (ratón o stick derecho) en vez de solo
+ *   trails      'all' | 'mine' | 'off'            estelas: las de todos, sólo la tuya o ninguna (entities/trails.js)
+ *   trailLite   true/false                        estelas con la mitad de partículas
+ *   dressFx     true/false                        efectos del Vestidor (brillos, auras, halo) en la partida
  *
  *   G.Settings.get('quality')  ·  G.Settings.set('fps', true)  ·  G.Settings.on(fn)
  *   G.Settings.fx   nivel efectivo 0 (bajo) .. 2 (alto), ya resuelto el 'auto'
@@ -20,7 +23,8 @@
 G.Settings = (() => {
   const KEY = 'ps.settings';
   const DEF = { quality: 'auto', dmgNumbers: true, calm: false, fps: false, stick: 1, stickMode: 'float', pad: null, gamepad: true, padRumble: true, aimManual: false,
-                gachaSkip: false, minimap: true };   // copia local: saltar animación del gacha · minimapa
+                gachaSkip: false, minimap: true,    // copia local: saltar animación del gacha · minimapa
+                trails: 'all', trailLite: false, dressFx: true };   // estelas y efectos (23-11-2026)
   let s = Object.assign({}, DEF);
   try { Object.assign(s, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { /* nada */ }
   const fns = new Set();

@@ -98,6 +98,9 @@ G.DB = (() => {
       // Halloween (25-10-2026, core/skins.js): los caramelos van en bag.candy.
       skins: {},              // id -> fecha: skins compradas (para siempre)
       pskin: {},              // dex -> [id, fecha]: la que lleva puesta ('' = ninguna; gana la elegida más tarde)
+      // Vestidor y estelas (23-11-2026, core/dress.js y entities/trails.js):
+      trails: {},             // id -> fecha: estelas compradas (para siempre)
+      pdress: {},             // dex -> [{ sh, lk, fx, tr }, fecha]: versión, aspecto, efecto y estela (gana lo elegido más tarde)
       tickets: { t1: 0, t10: 0 },   // tickets del gacha (x1 y x10)
       pity: {},               // generación del banner -> tiradas sin ★5
       legends: {},            // dex -> fecha: legendarios vencidos en grietas
@@ -198,6 +201,9 @@ G.DB = (() => {
       if (typeof id !== 'string' || (id && G.Skins && (!G.Skins.SKINS[id] || G.Skins.SKINS[id].dex !== +d))) delete s.pskin[d];
       else s.pskin[d] = [id, num(e[1])];
     }
+    // Vestidor y estelas: las que existen y lo elegido de cada Pokémon (core/dress.js).
+    if (G.Dress) G.Dress.clean(s);
+    else { if (!isObj(s.trails)) s.trails = {}; if (!isObj(s.pdress)) s.pdress = {}; }
     // Atajos: 4 huecos con un movimiento que exista (o null), sin repetir.
     if (s.pbind && typeof s.pbind === 'object') {
       for (const d of Object.keys(s.pbind)) {
@@ -347,7 +353,7 @@ G.DB = (() => {
     // MT aprendidas: nunca se olvidan (unión). Naturaleza y habilidad: la elegida más tarde.
     r.ptm = r.ptm || {};
     for (const d in older.ptm || {}) r.ptm[d] = [...new Set((r.ptm[d] || []).concat(older.ptm[d] || []))];
-    for (const k of ['pnat', 'pabil', 'pskin']) {
+    for (const k of ['pnat', 'pabil', 'pskin', 'pdress']) {
       r[k] = r[k] || {};
       for (const d in older[k] || {}) if (!r[k][d] || (+older[k][d][1] || 0) > (+r[k][d][1] || 0)) r[k][d] = older[k][d];
     }
@@ -392,7 +398,7 @@ G.DB = (() => {
       }
     }
     // Lo conseguido nunca se pierde: unión de legendarios, arenas, objetos, logros...
-    for (const coll of ['legends', 'arenas', 'itemsFound', 'evoMoves', 'ach', 'skins']) {
+    for (const coll of ['legends', 'arenas', 'itemsFound', 'evoMoves', 'ach', 'skins', 'trails']) {
       r[coll] = r[coll] || {};
       for (const k in older[coll] || {}) if (!r[coll][k]) r[coll][k] = older[coll][k];
     }

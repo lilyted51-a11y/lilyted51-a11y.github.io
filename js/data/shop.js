@@ -9,6 +9,7 @@
  *
  * MT a la venta: 8 cada día, iguales para todos (semilla: la fecha en España).
  * Si ninguna sirve a tu compañero, la última se cambia por una que sí aprenda.
+ * Estelas (23-11-2026): 12 cada semana, iguales para todos (abajo, weeklyTrails).
  */
 G.Shop = (() => {
   const ITEMS = {
@@ -106,5 +107,44 @@ G.Shop = (() => {
     return { ok: true };
   }
 
-  return { ITEMS, ORDER, count, take, tmCount, takeTm, dailyTms, tmPrice, buy, buySkin, today };
+  // ---------------- estelas (23-11-2026, copia local: entities/trails.js) ----------------
+  /*
+   * Cada semana (de lunes a domingo, en España) hay 12 a la venta, las mismas para todos:
+   * 5 comunes, 4 raras, 2 épicas y 1 legendaria. Se compran una vez (save.trails) y valen
+   * para todos tus Pokémon; cada uno se pone la suya en el Vestidor.
+   */
+  const WEEK_MIX = { 1: 5, 2: 4, 3: 2, 4: 1 };
+  /** Lunes de esta semana en España ('AAAAMMDD') y días que faltan para el siguiente. */
+  function week() {
+    const t = today(), d = new Date(Date.UTC(+t.slice(0, 4), +t.slice(4, 6) - 1, +t.slice(6, 8)));
+    const back = (d.getUTCDay() + 6) % 7;
+    const mon = new Date(d.getTime() - back * 864e5);
+    return { key: mon.toISOString().slice(0, 10).replace(/-/g, ''), left: 7 - back };
+  }
+  function weeklyTrails() {
+    const r = rng('estelas:' + week().key), out = [];
+    for (const rar of [1, 2, 3, 4]) {
+      const l = G.Trails.LIST.filter(t => t.rar === rar).map(t => t.id).sort();
+      for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; }
+      out.push(...l.slice(0, WEEK_MIX[rar]));
+    }
+    return out;
+  }
+  /** Compra una estela de las de esta semana. → { ok, error? } */
+  function buyTrail(id) {
+    const s = save(), t = G.Trails.BY[id];
+    if (!s || !t) return { ok: false };
+    if (G.Dress.ownsTrail(s, id)) return { ok: false, error: 'Ya tienes esta estela.' };
+    if (!weeklyTrails().includes(id)) return { ok: false, error: 'Esa estela ya no está a la venta.' };
+    if (s.coins < t.price) return { ok: false, error: 'No tienes Pokémonedas suficientes.' };
+    s.coins -= t.price;
+    s.trails = s.trails || {};
+    s.trails[id] = Date.now();
+    // A tu compañero se le pone si aún no llevaba ninguna.
+    if (s.partner && !G.Dress.trailOf(s, s.partner)) G.Dress.set(s, s.partner, { tr: id });
+    G.DB.commit(true);
+    return { ok: true };
+  }
+
+  return { ITEMS, ORDER, count, take, tmCount, takeTm, dailyTms, tmPrice, buy, buySkin, today, week, weeklyTrails, buyTrail };
 })();

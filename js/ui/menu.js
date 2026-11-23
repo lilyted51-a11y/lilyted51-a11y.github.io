@@ -18,7 +18,7 @@ G.MenuUI = (() => {
   }
 
   function init() {
-    const ICON = { play: 'ball', dex: 'book', upgrades: 'up', shop: 'shop', bag: 'bag', gacha: 'ball4', goals: 'medal3', friends: 'friends', rank: 'trophy', settings: 'gear' };
+    const ICON = { play: 'ball', dex: 'book', wardrobe: 'shirt', upgrades: 'up', shop: 'shop', bag: 'bag', gacha: 'ball4', goals: 'medal3', friends: 'friends', rank: 'trophy', settings: 'gear' };
     document.querySelectorAll('#scr-menu [data-go]').forEach(b => {
       b.insertAdjacentHTML('afterbegin', `<span class="mi-ico">${G.Icons.html(ICON[b.dataset.go], 26)}</span>`);
       b.dataset.sfx = b.dataset.go === 'play' ? 'confirm' : 'click';
@@ -26,6 +26,7 @@ G.MenuUI = (() => {
         const go = b.dataset.go;
         if (go === 'play') { if (G.Social.room) G.LobbyUI.open(); else G.Flow.play(); }
         else if (go === 'dex') openDex();
+        else if (go === 'wardrobe') G.WardrobeUI.open(null, 'menu');
         else if (go === 'upgrades') openUpgrades();
         else if (go === 'shop') G.ShopUI.open();
         else if (go === 'bag') G.ShopUI.openBag();
@@ -56,7 +57,8 @@ G.MenuUI = (() => {
     G.UI.show('scr-menu');
     bagLine();
     hwLine();
-    G.UI.sprite($('menu-partner'), mon.dex, { lively: true, scale: 4, hero: true, shiny, skin: G.Skins.worn(s, mon.dex) });
+    const look = G.Dress.lookOf(s, mon.dex);          // aspecto elegido en el Vestidor
+    G.UI.sprite($('menu-partner'), look || mon.dex, { lively: true, scale: 4, hero: true, shiny, skin: look ? '' : G.Skins.worn(s, mon.dex) });
     $('menu-partner').style.setProperty('--stage-c', shiny ? '#9ae6ff' : G.U.TYPE_COLOR[mon.types[0]]);
     $('menu-partner').classList.toggle('shiny', shiny);
     $('menu-partner-name').innerHTML = mon.name + (shiny ? ' ' + G.Icons.html('shiny', 24) : '');
@@ -69,7 +71,7 @@ G.MenuUI = (() => {
       b.classList.toggle('on', (b.dataset.v === '1') === shiny);
       b.onclick = () => {
         if ((b.dataset.v === '1') === shiny) return;
-        s.partnerShiny = b.dataset.v === '1';
+        G.Dress.setShiny(s, mon.dex, b.dataset.v === '1');   // (también lo apunta el Vestidor)
         G.DB.commit();
         G.Audio.sfx('confirm');
         open();
@@ -343,7 +345,7 @@ G.MenuUI = (() => {
     const hasSh = giftTo ? true : G.DB.ownsShiny(dex);
     const isPartner = !giftTo && dex === s.partner;
     if (!hasSh) viewShiny = false;
-    else if (isPartner && dex !== showDetail.last) viewShiny = !!s.partnerShiny;
+    else if (dex !== showDetail.last) viewShiny = G.Dress.shinyOf(s, dex);    // la versión elegida (Vestidor)
     if (dex !== showDetail.last) extraOpen = '';
     // Al redibujar el mismo Pokémon (abrir el selector de Menta, enseñar una MT...)
     // no se vuelve arriba: se quedaba fuera de la vista lo que acababas de abrir.
@@ -416,7 +418,7 @@ G.MenuUI = (() => {
     const pick = $('dex-pick');
     if (pick) pick.onclick = () => {
       s.partner = dex;
-      s.partnerShiny = hasSh && viewShiny;
+      G.Dress.setShiny(s, dex, hasSh && viewShiny);
       G.DB.commit();
       if (G.Social.room) G.Social.refreshMember();   // en una sala: los demás lo ven ya
       G.UI.toast(p.name + (s.partnerShiny ? ' shiny' : '') + ' es ahora tu compañero');
@@ -500,30 +502,23 @@ G.MenuUI = (() => {
         ? `<span class="move-icons">${taught.map(id => `<span title="${G.T(G.Moves.BY_ID[id].name, 'move')}">${G.Icons.html('move:' + id, 16)}</span>`).join('')}</span>`
         : `<small>${G.T('Aún no ha aprendido ninguna')}</small>`}
         ${btn('tm', 'tm', 'Enseñar MT', tmsHere.length)}</div>
-      ${skinRow(dex)}
+      ${wardrobeRow(dex)}
       <div id="mx-picker"></div>
     </div>`;
   }
 
-  /** Skins (Halloween 2026): las compradas de este Pokémon, para ponerlas o quitarlas. */
-  function skinRow(dex) {
-    const s = G.DB.save, mine = Object.keys(G.Skins.SKINS).filter(id => G.Skins.SKINS[id].dex === +dex && G.Skins.owns(s, id));   // copia local: también las que no se venden
-    if (!mine.length) return '';
-    const on = G.Skins.worn(s, dex);
-    return `<div class="mx-row"><span>${G.T('Skin')}</span><b>${on ? G.T(G.Skins.SKINS[on].name) : G.T('Sin skin')}</b>
-      ${mine.map(id => `<button class="btn small${on === id ? '' : ' gold'}" data-skin="${on === id ? '' : id}">${G.Icons.html('witch', 14)}
-        <span>${G.T(on === id ? 'Quitársela' : 'Ponérsela')}</span></button>`).join('')}</div>`;
+  /** Vestidor (23-11-2026): lo que lleva puesto y el botón para cambiarlo (skin, aspecto, efectos y estela van allí). */
+  function wardrobeRow(dex) {
+    const s = G.DB.save, sk = G.Skins.worn(s, dex), tr = G.Dress.trailOf(s, dex), fx = G.Dress.fxOf(s, dex), lk = G.Dress.lookOf(s, dex);
+    const bits = [lk ? G.T(G.DEX_BY[lk].name, 'mon') : '', sk ? G.T(G.Skins.SKINS[sk].name) : '', fx ? G.T(G.Trails.FX[fx].name) : '',
+                  tr ? G.T(G.Trails.BY[tr].name) : ''].filter(Boolean);
+    return `<div class="mx-row"><span>${G.T('Vestidor')}</span><small>${bits.length ? bits.map(b => `<span>${b}</span>`).join(' · ') : G.T('Como siempre')}</small>
+      <button class="btn small gold" data-wardrobe>${G.Icons.html('shirt', 14)} <span>${G.T('Vestidor')}</span></button></div>`;
   }
 
   function wireExtras(dex, box) {
-    box.querySelectorAll('[data-skin]').forEach(b => {
-      b.onclick = () => {
-        G.Skins.wear(G.DB.save, dex, b.dataset.skin);
-        G.DB.commit();
-        G.Audio.sfx(b.dataset.skin ? 'buy' : 'select');
-        showDetail(dex);
-      };
-    });
+    const wd = box.querySelector('[data-wardrobe]');
+    if (wd) wd.onclick = () => G.WardrobeUI.open(dex, 'dex');
     box.querySelectorAll('[data-extra]').forEach(b => {
       b.onclick = () => { extraOpen = extraOpen === b.dataset.extra ? '' : b.dataset.extra; G.Audio.sfx('select'); showDetail(dex); };
     });

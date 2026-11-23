@@ -446,7 +446,10 @@ G.ShopUI = (() => {
 
   // ---------------- abrir ----------------
 
-  function open() {
+  // Pestañas (23-11-2026): Objetos y MT · Estelas.
+  let shopTab = 'items';
+  function open(tab) {
+    if (tab === 'items' || tab === 'trails') shopTab = tab;
     G.UI.show('scr-shop', true);
     const sg = $('shop-sign');
     sg.classList.remove('lit', 'show', 'shown');
@@ -527,6 +530,11 @@ G.ShopUI = (() => {
 
   function render() {
     const box = $('shop-body');
+    const tabs = $('shop-tabs');
+    tabs.innerHTML = [['items', 'Objetos y MT', 'Mentas, Cápsulas y MT'], ['trails', 'Estelas', G.I18n.f('{x} esta semana', G.Shop.weeklyTrails().length)]]
+      .map(([k, t, sub]) => `<button class="gen-tab${shopTab === k ? ' on' : ''}" data-tab="${k}"><b>${G.T(t)}</b><small>${sub}</small></button>`).join('');
+    tabs.querySelectorAll('[data-tab]').forEach(b => { b.onclick = () => { shopTab = b.dataset.tab; render(); }; });
+    if (shopTab === 'trails') { renderTrails(box); return; }
     box.innerHTML = buyHtml();
     box.querySelectorAll('[data-buy]').forEach(b => {
       b.onclick = () => {
@@ -583,6 +591,47 @@ G.ShopUI = (() => {
       h += row(G.Icons.html('move:' + id, 32), `${G.T('MT')} ${moveName(id)} ${tag}${mine(G.Shop.tmCount(id))}`, note, buyBtn('tm:' + id, G.Shop.tmPrice(id)));
     }
     return h + '</div>';
+  }
+
+  // ---------------- estelas (23-11-2026, entities/trails.js) ----------------
+
+  /** Las 12 de la semana: vista previa con tu compañero, rareza y precio. */
+  function renderTrails(box) {
+    const s = G.DB.save, wk = G.Shop.week(), have = G.Dress.ownedTrails(s).length;
+    let h = `<h3 style="margin:10px 0 6px">${G.T('Estelas de la semana')}</h3>
+      <p class="sub" style="margin:0 0 8px"><span>${G.T('Lo que deja tu Pokémon al moverse. Se compran una vez y valen para todos tus Pokémon: cada uno se pone la suya en el Vestidor.')}</span>
+      <span>${G.I18n.f('Cambian cada lunes (faltan {x} días).', wk.left)}</span> <b class="gold">${G.I18n.f('Tienes {x} de {x}', have, G.Trails.LIST.length)}</b>
+      <button class="btn small" data-go-wardrobe>${G.Icons.html('shirt', 14)} ${G.T('Ir al Vestidor')}</button></p><div class="upg trail-grid">`;
+    for (const id of G.Shop.weeklyTrails()) {
+      const t = G.Trails.BY[id], got = G.Dress.ownsTrail(s, id);
+      const tag = `<span class="tag-chip" style="background:${G.Trails.RAR_COLOR[t.rar]};color:#1b1528">${G.T(G.Trails.RAR_NAME[t.rar])}</span>`;
+      const btn = got ? `<b class="gold">${G.T('Comprada')}</b>`
+        : `<button class="btn small gold" data-trail="${id}" data-sfx="none" ${s.coins < t.price ? 'disabled' : ''}>${coin(t.price)}</button>`;
+      h += `<div class="panel upg-item trail-item"><canvas data-trail-pv="${id}" width="132" height="64"></canvas>
+        <div><b>${G.T(t.name)}</b> ${tag}<div class="sub" style="font-size:13px">${got ? G.T('Ya es tuya: póntela en el Vestidor.') : G.T('Para todos tus Pokémon.')}</div></div>
+        <div class="upg-btns">${btn}</div></div>`;
+    }
+    box.innerHTML = h + '</div>';
+    const dex = s.partner, look = G.Dress.lookOf(s, dex);
+    box.querySelectorAll('canvas[data-trail-pv]').forEach(cv => {
+      G.Trails.preview(cv, { dex, look, shiny: G.Dress.shinyOf(s, dex), skin: look ? '' : G.Skins.worn(s, dex), trail: cv.dataset.trailPv, path: 'line', zoom: 0.7 });
+    });
+    box.querySelectorAll('[data-trail]').forEach(b => {
+      b.onclick = () => {
+        const r = G.Shop.buyTrail(b.dataset.trail);
+        if (!r.ok) { if (r.error) G.UI.toast(G.T(r.error)); G.Audio.sfx('error'); return; }
+        G.Audio.sfx('buy');
+        G.UI.refreshCoins();
+        Scene.cheer();
+        say(G.T('¡Gracias! Póntela en el Vestidor.'));
+        render();
+      };
+    });
+    const go = box.querySelector('[data-go-wardrobe]');
+    if (go) go.onclick = () => G.WardrobeUI.open(null, 'shop');
+    box.querySelectorAll('.upg-item').forEach(it => {
+      it.addEventListener('pointerenter', () => { const r = it.getBoundingClientRect(); Scene.point(r.left + r.width / 2); });
+    });
   }
 
   /** Halloween: las skins de bruja, por caramelos. */
