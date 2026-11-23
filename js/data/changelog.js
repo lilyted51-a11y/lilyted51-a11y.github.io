@@ -23,6 +23,9 @@ G.CHANGELOG = [
      "Each Pokémon starts a run with a strength that depends on its family: already-evolved ones start with that of their first stage and reach their own at level 40; those that do not evolve start at 65% and reach 100% at level 40. Those that evolve during the run are unchanged. Each Pokémon's sheet shows it."],
     ["En grupo, el cofre con candado reparte su nivel entre los jugadores: medio nivel con dos, un tercio con tres, y así. En solitario sigue dando un nivel entero.",
      "In a group, the locked chest splits its level between the players: half a level with two, a third with three, and so on. Solo, it still gives a whole level."]
+  ], fix: [
+    ["Desde el minuto 12 el mapa se teñía con los colores y los charcos de las arenas de grieta. Ahora sigue alternando sus propios paisajes.",
+     "From minute 12 on, the map took on the colors and puddles of the rift arenas. It now keeps alternating its own landscapes."]
   ]},
   { d: '2026-11-16', title: ["Cartas, evolución y objetos: la partida cambia de ritmo", "Cards, evolution and items: runs change pace"], new: [
     ["Cada subida de nivel ofrece cuatro cartas para elegir (antes eran tres). Se pueden elegir con las teclas 1 a 4.",

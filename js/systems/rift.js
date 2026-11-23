@@ -52,7 +52,8 @@ G.Rift = (() => {
       rift.t += dt;
       rift.ttl -= dt;
       if (rift.ttl <= 0) { rift = null; return; }
-      if (!arena && !pl.dead && G.U.dist2(pl.x, pl.y, rift.x, rift.y - 10) < 30 * 30) enter();
+      // (No se entra con Eternatus en marcha, ni durante su aviso.)
+      if (!arena && !pl.dead && !G.Eternatus.active && G.U.dist2(pl.x, pl.y, rift.x, rift.y - 10) < 30 * 30) enter();
     } else if (!arena && authority() && !G.Judgment.active && !G.Eternatus.active && riftIdx < RIFT_AT.length && time >= RIFT_AT[riftIdx]) {
       // Le toca una grieta. Con un jefe vivo se espera a que caiga (se mira cada 5 s).
       checkT -= dt;

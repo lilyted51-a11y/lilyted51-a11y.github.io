@@ -178,7 +178,9 @@ G.Tiles = (() => {
   /** Bioma número i de una partida: esos días, sólo los de Halloween; si no, los de siempre. */
   function runBiome(i) {
     i = Math.max(0, i | 0);
-    return G.Halloween && G.Halloween.inRun ? HW + i % 3 : i % HW;
+    // (Sólo los biomas del mapa: Bosque, Cueva y Volcán. Hasta el 23-11-2026 era i % HW y, desde el minuto 12,
+    //  el mapa tomaba los colores y los charcos de las arenas de grieta.)
+    return G.Halloween && G.Halloween.inRun ? HW + i % 3 : i % ARENA;
   }
 
   // ---------------- utilidades de color / píxel ----------------

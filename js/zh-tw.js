@@ -819,6 +819,8 @@
   "El banner de Halloween ya ha terminado.": "萬聖節卡池已結束。",
   "The Halloween banner has ended.": "萬聖節卡池已結束。",
   // 23-11-2026 (copia local): Eternatus Eternamax
+  "Desde el minuto 12 el mapa se teñía con los colores y los charcos de las arenas de grieta. Ahora sigue alternando sus propios paisajes.": "從第 12 分鐘起，地圖會變成裂縫競技場的顏色和水池。現在會繼續輪替地圖本身的場景。",
+  "From minute 12 on, the map took on the colors and puddles of the rift arenas. It now keeps alternating its own landscapes.": "從第 12 分鐘起，地圖會變成裂縫競技場的顏色和水池。現在會繼續輪替地圖本身的場景。",
   // la flecha del borde hacia un jefe que no se ve (hud.js)
   "BOSS": "頭目",
   "¡El cielo se tiñe de rojo! Eternatus Eternamax despierta…": "天空染成一片血紅！無極巨化無極汰那甦醒了…",

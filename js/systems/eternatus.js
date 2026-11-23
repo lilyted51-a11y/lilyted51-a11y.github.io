@@ -70,6 +70,7 @@ G.Eternatus = (() => {
   function warn(c) {
     if (phase) return;
     done = true; cfg = c; phase = 'warn'; warnT = 3;
+    G.Rift.hidePortal();                   // (que nadie entre en una grieta durante el aviso)
     G.Spawner.say('¡El cielo se tiñe de rojo! Eternatus Eternamax despierta…', 3.2, true);
     G.Audio.sfx('toll');
     G.Camera.kick(0.6);
