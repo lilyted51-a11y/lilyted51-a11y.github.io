@@ -1295,5 +1295,16 @@ G.I18n.add({
   "Vence a Eternatus en Normal para desbloquearlo": "Beat Eternatus on Normal to unlock it",
   "Vence a Eternatus en Difícil para desbloquearlo": "Beat Eternatus on Hard to unlock it",
   "¡Desbloqueado el modo {x}!": "Unlocked {x} mode!",
-  "×{x} {x}": "×{x} {x}"
+  "×{x} {x}": "×{x} {x}",
+  // 23-11-2026 (copia local): los legendarios de la grieta pelean de verdad (systems/legend.js)
+  "FASE 1 · TANTEO": "PHASE 1 · PROBING",
+  "FASE 2 · FURIA": "PHASE 2 · FURY",
+  "FASE 3 · TODO O NADA": "PHASE 3 · ALL OR NOTHING",
+  "ATAQUE DEFINITIVO": "ULTIMATE ATTACK",
+  "ATAQUE DEFINITIVO · {x} s": "ULTIMATE ATTACK · {x} s",
+  "¡A CUBIERTO!": "IN COVER!",
+  "AL DESCUBIERTO: ESCÓNDETE": "EXPOSED: TAKE COVER",
+  "¡{x} se pone serio! Fase 2": "{x} gets serious! Phase 2",
+  "¡{x} lo da todo! Fase 3": "{x} goes all out! Phase 3",
+  "¡{x} prepara {x}! Escóndete detrás de una columna, un árbol o una roca": "{x} is charging {x}! Hide behind a pillar, a tree or a rock"
 });
