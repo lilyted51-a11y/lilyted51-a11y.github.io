@@ -224,6 +224,7 @@ G.Game = (() => {
     G.Eternatus.reset();
     G.Events.reset();
     G.Weather.reset();
+    G.DexLog.reset();
     G.Path.clear();
     G.Hazards.clear();
     G.World.reset(coop ? coop.seed : Math.floor(Math.random() * 1e6));
@@ -358,7 +359,7 @@ G.Game = (() => {
     },
     waiting(names, secs) { G.RunUI.setWaiting(names, secs); },
     /** Grupo (#45): se acabó el tiempo de las cartas: te quedas con la primera. */
-    forcePick() { if (state === 'levelup' && G.UI.isOpen('scr-levelup')) G.RunUI.pick(0); },
+    forcePick() { if (state === 'levelup' && G.UI.isOpen('scr-levelup')) G.RunUI.pickFirst(); },
     /** Grupo (#45): se acabó el tiempo del objeto o del vínculo: se elige lo primero. */
     forceChoice() {
       if (G.UI.isOpen('scr-item')) { const c = document.querySelector('#item-cards .card'); if (c) c.click(); return; }
@@ -536,6 +537,7 @@ G.Game = (() => {
     const usedDex = pl.baseDex || pl.dex;
     save.pused[usedDex] = (+save.pused[usedDex] || 0) + 1;   // para "más usados" en la colección
     save.stats.totalKills += pl.kills;
+    G.DexLog.bank(save);                       // Pokédex de vistos y derrotados
     save.stats.bestTime = Math.max(save.stats.bestTime, Math.floor(time));
     if (coop) save.stats.bestGroupTime = Math.max(save.stats.bestGroupTime || 0, Math.floor(time));
     save.stats.bestLevel = Math.max(save.stats.bestLevel, pl.level);

@@ -10,6 +10,8 @@
  *   - MT aprendidas: ataques que no son de sus tipos pero sí los aprende en los
  *     juegos (Mewtwo, Bola Sombra; Psyduck, Lanzallamas no). Salen en sus cartas
  *     de nivel y se pueden elegir de movimiento inicial (G.Moves.poolFor).
+ *     Desde el 23-11-2026 (como el juego oficial) la MT vacía de la Tienda Kecleon
+ *     borra una (forget); si ese ataque estaba vetado, el veto se quita también.
  *
  * Lo que le TOCÓ (naturaleza y habilidad) no se guarda: sale "al azar" pero fijo
  * para cada cuenta y Pokémon (semilla: fecha de creación de la partida + nº de la
@@ -122,6 +124,28 @@ G.Mons = (() => {
     if (!s || !canLearn(dex, id) || !G.Shop.takeTm(id)) return false;
     s.ptm = s.ptm || {};
     s.ptm[dex] = taught(dex).concat([id]);
+    s.ptmT = s.ptmT || {};
+    s.ptmT[dex + ':' + id] = Date.now();          // (para fusionar con la nube: gana lo último, ver db.js)
+    return true;
+  }
+  /**
+   * MT vacía: le borra a `dex` la MT `id` (se gasta una de la Mochila). Si estaba vetada, el veto
+   * se quita (no ocupa un hueco de Veto con un ataque que ya no le puede salir); y si era su
+   * movimiento inicial elegido, vuelve al de serie. → true si se ha borrado.
+   */
+  function forget(dex, id) {
+    const s = save();
+    if (!s || !taught(dex).includes(id) || !G.Shop.take('tmx')) return false;
+    s.ptm[dex] = taught(dex).filter(x => x !== id);
+    if (!s.ptm[dex].length) delete s.ptm[dex];
+    s.ptmT = s.ptmT || {};
+    s.ptmT[dex + ':' + id] = -Date.now();
+    for (const k of ['pban', 'pstart', 'pstart2']) {
+      const cur = s[k] && s[k][dex];
+      if (k === 'pban' ? !(Array.isArray(cur) && cur.includes(id)) : cur !== id) continue;
+      if (k === 'pban') s.pban[dex] = cur.filter(x => x !== id); else delete s[k][dex];
+      if (G.DB.touchPick) G.DB.touchPick(k, dex);
+    }
     return true;
   }
 
@@ -174,5 +198,5 @@ G.Mons = (() => {
   }
 
   return { name, natureOf, setNature, rolledNature, monFor, abilityOf, abilityChoices, setAbility, abilityName,
-           slots, taught, learnable, canLearn, teach, natural, ladderFor, lineOf };
+           slots, taught, learnable, canLearn, teach, forget, natural, ladderFor, lineOf };
 })();

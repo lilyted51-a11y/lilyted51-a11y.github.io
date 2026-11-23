@@ -1286,5 +1286,25 @@ G.I18n.add({
   "¡Un enjambre de Combee!": "A swarm of Combee!",
   "¡Munchlax está lleno! Te regala un objeto y un Caramelo Exp.": "Munchlax is full! It gives you an item and an Exp. Candy",
   "Arbusto": "Bush",
-  "MUNCHLAX · {x}/{x} · {x} s": "MUNCHLAX · {x}/{x} · {x} s"
+  "MUNCHLAX · {x}/{x} · {x} s": "MUNCHLAX · {x}/{x} · {x} s",
+  // 23-11-2026 (copia local): Quitamovimientos, MT vacía y Pokédex de vistos y derrotados
+  "Quitamovimientos": "Move Remover",
+  "Quita uno de tus movimientos y pon en su hueco otro de los de tu Pokémon, o déjalo libre.": "Remove one of your moves and put another of your Pokémon’s moves in its slot, or leave it free.",
+  "Elegir otro movimiento para quitar.": "Pick another move to remove.",
+  "Volver a las cartas.": "Back to the cards.",
+  "Quitar este movimiento.": "Remove this move.",
+  "Hueco libre": "Free slot",
+  "Dejar el hueco libre": "Leave the slot free",
+  "Podrás aprender otro movimiento en las cartas.": "You can learn another move from the cards.",
+  "¿Qué pones en el hueco de {x}?": "What goes in the slot of {x}?",
+  "¿Qué movimiento quitas?": "Which move do you remove?",
+  "{x} → {x}": "{x} → {x}",
+  "Has quitado {x}: queda un hueco libre": "You removed {x}: a slot is free",
+  "MT vacía": "Empty TM",
+  "Borra una MT que le hayas enseñado a un Pokémon. Si tenías ese ataque vetado, se quita también el veto.": "Erases a TM you taught to a Pokémon. If that move was vetoed, the veto is removed too.",
+  "¿Quitarle a {x} la MT {x}? Se gasta una MT vacía.": "Make {x} forget the TM {x}? It uses up an Empty TM.",
+  "Borrar": "Erase",
+  "{x} ha olvidado {x}": "{x} forgot {x}",
+  "Vistos: {x} · Derrotados: {x}": "Seen: {x} · Defeated: {x}",
+  "Para usarlo, abre la colección, elige un Pokémon y pulsa Menta, Cápsula, Enseñar MT o MT vacía en su ficha.": "To use it, open the collection, choose a Pokémon and tap Mint, Capsule, Teach TM or Empty TM on its sheet."
 });

@@ -264,6 +264,32 @@ G.Player = class Player {
 
   hasMove(id) { return this.moves.some(m => m.id === id); }
 
+  /**
+   * Quitamovimientos (carta de nivel, 23-11-2026): quita `m` y pone en su mismo hueco (o en su
+   * grupo, si estaba unido con un vínculo) el movimiento `id`, nuevo y a nivel 1; sin `id`, el
+   * hueco queda libre. Sigues con el hueco que llevabas, si sigue ahí. → true si se ha hecho.
+   */
+  swapMove(m, id) {
+    const g = this.slots.find(s => s.includes(m)), at = this.moves.indexOf(m);
+    if (!g || at < 0 || (id && (this.hasMove(id) || !G.Moves.BY_ID[id])) || (!id && this.moves.length < 2)) return false;
+    const cur = this.slots[this.active];
+    G.Projectiles.clearOrbs(this);
+    if (id) {
+      const n = G.Moves.instance(id, 1);
+      n.since = G.Game.st.time;
+      this.moves.splice(at, 1, n);
+      g.splice(g.indexOf(m), 1, n);
+    } else {
+      this.moves.splice(at, 1);
+      g.splice(g.indexOf(m), 1);
+      if (!g.length) this.slots.splice(this.slots.indexOf(g), 1);
+    }
+    this.arrange();
+    const a = this.slots.indexOf(cur);
+    this.active = a >= 0 ? a : Math.max(0, Math.min(this.active, this.slots.length - 1));
+    return true;
+  }
+
   setActive(i) {
     if (i < 0 || i >= this.slots.length || i === this.active) return;
     // Cinta Elección: no se puede cambiar de movimiento.

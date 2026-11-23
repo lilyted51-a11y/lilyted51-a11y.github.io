@@ -50,14 +50,22 @@ const clickAll = async sel => { const n = await A.ev(`document.querySelectorAll(
 // ---------- menú y pantallas ----------
 await A.go(`http://localhost:8765/dev.html?dev&halloween=1`, 8000);
 await A.ev(`document.getElementById('tap-start').click(); 1`); await sleep(1200);
-await A.ev(`document.getElementById('scr-invite').classList.add('hidden'); G.DB.playAsGuest(); const s = G.DB.save; s.partner = 352; for (const d of [352, 94, 25, 1382, 150]) s.owned[d] = { at: 1 }; s.coins = 99999; s.tickets = { t1: 500, t10: 50 }; s.bag = { candy: 900, mint: 2, cap: 1, caph: 1 }; s.skins = { hat: Date.now(), 'bruja-gengar': Date.now() }; G.Skins.wear(s, 352, 'hat'); const u = G.DB.upgradesOf(352); for (const x of G.Upgrades.LIST) u[x.id] = x.max; G.UI.hideAll(); G.MenuUI.open(); 1`); await sleep(1500);
+await A.ev(`document.getElementById('scr-invite').classList.add('hidden'); G.DB.playAsGuest(); const s = G.DB.save; s.partner = 352; for (const d of [352, 94, 25, 1382, 150]) s.owned[d] = { at: 1 }; s.coins = 99999; s.tickets = { t1: 500, t10: 50 }; s.bag = { candy: 900, mint: 2, cap: 1, caph: 1, tmx: 1 }; s.ptm = { 352: [G.Mons.learnable(352)[0]] }; s.pseen = { 352: 1234, 19: 56, 25: 3 }; s.pdef = { 352: 1200, 19: 50 }; s.skins = { hat: Date.now(), 'bruja-gengar': Date.now() }; G.Skins.wear(s, 352, 'hat'); const u = G.DB.upgradesOf(352); for (const x of G.Upgrades.LIST) u[x.id] = x.max; G.UI.hideAll(); G.MenuUI.open(); 1`); await sleep(1500);
 await grab('menú'); await misses('menú');
 for (const go of ['dex', 'upgrades', 'shop', 'bag', 'gacha', 'goals', 'friends', 'rank', 'settings']) {
   await A.ev(`G.UI.hideAll(); G.MenuUI.open(); 1`); await sleep(300);
   const ok = await A.ev(`(() => { const b = document.querySelector('#scr-menu [data-go=${go}]'); if (b) b.click(); return !!b; })()`); await sleep(1800);
   if (!ok) continue;
   await grab('pantalla ' + go);
-  if (go === 'dex') { await A.ev(`G.MenuUI.openDex(); 1`); await sleep(1000); await grab('ficha Kecleon'); await clickAll('.mon-extra [data-extra]'); }
+  if (go === 'dex') {
+    await A.ev(`G.MenuUI.openDex(); 1`); await sleep(1000); await grab('ficha Kecleon'); await clickAll('.mon-extra [data-extra]');
+    // MT vacía (23-11-2026): la lista de MT enseñadas y la pregunta antes de borrar (se cancela)
+    await A.ev(`(() => { const b = document.querySelector('[data-extra="tmx"]'); if (b && !document.querySelector('#mx-picker [data-v]')) b.click(); return 1; })()`); await sleep(500);
+    await click('#mx-picker [data-v]'); await grab('MT vacía: ¿borrar?'); await click('section.scr [data-no]');
+    // Pokédex de vistos y derrotados: la ficha de uno visto que no tienes
+    await A.ev(`(() => { G.UI.hideAll(); G.MenuUI.openDex(); const c = [...document.querySelectorAll('#dex-grid .cell')].find(c => (c.querySelector('.no') || {}).textContent === '019'); if (c) c.click(); return !!c; })()`); await sleep(800);
+    await grab('Pokédex: visto sin tenerlo');
+  }
   if (go === 'upgrades') await clickAll('#scr-upgrades button.btn:not([data-back])');
   if (go === 'shop') { await clickAll('#scr-shop .gen-tab'); }
   if (go === 'gacha') {
@@ -114,6 +122,19 @@ for (const t of ['Sin conexión: con tu cuenta, el gacha necesita internet.', 'S
 await canvas('partida (HUD, esferas, clima)');
 await A.ev(`window.__POKE_BOT_ON__ = false; G.RunUI.showItemChoice('leftovers', 'assaultvest', () => {}); 1`); await sleep(800); await grab('elegir objeto'); await A.ev(`document.querySelector('#item-cards .card').click(); 1`); await sleep(500);
 await A.ev(`(() => { const pl = G.Game.player; const loose = pl.slots.filter(s => s.length === 1).map(s => s[0]); if (loose.length >= 2) G.RunUI.showBond({ mode: 'pair', group: null, loose }, () => {}); return loose.length; })()`); await sleep(800); await grab('vínculo'); await A.ev(`G.UI.hide('scr-bond'); 1`);
+// Quitamovimientos (23-11-2026): la carta, qué quitas, qué pones y el aviso al cambiar.
+await A.ev(`(() => { const p = G.Game.player; p.level = Math.max(p.level, 6); for (const id of G.Moves.poolFor(p.mon)) if (p.slots.length < p.maxMoves) p.addMove(id);
+  let r = []; for (let i = 0; i < 400 && !r.some(c => c.type === 'remove'); i++) r = G.LevelUp.offer(p); window.__rmCards = r;
+  G.RunUI.showLevelUp(p.level, r, c => { c.apply(p); G.UI.hide('scr-levelup'); }); return r.length; })()`); await sleep(900);
+await grab('carta Quitamovimientos');
+await A.ev(`G.RunUI.pick(window.__rmCards.findIndex(c => c.type === 'remove')); 1`); await sleep(400); await grab('Quitamovimientos: qué quitas');
+await A.ev(`G.RunUI.pick(0); 1`); await sleep(400); await grab('Quitamovimientos: qué pones');
+await A.ev(`G.RunUI.pick([...document.querySelectorAll('#cards .card')].findIndex(c => c.dataset.key.startsWith('rm:to:'))); 1`); await sleep(1200);
+await canvas('Quitamovimientos (aviso)');
+await A.ev(`(() => { const p = G.Game.player; const r = window.__rmCards; r.forEach(c => { if (c.type === 'remove') c.done = false; }); G.RunUI.showLevelUp(p.level, r, c => { c.apply(p); G.UI.hide('scr-levelup'); }); return 1; })()`); await sleep(900);
+await A.ev(`G.RunUI.pick(window.__rmCards.findIndex(c => c.type === 'remove')); 1`); await sleep(300); await A.ev(`G.RunUI.pick(0); 1`); await sleep(300);
+await A.ev(`G.RunUI.pick([...document.querySelectorAll('#cards .card')].findIndex(c => c.dataset.key === 'rm:empty')); 1`); await sleep(1200);
+await canvas('Quitamovimientos (hueco libre)'); await misses('Quitamovimientos');
 // Varios objetos a la vez (16-11-2026): la elección con los huecos llenos, y todos los objetos (nombre y lo que hacen) en la pausa.
 await A.ev(`G.RunUI.showItemChoice(['leftovers', 'metronome', 'heavyboots'], 'luckincense', () => {}); 1`); await sleep(800); await grab('elegir objeto (tres huecos)');
 await A.ev(`G.UI.hide('scr-item'); (() => { const p = G.Game.player; p.itemSlots = 40; for (const it of G.Items.LIST) p.equip(it.id); return p.items.length; })()`); await sleep(400);

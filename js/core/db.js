@@ -87,12 +87,16 @@ G.DB = (() => {
       pupg: {},               // dex -> { id -> nivel }: mejoras de cada Pokémon
       dfav: {},               // dex -> fecha: favorito de la colección (negativa = quitado entonces)
       pused: {},              // dex -> partidas jugadas con él (orden "más usados")
+      // Pokédex de vistos y derrotados (23-11-2026, systems/dexlog.js): dex -> cuántos, sumando todas las partidas.
+      pseen: {},
+      pdef: {},
       pstart: {},             // dex -> movimiento inicial elegido (Mejoras → Movimiento inicial)
       pstart2: {},            // dex -> segundo movimiento inicial (Mejoras → Segundo movimiento inicial)
       // Tienda Kecleon (20-10-2026, ver data/shop.js y systems/mons.js):
       bag: {},                // Mochila: id -> cuántos (mint, cap, caph); en la libreta, como las monedas
       tms: {},                // MT sin usar: movimiento -> cuántas; también en la libreta
       ptm: {},                // dex -> [movimientos aprendidos con MT] (para siempre)
+      ptmT: {},               // 'dex:movimiento' -> fecha: + enseñada entonces, − borrada con la MT vacía (para fusionar)
       pnat: {},               // dex -> [naturaleza, fecha]: la cambiada con Menta (si no, la que le tocó)
       pabil: {},              // dex -> [0|1|2, fecha]: la habilidad cambiada con Cápsula (2 = oculta)
       // Halloween (25-10-2026, core/skins.js): los caramelos van en bag.candy.
@@ -152,10 +156,10 @@ G.DB = (() => {
         }
       }
     } else delete s.led;
-    if (G.DEX_BY) for (const coll of ['owned', 'shiny', 'dfav', 'pused']) {
+    if (G.DEX_BY) for (const coll of ['owned', 'shiny', 'dfav', 'pused', 'pseen', 'pdef']) {
       for (const d of Object.keys(s[coll] || {})) if (!G.DEX_BY[d]) delete s[coll][d];
     }
-    for (const coll of ['dfav', 'pused']) {
+    for (const coll of ['dfav', 'pused', 'pseen', 'pdef']) {
       if (!isObj(s[coll])) { s[coll] = {}; continue; }
       for (const d of Object.keys(s[coll])) if (!Number.isFinite(+s[coll][d])) delete s[coll][d];
     }
@@ -180,6 +184,9 @@ G.DB = (() => {
       s.ptm[d] = [...new Set(l.filter(id => typeof id === 'string' && (!G.Moves || G.Moves.BY_ID[id])))];
       if (!s.ptm[d].length || (G.DEX_BY && !G.DEX_BY[d])) delete s.ptm[d];
     }
+    // Fechas de MT enseñadas (+) y borradas (−) con la MT vacía.
+    if (!isObj(s.ptmT)) s.ptmT = {};
+    for (const k of Object.keys(s.ptmT)) if (!/^\d+:[a-z0-9-]{1,40}$/.test(k) || !Number.isFinite(+s.ptmT[k]) || !+s.ptmT[k]) delete s.ptmT[k];
     // Naturaleza y habilidad elegidas: [valor, fecha].
     for (const [k, ok] of [['pnat', v => typeof v === 'string' && (!G.NATURE_BY || G.NATURE_BY[v])], ['pabil', v => v === 0 || v === 1 || v === 2]]) {
       if (!isObj(s[k])) s[k] = {};
@@ -347,6 +354,14 @@ G.DB = (() => {
     // MT aprendidas: nunca se olvidan (unión). Naturaleza y habilidad: la elegida más tarde.
     r.ptm = r.ptm || {};
     for (const d in older.ptm || {}) r.ptm[d] = [...new Set((r.ptm[d] || []).concat(older.ptm[d] || []))];
+    // ...salvo las borradas con la MT vacía (23-11-2026): por cada MT gana lo último que se hizo
+    // (enseñarla, +fecha; borrarla, −fecha), en cualquier aparato.
+    r.ptmT = r.ptmT || {};
+    for (const k in older.ptmT || {}) if (Math.abs(+older.ptmT[k] || 0) > Math.abs(+r.ptmT[k] || 0)) r.ptmT[k] = older.ptmT[k];
+    for (const k in r.ptmT) {
+      const i = k.indexOf(':'), d = k.slice(0, i), id = k.slice(i + 1);
+      if (+r.ptmT[k] < 0 && r.ptm[d]) { r.ptm[d] = r.ptm[d].filter(x => x !== id); if (!r.ptm[d].length) delete r.ptm[d]; }
+    }
     for (const k of ['pnat', 'pabil', 'pskin']) {
       r[k] = r[k] || {};
       for (const d in older[k] || {}) if (!r[k][d] || (+older[k][d][1] || 0) > (+r[k][d][1] || 0)) r[k][d] = older[k][d];
@@ -370,6 +385,11 @@ G.DB = (() => {
     for (const d in older.dfav || {}) if (Math.abs(+older.dfav[d] || 0) > Math.abs(+r.dfav[d] || 0)) r.dfav[d] = older.dfav[d];
     r.pused = r.pused || {};
     for (const d in older.pused || {}) r.pused[d] = Math.max(+r.pused[d] || 0, +older.pused[d] || 0);
+    // Pokédex de vistos y derrotados: el mayor de cada uno (sólo crecen).
+    for (const coll of ['pseen', 'pdef']) {
+      r[coll] = r[coll] || {};
+      for (const d in older[coll] || {}) r[coll][d] = Math.max(+r[coll][d] || 0, +older[coll][d] || 0);
+    }
     // Movimiento inicial: el de la versión más reciente; si no lo tenía elegido, el de la otra.
     for (const k of ['pstart', 'pstart2']) {
       r[k] = r[k] || {};

@@ -4,10 +4,16 @@
  *   up      mejorar un movimiento que ya tienes
  *   stat    mejora permanente de la run (casi todas con tope de veces)
  *   evolve  evolución de tu Pokémon en plena partida (niveles 20 y 40, ver Player.growDue)
+ *   remove  Quitamovimientos: quitas uno de tus movimientos y pones en su hueco otro de los
+ *           de tu Pokémon, o lo dejas libre (dos pasos más en la misma pantalla: run-ui.js)
  *
  * 16-11-2026 (como la Gran Actualización del juego oficial, hecho aquí a partir de sus
  * guías): cuatro cartas en vez de tres, cartas nuevas de crítico, cazador, esquiva y
  * suerte, la carta rara Sabiduría y la evolución en plena partida.
+ *
+ * 23-11-2026 (como la Gran Actualización del juego oficial, hecho aquí a partir de su
+ * novedad): la carta Quitamovimientos, para rehacer la build (también tras evolucionar y
+ * cambiar de tipo). Sólo ofrece ataques de tu Pokémon, no los del Tera ni de la Mega puestos.
  */
 G.LevelUp = (() => {
 
@@ -137,6 +143,16 @@ G.LevelUp = (() => {
       });
     }
 
+    // --- Quitamovimientos: con dos movimientos o más (sale más con los huecos llenos) ---
+    if (pl.moves.length >= 2 && pl.level >= 5) {
+      out.push({
+        w: pl.slots.length >= pl.maxMoves ? 3 : 1.2, type: 'remove', key: 'remove',
+        icon: 'swap', color: '#ff9f6b', tag: 'Movimientos',
+        title: 'Quitamovimientos', desc: 'Quita uno de tus movimientos y pon en su hueco otro de los de tu Pokémon, o déjalo libre.',
+        apply: () => {}            // (lo hace run-ui.js con lo que elijas: swapMove)
+      });
+    }
+
     // --- stats ---
     // Las que desbloquean una evolución salen siempre y con aviso.
     // Cada mejora tiene un tope de veces (`max`): en partidas muy largas se
@@ -196,6 +212,18 @@ G.LevelUp = (() => {
     return cards;
   }
 
+  /**
+   * Quitamovimientos, 2.º paso: con qué puedes llenar el hueco de `m`. Los de tu Pokémon (sus tipos,
+   * normal y sus MT) que no tienes ni has vetado; sin más potenciadores si ya te quedan dos.
+   * Primero los ataques de su lado bueno (físico o especial), luego los potenciadores y luego los demás.
+   */
+  function swapPool(pl, m) {
+    const buffs = pl.moves.filter(x => x !== m && x.kind === 'buff').length, mon = pl.ownMon || pl.mon;
+    const fit = id => { const d = G.Moves.BY_ID[id]; return d.kind === 'buff' ? 1 : G.Stats.fit(pl.mon, d.cat) >= 0.999 ? 0 : 2; };
+    return G.Moves.poolFor(mon).filter(id => !pl.hasMove(id) && !(pl.banned && pl.banned.has(id)) && !(buffs >= 2 && G.Moves.BY_ID[id].kind === 'buff'))
+      .sort((a, b) => fit(a) - fit(b) || G.T(G.Moves.BY_ID[a].name, 'move').localeCompare(G.T(G.Moves.BY_ID[b].name, 'move'), G.I18n.locale));
+  }
+
   /** Devuelve 4 cartas distintas, elegidas por peso. */
   function offer(pl, n = 4) {
     if (pl.growDue && pl.growDue()) {
@@ -224,5 +252,5 @@ G.LevelUp = (() => {
     return picked;
   }
 
-  return { offer, evolveCards, STATS };
+  return { offer, evolveCards, swapPool, STATS };
 })();

@@ -164,6 +164,9 @@ G.MenuUI = (() => {
     if (dexSel == null) { dexSel = s.partner; dexGen = G.DEX_BY[s.partner].gen; }
     const owned = Object.keys(s.owned).filter(d => G.DEX_BY[d] && !G.DEX_BY[d].excl).length;
     $('dex-total').textContent = giftTo ? 'Regalo para ' + giftTo.name : `${owned} / ${G.DEX.filter(p => !p.excl).length}`;
+    // Pokédex de vistos y derrotados (23-11-2026, systems/dexlog.js): cuántas especies.
+    const dl = G.DexLog.totals(), loc = n => n.toLocaleString(G.I18n.locale);
+    if (!giftTo) $('dex-total').insertAdjacentHTML('beforeend', ` <span class="dex-log">${G.I18n.f('Vistos: {x} · Derrotados: {x}', loc(dl.seen), loc(dl.defeated))}</span>`);
 
     // Pestañas de generación (y "Todas"), con cuántos tienes de cada una.
     const tabs = $('dex-gens');
@@ -314,7 +317,7 @@ G.MenuUI = (() => {
     else if (sh) cell.insertAdjacentHTML('beforeend', `<span class="badge-r" title="Tienes su shiny">${G.Icons.html('shiny', 12)}</span>`);
     const useShiny = sh && p.dex === s.partner && s.partnerShiny;
     cell.appendChild(G.UI.spriteCanvas(p.dex, 92, 80, { scale: 2, silhouette: !own, shadow: own, shiny: useShiny }));
-    cell.insertAdjacentHTML('beforeend', `<b>${own ? p.name : '???'}</b>${G.UI.stars(p.rarity, 9)}`);
+    cell.insertAdjacentHTML('beforeend', `<b>${own || G.DexLog.seenOf(p.dex) ? p.name : '???'}</b>${G.UI.stars(p.rarity, 9)}`);
     cell.onclick = () => {
       dexSel = p.dex;
       $('dex-grid').querySelectorAll('.cell').forEach(c => c.classList.remove('on'));
@@ -367,10 +370,12 @@ G.MenuUI = (() => {
           <button class="${viewShiny ? 'on' : ''}" data-v="1">${G.Icons.html('shiny', 12)} Shiny</button></div>` : ''}
       <div class="center">
         <div style="color:var(--muted);font-size:13px">Nº ${String(p.dex).padStart(3, '0')} · ${GEN_NAMES[p.gen - 1]}</div>
-        <h3>${own ? p.name : '???'}</h3>
+        <h3>${own || G.DexLog.seenOf(dex) ? p.name : '???'}</h3>
         ${own ? `<button id="dex-fav" class="chip${G.DB.isFav(dex) ? ' on' : ''}" type="button">${G.Icons.html(G.DB.isFav(dex) ? 'star' : 'starDim', 12)} ${G.DB.isFav(dex) ? 'Favorito' : 'Marcar como favorito'}</button>` : ''}
         <div style="color:${G.Gacha.RARITY_COLOR[p.rarity]}">${G.UI.stars(p.rarity, 24)} ${G.Gacha.RARITY_NAME[p.rarity]}</div>
         <div style="margin:6px 0">${own ? G.UI.typeChips(p.types) : ''}</div>
+        ${giftTo ? '' : `<p class="sub dex-log">${G.Icons.html('book', 12)} ${G.I18n.f('Vistos: {x} · Derrotados: {x}',
+          G.DexLog.seenOf(dex).toLocaleString(G.I18n.locale), G.DexLog.defeatedOf(dex).toLocaleString(G.I18n.locale))}</p>`}
       </div>
       ${own ? `
         ${bar('Vida', q.hp, max.hp, q.hp)}
@@ -499,7 +504,7 @@ G.MenuUI = (() => {
       <div class="mx-row"><span>MT</span>${taught.length
         ? `<span class="move-icons">${taught.map(id => `<span title="${G.T(G.Moves.BY_ID[id].name, 'move')}">${G.Icons.html('move:' + id, 16)}</span>`).join('')}</span>`
         : `<small>${G.T('Aún no ha aprendido ninguna')}</small>`}
-        ${btn('tm', 'tm', 'Enseñar MT', tmsHere.length)}</div>
+        ${btn('tm', 'tm', 'Enseñar MT', tmsHere.length)}${btn('tmx', 'tmx', 'MT vacía', taught.length ? G.Shop.count('tmx') : 0)}</div>
       ${skinRow(dex)}
       <div id="mx-picker"></div>
     </div>`;
@@ -554,6 +559,14 @@ G.MenuUI = (() => {
       chips(list.map(id => ({ v: id, html: `${G.Icons.html('move:' + id, 16)} ${G.T(G.Moves.BY_ID[id].name, 'move')} <small>×${G.Shop.tmCount(id)}</small>` })), '', id => {
         if (!G.Mons.teach(dex, id)) return;
         done(G.I18n.f('¡{x} ha aprendido {x}!', mon.name, G.T(G.Moves.BY_ID[id].name, 'move')));
+      });
+    } else if (extraOpen === 'tmx' && G.Shop.count('tmx')) {
+      // MT vacía (23-11-2026): borra una de las que ha aprendido (y su veto, si lo tenía: G.Mons.forget).
+      chips(G.Mons.taught(dex).map(id => ({ v: id, html: `${G.Icons.html('move:' + id, 16)} ${G.T(G.Moves.BY_ID[id].name, 'move')}` })), '', async id => {
+        const mv = G.T(G.Moves.BY_ID[id].name, 'move');
+        if (!await G.UI.ask(G.I18n.f('¿Quitarle a {x} la MT {x}? Se gasta una MT vacía.', mon.name, mv), G.T('Borrar'))) return;
+        if (!G.Mons.forget(dex, id)) return;
+        done(G.I18n.f('{x} ha olvidado {x}', mon.name, mv));
       });
     }
   }
