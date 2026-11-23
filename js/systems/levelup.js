@@ -47,6 +47,9 @@ G.LevelUp = (() => {
       apply: pl => pl.dodge = Math.min(0.24, pl.dodge + 0.03), max: 8 },
     { id: 'luck', icon: 'coin', title: 'Racha de suerte', desc: '+10% de Pokémonedas en esta partida.',
       apply: pl => pl.coinMul *= 1.10, max: 5 },
+    // Con un poder (systems/powers.js): menos recarga, cada vez un poco menos.
+    { id: 'pcd', icon: 'clock', title: 'Poder rápido', desc: '-8% de recarga de tu poder (cada vez un poco menos).',
+      apply: pl => pl.powerCdMul = (pl.powerCdMul || 1) * (1 - 0.08 / (1 + 0.1 * (pl.statsTaken.pcd || 0))), cond: pl => !!pl.powerId },
     // Sólo si ya puedes llevar tres (Mejoras Segundo y Tercer objeto).
     { id: 'slot4', icon: 'bag', title: 'Cuarto objeto', desc: 'Puedes llevar un objeto más en esta partida.',
       apply: pl => pl.itemSlots = 4, max: 1, rare: true, cond: pl => pl.itemSlots === 3 }
@@ -80,7 +83,8 @@ G.LevelUp = (() => {
       // Con 2 potenciadores ya no se ofrecen más: los buff no hacen daño y
       // llenar los 4 huecos con ellos deja la run sin salida.
       const buffs = pl.moves.filter(m => m.kind === 'buff').length;
-      const pool = G.Moves.poolFor(pl.mon).filter(id =>
+      // (Los de su Pokémon, no los de la forma Mega ni del tipo Tera que lleve puestos.)
+      const pool = G.Moves.poolFor(pl.ownMon || pl.mon).filter(id =>
         !pl.hasMove(id) && !(pl.banned && pl.banned.has(id)) && !(buffs >= 2 && G.Moves.BY_ID[id].kind === 'buff'));
       // Los de su lado bueno (y los empatados y mejoras) salen el doble.
       const weight = id => { const d = G.Moves.BY_ID[id]; return G.Stats.fit(pl.mon, d.cat) >= 0.999 ? 2 : 1; };

@@ -257,6 +257,42 @@ G.RunUI = (() => {
     guard(box);
   }
 
+  // ---------------- elegir (el poder de Eternatus, systems/powers.js) ----------------
+
+  let choiceList = null, choiceCb = null;
+  /** Unas cartas para elegir una (teclas 1-9): cb(carta). Puede volver a llamarse desde cb (otra elección). */
+  function showChoice(title, sub, list, cb) {
+    choiceList = list; choiceCb = cb;
+    $('power-title').textContent = title;
+    $('power-sub').textContent = sub || '';
+    const box = $('power-cards');
+    box.innerHTML = '';
+    box.classList.toggle('many', list.length > 5);
+    list.forEach((c, i) => {
+      const el = document.createElement('div');
+      el.className = 'card' + (c.color === '#ffd23f' ? ' evo' : '');
+      el.innerHTML = `<div class="ico" style="background:${c.color}33">${G.Icons.html(c.icon, 32)}</div>
+        <div class="txt"><div class="nm">${c.title} <span class="tag-chip" style="background:${c.color}">${c.tag}</span></div><div class="ds">${c.desc || ''}</div></div>
+        <div class="key">${i + 1}</div>`;
+      if (c.dex && G.SPRITE_META[c.dex]) { const ico = el.querySelector('.ico'); ico.innerHTML = ''; ico.appendChild(G.UI.spriteCanvas(c.dex, 46, 46, { scale: 1 })); }
+      el.dataset.sfx = 'none';
+      el.dataset.power = c.key;          // (lo lee en/bot.js)
+      onTap(el, () => pickChoice(i));
+      box.appendChild(el);
+    });
+    G.UI.show('scr-power');
+    guard(box);
+  }
+  /** @param force  sin esperar a la protección de los primeros toques (el anfitrión elige por quien tarda) */
+  function pickChoice(i, force) {
+    if (!choiceList || !choiceList[i] || (!force && guarded()) || !G.UI.isOpen('scr-power')) return;
+    const c = choiceList[i], cb = choiceCb;
+    choiceList = null; choiceCb = null;
+    G.UI.hide('scr-power');
+    G.Audio.sfx('confirm');
+    cb(c);
+  }
+
   // ---------------- vínculo: qué movimientos se fusionan ----------------
 
   let bond = null;          // { opt, cb, first, list }
@@ -421,5 +457,5 @@ G.RunUI = (() => {
     $('btn-quit').onclick = onQuit;
   }
 
-  return { showLevelUp, reroll, showItemChoice, showBond, pickBond, bondBack, pick, setWaiting, closeLevelUp, showOver, wirePause, showPause };
+  return { showLevelUp, reroll, showItemChoice, showChoice, pickChoice, showBond, pickBond, bondBack, pick, setWaiting, closeLevelUp, showOver, wirePause, showPause };
 })();

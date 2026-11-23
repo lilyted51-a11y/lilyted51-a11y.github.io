@@ -5,13 +5,17 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
-  { d: '2026-11-23', title: ["Eternatus en el minuto 20, más niveles y cartas sin límite", "Eternatus at minute 20, more levels and unlimited cards"], new: [
+  { d: '2026-11-23', title: ["Eternatus en el minuto 20, sus poderes, más niveles y cartas sin límite", "Eternatus at minute 20 and its powers, more levels and unlimited cards"], new: [
     ["Al minuto 20 el cielo se vuelve rojo y el grupo viaja a la Cima de la Torre para enfrentarse a Eternatus Eternamax, enorme y en tres fases: rayos que barren la arena, charcos tóxicos, coronas de orbes, cuatro núcleos que le protegen y hay que romper, la arena que se cierra, la Noche Oscura y un remolino que te arrastra.",
      "At minute 20 the sky turns red and the group travels to the Tower Summit to face Eternamax Eternatus, huge and in three phases: beams that sweep the arena, toxic puddles, crowns of orbs, four cores that shield it and must be broken, an arena that closes in, Night Shade and a whirlpool that drags you."],
     ["Con poca vida carga el Rayo Eternamax durante 8 segundos: rompe a tiempo el Núcleo Eterno para dejarle aturdido y más vulnerable, o ponte en uno de los círculos de luz. Ningún golpe suyo quita más del 30 % de tu vida, y ningún golpe tuyo le quita más del 10 % de la suya.",
      "At low health it charges the Eternabeam for 8 seconds: break the Eternal Core in time to stun it and make it more vulnerable, or stand in one of the circles of light. None of its hits takes more than 30% of your health, and none of yours takes more than 10% of its own."],
     ["Ganarle da 600 Pokémonedas, un ticket ×10 y el botín de un jefe. Si caes jugando en solitario, la partida termina; en grupo os podéis levantar entre vosotros. Si la pelea sigue en el minuto 30, llega la Sentencia de Arceus.",
-     "Beating it gives 600 Pokécoins, a ×10 ticket and boss loot. If you fall playing solo, the run ends; in a group you can revive each other. If the fight is still going at minute 30, Arceus's Judgment arrives."]
+     "Beating it gives 600 Pokécoins, a ×10 ticket and boss loot. If you fall playing solo, the run ends; in a group you can revive each other. If the fight is still going at minute 30, Arceus's Judgment arrives."],
+    ["Al vencer a Eternatus eliges un poder para el resto de la partida: Megaevolución (o su forma de poder), Dinamax, Pulsera Z o Teracristal. Se activa con F (B en el mando, botón redondo en el móvil), dura unos segundos y se recarga solo. En grupo, cada uno elige el suyo.",
+     "After beating Eternatus you choose a power for the rest of the run: Mega Evolution (or its power form), Dynamax, Z-Ring or Terastal. Trigger it with F (B on a gamepad, a round button on mobile); it lasts a few seconds and recharges by itself. In a group, everyone picks their own."],
+    ["Megaevolución: 40 s con los tipos, el aspecto y la fuerza de esa forma. Dinamax: 12 s gigante, con el doble de vida, más daño, golpes que salpican y aplastando a los Pokémon normales. Pulsera Z: 15 s lanzando grandes Z y, al final, un movimiento Z que golpea a toda la pantalla. Teracristal: 30 s del tipo elegido, con sus ataques de ese tipo mucho más fuertes (Astral: todos un poco más). La nueva carta Poder rápido acorta la recarga.",
+     "Mega Evolution: 40 s with the types, look and strength of that form. Dynamax: 12 s as a giant, with double health, more damage, splashing hits and crushing normal Pokémon. Z-Ring: 15 s throwing big Zs and, at the end, a Z-Move that hits the whole screen. Terastal: 30 s as the chosen type, with its attacks of that type much stronger (Stellar: all of them a bit stronger). The new Quick Power card shortens the cooldown."]
   ], chg: [
     ["Subir de nivel cuesta un 25 % menos de experiencia que hasta ahora.",
      "Levelling up now takes 25% less experience than before."],

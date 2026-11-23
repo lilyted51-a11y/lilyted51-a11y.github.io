@@ -271,6 +271,7 @@ G.Pad = (() => {
       if (hit(BT.A)) G.Input.virtual('space');
       if (hit(BT.X)) G.Input.virtual('padx');
       if (hit(BT.Y)) G.Input.virtual('pady');
+      if (hit(BT.B)) G.Input.virtual('padb');           // el poder (systems/powers.js)
     }
   }
   function step(dir) { if (!slide(dir)) move(...{ r: [1, 0], l: [-1, 0], d: [0, 1], u: [0, -1] }[dir]); }

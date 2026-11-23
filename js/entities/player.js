@@ -65,6 +65,8 @@ G.Player = class Player {
     this.dodge = 0;                          // carta Esquiva: probabilidad de librarse de un golpe
     this.baseDex = mon.dex;                  // con el que empezaste (el de las Mejoras y «más usados»), aunque evolucione
     this.grown = 0;                          // saltos de evolución ya dados (niveles 20 y 40)
+    // Poder (systems/powers.js): el elegido al vencer a Eternatus, si está puesto, lo que le queda y su recarga.
+    this.powerId = null; this.powerArg = 0; this.powerOn = false; this.powerT = 0; this.powerCd = 0; this.powerCdMul = 1;
     this.banned = new Set();                 // movimientos vetados (Mejoras → Veto): no salen en las cartas
     this.bind = {};                          // movimiento -> hueco fijo (0-3), elegido en Mejoras
     this.coins = 0;            // monedas recogidas en esta run
@@ -116,6 +118,8 @@ G.Player = class Player {
   static get GROW_LEVELS() { return [20, 40]; }
   /** ¿Le toca ya un salto (por nivel) que aún no ha dado? */
   growDue() { return Player.GROW_LEVELS.filter(l => this.level >= l).length > this.grown; }
+  /** Su Pokémon sin el poder puesto (Mega o Tera): para los ataques que le pueden salir (levelup.js). */
+  get ownMon() { return this.megaSave ? this.megaSave.mon : this.teraSave ? Object.assign({}, this.mon, { types: this.teraSave }) : this.mon; }
   /** A qué puede evolucionar ahora: entradas de G.DEX (data/evolutions.js). */
   evoOptions() { return ((G.EVOS || {})[this.dex] || []).map(d => G.DEX_BY[d]).filter(m => m && G.SPRITE_META[m.dex]); }
   /**
@@ -124,6 +128,8 @@ G.Player = class Player {
    * @param keepLook  no cambia de aspecto ni de tipo: sólo coge los stats de la evolución
    */
   evolveTo(dex, keepLook) {
+    // (Con un poder puesto, se quita antes: si no, al acabar el poder se deshacía la evolución.)
+    if (this.powerOn && G.Powers) G.Powers.stop(this, true);
     const to = G.Mons.monFor(dex), from = this.mon;
     if (!to) return false;
     const dHp = Math.max(0, Math.round(to.hp - from.hp));
@@ -155,6 +161,7 @@ G.Player = class Player {
    * empiezan más flojos y llegan a su fuerza en el nivel 40). Sin escalera, grow().
    */
   stepLadder() {
+    if (this.powerOn && G.Powers) G.Powers.stop(this, true);
     const t = this.ladder && this.ladder[Math.min(this.ladder.length - 1, this.grown + 1)];
     if (!t) { this.grow(); return; }
     const dHp = Math.max(0, Math.round(t.hp - this.mon.hp));
@@ -723,6 +730,7 @@ G.Player = class Player {
 
     const alpha = this.invuln > 0 && !this.dead ? (Math.floor(this.invuln * 18) % 2 ? 0.45 : 1) : 1;
     this.anim.draw(ctx, this.x, this.y, { flash: this.flash > 0, softFlash: true, alpha, color: '#ffcb3d' });
+    if (G.Powers) G.Powers.drawOn(ctx, this);          // aura del poder y corona Tera
 
     // Arcos de buff alrededor de los pies.
     const COL = { atk: '#ff6b4d', patk: '#ff6b4d', satk: '#c47bff', spd: '#7fe0ff', def: '#b0b8c8', regen: '#5fe08a' };

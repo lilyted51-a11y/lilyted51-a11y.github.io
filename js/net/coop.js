@@ -164,7 +164,8 @@ G.Coop = (() => {
     return [r1(local.x), r1(local.y), r2(local.moveAngle), local.walking ? 1 : 0, r1(local.hp), r1(local.maxHp),
             local.dead ? 1 : 0, m ? m.id : '', m ? m.lvl : 1, r1(local.magnet), r2(local.aim), r2(local.xpMul),
             r2(local.reviveT || 0), api.choosing && api.choosing() ? 1 : 0, doneSeq,
-            local.dex, local.shiny ? 1 : 0, api.watching ? api.watching() : '', r2((G.Camera && G.Camera.zoomTo) || 1)];
+            local.dex, local.shiny ? 1 : 0, api.watching ? api.watching() : '', r2((G.Camera && G.Camera.zoomTo) || 1),
+            G.Powers ? G.Powers.netCode(local) : 0];
   }
 
   /** Número que llega por la red: si no es un número de verdad vale `def`, y si se pasa se queda en el tope. */
@@ -216,7 +217,8 @@ G.Coop = (() => {
              rev: num(a[12], 0, 0, 60), ch: a[13] === undefined ? undefined : a[13] ? 1 : 0, ld: num(a[14], 0, 0, 1e9),
              // copia local: Pokémon y shiny del compañero (cambio de Pokémon en la sala)
              dx: num(a[15], 0, 0, 1e6), sh: a[16] ? 1 : 0,
-             wa: typeof a[17] === 'string' ? a[17].slice(0, 64) : '', zm: num(a[18], 1, 1, 1.5) };
+             wa: typeof a[17] === 'string' ? a[17].slice(0, 64) : '', zm: num(a[18], 1, 1, 1.5),
+             pw: Math.floor(num(a[19], 0, 0, 40)) };
   }
 
   /** Anfitrión: dónde mira un invitado (él mismo, o el compañero vivo que mira estando caído). */
@@ -466,7 +468,7 @@ G.Coop = (() => {
     if (msg.h === 0 && holds.has(from)) holdOff(from);
     else if (msg.h === 1 && !holds.has(from)) holdOn(from);
     if (typeof msg.w === 'number' && msg.w >= levelSeq && waiting.has(from)) picked(from);
-    if (msg.p) { m.state = msg.p; const n = readState(msg.p); syncDex(m, n); m.pl.net = n; m.xpMul = n.xpMul || 1; reconcile(from, n); }
+    if (msg.p) { m.state = msg.p; const n = readState(msg.p); syncDex(m, n); m.pl.net = n; G.Powers.applyNet(m.pl, n.pw); m.xpMul = n.xpMul || 1; reconcile(from, n); }
     for (const ev of msg.ev || []) {
       switch (ev[0]) {
         case 'h': {
@@ -570,7 +572,7 @@ G.Coop = (() => {
                    t1: (msg.tk || [])[0], t10: (msg.tk || [])[1], cn: num((msg.tk || [])[2], 0, 0, 1e6) });
     for (const u in msg.p || {}) {
       const m = mates.get(u);
-      if (m) { const n = readState(msg.p[u]); syncDex(m, n); m.pl.net = n; }
+      if (m) { const n = readState(msg.p[u]); syncDex(m, n); m.pl.net = n; G.Powers.applyNet(m.pl, n.pw); }
     }
     const now = performance.now();
     for (const a of msg.e || []) {

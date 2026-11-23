@@ -134,6 +134,25 @@ await etHit(20); await sleep(2500); await etPick(); await canvas('Eternatus: Ray
 await etHit(99); await sleep(1000); await etPick(); await canvas('Eternatus aturdido');
 await etHit(20); for (let i = 0; i < 20; i++) { await sleep(600); await etPick(); if (!(await A.ev(`G.Eternatus.active`))) break; }
 await canvas('Eternatus: victoria y vuelta'); await misses('Eternatus');
+
+// ---------- Los poderes (tras vencer a Eternatus, 23-11-2026): elegir, formas, tipos y cada uno puesto ----------
+const pwSeen = [];
+const pwOpen = async () => { for (let i = 0; i < 80 && !(await A.ev(`G.UI.isOpen('scr-power')`)); i++) { await sleep(500); await etPick(); } pwSeen.push(await A.ev(`G.UI.isOpen('scr-power')`)); await sleep(1400); };
+const pwTap = async key => { await A.ev(`(() => { const l = [...document.querySelectorAll('#power-cards .card')]; const c = l.find(x => x.dataset.power === ${JSON.stringify(key)}) || l[l.length - 1]; if (c) c.click(); return 1; })()`); await sleep(1400); };
+const pwUse = async (where) => { for (let i = 0; i < 20 && (await A.ev(`G.Game.state`)) !== 'playing'; i++) { await sleep(300); await etPick(); }
+  await A.ev(`G.Input.virtual('keyf'); 1`); await sleep(2500); await canvas(where); await misses(where);
+  await A.ev(`G.Powers.stop(G.Game.player); 1`); await sleep(1500); await canvas(where + ' (fin)'); };
+const pwAgain = dex => A.ev(`(() => { const p = G.Game.player; p.powerId = null; window.__dex0 = p.dex; if (${dex}) p.dex = ${dex}; G.Powers.offer(p); return 1; })()`);
+await pwOpen(); await grab('elige poder'); await misses('elige poder');
+await pwTap('power:z'); await grab('Pulsera Z: tipo'); await misses('Pulsera Z: tipo');
+await pwTap('?'); await pwUse('Pulsera Z');
+await pwAgain(646); await pwOpen(); await grab('elige poder (con Mega)');
+await pwTap('power:mega'); await grab('Mega: forma'); await misses('Mega: forma');
+await pwTap('?'); await A.ev(`(() => { G.Game.player.dex = window.__dex0; return 1; })()`); await pwUse('Megaevolución');
+await pwAgain(0); await pwOpen(); await pwTap('power:tera'); await grab('Teracristal: tipo'); await misses('Teracristal: tipo');
+await pwTap('?'); await pwUse('Teracristal');
+await pwAgain(0); await pwOpen(); await pwTap('power:dyna'); await pwUse('Dinamax');
+console.log('poderes: pantallas abiertas', pwSeen.filter(Boolean).length + '/' + pwSeen.length, JSON.stringify(pwSeen));
 await A.ev(`(() => { clearInterval(window.__etHeal); const p = G.Game.player; p.maxHp = window.__hp0 || 100; p.hp = 1; return 1; })()`);
 
 await A.ev(`(() => { const p = G.Game.player; p.invuln = 0; p.hurt(999999, null, true); return 1; })()`);

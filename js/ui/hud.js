@@ -102,6 +102,8 @@ G.HUD = (() => {
     ctx.fillStyle = 'rgba(255,255,255,.95)';
     ctx.textAlign = 'center';
     ctx.fillText(Math.ceil(pl.hp) + ' / ' + Math.round(pl.maxHp), px + 48 + 84, py + 26);
+    G.Powers.drawHud(ctx, pl, px + 48, py + 30, 168);          // el poder (systems/powers.js)
+    G.Powers.touchButton(ctx, pl, w - 58, h - 150);
 
     // buffs activos
     const COL = { atk: '#ff6b4d', patk: '#ff6b4d', satk: '#c47bff', spd: '#7fe0ff', def: '#b0b8c8', regen: '#5fe08a' };

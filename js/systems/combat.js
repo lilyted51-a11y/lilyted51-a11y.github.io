@@ -742,6 +742,7 @@ G.Combat = (() => {
     let k = 1;
     if (cat === 'physical' && (kind === 'melee' || kind === 'dash') && has(pl, 'punchingglove')) k *= 1.3;
     if (type && has(pl, 'safetygoggles')) { const w = G.Weather.mult(type); if (w < 1) k /= w; }
+    if (pl.tera) k *= G.Powers.teraK(pl, type);          // Teracristal (systems/powers.js)
     return k;
   }
 
@@ -766,6 +767,7 @@ G.Combat = (() => {
     const crit = isCrit(pl), sk = statusK(pl);
     dmg *= k * (crit ? critMul(pl) : 1);
     e.hurt(dmg, col, dx, dy, sk ? knock : 0, crit ? 'crit' : G.Types.label(G.Types.mult(m.type, e.types)));
+    if (pl.dyna && !ghost) G.Powers.splash(pl, e, dmg);   // Dinamax: cada golpe salpica
     if (!ghost) pl.onDealt(dmg);
     pl.dmgDealt += dmg;
     m.dealt = (m.dealt || 0) + dmg;               // por ataque, para el resumen de la pausa
@@ -878,6 +880,7 @@ G.Combat = (() => {
         const k = (p.mtype ? typeK(p.mtype, e) : 1) * G.Stats.taken(e.mon, p.mcat) * (crit ? critMul(pl) : 1) * abilOut(pl, p.src, e) * arcK(e) * bossK(pl, e) * itemK(pl, p.mtype, p.mcat, null);
         e.hurt(p.dmg * k, p.color, p.vx || (e.x - pl.x), p.vy || (e.y - pl.y), sk ? p.knock : 0,
                crit ? 'crit' : p.mtype ? G.Types.label(G.Types.mult(p.mtype, e.types)) : null);
+        if (pl.dyna) G.Powers.splash(pl, e, p.dmg * k);
         if (Math.random() < 0.5) G.FX.sp('impact', p.vis ? p.vis.pal : 'normal', e.x, e.y - e.bodyH * 0.5, { life: 0.12, scale: 1 });
         pl.dmgDealt += p.dmg * k;
         if (p.src) p.src.dealt = (p.src.dealt || 0) + p.dmg * k;

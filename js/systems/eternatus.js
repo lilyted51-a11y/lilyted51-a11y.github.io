@@ -19,8 +19,8 @@
  *
  * Un golpe le quita como mucho el 10 % de la vida y no se salta fases. Sus ataques quitan un %
  * de tu vida (como mucho el 30 %) y sí valen Protección, Robustez y la Banda Focus.
- * Si ganáis: +600 Pokémonedas, un ticket ×10, su botín de jefe y vuelta al mapa (los poderes, en
- * otro lote). Si caes jugando solo, se acaba la partida; en grupo os podéis levantar.
+ * Si ganáis: +600 Pokémonedas, un ticket ×10, su botín de jefe, vuelta al mapa y cada uno elige su
+ * poder (systems/powers.js). Si caes jugando solo, se acaba la partida; en grupo os podéis levantar.
  *
  * Cooperativo: lo lleva el anfitrión. Eternatus y sus núcleos son enemigos normales (llegan con
  * 'ne'; su forma la pone dress / dressCore), los avisos van por G.Hazards ('hz') y los disparos por
@@ -223,7 +223,8 @@ G.Eternatus = (() => {
       return;
     }
     if (phase === 'won') {
-      if ((endT -= dt) <= 0) { finish(); done = true; }
+      // De vuelta al mapa, a elegir el poder (systems/powers.js; en grupo, cada uno el suyo).
+      if ((endT -= dt) <= 0) { finish(); done = true; G.Powers.offer(G.Game.player); }
       return;
     }
     fightT += dt;
@@ -461,7 +462,10 @@ G.Eternatus = (() => {
         const b = E;
         if (pl && !pl.dead && b) {
           const [nx, ny] = G.U.norm(b.x - pl.x, b.y - pl.y);
-          const s = G.World.collide({ x: pl.x + nx * f.k * dt, y: pl.y + ny * f.k * dt, r: pl.r });
+          // (collide mueve el objeto que le pasas y devuelve si chocó: antes se usaba lo que devolvía
+          //  y el jugador acababa en NaN, fuera del mapa, en cuanto le pillaba el remolino)
+          const s = { x: pl.x + nx * f.k * dt, y: pl.y + ny * f.k * dt, r: pl.r };
+          G.World.collide(s);
           pl.x = s.x; pl.y = s.y;
         }
       }
@@ -742,6 +746,8 @@ G.Eternatus = (() => {
     get phase() { return phase; },
     /** Copia local (bot y pruebas): Eternatus y lo que hay. */
     get boss() { return boss(); },
-    get fx() { return fx; }
+    get fx() { return fx; },
+    get center() { return center; },
+    get fogR() { return fogR; }
   };
 })();

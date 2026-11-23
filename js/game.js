@@ -363,6 +363,7 @@ G.Game = (() => {
     forceChoice() {
       if (G.UI.isOpen('scr-item')) { const c = document.querySelector('#item-cards .card'); if (c) c.click(); return; }
       if (G.UI.isOpen('scr-bond')) { G.RunUI.pickBond(0); if (G.UI.isOpen('scr-bond')) G.RunUI.pickBond(0); }
+      for (let k = 0; k < 3 && G.UI.isOpen('scr-power'); k++) G.RunUI.pickChoice(0, true);
     },
     resume() {
       G.RunUI.closeLevelUp();
@@ -620,7 +621,7 @@ G.Game = (() => {
    */
   function offerBond(quiet = false) {
     if (!pl || pl.bonds <= 0 || pl.dead || (state !== 'playing' && state !== 'held') || G.Rift.inArena) return;
-    if (['scr-bond', 'scr-pause', 'scr-item', 'scr-levelup'].some(G.UI.isOpen)) return;
+    if (['scr-bond', 'scr-pause', 'scr-item', 'scr-levelup', 'scr-power'].some(G.UI.isOpen)) return;
     const opt = pl.bondOptions();
     if (!opt) {
       if (!quiet) G.Spawner.say('Guardas el vínculo: aprende otro movimiento para usarlo', 3, true);
@@ -640,6 +641,22 @@ G.Game = (() => {
       if (G.Coop.active) G.Coop.holdEnd();
       afterLevelUp();                      // objetos que llegaron mientras elegías
     });
+  }
+
+  /**
+   * Una elección que para la partida (en grupo, para todos), como el vínculo: show(done), y done()
+   * al terminar. La usa el poder de Eternatus (systems/powers.js). → false si ahora no se puede
+   */
+  function choose(show) {
+    if (!pl || (state !== 'playing' && state !== 'held')) return false;
+    state = 'choice';
+    if (G.Coop.active) G.Coop.holdStart();
+    show(() => {
+      if (state === 'choice') state = holdBy.length ? 'held' : 'playing';
+      if (G.Coop.active) G.Coop.holdEnd();
+      afterLevelUp();
+    });
+    return true;
   }
 
   // ---------------- recogida ----------------
@@ -671,7 +688,7 @@ G.Game = (() => {
     if (!pl || !G.Items.BY[id]) return;
     // Con otra elección abierta (cartas, otro objeto, vínculo) se espera: una
     // pantalla nunca tapa a otra (#45: antes se perdía la primera y nadie podía terminar).
-    if (state === 'levelup' || openItem || ['scr-levelup', 'scr-item', 'scr-bond'].some(G.UI.isOpen)) { laterItems.push(id); return; }
+    if (state === 'levelup' || openItem || ['scr-levelup', 'scr-item', 'scr-bond', 'scr-power'].some(G.UI.isOpen)) { laterItems.push(id); return; }
     let mine = false;            // esta elección es la que ha parado el juego
     // got: el objeto que te pones (o null si te quedas con lo que llevas); instead: el que dejas.
     const take = (got, instead) => {
@@ -784,6 +801,12 @@ G.Game = (() => {
       }
       return;
     }
+    if (G.UI.isOpen('scr-power')) {
+      for (let i = 0; i < 9; i++) {
+        if (G.Input.tap('digit' + (i + 1)) || G.Input.tap('numpad' + (i + 1))) G.RunUI.pickChoice(i);
+      }
+      return;
+    }
     if (G.UI.isOpen('scr-item')) {
       // (Hasta 5: quedarte con lo que llevas o cambiar uno de tus cuatro.)
       const cards = document.querySelectorAll('#item-cards .card');
@@ -807,6 +830,8 @@ G.Game = (() => {
     if (pl.dead) { if (G.Input.tap('keyq')) cycleWatch(-1); if (G.Input.tap('keye') || G.Input.tap('tab')) cycleWatch(1); return; }
     if (G.Input.tap('keyq')) pl.cycle(-1);
     if (G.Input.tap('keye') || G.Input.tap('tab')) pl.cycle(1);
+    // El poder (systems/powers.js): F, o B en el mando.
+    if (G.Input.tap('keyf') || G.Input.tap('padb')) G.Powers.use(pl);
     // Esferas: 5-8 (o el teclado numérico); en el mando, X la usa e Y cambia de esfera.
     for (let i = 0; i < 4; i++) {
       if (G.Input.tap('digit' + (i + 5)) || G.Input.tap('numpad' + (i + 5))) G.Orbs.use(pl, i);
@@ -878,6 +903,10 @@ G.Game = (() => {
         projectiles: G.Projectiles.all().filter(p => p.friendly === false), pickups: G.Pickups.all(),
         hazards: G.Hazards.all, inHazard: G.Hazards.inside, time, rift: G.Rift.rift, inArena: G.Rift.inArena,
         arceus: G.Judgment.arceus,   // la Sentencia: huir de él
+        // Eternatus (minuto 20): círculos de luz, remolino, charcos y nubes rojas (en/bot.js)
+        eternatus: G.Eternatus.active ? { phase: G.Eternatus.phase, fx: G.Eternatus.fx, boss: G.Eternatus.boss, center: G.Eternatus.center, fogR: G.Eternatus.fogR } : null,
+        // Tu poder (systems/powers.js): cuál y si está listo
+        power: pl.powerId ? { id: pl.powerId, ready: G.Powers.ready(pl), on: pl.powerOn } : null,
         lost: G.Events.lostInfo,     // Pokémon perdido: ir a por él y llevarlo a la marca
         // Compañeros (cooperativo): dónde están y si han caído (el bot va a levantarlos)
         mates: G.Coop.active ? G.Coop.puppets().map(m => ({ x: m.x, y: m.y, dead: !!m.dead, reviveT: m.reviveT || 0 })) : [],
@@ -1003,6 +1032,7 @@ G.Game = (() => {
     G.Rift.update(dt, pl, time);
     G.Judgment.update(dt, pl, time);
     G.Eternatus.update(dt, pl, time);
+    G.Powers.update(dt, pl);
     G.Events.update(dt, awake, time);
     G.Weather.update(dt, time, pl);
     G.FX.update(dt);
@@ -1236,7 +1266,7 @@ G.Game = (() => {
   })();
 
   return {
-    init, startRun, everyone, levelXp, flash, offerBond,
+    init, startRun, everyone, levelXp, flash, offerBond, choose,
     /** Para pruebas: salta el reloj de la run. */
     debugTime(t) { tampered = true; time = t; t10Sec = Math.floor(t); },
     /** Halloween: caramelos de golpe (al llegar al gran Gengar; en grupo, los da el anfitrión a todos). */

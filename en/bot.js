@@ -91,6 +91,7 @@ class PokeAutoBot {
     const state = window.__POKE_STATE__;
     if (!state || !state.player || state.phase !== 'playing' || state.player.dead) { this.releaseAllKeys(); return; }
     this.weave(state);
+    this.usePower(state);
     this.applyDir(window.__BOT_NOMOVE ? -1 : this.plan(state));
   }
 
@@ -147,7 +148,7 @@ class PokeAutoBot {
     // 頭目一定要打：打不死會一直追、越積越多，而且頭目活著就不出裂縫 → 頭目在 320 像素內、血量四成以上就照常出招
     const hpFrac = p.hp / (p.maxHp || 1);
     const bossNear = s.enemies.some(e => e.boss && !e.dead && !e.judge && Math.hypot(e.x - p.x, e.y - p.y) < 320);
-    if (this.pacifist && !s.arceus && !(bossNear && hpFrac >= 0.4)) {
+    if (this.pacifist && !s.arceus && !s.eternatus && !(bossNear && hpFrac >= 0.4)) {
       // 開著保命的輔助招（速度 > 減傷 > 回血），而且盡量不打人；加攻擊的輔助招在這時沒用
       const W = { spd: 3, def: 2, regen: 1.5 };
       // v41：輔助招合進攻擊格之後，那一格也會打人；保命的加成優先（×1000），同樣的加成才看哪一格打得少
@@ -230,12 +231,12 @@ class PokeAutoBot {
 
   // 只看遊戲中的三種選卡畫面（升級 / 道具二選一 / 技能連結），不會去點選單、轉蛋或商店
   handleModalsAndUpgrades() {
-    const screen = ['scr-levelup', 'scr-item', 'scr-bond']
+    const screen = ['scr-levelup', 'scr-item', 'scr-bond', 'scr-power']
       .map(id => document.getElementById(id))
       .find(el => el && !el.classList.contains('hidden'));
     if (!screen) return false;
     // 合作模式選完後會等其他人，卡片區會加上 done
-    const box = screen.querySelector('#cards, #item-cards, #bond-cards');
+    const box = screen.querySelector('#cards, #item-cards, #bond-cards, #power-cards');
     if (!box || box.classList.contains('done')) return true;
     // 卡片剛出現時會暗掉 0.6 秒、點了沒用（防止戰鬥中按 1-4 誤選）→ 等它亮
     if (box.classList.contains('guard')) return true;
@@ -252,7 +253,8 @@ class PokeAutoBot {
     const player = window.__POKE_STATE__ && window.__POKE_STATE__.player;
     let best = cards[0], bestScore = -Infinity;
     for (const card of cards) {
-      const score = card.dataset.key ? this.scoreLevelCard(card, player)
+      const score = card.dataset.power ? this.scorePower(card, cards)
+        : card.dataset.key ? this.scoreLevelCard(card, player)
         : card.dataset.item ? this.scoreItem(card.dataset.item)
         : card.dataset.move ? this.scoreBond(card.dataset.move, player, card.classList.contains('bond'))
         : this.scoreByText(card);
@@ -261,6 +263,37 @@ class PokeAutoBot {
     this.cardsSeenAt = undefined;
     best.click();
     return true;
+  }
+
+  /**
+   * 力量（打贏無極汰那後選一種，js/systems/powers.js）：
+   *   極巨化 12 秒血量加倍、壓扁小怪 → 最保命；超級進化 40 秒換上更強的形態；太晶化 30 秒同屬性招式 ×1.5～1.8；
+   *   Z手環 15 秒丟 Z 加一發全畫面。第二層（形態、屬性）：遊戲把最好的（最強招式的屬性）放在第一個。
+   */
+  scorePower(card, cards) {
+    const order = { 'power:dyna': 4, 'power:mega': 3, 'power:tera': 2, 'power:z': 1 };
+    const k = card.dataset.power;
+    return order[k] !== undefined ? order[k] : -cards.indexOf(card);
+  }
+
+  /** 力量準備好了：頭目／傳說／無極汰那在附近、被圍住或血少時按 F 發動（每秒最多試一次）。 */
+  usePower(s) {
+    const pw = s.power, p = s.player;
+    if (!pw || !pw.ready) return;
+    const now = performance.now();
+    if (now - (this.powerTry || 0) < 1000) return;
+    let near = 0, big = false;
+    for (const e of s.enemies) {
+      if (e.dead || e.etCore) continue;
+      const d = Math.hypot(e.x - p.x, e.y - p.y);
+      if (d < 260) near++;
+      if ((e.boss || e.legend || e.eternatus) && d < 420) big = true;
+    }
+    if (s.arceus || s.eternatus || big || near >= 10 || p.hp / (p.maxHp || 1) < 0.45) {
+      this.powerTry = now;
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyF', key: 'f', bubbles: true }));
+      window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyF', key: 'f', bubbles: true }));
+    }
   }
 
   /**
@@ -667,11 +700,13 @@ class PokeAutoBot {
     const hurt = dmg => 40 + 400 * Math.min(1, (dmg || 8) / maxHp) + ((dmg || 8) >= hpNow ? 300 : 0);
     const real = (amt, type, cat) => s.hitFor ? s.hitFor(amt || 8, type, cat) : (amt || 8);
 
-    const enemies = s.enemies.filter(e => !e.dead && e.behavior !== 'thief' &&
+    // 無極汰那的核心不會撞人（只是要打破的目標），不用躲
+    const enemies = s.enemies.filter(e => !e.dead && e.behavior !== 'thief' && !e.etCore &&
       Math.abs(e.x - p.x) < 420 && Math.abs(e.y - p.y) < 420);
     const shots = s.projectiles.filter(b => Math.abs(b.x - p.x) < 450 && Math.abs(b.y - p.y) < 450);
-    const eHit = new Map(enemies.map(e => [e, real(e.dmg, e.atkType, e.cat)]));
-    const bHit = new Map(shots.map(b => [b, real(b.dmg, b.mtype, b.cat)]));
+    // 無極汰那：碰到扣 15% 最大血量；牠的能量球（pct）扣最大血量的固定比例
+    const eHit = new Map(enemies.map(e => [e, e.eternatus ? maxHp * 0.15 : real(e.dmg, e.atkType, e.cat)]));
+    const bHit = new Map(shots.map(b => [b, b.pct ? maxHp * b.pct : real(b.dmg, b.mtype, b.cat)]));
     const hazards = (s.hazards || []).filter(h => !h.hit);
     const hHit = new Map(hazards.map(h => [h, h.pct ? maxHp * h.pct * 1.5 : h.pure ? (h.dmg || 8) : real(h.dmg, h.type, h.cat)]));
     const pickups = s.pickups.filter(it => Math.abs(it.x - p.x) < 500 && Math.abs(it.y - p.y) < 500)
@@ -693,6 +728,18 @@ class PokeAutoBot {
     const closeRange = !usesShots && (p.slots && p.slots[p.active] || []).some(m => ['melee', 'dash', 'aura', 'orbit', 'trail', 'spin', 'shove'].includes(m.kind));
     // 阿爾宙斯的審判：牠殺不死、碰到扣 40% 血、越來越快。目標只有一個：活越久越好。
     const arc = s.arceus;
+    // 無極汰那（第 20 分鐘，高塔之巔）：
+    //   光圈：黑夜魔影／無極光束爆之前要站進其中一個光圈（圈外扣 30% 血）→ 先去最近的那個，進去後站好
+    //   漩渦：每秒把人往牠那邊吸 k 像素 → 模擬時把位移算進去，離牠越近越糟（往反方向跑）
+    //   毒池：踩到每 0.5 秒扣 4%；紅霧：fogR 圈外每 0.5 秒扣 5%
+    const et = s.eternatus;
+    const etBoss = et && et.boss && !et.boss.dead ? et.boss : null;
+    let etDark = null;
+    if (et) for (const f of et.fx) if (f.kind === 'dark' && f.t < f.delay && (!etDark || f.delay - f.t < etDark.delay - etDark.t)) etDark = f;
+    const etVortex = et ? et.fx.find(f => f.kind === 'vortex' && f.t < f.dur) : null;
+    const etPools = et ? et.fx.filter(f => f.kind === 'pool' && f.t >= (f.wait || 0) - 0.4) : [];
+    let etSafe = null;
+    if (etDark) { let bd = Infinity; for (const c of etDark.safe) { const dc = Math.hypot(c.x - p.x, c.y - p.y); if (dc < bd) { bd = dc; etSafe = c; } } }
     const lowHp = hpFrac < 0.35;
     // 血量越少越怕痛
     const danger = hpFrac < 0.5 ? 1 + (0.5 - hpFrac) * 2 : 1;
@@ -782,6 +829,7 @@ class PokeAutoBot {
         pathGoal = { x: arc.cx + Math.cos(ga) * arc.max * 0.7, y: arc.cy + Math.sin(ga) * arc.max * 0.7 };
       }
     }
+    if (etSafe) pathGoal = { x: etSafe.x, y: etSafe.y };   // 光圈最優先（繞過柱子走過去）
     const pf = pathGoal && (arc || now < st.until || this.lineBlocked(s, p.x, p.y, pathGoal.x, pathGoal.y)) ? this.field(s, pathGoal.x, pathGoal.y) : null;
     const pfW = now < st.until ? 0.25 : arc ? 0.1 : 0.08;
 
@@ -815,6 +863,17 @@ class PokeAutoBot {
           }
           if (s.bad(x, y)) cost += 25;
         }
+        // 漩渦：站著不動也會被吸過去
+        if (etVortex && etBoss) {
+          const vx = etBoss.x - x, vy = etBoss.y - y, vl = Math.hypot(vx, vy) || 1, m = Math.min(vl, (etVortex.k || 90) * dt);
+          x += vx / vl * m; y += vy / vl * m;
+        }
+        if (et) {
+          for (const f of etPools) if (Math.hypot(f.x - x, f.y - y) < f.r + r * 0.5) cost += hurt(maxHp * 0.04) * 0.6 * danger;
+          // 紅霧：留 10 像素的邊，越往外扣越多（以前只在圈外才扣，常常貼著邊走出去）
+          const fo = et.center && et.fogR ? Math.hypot(x - et.center.x, y - et.center.y) - (et.fogR - r - 10) : -1;
+          if (fo > 0) cost += (hurt(maxHp * 0.05) + fo * 3) * (1.15 - k / STEPS * 0.5) * danger;
+        }
         path.push([x, y]);
         if (rf) riftBest = Math.min(riftBest, this.fieldDist(rf, s.TS, x, y));
         if (downed) mateBest = Math.min(mateBest, Math.hypot(downed.x - x, downed.y - y));
@@ -841,9 +900,9 @@ class PokeAutoBot {
           const gap = Math.hypot(x - ex, y - ey) - (e.r || 14) - r;
           // 打得痛的怪（一下超過最大血量 15%，例如被剋）拉開得更遠，像頭目一樣
           const ed = eHit.get(e), heavy = Math.min(3, Math.max(1, ed / (maxHp * 0.15)));
-          const big = Math.max(e.boss || e.legend || e.judge ? 3 : 1, heavy) * (dashing ? 1.6 : 1);
+          const big = Math.max(e.boss || e.legend || e.judge || e.eternatus ? 3 : 1, heavy) * (dashing ? 1.6 : 1);
           // 只在快碰到時才怕：近身／範圍招式需要貼近才打得到
-          const bigE = e.boss || e.legend || e.judge;
+          const bigE = e.boss || e.legend || e.judge || e.eternatus;
           if (gap < (closeRange && !bigE ? 2 : 8)) cost += hurt(ed) * (bigE ? 1.5 : 1) * w * danger;
           // 遠程：敵人進到 60～80 像素就開始拉開（風箏），不要等快碰到才躲——沒加成時死因幾乎都是被圍住連續碰撞
           else if (!closeRange || bigE || heavy > 1.5) cost += 30 * big * w * danger * Math.exp(-gap / 14);   // 溫和版：太強會一直後退、打不到怪、等級跟不上
@@ -873,6 +932,16 @@ class PokeAutoBot {
         const left = h.delay - h.t;
         if (left > H && left < 2.2 && s.inHazard(h, x, y, r + 12)) cost += Math.max(h.pct ? 30 : 10, hurt(hHit.get(h)) * 0.5) * (1 - (left - H) / 1.5) * danger;
       }
+      // 無極汰那的光圈：終點不在任何一個光圈裡 → 依剩下的時間扣分（越急扣越多），離最近的光圈越遠扣越多
+      if (etDark) {
+        const left = etDark.delay - etDark.t;
+        if (!etDark.safe.some(c => Math.hypot(c.x - x, c.y - y) < c.r - r * 0.5)) {
+          const urg = Math.max(0.4, Math.min(1.6, 4 / Math.max(0.5, left)));
+          cost += (hurt(maxHp * (etDark.pct || 0.3)) + (etSafe ? Math.hypot(etSafe.x - x, etSafe.y - y) : 0) * 0.6) * urg;
+        }
+      }
+      // 漩渦：離無極汰那越近越糟（被吸過去會一直碰到牠）
+      if (etVortex && etBoss) cost += 220 * Math.exp(-Math.max(0, Math.hypot(etBoss.x - x, etBoss.y - y) - (etBoss.r || 40)) / 90);
       // 走到要開的寶箱旁邊被它擋住是正常的（寶箱是實心的）：終點在開箱範圍內就不算撞牆、不算死路
       //（以前把大寶箱當牆，停在 60 像素外不敢貼上去，開箱範圍只有 56）
       const atChest = bigChest && Math.hypot(bigChest.x - x, bigChest.y - y) < Math.max(46, (bigChest.r || 14) + r + 24) + 4;

@@ -141,6 +141,7 @@ G.Projectiles = (() => {
       ctx.beginPath(); ctx.ellipse(p.x, p.y, p.r * 1.5, p.r * 0.6, 0, 0, 6.2832); ctx.fill();
     }
     for (const p of list) {
+      if (p.zmark) { G.Powers.drawZ(ctx, p, L); continue; }      // Pulsera Z (systems/powers.js)
       const v = p.vis || G.VFX.forType('normal');
       const shape = v.proj;
       const a = p.orb ? 1 : Math.min(1, (p.life - p.t) * 4);
