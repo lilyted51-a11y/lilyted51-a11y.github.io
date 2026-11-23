@@ -140,7 +140,8 @@ G.HUD = (() => {
     if (wx) {
       ctx.font = F(800, 11);
       ctx.textAlign = 'left';
-      const txt = wx.name.toUpperCase() + ' · ' + Math.ceil(wx.left) + 's';
+      // (El clima fijo del desafío semanal no se acaba: sin segundos.)
+      const txt = wx.fixed ? wx.name.toUpperCase() : wx.name.toUpperCase() + ' · ' + Math.ceil(wx.left) + 's';
       const tw = ctx.measureText(txt).width + 40;
       const x0 = w - tw - 16 - sa.right - (touch ? 56 : 0), y0 = 14 + sa.top;
       roundRect(ctx, x0, y0, tw, 26, 9);
@@ -149,6 +150,8 @@ G.HUD = (() => {
       ctx.fillStyle = wx.color;
       ctx.fillText(txt, x0 + 32, y0 + 17);
     }
+    // Desafío semanal (systems/challenge.js): su condición, debajo.
+    G.Challenge.drawHud(ctx, w - 16 - sa.right - (touch ? 56 : 0), 14 + sa.top + (wx ? 30 : 0), F, roundRect);
 
     // ---------- barra del jefe ----------
     const boss = G.EnemyMgr.all().find(e => e.boss && !e.dead);

@@ -106,6 +106,7 @@ G.DB = (() => {
       evoMoves: {},           // id -> fecha: movimientos evolucionados alguna vez
       ach: {},                // id -> fecha: logros conseguidos
       missions: {},           // misiones del día / semana (systems/progress.js)
+      chal: null,             // desafío semanal: { w: 'w2026-48', at, t, tk } (systems/challenge.js)
       profile: { favs: [], title: '' },   // perfil público: 3 favoritos y título
       stats: { runs: 0, bestTime: 0, bestLevel: 0, totalKills: 0, pulls: 0, coinsEarned: 0, shinies: 0,
                bossesTotal: 0, riftWins: 0, evolutions: 0, missionsDone: 0, groupRuns: 0, bestGroupTime: 0 }
@@ -328,6 +329,15 @@ G.DB = (() => {
    *   - compañero, pity...: los de la versión más reciente
    * Es idempotente: fusionar dos veces da lo mismo.
    */
+  function mergeChal(x, y) {
+    const ok = c => c && typeof c === 'object' && typeof c.w === 'string';
+    if (!ok(x)) return ok(y) ? y : null;
+    if (!ok(y)) return x;
+    if (x.w !== y.w) return x.w > y.w ? x : y;
+    const at = [+x.at || 0, +y.at || 0].filter(Boolean);
+    return { w: x.w, at: at.length ? Math.min(...at) : 0, t: Math.max(+x.t || 0, +y.t || 0), tk: Math.max(+x.tk || 0, +y.tk || 0) };
+  }
+
   function merge(a, b) {
     if (!a) return b;
     if (!b) return a;
@@ -408,6 +418,9 @@ G.DB = (() => {
         m.told = m.told || o.told;
       });
     }
+    // Desafío semanal: el de la semana más reciente; la misma semana, el intento gastado en cualquiera
+    // de los dos aparatos (nunca vuelve), lo más aguantado y el ticket ya cobrado.
+    r.chal = mergeChal(a.chal, b.chal);
     for (const k in older.stats || {}) r.stats[k] = Math.max(r.stats[k] || 0, older.stats[k] || 0);
     if (r.starter == null) r.starter = older.starter;
     if (r.personality == null) r.personality = older.personality;

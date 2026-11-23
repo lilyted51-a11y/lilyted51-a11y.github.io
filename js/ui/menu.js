@@ -87,6 +87,7 @@ G.MenuUI = (() => {
       (G.DB.guest ? '<br><span style="color:#ffb0b8">Modo invitado: no se guarda</span>' : '');
 
     socialLine();
+    G.ChallengeUI.card();          // desafío semanal (ui/challenge-ui.js)
     // Premios de misiones por recoger.
     G.Progress.checkAch();
     const pend = G.Progress.pending();

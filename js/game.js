@@ -95,7 +95,7 @@ G.Game = (() => {
    * cierra la ventana de encima). En el menú principal no hay entrada de más:
    * «atrás» sale de la web, como siempre.
    */
-  const BACK_SCREENS = ['scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-friends', 'scr-rank', 'scr-goals', 'scr-lobby', 'scr-mod'];
+  const BACK_SCREENS = ['scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-friends', 'scr-rank', 'scr-goals', 'scr-lobby', 'scr-mod', 'scr-chal'];
   const shown = id => { const el = document.getElementById(id); return !!el && !el.classList.contains('hidden'); };
   let trapped = false;
   function needsTrap() {
@@ -207,9 +207,13 @@ G.Game = (() => {
     // Halloween (systems/halloween.js): lo que sea al empezar vale toda la partida (en grupo, lo dice el anfitrión).
     G.Halloween.runStart(coop ? coop.hw : undefined);
     const save = G.DB.save;
-    // Con su naturaleza aplicada (una copia: ver systems/mons.js).
-    const mon = G.Mons.monFor(save.partner);
-    const perks = G.Upgrades.perks(G.DB.upgradesOf(mon.dex));
+    // Desafío semanal (systems/challenge.js): sólo en solitario; gasta el intento de la semana. Va antes
+    // de sortear los enemigos (Spawner.reset) y el mapa: el tipo de los enemigos y la semilla son suyos.
+    const ch = G.Challenge.take(!!coop);
+    // Con su naturaleza aplicada (una copia: ver systems/mons.js). En el desafío, el Pokémon
+    // prestado: igual para todos y sin tus Mejoras.
+    const mon = ch ? G.Challenge.monOf(ch) : G.Mons.monFor(save.partner);
+    const perks = G.Upgrades.perks(ch ? {} : G.DB.upgradesOf(mon.dex));
 
     G.UI.hideAll();
     G.UI.chrome(false);
@@ -226,7 +230,7 @@ G.Game = (() => {
     G.Weather.reset();
     G.Path.clear();
     G.Hazards.clear();
-    G.World.reset(coop ? coop.seed : Math.floor(Math.random() * 1e6));
+    G.World.reset(coop ? coop.seed : ch ? ch.seed : Math.floor(Math.random() * 1e6));
     G.World.setBiome(G.Tiles.runBiome(0), true);
     biome = 0;
     time = 0; pendingLevels = 0;
@@ -234,21 +238,21 @@ G.Game = (() => {
 
     // Fuerza al empezar (G.Mons.ladderFor): los ya evolucionados y los que no evolucionan empiezan más flojos.
     const ladder = G.Mons.ladderFor(mon);
-    pl = new G.Player(ladder ? Object.assign({}, mon, ladder[0]) : mon, perks, !!save.partnerShiny && G.DB.ownsShiny(mon.dex));
+    pl = new G.Player(ladder ? Object.assign({}, mon, ladder[0]) : mon, perks, !ch && !!save.partnerShiny && G.DB.ownsShiny(mon.dex));
     pl.ladder = ladder;
     G.Orbs.reset();
-    pl.setAbility(G.Mons.abilityOf(mon.dex).id);
-    pl.anim.skin = G.Skins.worn(save, mon.dex) || null;      // su disfraz (core/skins.js)
+    pl.setAbility(ch ? G.Challenge.abilityOf(ch) : G.Mons.abilityOf(mon.dex).id);
+    pl.anim.skin = ch ? null : G.Skins.worn(save, mon.dex) || null;      // su disfraz (core/skins.js)
     pl.candy = 0;
     banked = { t1: 0, t10: 0, cn: 0 };
     t10Sec = 0;
     caught = [];
     // Atajos: movimientos con hueco fijo (save.pbind[dex] = [id del 1, id del 2, ...]),
     // antes de aprender nada: addMove ya los coloca.
-    (save.pbind && save.pbind[mon.dex] || []).forEach((id, i) => { if (id) pl.bind[id] = i; });
-    pl.addMove(G.startMoveOf(mon.dex));
+    if (!ch) (save.pbind && save.pbind[mon.dex] || []).forEach((id, i) => { if (id) pl.bind[id] = i; });
+    pl.addMove(ch ? G.baseStartOf(mon.dex) : G.startMoveOf(mon.dex));
     // Mejora "Veto": movimientos que no quieres que te salgan.
-    pl.banned = new Set((save.pban && save.pban[mon.dex] || []).slice(0, perks.bans));
+    pl.banned = new Set(ch ? [] : (save.pban && save.pban[mon.dex] || []).slice(0, perks.bans));
     // Mejora "Repertorio": un segundo movimiento de ataque, el elegido con
     // "Segundo movimiento inicial" o, si no, al azar.
     if (perks.startMoves >= 2) {
@@ -263,6 +267,7 @@ G.Game = (() => {
       G.Coop.begin(coop, pl, coopApi);
       G.Social.setPlaying(true);
     }
+    if (ch) G.Challenge.begin(pl);      // la condición de la semana (clima fijo...) y su aviso
     G.Camera.x = pl.x; G.Camera.y = pl.y; G.Camera.shake = 0;
     // Hojas de sprites locales: el compañero y los primeros enemigos.
     G.Sprites.preload([mon.dex], 8000, pl.shiny, pl.anim.skin || '');
@@ -534,7 +539,10 @@ G.Game = (() => {
     save.pused = save.pused || {};
     // (El Pokémon con el que empezaste, aunque haya evolucionado en la partida.)
     const usedDex = pl.baseDex || pl.dex;
-    save.pused[usedDex] = (+save.pused[usedDex] || 0) + 1;   // para "más usados" en la colección
+    // Desafío semanal: lo aguantado se apunta en save.chal; el Pokémon prestado no cuenta para "más usados".
+    const ch = G.Challenge.cur;
+    if (ch) G.Challenge.finish(time);
+    else save.pused[usedDex] = (+save.pused[usedDex] || 0) + 1;   // para "más usados" en la colección
     save.stats.totalKills += pl.kills;
     save.stats.bestTime = Math.max(save.stats.bestTime, Math.floor(time));
     if (coop) save.stats.bestGroupTime = Math.max(save.stats.bestGroupTime || 0, Math.floor(time));
@@ -555,7 +563,9 @@ G.Game = (() => {
     const mark = { t: Math.floor(time), lv: pl.level, kills: pl.kills, dmg: judge ? judge.dmg : 0 };   // dmg: a Arceus
     // Si la partida se ha tocado (ver clean()), no sube al ranking (sin avisar); lo demás, sí.
     const ok = clean();
-    const sent = ok && !coop ? G.Ranking.submitSolo(Object.assign(mark, { dex: pl.dex, shiny: pl.shiny }))
+    // (El desafío semanal sólo sube a su propia tabla, nunca a las normales.)
+    const sent = ok && ch ? G.Ranking.submitChallenge(Object.assign(mark, { dex: pl.dex, w: ch.w }))
+               : ok && !coop ? G.Ranking.submitSolo(Object.assign(mark, { dex: pl.dex, shiny: pl.shiny }))
                : ok && wasHost ? G.Ranking.submitGroup(Object.assign(mark, { members: team })) : null;
     if (sent) sent.catch(() => {});
 
@@ -564,6 +574,7 @@ G.Game = (() => {
       team: (coop ? team : [{ uid: meUid }]).filter(m => sums[m.uid]).map(m => ({ name: m.name, me: m.uid === meUid, sum: sums[m.uid] }))
         .sort((a, b) => b.me - a.me),
       moves: pl.moves, caught,
+      challenge: ch ? { label: G.Challenge.label(ch), desc: G.Challenge.desc(ch), dex: ch.dex, tk: time >= G.Challenge.TICKET_AT } : null,
       breakdown: Object.entries(parts).filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(' · ') +
                  (mul > 1 ? ` · ×${mul.toFixed(2)} Fortuna` : '') + (boosted ? ' · ×5 · +' + survival.toLocaleString() + ' (' + Math.floor(time) + ' s × 10000)' : ck > 1 ? ' · ×' + ck : '')
     }, () => { pl = null; G.Flow.afterRun(); });
@@ -1048,6 +1059,8 @@ G.Game = (() => {
     G.Consum.update(dt, pl);
     G.Events.update(dt, awake, time);
     G.Weather.update(dt, time, pl);
+    // Desafío semanal: «Sin curaciones» y el ticket ×10 de los 3 minutos (se guarda ya, como los demás tickets).
+    if (G.Challenge.active && G.Challenge.tick(dt, pl, time)) { pl.t10++; bankTickets(); }
     G.FX.update(dt);
 
     G.Audio.music(G.Judgment.active ? G.Judgment.music : G.Rift.inArena ? 'rift' : G.EnemyMgr.bossAlive() ? 'boss' : G.BIOME_MUSIC[biome % G.BIOME_MUSIC.length]);
@@ -1159,6 +1172,7 @@ G.Game = (() => {
       ctx.fillRect(0, 0, w, h);
     }
     if (!G.Judgment.cinematic) G.Eternatus.drawOverlay(ctx, w, h);
+    if (!G.Judgment.cinematic) G.Challenge.drawDark(ctx, w, h, pl);     // desafío «Noche cerrada»
     if (!G.Judgment.cinematic) G.HUD.draw(ctx, w, h, pl, st);
     G.Judgment.drawOverlay(ctx, w, h);
     G.Touch.draw(ctx);
@@ -1303,6 +1317,8 @@ G.Game = (() => {
     /** Para grabar vídeos: abre las cartas de subir de nivel. */
     debugLevelUp() { tampered = true; pl.level++; pendingLevels++; },
     toUI() { state = 'ui'; if (cv) cv.style.cursor = ''; Backdrop.restore(); },
+    /** El desafío semanal de esta partida (o de la última), o null: la maestría no la cuenta (systems/challenge.js). */
+    get challenge() { return G.Challenge.cur; },
     get state() { return state; }, get player() { return pl; }, st
   };
 })();
@@ -1313,6 +1329,7 @@ G.Flow = {
     G.UI.initChrome();
     G.LoginUI.init(); G.TestUI.init(); G.MenuUI.init(); G.GachaUI.init();
     G.SocialUI.init(); G.RankingUI.init(); G.ModUI.init(); G.GoalsUI.init(); G.ProfileUI.init(); G.SettingsUI.init(); G.SupportUI.init(); G.NewsUI.init(); G.Updater.init();
+    G.ChallengeUI.init();         // desafío semanal (ui/challenge-ui.js)
     // Tu nombre arriba a la derecha abre tu perfil.
     document.getElementById('user-pill').onclick = () => G.GoalsUI.open('profile');
     G.Audio.music('village');     // suena tras el primer clic (lo exige el navegador)

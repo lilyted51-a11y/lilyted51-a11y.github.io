@@ -31,6 +31,11 @@
  *                    en el minuto 35, otra vez TODAS desde cero)
  *   id = tu uid (solitario) o los uid del equipo ordenados y unidos con "_".
  *
+ *   Desafío semanal (23-11-2026, systems/challenge.js): su propia tabla cada semana,
+ *     s_cw2026-48   sólo en solitario y sólo el tiempo aguantado; un intento por semana, así que
+ *                   cada jugador escribe una marca (firestore.rules: en las s_c..., sólo crear).
+ *                   (El periodo 'c' no está en PERIODS: no sale en las pestañas de periodo.)
+ *
  * Ahorros:
  *   - Lo leído se guarda 5 min en el navegador (cambiar de pestaña y volver: 0).
  *     (2 h hasta el 07-11-2026: las marcas, también las de tus amigos, tardaban
@@ -151,7 +156,8 @@ G.Ranking = (() => {
   const GEN = 'a';
   function boardIds(date) {
     const p = periodIds(date);
-    return Object.assign({}, p, { d: p.d + GEN, w: p.w + GEN, m: p.m + GEN, y: p.y + GEN });
+    // c: el desafío semanal (tabla nueva, sin la letra de generación).
+    return Object.assign({}, p, { d: p.d + GEN, w: p.w + GEN, m: p.m + GEN, y: p.y + GEN, c: 'c' + p.w });
   }
 
   /** El filtro por Pokémon sólo existe en el histórico. */
@@ -467,6 +473,7 @@ G.Ranking = (() => {
 
   function announce(better) {
     if (!better.length) return;
+    if (better.includes('c')) { G.UI.toast('¡Tu marca ya está en el ranking del desafío semanal!', 3400); return; }
     const names = { d: 'de hoy', w: 'de la semana', m: 'del mes', a: 'histórico' };
     const best = PERIODS.map(p => p[0]).filter(p => better.includes(p)).pop();
     G.UI.toast('¡Nueva mejor marca ' + names[best] + ' en el ranking!', 3400);
@@ -499,6 +506,17 @@ G.Ranking = (() => {
     const boards = PERIODS.map(([p]) => ['s_' + ids[p], p]);
     if (r.t >= MIN_T_MON) boards.push(['s_' + ALL + '_p' + r.dex, 'p']);
     return send(fb.uid, entry, boards);
+  }
+
+  /**
+   * Desafío semanal: sólo a su tabla (la de la semana en que empezó, r.w), con cualquier tiempo
+   * (un intento por semana: cada jugador escribe una vez). Sin daño a Arceus.
+   */
+  async function submitChallenge(r) {
+    const fb = fbx();
+    if (!fb || !G.Social.me || !(r.t >= 1) || !/^w\d{4}-\d{2}$/.test(r.w || '')) return [];
+    const entry = Object.assign({ uids: [fb.uid], names: [G.Social.me.name], dex: [r.dex], shiny: [false] }, fit(Object.assign({}, r, { dmg: 0 })));
+    return send(fb.uid, entry, [['s_c' + r.w, 'c']]);
   }
 
   /** La sube el anfitrión, con todo el equipo. */
@@ -701,6 +719,7 @@ G.Ranking = (() => {
     const ids = boardIds();
     const boards = new Set();
     for (const m of ['s', 'g']) for (const [p] of PERIODS) boards.add(m + '_' + ids[p]);
+    boards.add('s_' + ids.c);                 // el desafío semanal
     for (const k of Object.keys(bests())) boards.add(k.split(':')[0]);
     // Una fila por escritura (las reglas sólo dejan quitar una cada vez): se
     // repite mientras quede alguna tuya (de tiempo o de daño).
@@ -840,6 +859,6 @@ G.Ranking = (() => {
       t1: (v.tickets || {}).t1 || 0, t10: (v.tickets || {}).t10 || 0, owned: Object.keys(v.owned || {}).length }; });
   }
 
-  return { PERIODS, periodIds, board, runStarted, newSeal, mySeal, submitSolo, submitGroup, retry, top, topDmg, myRank, removeMine,
+  return { PERIODS, periodIds, board, runStarted, newSeal, mySeal, submitSolo, submitChallenge, submitGroup, retry, top, topDmg, myRank, removeMine,
            report, reported, isAdmin, reports, entryInfo, removeEntry, purgeAbove, removeEverywhere, setMarked, dismiss, markedAccounts };
 })();

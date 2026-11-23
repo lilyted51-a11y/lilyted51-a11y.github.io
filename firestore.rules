@@ -239,7 +239,10 @@ service cloud.firestore {
               ? (d.uids.size() == 1 && id == me())
               : (d.uids.size() >= 2 && d.uids.size() <= 10 && id == d.uids.join('_')))
         && (resource == null || (d.t >= resource.data.t && dmg >= resource.data.get('dmg', 0)
-              && (d.t > resource.data.t || dmg > resource.data.get('dmg', 0))));
+              && (d.t > resource.data.t || dmg > resource.data.get('dmg', 0))))
+        // Desafío semanal (s_cw2026-48, 23-11-2026): un intento por semana, así que la marca sólo se
+        // crea; no se puede mejorar después (ni repetir el desafío para subir otra).
+        && (!board.matches('s_c.*') || resource == null);
     }
 
     match /lb/{board}/e/{id} {

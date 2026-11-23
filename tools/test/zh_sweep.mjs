@@ -71,6 +71,34 @@ for (const go of ['dex', 'upgrades', 'shop', 'bag', 'gacha', 'goals', 'friends',
 }
 await A.ev(`G.UI.hideAll(); document.getElementById('btn-news').click(); 1`); await sleep(1500); await grab('novedades'); await misses('novedades'); await click('#news-close');
 
+// ---------- Desafío semanal (23-11-2026): tarjeta del menú, su pantalla con cada condición, la pregunta y su ranking ----------
+// (Las condiciones se fuerzan en el desafío de esta semana; el ranking, con marcas falsas: el invitado no tiene nube.)
+const CH_CONDS = [['wx', { wx: 'sun' }], ['wx', { wx: 'rain' }], ['wx', { wx: 'sand' }], ['wx', { wx: 'snow' }], ['wx', { wx: 'fog' }],
+                  ['type', { type: 'psychic' }], ['type', { type: 'dark' }], ['noheal', {}], ['night', {}]];
+const chSet = (cond, x) => A.ev(`(() => { G.DB.save.chal = null; const c = G.Challenge.thisWeek(); delete c.wx; delete c.type; Object.assign(c, { cond: ${JSON.stringify(cond)} }, ${JSON.stringify(x)}); return 1; })()`);
+for (const [cond, x] of CH_CONDS) {
+  await chSet(cond, x);
+  await A.ev(`G.UI.hideAll(); G.MenuUI.open(); document.getElementById('menu-ch').click(); 1`); await sleep(700);
+  await grab('desafío semanal ' + cond + (x.wx || x.type || '')); await misses('desafío semanal ' + cond);
+}
+await A.ev(`document.getElementById('ch-play').click(); 1`); await sleep(700); await grab('desafío: pregunta');
+await A.ev(`[...document.querySelectorAll('section.scr [data-no]')].pop().click(); 1`); await sleep(300);
+await A.ev(`(() => { G.DB.save.chal = { w: G.Challenge.weekId(), at: Date.now(), t: 191, tk: 1 }; G.UI.hideAll(); G.MenuUI.open(); document.getElementById('menu-ch').click(); return 1; })()`); await sleep(700);
+await grab('desafío: intento usado'); await misses('desafío: intento usado');
+await A.ev(`(() => { window.__rk = [G.SocialUI.needOnline, G.Social.start, G.Ranking.top, G.Ranking.myRank];
+  G.SocialUI.needOnline = () => true; G.Social.start = async () => {};
+  const row = (id, t, n) => ({ id, t, d: 0, uids: [id], names: [n], dex: [G.Challenge.thisWeek().dex], shiny: [false], lv: 12, kills: 340 });
+  G.Ranking.top = async (m, p) => (p === 'c' ? [row('a', 412, 'MiNG'), row('b', 185, 'Sekiam')] : []);
+  G.Ranking.myRank = async (m, p) => (p === 'c' ? { pos: 2, t: 185 } : null);
+  G.UI.hideAll(); G.MenuUI.open(); document.getElementById('ch-rank').classList.remove('hidden'); document.getElementById('menu-ch').click(); document.getElementById('ch-rank').click(); return 1; })()`); await sleep(1500);
+await grab('ranking: desafío semanal'); await click('#rk-scope button:last-child'); await sleep(600); await grab('ranking: desafío semanal (amigos)');
+await A.ev(`(() => { G.Ranking.top = async () => []; G.Ranking.myRank = async () => null; document.querySelector('#rk-scope button').click(); return 1; })()`); await sleep(800);
+await grab('ranking: desafío semanal (vacío)'); await misses('ranking: desafío semanal');
+await A.ev(`(() => { [G.SocialUI.needOnline, G.Social.start, G.Ranking.top, G.Ranking.myRank] = window.__rk; G.DB.save.chal = null; G.UI.hideAll(); G.MenuUI.open(); return 1; })()`); await sleep(500);
+for (const t of ['¡Tu marca ya está en el ranking del desafío semanal!', 'El desafío semanal es sólo en solitario: sal de la sala para jugarlo.',
+                 'Ya has usado tu intento de esta semana. ¡El lunes hay otro!']) { await A.ev(`G.UI.toast(${JSON.stringify(t)}, 900); 1`); await sleep(350); await grab('toast (desafío)'); }
+await misses('desafío: avisos');
+
 // Aviso de una actualización (login.js, NOTES): sólo sale con cuenta en la nube; aquí se enseña el de guardado automático tal cual.
 await A.ev(`(() => { G.UI.hideAll(); G.MenuUI.open();
   document.getElementById('savenote-title').textContent = 'Guardado automático';
@@ -174,6 +202,19 @@ await A.ev(`(() => { clearInterval(window.__etHeal); const p = G.Game.player; p.
 await A.ev(`(() => { const p = G.Game.player; p.invuln = 0; p.hurt(999999, null, true); return 1; })()`);
 for (let i = 0; i < 20; i++) { await sleep(1000); if ((await A.ev(`G.Game.state`)) === 'over') break; }
 await sleep(2500); await grab('fin de partida'); await misses('fin de partida'); await canvas('fin de partida');
+
+// ---------- Desafío semanal en partida (23-11-2026): aviso, rótulo del HUD, ticket de los 3 minutos y resumen, con cada condición ----------
+for (const [i, [cond, x]] of [['wx', { wx: 'sand' }], ['type', { type: 'psychic' }], ['noheal', {}], ['night', {}]].entries()) {
+  await A.ev(`(() => { const b = document.getElementById('btn-again'); if (G.Game.state === 'over' && b) b.click(); window.__POKE_BOT_ON__ = false; return 1; })()`); await sleep(1200);
+  await chSet(cond, x);
+  await A.ev(`(() => { G.UI.hideAll(); G.Challenge.arm(); G.Flow.play(); return 1; })()`); await sleep(2500);
+  if (!i) { await A.ev(`(() => { G.Game.debugTime(179.6); return 1; })()`); await sleep(1500); }
+  await canvas('desafío en partida ' + cond); await misses('desafío en partida ' + cond);
+  await A.ev(`(() => { const p = G.Game.player; p.invuln = 0; p.hurt(999999, null, true); return 1; })()`);
+  for (let k = 0; k < 20 && (await A.ev(`G.Game.state`)) !== 'over'; k++) await sleep(500);
+  await sleep(1500); await grab('desafío: resumen ' + cond); await misses('desafío: resumen ' + cond);
+  console.log('desafío en partida:', cond, '·', await A.ev(`G.Game.state + ' · ' + ((document.querySelector('#over-stats .over-ch') || {}).innerText || '(sin fila del desafío)').replace(/\\n+/g, ' | ')`));
+}
 
 // ---------- resultado ----------
 const list = [...found.entries()];
