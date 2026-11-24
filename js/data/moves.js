@@ -594,7 +594,174 @@
       cd: 0.7, dmg: 22, speed: 330, life: 1.6, size: 7, homing: 6 },
     { id: 'night-slash', name: 'Tajo Umbrío', type: 'dark', kind: 'spin',
       desc: 'Cortes en giro que alcanzan a todo lo que te rodea.',
-      cd: 1.0, dmg: 11, count: 3, radius: 62 }
+      cd: 1.0, dmg: 11, count: 3, radius: 62 },
+    // ================= 24-11-2026 (copia local): movimientos nuevos con formas de atacar que ya existían =================
+    // (Como la Gran Actualización del juego oficial, hecho aquí a partir de su guía de movimientos.)
+    // sig: [dex...] = exclusivo de esos Pokémon (formas y evoluciones incluidas): no sale en las cartas normales
+    // ni en las MT; sale en su carta especial desde el nivel 10 (levelup.js). Sin sig: de su tipo y con MT (tms.js).
+    // evo: la mejora que pide su « +» (los exclusivos de Pokémon normales no evolucionan, como en el oficial).
+    // phys: físico. look: cómo se ve (entities/vfx.js). Extras: critUp (más críticos), pstun (el disparo aturde),
+    // puddle (deja charcos), splash (estalla alrededor), weakT (el mordido recibe +25 %), fall (tarda en caer),
+    // boost (a veces sube Ataque y Velocidad): ver systems/combat.js.
+    // normal
+    { id: 'relic-song', name: 'Canto Arcaico', type: 'normal', kind: 'shove', evo: 'cd', sig: [648, 1648],
+      desc: 'Una melodía de otro tiempo que golpea y aleja a todos los que te rodean.',
+      cd: 1.15, dmg: 18, radius: 100, knock: 340, look: { proj: 'note', pal: 'jade' } },
+    // fire
+    { id: 'magma-storm', name: 'Ola-Lava', type: 'fire', kind: 'nova', evo: 'rgn', sig: [485],
+      desc: 'Oleadas de lava salen hacia todos lados, queman y dejan el suelo ardiendo.',
+      cd: 1.3, dmg: 15, speed: 230, count: 10, pierce: 1, life: 1.0, size: 8, burn: 1, puddle: 3, look: { proj: 'fire', pal: 'lava', trail: 'ember' } },
+    { id: 'sacred-fire', name: 'Fuego Sagrado', type: 'fire', kind: 'meteor', phys: 1, evo: 'atk', sig: [250],
+      desc: 'Caen llamaradas sagradas sobre los enemigos cercanos y los dejan ardiendo.',
+      cd: 1.3, dmg: 24, count: 3, radius: 50, burn: 2, look: { proj: 'fire', pal: 'sacred', trail: 'ember' } },
+    { id: 'blue-flare', name: 'Llama Azul', type: 'fire', kind: 'beam', evo: 'atk', sig: [643, 1646],
+      desc: 'Un chorro de fuego azul en línea recta que quema todo lo que cruza.',
+      cd: 1.3, dmg: 30, radius: 250, width: 36, burn: 2, look: { beam: 'fire', proj: 'fire', pal: 'blueflame' } },
+    { id: 'pyro-ball', name: 'Balón Ígneo', type: 'fire', kind: 'projectile', phys: 1, sig: [813, 814, 815],
+      desc: 'Chutas una bola de fuego que atraviesa a varios enemigos y los quema.',
+      cd: 0.6, dmg: 26, speed: 300, count: 1, spread: 0.12, pierce: 2, life: 1.5, size: 9, burn: 1, look: { proj: 'ball', pal: 'lava', trail: 'ember' } },
+    // water
+    { id: 'waterfall', name: 'Cascada', type: 'water', kind: 'stun', phys: 1, evo: 'atk',
+      desc: 'Un torrente cae donde avisa el suelo y deja aturdidos a los que pilla.',
+      cd: 1.5, dmg: 30, radius: 56, stun: 0.8, look: { proj: 'drop', trail: 'drip' } },
+    { id: 'scald', name: 'Escaldar', type: 'water', kind: 'projectile', evo: 'atk',
+      desc: 'Un chorro de agua hirviendo que pasa a través de uno y lo quema.',
+      cd: 0.5, dmg: 17, speed: 330, count: 1, spread: 0.12, pierce: 1, life: 1.5, size: 7, burn: 1, look: { proj: 'drop', trail: 'ember' } },
+    { id: 'water-pulse', name: 'Hidropulso', type: 'water', kind: 'projectile', evo: 'cd',
+      desc: 'Una onda de agua en anillo que deja aturdido un instante al que alcanza.',
+      cd: 0.55, dmg: 15, speed: 300, count: 1, spread: 0.12, pierce: 0, life: 1.5, size: 8, pstun: 0.5, look: { proj: 'ring', trail: 'drip' } },
+    { id: 'origin-pulse', name: 'Pulso Primigenio', type: 'water', kind: 'nova', evo: 'hp', sig: [382, 1382],
+      desc: 'Haces de agua salen de ti hacia todos lados y echan atrás a los enemigos.',
+      cd: 1.25, dmg: 15, speed: 300, count: 12, pierce: 1, life: 1.1, size: 8, knock: 120, look: { proj: 'drop', pal: 'deepsea', trail: 'drip' } },
+    { id: 'snipe-shot', name: 'Disparo Certero', type: 'water', kind: 'projectile', sig: [816, 817, 818],
+      desc: 'Un tiro de agua velocísimo que lo atraviesa todo y suele ser crítico.',
+      cd: 0.45, dmg: 20, speed: 620, count: 1, spread: 0.06, pierce: 99, life: 1.0, size: 6, critUp: 0.25, look: { proj: 'needle', trail: 'drip' } },
+    { id: 'sparkling-aria', name: 'Aria Burbuja', type: 'water', kind: 'nova', sig: [728, 729, 730],
+      desc: 'Burbujas que cantan salen en todas direcciones y atraviesan a varios.',
+      cd: 1.1, dmg: 16, speed: 240, count: 10, pierce: 3, life: 1.2, size: 9, look: { proj: 'bubble', pal: 'fairy' } },
+    // grass
+    { id: 'flower-trick', name: 'Truco Floral', type: 'grass', kind: 'homing', phys: 1, sig: [906, 907, 908],
+      desc: 'Un ramo de flores que va tras el enemigo y casi siempre es crítico.',
+      cd: 0.55, dmg: 20, speed: 300, life: 1.8, size: 8, homing: 5, critUp: 0.5, look: { proj: 'flower', pal: 'fairy' } },
+    // electric
+    { id: 'volt-tackle', name: 'Placaje Eléctrico', type: 'electric', kind: 'dash', phys: 1, sig: [172, 25, 26, 1026],
+      desc: 'Te lanzas cargado de electricidad y arrollas todo lo que hay en medio.',
+      cd: 0.75, dmg: 30, radius: 140, width: 40, knock: 60, look: { proj: 'bolt', trail: 'spark' } },
+    // ice
+    { id: 'blizzard', name: 'Ventisca', type: 'ice', kind: 'cone', evo: 'cd',
+      desc: 'Un abanico ancho de nieve que deja a los enemigos casi congelados.',
+      cd: 0.8, dmg: 8, count: 9, arc: 1.3, speed: 340, life: 0.5, size: 7, pierce: 1, slow: 0.7, look: { proj: 'star', trail: 'spark' } },
+    { id: 'glacial-lance', name: 'Lanza Glacial', type: 'ice', kind: 'meteor', phys: 1, evo: 'atk', sig: [896, 898],
+      desc: 'Lanzas de hielo caen del cielo sobre los enemigos cercanos y los frenan.',
+      cd: 1.35, dmg: 26, count: 3, radius: 46, slow: 0.5, look: { proj: 'spear' } },
+    // fighting
+    { id: 'secret-sword', name: 'Sable Místico', type: 'fighting', kind: 'boomerang', evo: 'atk', sig: [647],
+      desc: 'Dos cortes de energía van hacia el enemigo y regresan a ti.',
+      cd: 0.85, dmg: 14, speed: 360, count: 2, spread: 0.5, radius: 220, size: 8, look: { proj: 'sword', pal: 'aura' } },
+    { id: 'meteor-assault', name: 'Asalto Estelar', type: 'fighting', kind: 'dash', phys: 1, sig: [1083],
+      desc: 'Cargas puerro en ristre y arrasas con todo lo que te encuentras.',
+      cd: 0.85, dmg: 34, radius: 130, width: 46, knock: 80, look: { proj: 'sword', pal: 'grass' } },
+    // poison
+    { id: 'sludge-bomb', name: 'Bomba Lodo', type: 'poison', kind: 'projectile', evo: 'rgn',
+      desc: 'Una bomba de lodo que envenena y, al reventar, deja un charco tóxico.',
+      cd: 0.62, dmg: 19, speed: 280, count: 1, spread: 0.12, pierce: 0, life: 1.5, size: 9, poison: 1, puddle: 1, look: { proj: 'bubble', trail: 'bubbles' } },
+    { id: 'mortal-spin', name: 'Giro Mortífero', type: 'poison', kind: 'spin', phys: 1, sig: [969, 970],
+      desc: 'Giras golpeando todo lo que te rodea y lo dejas envenenado.',
+      cd: 1.0, dmg: 13, count: 3, radius: 66, poison: 1, look: { melee: 'impact', proj: 'gem', pal: 'chain' } },
+    { id: 'malignant-chain', name: 'Cadena Virulenta', type: 'poison', kind: 'chain', evo: 'rgn',
+      desc: 'Una cadena venenosa que salta de enemigo en enemigo y los intoxica.',
+      cd: 1.0, dmg: 20, count: 4, radius: 150, poison: 2, look: { beam: 'shadow', proj: 'blob', pal: 'chain' } },
+    // ground
+    { id: 'precipice-blades', name: 'Filo del Abismo', type: 'ground', kind: 'quake', phys: 1, evo: 'atk', sig: [383, 1383],
+      desc: 'Del suelo brotan filos de piedra en línea, uno tras otro.',
+      cd: 1.2, dmg: 24, count: 7, radius: 36, look: { proj: 'shard', pal: 'abyss', trail: 'dirt' } },
+    { id: 'thousand-arrows', name: 'Mil Flechas', type: 'ground', kind: 'meteor', phys: 1, evo: 'def', sig: [718, 1718, 2718, 3718],
+      desc: 'Llueven flechas de tierra sobre un montón de enemigos.',
+      cd: 1.2, dmg: 16, count: 6, radius: 38, look: { proj: 'arrowhead', pal: 'jade', trail: 'dirt' } },
+    // flying
+    { id: 'hurricane', name: 'Vendaval', type: 'flying', kind: 'projectile', evo: 'spd',
+      desc: 'Un torbellino de viento que atraviesa a varios y los echa a volar.',
+      cd: 0.7, dmg: 20, speed: 300, count: 1, spread: 0.12, pierce: 3, life: 1.5, size: 9, knock: 160, look: { proj: 'wind', trail: 'wisp' } },
+    { id: 'dragon-ascent', name: 'Ascenso Draco', type: 'flying', kind: 'dash', phys: 1, evo: 'spd', sig: [384, 1384],
+      desc: 'Bajas en picado desde el cielo y arrasas todo lo que hay en tu camino.',
+      cd: 0.8, dmg: 26, radius: 150, width: 44, knock: 70, look: { proj: 'streak', pal: 'jade', trail: 'spark' } },
+    { id: 'aeroblast', name: 'Aerochorro', type: 'flying', kind: 'beam', evo: 'spd', sig: [249],
+      desc: 'Un chorro de aire afiladísimo en línea recta que corta todo lo que pilla.',
+      cd: 1.1, dmg: 25, radius: 280, width: 28, look: { beam: 'wind', proj: 'wind', pal: 'aura' } },
+    // psychic
+    { id: 'psyshock', name: 'Psicocarga', type: 'psychic', kind: 'bounce', evo: 'atk',
+      desc: 'Cristales psíquicos que van rebotando de enemigo en enemigo (4 veces).',
+      cd: 0.64, dmg: 12, speed: 330, life: 1.6, size: 8, bounce: 4, look: { proj: 'shard', trail: 'wisp' } },
+    { id: 'psystrike', name: 'Onda Mental', type: 'psychic', kind: 'nova', evo: 'cd', sig: [150, 1150],
+      desc: 'Una ola de fuerza mental sale en todas direcciones y atraviesa a varios.',
+      cd: 1.2, dmg: 15, speed: 250, count: 12, pierce: 2, life: 1.5, size: 8, homing: 1.0, look: { proj: 'ring', pal: 'mewtwo', trail: 'wisp' } },
+    { id: 'photon-geyser', name: 'Géiser Fotónico', type: 'psychic', kind: 'charge', evo: 'cd', sig: [800, 1800],
+      desc: 'Concentras luz un momento y sale un géiser de fotones gigante hacia delante.',
+      cd: 2.2, charge: 0.7, dmg: 60, radius: 290, width: 50, look: { beam: 'star', proj: 'star', pal: 'photon' } },
+    // bug
+    { id: 'megahorn', name: 'Megacuerno', type: 'bug', kind: 'dash', phys: 1, evo: 'atk',
+      desc: 'Embistes cuerno por delante y muy lejos, atravesándolo todo.',
+      cd: 0.85, dmg: 25, radius: 160, width: 30, look: { proj: 'needle', trail: 'spark' } },
+    { id: 'silver-wind', name: 'Viento Plata', type: 'bug', kind: 'cone', evo: 'def',
+      desc: 'Un abanico de escamas plateadas; de vez en cuando te sube el Ataque y la Velocidad.',
+      cd: 0.7, dmg: 7, count: 8, arc: 1.1, speed: 360, life: 0.45, size: 6, pierce: 1, boost: 0.12, look: { proj: 'leaf', pal: 'steel' } },
+    { id: 'attack-order', name: 'Al Ataque', type: 'bug', kind: 'homing', phys: 1, sig: [416],
+      desc: 'Mandas un enjambre que persigue a los enemigos.',
+      cd: 0.7, dmg: 11, count: 3, spread: 0.4, speed: 320, life: 1.8, size: 6, homing: 5, look: { proj: 'needle', pal: 'sacred' } },
+    // rock
+    { id: 'stone-edge', name: 'Roca Afilada', type: 'rock', kind: 'projectile', phys: 1, evo: 'spd',
+      desc: 'Una piedra cortante que atraviesa a uno y es crítico muy a menudo.',
+      cd: 0.62, dmg: 22, speed: 330, count: 1, spread: 0.12, pierce: 1, life: 1.4, size: 8, critUp: 0.25, look: { proj: 'shard', trail: 'dirt' } },
+    { id: 'diamond-storm', name: 'Tormenta de Diamantes', type: 'rock', kind: 'meteor', phys: 1, evo: 'def', sig: [719, 1719],
+      desc: 'Caen diamantes del cielo sobre los enemigos cercanos.',
+      cd: 1.3, dmg: 22, count: 4, radius: 44, knock: 50, look: { proj: 'gem', pal: 'diamond', trail: 'spark' } },
+    // ghost
+    { id: 'moongeist-beam', name: 'Rayo Umbrío', type: 'ghost', kind: 'beam', evo: 'cd', sig: [792],
+      desc: 'Un haz de luz lunar en línea recta que atraviesa todo lo que alcanza.',
+      cd: 1.15, dmg: 26, radius: 250, width: 34, look: { beam: 'moon', proj: 'moon', pal: 'moon' } },
+    { id: 'spirit-shackle', name: 'Puntada Sombría', type: 'ghost', kind: 'projectile', phys: 1, sig: [722, 723, 724, 1724],
+      desc: 'Una flecha de sombra que atraviesa a varios y los deja frenados.',
+      cd: 0.5, dmg: 22, speed: 420, count: 1, spread: 0.1, pierce: 3, life: 1.3, size: 7, slow: 0.45, look: { proj: 'arrowhead', trail: 'wisp' } },
+    // dragon
+    { id: 'dragon-pulse', name: 'Pulso Dragón', type: 'dragon', kind: 'projectile', evo: 'atk',
+      desc: 'Una onda de dragón grande y lenta que pasa a través de todos.',
+      cd: 0.9, dmg: 26, speed: 190, count: 1, spread: 0.12, pierce: 99, life: 2.4, size: 13, look: { proj: 'ball', trail: 'spark' } },
+    { id: 'roar-of-time', name: 'Distorsión', type: 'dragon', kind: 'charge', evo: 'cd', sig: [483, 1483, 2483],
+      desc: 'Cargas un instante y sale un rayo enorme que frena el tiempo de lo que toca.',
+      cd: 2.5, charge: 0.9, dmg: 72, radius: 320, width: 48, slow: 0.5, look: { beam: 'ring', proj: 'ring', pal: 'time' } },
+    { id: 'dynamax-cannon', name: 'Cañón Dinamax', type: 'dragon', kind: 'charge', evo: 'hp', sig: [890, 1890],
+      desc: 'Juntas energía un momento y disparas un cañonazo rojo gigante.',
+      cd: 2.3, charge: 0.8, dmg: 64, radius: 320, width: 56, look: { beam: 'star', proj: 'star', pal: 'dyna' } },
+    { id: 'clanging-scales', name: 'Fragor Escamas', type: 'dragon', kind: 'shove', sig: [782, 783, 784],
+      desc: 'Haces sonar tus escamas: el estruendo daña y aparta a los que te rodean.',
+      cd: 1.1, dmg: 24, radius: 104, knock: 360, look: { proj: 'shard', pal: 'sacred' } },
+    // dark
+    { id: 'crunch', name: 'Triturar', type: 'dark', kind: 'melee', phys: 1, evo: 'atk',
+      desc: 'Un mordisco brutal: el enemigo recibe un 25 % más de tus golpes durante 4 s.',
+      cd: 0.55, dmg: 18, radius: 48, arc: 1.6, knock: 60, weakT: 4, look: { melee: 'jaws', pal: 'void' } },
+    { id: 'dark-void', name: 'Brecha Negra', type: 'dark', kind: 'stun', evo: 'def', sig: [491, 1491],
+      desc: 'Una grieta de oscuridad deja aturdidos mucho rato a los que pilla.',
+      cd: 1.8, dmg: 22, radius: 78, stun: 1.8, look: { proj: 'shadow', pal: 'void', trail: 'wisp' } },
+    { id: 'darkest-lariat', name: 'Lariat Oscuro', type: 'dark', kind: 'spin', phys: 1, sig: [725, 726, 727],
+      desc: 'Giras con los brazos abiertos golpeando todo lo que te rodea.',
+      cd: 1.0, dmg: 15, count: 4, radius: 66, look: { melee: 'impact', proj: 'fire', pal: 'lava' } },
+    // steel
+    { id: 'doom-desire', name: 'Deseo Oculto', type: 'steel', kind: 'meteor', evo: 'mag', sig: [385],
+      desc: 'Un rayo de luz cae al cabo de un rato sobre un enemigo y estalla con muchísima fuerza.',
+      cd: 2.0, dmg: 60, count: 1, radius: 70, fall: 1.4, look: { proj: 'star', pal: 'sacred', trail: 'spark' } },
+    { id: 'sunsteel-strike', name: 'Meteoimpacto', type: 'steel', kind: 'dash', phys: 1, evo: 'atk', sig: [791],
+      desc: 'Te lanzas envuelto en luz de sol y arrollas todo lo que hay en medio.',
+      cd: 0.8, dmg: 26, radius: 130, width: 44, knock: 60, look: { proj: 'streak', pal: 'sacred', trail: 'spark' } },
+    { id: 'behemoth-blade', name: 'Tajo Supremo', type: 'steel', kind: 'melee', phys: 1, evo: 'atk', sig: [888, 1888],
+      desc: 'Un espadazo enorme que corta en un arco muy amplio.',
+      cd: 0.6, dmg: 22, radius: 60, arc: 2.4, knock: 80, look: { melee: 'claw', proj: 'sword', pal: 'diamond' } },
+    // fairy
+    { id: 'moonblast', name: 'Fuerza Lunar', type: 'fairy', kind: 'homing', evo: 'cd',
+      desc: 'Una bola de luz de luna que persigue al enemigo y estalla a su alrededor.',
+      cd: 0.7, dmg: 22, speed: 260, life: 2.0, size: 9, homing: 4, splash: 42, look: { proj: 'moon', trail: 'spark' } },
+    { id: 'geomancy', name: 'Geocontrol', type: 'fairy', kind: 'buff', sig: [716],
+      desc: 'No hace daño: acumula muchísimo ATAQUE ESPECIAL mientras esté activo.',
+      cd: 0.85, stat: 'satk', amount: 0.2, dur: 7, stacks: 5, look: { buff: 'star', pal: 'fairy' } }
   ];
 
   // Cuerpo a cuerpo (12-10-2026): +20 % de daño y +25 % de alcance y de arco
@@ -609,7 +776,9 @@
 
   // Pool de movimientos por tipo. El pool `normal` lo tienen todos.
   const POOL = {};
-  for (const m of RAW) (POOL[m.type] = POOL[m.type] || []).push(m.id);
+  for (const m of RAW) if (!m.sig) (POOL[m.type] = POOL[m.type] || []).push(m.id);
+  // Exclusivos (24-11-2026): los de cada Pokémon, por su número (las formas, por el suyo o el de su especie).
+  const SIG = RAW.filter(m => m.sig);
 
   /*
    * Físico o especial (G.Stats), como en los juegos. Los de estado que aquí sí
@@ -636,7 +805,7 @@
 
   const BY_ID = {};
   for (const m of RAW) {
-    m.cat = m.kind === 'buff' ? null : PHYSICAL.has(m.id) ? 'physical' : 'special';
+    m.cat = m.kind === 'buff' ? null : PHYSICAL.has(m.id) || m.phys ? 'physical' : 'special';
     m.ups = LADDERS[m.kind];
     m.maxLvl = m.ups.length + 1;
     BY_ID[m.id] = m;
@@ -652,6 +821,20 @@
     if (!natural && G.Mons && mon.dex) for (const id of G.Mons.taught(mon.dex)) ids.add(id);
     return [...ids];
   }
+
+  /**
+   * Ataques exclusivos de un Pokémon (los que llevan `sig` con su número; una forma sin ninguno
+   * propio coge los de su especie: 1083 → 83). Salen en su carta especial (levelup.js), no en las normales.
+   */
+  function sigFor(mon) {
+    const dex = mon && mon.dex;
+    if (!dex) return [];
+    let l = SIG.filter(m => m.sig.includes(dex));
+    if (!l.length && dex > 1025) { let b = dex; while (b > 1025) b -= 1000; l = SIG.filter(m => m.sig.includes(b)); }
+    return l.map(m => m.id);
+  }
+  /** ¿Es exclusivo de algún Pokémon? */
+  const isSig = id => !!(BY_ID[id] && BY_ID[id].sig);
 
   /**
    * Instancia de movimiento en una run: los números base de `def` con todas
@@ -792,6 +975,10 @@
     stun:       { t: '×1,8 daño, más radio y aturde más rato', m: { dmg: 1.8, radius: 1.3, stun: 1.4 } }
   };
 
+  // (24-11-2026: los nuevos llevan su condición en la definición, `evo`; los exclusivos de legendarios y
+  //  singulares también evolucionan, como en el oficial desde el 19-11-2026.)
+  for (const m of RAW) if (m.evo && !EVO[m.id]) EVO[m.id] = m.evo;
+
   const evoName = name => name + ' +';
 
   /** ¿Puede evolucionar ya? → { name, needs, needName, text, ready } o null */
@@ -813,5 +1000,5 @@
   }
 
   G.Moves = { ALL: RAW, BY_ID, POOL, poolFor, instance, levelUp, nextUpText, startFor,
-              EVO, NEED_NAME, evoInfo, evolve };
+              EVO, NEED_NAME, evoInfo, evolve, sigFor, isSig };
 })();

@@ -31,7 +31,22 @@ G.VFX = (() => {
     steel:    ['#232d38', '#56667a', '#8c9caf', '#cad6e2', '#ffffff'],
     fairy:    ['#6a2050', '#b04a8a', '#ff8acb', '#ffc4e6', '#ffffff'],
     normal:   ['#3e3834', '#7a7068', '#c4bcb0', '#ece6dc', '#ffffff'],
-    aura:     ['#0c2460', '#1c4cb0', '#3a7cff', '#90d2ff', '#ffffff']
+    aura:     ['#0c2460', '#1c4cb0', '#3a7cff', '#90d2ff', '#ffffff'],
+    // 24-11-2026 (copia local): colores propios de los movimientos nuevos (llama azul, fuego sagrado, lava...)
+    jade:     ['#06301e', '#0e6a3a', '#1ab060', '#7ae8a8', '#e0fff0'],
+    lava:     ['#3a0800', '#8a1a00', '#e2400a', '#ff8a1a', '#ffd27a'],
+    sacred:   ['#5a2a00', '#b86a00', '#ffb21a', '#ffe56a', '#fffbe0'],
+    blueflame: ['#0a1a5e', '#1846c8', '#3a8cff', '#9fd8ff', '#ffffff'],
+    deepsea:  ['#041a3a', '#0a3a8a', '#1a7ae0', '#6ad0ff', '#e0f8ff'],
+    chain:    ['#1e0630', '#4a0a6a', '#a01aa0', '#ff4ae0', '#ffd0f8'],
+    abyss:    ['#2a0a00', '#6a1a08', '#c23a10', '#ff7a3a', '#ffd0a0'],
+    mewtwo:   ['#2a0a4a', '#5a1a9a', '#a24ae8', '#dca8ff', '#ffffff'],
+    photon:   ['#4a3a00', '#a08a10', '#ffe23a', '#fff8b0', '#ffffff'],
+    diamond:  ['#1e3a4a', '#4a90a8', '#9ee6f0', '#e6fbff', '#ffffff'],
+    moon:     ['#1a0c3a', '#3e2a8a', '#8a6ae0', '#d8c8ff', '#ffffff'],
+    time:     ['#0c2a3a', '#1d5a7a', '#3aa8c8', '#9ef0ff', '#eaffff'],
+    dyna:     ['#3a0010', '#8a0024', '#e0103c', '#ff6a86', '#ffd8e0'],
+    void:     ['#000000', '#1a0a1e', '#3a1a46', '#7a3a8a', '#e0b0ff']
   };
   const IDX = { o: 0, d: 1, m: 2, l: 3, w: 4 };
   const H = (a, b, c) => G.U.hash(a, b, c);
@@ -252,6 +267,50 @@ G.VFX = (() => {
       ['.ll...ll.', 'lwll.llll', 'lllllllll', 'lllllllll', '.lllllll.', '..lllll..', '...lll...', '....l....']
         .forEach((row, y) => [...row].forEach((c, x) => { if (c !== '.') P.set(x, y, c === 'w' ? 'w' : 'l'); }));
       P.outline();
+    } },
+    // ---- 24-11-2026 (copia local): formas de los movimientos nuevos ----
+    spear: { w: 16, h: 7, dir: true, gen(P) {                         // lanza (Lanza Glacial)
+      for (let x = 0; x <= 10; x++) P.set(x, 3, x < 3 ? 'd' : 'm');
+      for (let x = 10; x <= 15; x++) { const h = (15 - x) * 0.55; for (let y = 3 - h; y <= 3 + h; y++) P.set(x, y, y < 3 ? 'l' : 'm'); }
+      P.set(13, 3, 'w'); P.set(14, 3, 'w'); P.set(0, 2, 'l'); P.set(0, 4, 'l');
+      P.outline();
+    } },
+    arrowhead: { w: 14, h: 7, dir: true, gen(P) {                     // flecha (Mil Flechas, Puntada Sombría)
+      for (let x = 2; x <= 10; x++) P.set(x, 3, 'm');
+      for (let x = 10; x <= 13; x++) { const h = 13 - x; for (let y = 3 - h; y <= 3 + h; y++) P.set(x, y, x === 13 ? 'w' : 'l'); }
+      for (let k = 0; k < 3; k++) { P.set(k, 3 - (2 - k), 'd'); P.set(k, 3 + (2 - k), 'd'); }
+      P.outline();
+    } },
+    sword: { w: 16, h: 9, dir: true, gen(P) {                         // hoja de espada (Sable Místico, Tajo Supremo)
+      for (let x = 5; x <= 14; x++) { P.set(x, 3, 'l'); P.set(x, 4, x > 12 ? 'w' : 'w'); P.set(x, 5, 'm'); }
+      P.set(15, 4, 'w');
+      for (let y = 1; y <= 7; y++) P.set(4, y, 'd');
+      for (let x = 0; x <= 3; x++) P.set(x, 4, 'm');
+      P.outline();
+    } },
+    gem: { w: 11, h: 11, frames: 2, spin: true, gen(P, f) {          // diamante tallado (Tormenta de Diamantes)
+      P.fill((x, y) => {
+        const dx = Math.abs(x - 5), dy = y - (f ? 4 : 5);
+        if (dy < -2 || dx > 4.6 - Math.max(0, dy) * 0.9 || dy > 4) return null;
+        return dy <= -1 ? 'w' : dx < 1.5 ? 'l' : 'm';
+      });
+      P.outline();
+    } },
+    moon: { w: 11, h: 11, frames: 2, gen(P, f) {                     // luna llena con su sombra (Fuerza Lunar, Rayo Umbrío)
+      P.fill((x, y) => {
+        const d = Math.hypot(x - 5, y - 5), s = Math.hypot(x - 6.6 - f * 0.4, y - 4.2);
+        if (d > 4.3) return null;
+        return s < 3.2 ? 'm' : d < 2.5 ? 'w' : 'l';
+      });
+      P.outline();
+    } },
+    flower: { w: 11, h: 11, spin: true, gen(P) {                      // flor de cinco pétalos (Truco Floral)
+      for (let k = 0; k < 5; k++) {
+        const a = k * 1.2566 - 1.57, cx = 5 + Math.cos(a) * 2.8, cy = 5 + Math.sin(a) * 2.8;
+        P.fill((x, y) => Math.hypot(x - cx, y - cy) < 1.9 ? 'l' : null);
+      }
+      P.fill((x, y) => { const d = Math.hypot(x - 5, y - 5); return d < 1.1 ? 'w' : d < 1.9 ? 'm' : null; });
+      P.outline();
     } }
   };
 
@@ -428,7 +487,8 @@ G.VFX = (() => {
   };
 
   function forMove(m) {
-    const v = MOVE[m.id] || {};
+    // (Los nuevos del 24-11-2026 llevan su aspecto en la definición: `look`, en data/moves.js.)
+    const v = MOVE[m.id] || m.look || {};
     return Object.assign({ pal: m.type, proj: TYPE_SHAPE[m.type] || 'ball' }, v, { pal: v.pal || m.type });
   }
   function forType(type) { return { proj: TYPE_SHAPE[type] || 'ball', pal: PAL[type] ? type : 'normal' }; }

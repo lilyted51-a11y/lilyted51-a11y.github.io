@@ -5,6 +5,21 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-11-24', title: ["Lo que faltaba de la Gran Actualización", "The rest of the Great Update"],
+    new: [
+    ["47 ataques nuevos con formas de atacar que ya existían, cada uno con su aspecto, físico o especial y, casi todos, con su evolución «+». Trece llegan como MT a la Tienda Kecleon (Escaldar, Cascada, Hidropulso, Ventisca, Bomba Lodo, Vendaval, Psicocarga, Megacuerno, Viento Plata, Roca Afilada, Pulso Dragón, Triturar y Fuerza Lunar) y Cadena Virulenta se suma a los de tipo Veneno.",
+     "47 new moves using attack styles that already existed, each with its own look, physical or special and, almost all of them, with their «+» evolution. Thirteen arrive as TMs in the Kecleon Shop (Scald, Waterfall, Water Pulse, Blizzard, Sludge Bomb, Hurricane, Psyshock, Megahorn, Silver Wind, Stone Edge, Dragon Pulse, Crunch and Moonblast) and Malignant Chain joins the Poison-type moves."],
+    ["Ataques exclusivos: 33 ataques que sólo puede aprender su Pokémon (con sus formas y evoluciones), como Aerochorro de Lugia, Fuego Sagrado de Ho-Oh, Ascenso Draco de Rayquaza, Onda Mental de Mewtwo, Distorsión de Dialga o Placaje Eléctrico de la familia de Pikachu. No salen en las cartas de siempre: desde el nivel 10 aparecen en una carta especial, morada y dorada; con los cuatro huecos llenos, eliges cuál cambias por él.",
+     "Signature moves: 33 moves only their Pokémon can learn (with its forms and evolutions), like Lugia's Aeroblast, Ho-Oh's Sacred Fire, Rayquaza's Dragon Ascent, Mewtwo's Psystrike, Dialga's Roar of Time or the Pikachu family's Volt Tackle. They don't show up on the usual cards: from level 10 they appear on a special purple-and-gold card; with all four slots full, you choose which move to swap for it."],
+    ["La ficha de cada Pokémon en la Colección enseña su ataque exclusivo; el Veto y el Quitamovimientos también los tienen en cuenta.",
+     "Each Pokémon's sheet in the Collection shows its signature move; Veto and the Move Remover take them into account too."]
+    ],
+    chg: [
+    ["Los ataques exclusivos de los legendarios y singulares evolucionan con su «+» como los demás y, evolucionados, pegan como cualquier ataque evolucionado. Los de Pokémon que no son legendarios (Balón Ígneo, Truco Floral, Placaje Eléctrico…) no evolucionan, pero pegan más de base.",
+     "Legendary and Mythical signature moves evolve with their «+» like the rest and, once evolved, hit like any evolved move. Those of non-legendary Pokémon (Pyro Ball, Flower Trick, Volt Tackle…) don't evolve, but hit harder from the start."],
+    ["Los ataques que persiguen giran con la mitad de fuerza, empiezan a buscar más cerca y sólo van a por lo que tienen delante (ya no dan la vuelta). Los psíquicos (Confusión, Psíquico, Bola Neblina y Onda Mental) persiguen algo menos todavía.",
+     "Homing moves turn with half the strength, start seeking from closer and only go after what is in front of them (no more U-turns). The psychic ones (Confusion, Psychic, Mist Ball and Psystrike) chase a little less still."]
+    ] },
   { d: '2026-11-23', title: ["La Gran Actualización: Eternatus y sus poderes, dificultades, Vestidor y estelas, huevos, Maestría, desafío semanal, Casino Rocket, grietas y Sentencia nuevas", "The Great Update: Eternatus and its powers, difficulties, Dressing Room and trails, eggs, Mastery, weekly challenge, Rocket Casino, new rifts and Judgment"], new: [
     ["Vestidor, en el menú (y con un botón en la ficha de cada Pokémon): para cada Pokémon eliges su versión normal o shiny, su aspecto (las formas que sólo cambian el dibujo), su skin, un efecto (brillos, aura de su tipo, halo de luz o aura oscura) y su estela, y lo ves dando vueltas antes de jugar.",
      "Dressing Room, in the menu (and with a button on each Pokémon's page): for each Pokémon you choose its normal or shiny version, its look (forms that only change the sprite), its skin, an effect (sparkles, type aura, halo of light or dark aura) and its trail, and you can watch it walk around before playing."],

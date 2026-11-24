@@ -97,11 +97,15 @@ G.RunUI = (() => {
       el.className = 'card';
       const tag = c.type === 'new'
         ? `<span class="tag-chip" style="background:${c.color}">Nuevo · ${c.tag}</span>${c.cat ? `<span class="tag-chip cat">${c.cat}</span>` : ''}`
+        // (24-11-2026: carta de los ataques exclusivos: su etiqueta, la del tipo y la de físico o especial.)
+        : c.type === 'sig'
+        ? `<span class="tag-chip sig">${G.T('Exclusivo')}</span><span class="tag-chip" style="background:${c.color}">${c.tag}</span>${c.cat ? `<span class="tag-chip cat">${c.cat}</span>` : ''}`
         : c.rm ? `${c.tag ? `<span class="tag-chip" style="background:${c.color}">${c.tag}</span>` : ''}${c.cat ? `<span class="tag-chip cat">${c.cat}</span>` : ''}`
         : c.type === 'up' || c.type === 'evo'
           ? `<span class="tag-chip" style="background:${c.color}">${c.tag}</span>`
           : `<span class="tag-chip" style="background:${c.color === '#ffd23f' ? '#ffd23f' : '#9fb1c9'}">${c.tag}</span>`;
       if (c.type === 'evo' || (c.type === 'evolve' && c.color === '#ffd23f')) el.classList.add('evo');
+      if (c.type === 'sig') el.classList.add('sig');
       el.innerHTML =
         `<div class="ico" style="background:${c.color}33">${G.Icons.html(c.icon, 32)}</div>
          <div class="txt"><div class="nm">${c.title} ${tag}</div><div class="ds">${c.desc}</div></div>
@@ -126,7 +130,7 @@ G.RunUI = (() => {
 
   function pick(i) {
     if (!offers || !offers[i] || guarded()) return;
-    if ((offers[i].type === 'remove' && !offers[i].done) || offers[i].rm) { removeStep(offers[i]); return; }
+    if (((offers[i].type === 'remove' || (offers[i].type === 'sig' && offers[i].swap)) && !offers[i].done) || offers[i].rm) { removeStep(offers[i]); return; }
     const c = offers[i], cb = offerCb;
     offers = null; offerCb = null;
     $('lvl-reroll').classList.add('hidden');
@@ -144,19 +148,23 @@ G.RunUI = (() => {
    * Pokémon: LevelUp.swapPool) o dejarlo libre. «Volver» deshace el paso. En grupo la partida
    * sigue parada como con cualquier carta: hasta que eliges, los demás te esperan.
    */
-  let rm = null;            // { card, base: cartas de nivel, from: movimiento que quitas }
+  /*
+   * La carta de un ataque exclusivo con los cuatro huecos llenos (24-11-2026) usa el primer paso:
+   * eliges qué movimiento cambias por él y ya está (rm.to es el exclusivo).
+   */
+  let rm = null;            // { card, base: cartas de nivel, from: movimiento que quitas, to: exclusivo }
   function removeStep(c) {
     const p = G.Game.player;
     if (!p) return;
     G.Audio.sfx('select');
-    if (c.type === 'remove') rm = { card: c, base: offers, from: null };
+    if (c.type === 'remove' || c.type === 'sig') rm = { card: c, base: offers, from: null, to: c.type === 'sig' ? c.id : null };
     else if (c.rm === 'back') {
       if (rm.from) rm.from = null;
       else { const base = rm.base; rm = null; renderCards(base); return; }
     } else if (c.rm === 'from') rm.from = c.move;
-    else {
+    if (c.rm === 'to' || c.rm === 'empty' || (c.rm === 'from' && rm.to)) {
       // Hecho: la carta Quitamovimientos con lo elegido (apply la lleva a Player.swapMove).
-      const from = rm.from, id = c.rm === 'to' ? c.id : null, card = rm.card;
+      const from = rm.from, id = c.rm === 'to' ? c.id : rm.to, card = rm.card;
       card.apply = pl => {
         if (!pl.swapMove(from, id)) return;
         G.FX.ring(pl.x, pl.y, 8, 110, '#ff9f6b', 0.7, 5);
@@ -173,9 +181,10 @@ G.RunUI = (() => {
     }
     const back = { rm: 'back', key: 'rm:back', icon: 'cursor', color: '#8fa3c4', tag: '', title: 'Volver', desc: rm.from ? 'Elegir otro movimiento para quitar.' : 'Volver a las cartas.' };
     let list;
+    const toName = rm.to ? G.T(G.Moves.BY_ID[rm.to].name, 'move') : '';
     if (!rm.from) {
       list = p.moves.map(m => ({ rm: 'from', key: 'rm:from:' + m.id, move: m, icon: 'move:' + m.id, color: G.U.TYPE_COLOR[m.type],
-        tag: 'Nv.' + m.lvl, title: G.T(m.name, 'move'), desc: 'Quitar este movimiento.' }));
+        tag: 'Nv.' + m.lvl, title: G.T(m.name, 'move'), desc: rm.to ? G.I18n.f('Cambiarlo por {x}.', toName) : 'Quitar este movimiento.' }));
     } else {
       list = G.LevelUp.swapPool(p, rm.from).map(id => {
         const d = G.Moves.BY_ID[id];
@@ -185,13 +194,14 @@ G.RunUI = (() => {
       if (p.moves.length >= 2) list.unshift({ rm: 'empty', key: 'rm:empty', icon: 'ban', color: '#8fa3c4', tag: 'Hueco libre', title: 'Dejar el hueco libre', desc: 'Podrás aprender otro movimiento en las cartas.' });
     }
     list.push(back);
-    renderCards(list, rm.from ? G.I18n.f('¿Qué pones en el hueco de {x}?', G.T(rm.from.name, 'move')) : G.T('¿Qué movimiento quitas?'));
+    renderCards(list, rm.from ? G.I18n.f('¿Qué pones en el hueco de {x}?', G.T(rm.from.name, 'move'))
+      : rm.to ? G.I18n.f('¿Qué movimiento cambias por {x}?', toName) : G.T('¿Qué movimiento quitas?'));
   }
 
   /** Grupo (#45): se acabó el tiempo: la primera carta (si estabas en el Quitamovimientos, la primera de las otras). */
   function pickFirst() {
     if (rm) { const base = rm.base; rm = null; renderCards(base); }
-    const i = offers ? offers.findIndex(c => c.type !== 'remove') : -1;
+    const i = offers ? offers.findIndex(c => c.type !== 'remove' && !(c.type === 'sig' && c.swap)) : -1;
     pick(Math.max(0, i));
   }
 
