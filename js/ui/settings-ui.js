@@ -6,12 +6,15 @@
 G.SettingsUI = (() => {
   const $ = G.UI.$;
   const esc = G.U.esc;
-  const VERSION = '1.2 · 2026-10-09';
+  const VERSION_N = '1.2';     // (la compilación exacta, en buildInfo)
   const REPO = 'https://github.com/JPTER78/pokesurvivor';
   let tab = 'sound';
 
   function init() {
-    document.querySelectorAll('#set-tabs .gen-tab').forEach(b => { b.onclick = () => { tab = b.dataset.t; render(); }; });
+    G.Keys.init();                       // teclas cambiadas (core/keys.js)
+    G.GuideUI.init();                    // Guías (ui/guide-ui.js)
+    // (La pestaña Guías no es una pestaña: abre la pantalla de las Guías por encima.)
+    document.querySelectorAll('#set-tabs .gen-tab').forEach(b => { b.onclick = () => { if (b.dataset.t === 'guide') { G.GuideUI.open(); return; } tab = b.dataset.t; render(); }; });
     // Al conectar o quitar un mando con Controles abierto, se ve al momento.
     for (const ev of ['gamepadconnected', 'gamepaddisconnected']) addEventListener(ev, () => { if (isOpen() && tab === 'ctl') render(); });
     $('set-close').onclick = close;
@@ -28,11 +31,98 @@ G.SettingsUI = (() => {
 
   function open(t) {
     if (t) tab = t;
+    kbMsg = '';
     $('scr-settings').classList.remove('hidden');
     render();
   }
-  function close() { $('scr-settings').classList.add('hidden'); }
+  function close() { endCapture(); G.GuideUI.close(); $('scr-settings').classList.add('hidden'); }
   const isOpen = () => !$('scr-settings').classList.contains('hidden');
+  /**
+   * Esc, «atrás» del móvil o B del mando: cierra lo de más arriba. Con el editor de una tecla abierto,
+   * sólo el editor (no los Ajustes, como en el juego oficial); luego las Guías; luego los Ajustes.
+   */
+  function back() {
+    if (capturing) { endCapture(); return; }
+    if (G.GuideUI.isOpen) { G.GuideUI.back(); return; }
+    close();
+  }
+
+  // ---------------- teclas (Ajustes › Controles; las reglas, en core/keys.js) ----------------
+  let capturing = null, kbMsg = '';
+  /** Abre el aviso «pulsa una tecla» para el hueco slot (0 principal, 1 secundaria) de una acción. */
+  function capture(action, slot) {
+    endCapture();
+    capturing = { action, slot };
+    const el = document.createElement('section');
+    el.id = 'scr-keycap'; el.className = 'scr dim';
+    el.innerHTML = `<div class="box center keycap-box">
+        <h3>Pulsa una tecla</h3>
+        <p class="keycap-act">${esc(G.Keys.NAME[action])}</p>
+        <p class="sub">${slot ? 'Tecla secundaria' : 'Tecla principal'}</p>
+        <p class="note" id="keycap-msg">Esc para cancelar</p>
+        <div class="row" style="justify-content:center;gap:8px">
+          <button class="btn small" id="keycap-clear">Quitar esta tecla</button>
+          <button class="btn small ghost" id="keycap-close">Cancelar</button>
+        </div></div>`;
+    document.body.appendChild(el);
+    el.querySelector('#keycap-close').onclick = endCapture;
+    el.querySelector('#keycap-clear').onclick = () => { const a = capturing; endCapture(); if (a) { G.Keys.save(G.Keys.clear(G.Keys.map, a.action, a.slot)); kbMsg = ''; render(); } };
+    // Tocar fuera del recuadro también cancela.
+    el.addEventListener('pointerdown', e => { if (e.target === el) el.dataset.down = '1'; });
+    el.addEventListener('click', e => { if (e.target === el && el.dataset.down) endCapture(); });
+    addEventListener('keydown', onCapKey, true);
+  }
+  function endCapture() {
+    if (!capturing && !$('scr-keycap')) return;
+    capturing = null;
+    removeEventListener('keydown', onCapKey, true);
+    const el = $('scr-keycap'); if (el) el.remove();
+  }
+  // Por delante de todo (fase de captura): la tecla no llega al juego ni al navegador.
+  function onCapKey(e) {
+    if (!capturing) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (e.repeat) return;
+    const code = (e.code || e.key || '').toLowerCase();
+    if (code === 'escape') { endCapture(); return; }
+    if (!code || G.Keys.BLOCKED.has(code)) { const m = $('keycap-msg'); if (m) m.textContent = G.T('Esa tecla no se puede usar. Prueba otra (Esc para cancelar).'); return; }
+    const { action, slot } = capturing;
+    const r = G.Keys.assign(G.Keys.map, action, slot, code);
+    endCapture();
+    G.Keys.save(r.map);
+    const K = c => '«' + G.T(G.Keys.name(c)) + '»', A = a => '«' + G.T(G.Keys.NAME[a]) + '»';
+    kbMsg = !r.moved ? '' : r.moved.code
+      ? G.I18n.f('{x} ya era de {x}: ahora esa acción usa {x}.', K(code), A(r.moved.action), K(r.moved.code))
+      : G.I18n.f('{x} ya era de {x} y se ha quitado de allí.', K(code), A(r.moved.action));
+    G.Audio.sfx('click');
+    render();
+  }
+  function keysHtml() {
+    const m = G.Keys.map;
+    const row = a => `<div class="kb-row"><span class="kb-name">${esc(G.Keys.NAME[a])}</span>${[0, 1].map(s =>
+      `<button class="kb-key${m[a][s] ? '' : ' empty'}" data-kact="${a}" data-kslot="${s}">${m[a][s] ? G.Keys.kbdOf(G.Keys.name(m[a][s])) : '<kbd>—</kbd>'}</button>`).join('')}</div>`;
+    const grp = g => G.Keys.ORDER.filter(a => G.Keys.GROUP(a) === g).map(row).join('');
+    return section('Teclado', 'Pulsa una tecla de la lista y después la tecla nueva. Cada acción puede tener dos. Si la nueva ya la usaba otra acción, se cambian entre ellas.')
+      + (kbMsg ? `<p class="note kb-msg">${esc(kbMsg)}</p>` : '')
+      + `<div class="kb-list">
+           <div class="kb-row kb-head"><span></span><small>Principal</small><small>Secundaria</small></div>
+           <h4 class="kb-grp">En la partida</h4>${grp('play')}
+           <h4 class="kb-grp">Cartas (al subir de nivel, objetos, vínculos y poderes)</h4>${grp('cards')}
+         </div>
+         <p class="sub"><kbd>Esc</kbd> siempre pausa la partida y cierra las ventanas. En las cartas, del 5 al 9 se eligen con los números.</p>
+         <div class="row wrap" style="gap:8px;margin-top:8px"><button class="btn small" id="kb-reset">Restablecer las teclas</button></div>`;
+  }
+
+  // ---------------- versión (Acerca de) ----------------
+  // tools/build.js pone en index.html <meta name="ps-version" content="huella" data-at="fecha">: la misma
+  // huella que version.json y que mira el actualizador (core/updater.js). En dev.html no hay: «dev».
+  function buildInfo() {
+    const m = document.querySelector('meta[name="ps-version"]');
+    if (!m || !m.content) return null;
+    const d = new Date(m.dataset.at || '');
+    const p = n => String(n).padStart(2, '0');
+    return { v: m.content, at: isNaN(d) ? '' : `${p(d.getDate())}-${p(d.getMonth() + 1)}-${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}` };
+  }
 
   // ---------------- pantalla completa ----------------
   function canFull() { return !!(document.fullscreenEnabled || document.webkitFullscreenEnabled); }
@@ -86,6 +176,8 @@ G.SettingsUI = (() => {
         + toggle('minimap', 'Minimapa', 'Radar en la esquina: jefes, legendarios, grieta, cofres grandes, shinies y compañeros.')
         + toggle('calm', 'Menos sacudidas y destellos', 'La cámara tiembla menos y los fogonazos son suaves.')
         + toggle('fps', 'Mostrar FPS', 'Fotogramas por segundo, en la esquina de abajo.')
+        + `<div class="set-row"><div class="grow"><b>${esc(G.T('Límite de FPS'))}</b><small>${esc(G.T('Menos fotogramas por segundo gastan menos batería y calientan menos el aparato. La partida va igual de rápida.'))}</small></div></div>`
+        + choice('fpsCap', [[0, 'Sin límite'], [30, '30'], [60, '60'], [90, '90'], [120, '120'], [144, '144']])
         + section('Efectos y estelas', 'Lo que eliges para cada Pokémon en el Vestidor.')
         + `<div class="set-row"><div class="grow"><b>${esc(G.T('Estelas en la partida'))}</b><small>${esc(G.T('Lo que dejan los Pokémon al moverse: las de todos, sólo la tuya o ninguna.'))}</small></div></div>`
         + choice('trails', [['all', 'Todas'], ['mine', 'Sólo la mía'], ['off', 'Ninguna']])
@@ -117,13 +209,8 @@ G.SettingsUI = (() => {
         + `<div class="set-row"><div class="grow"><b>Colocar los botones</b><small>Pon los ataques, la pausa y el joystick (fijo, si quieres) donde quieras de la pantalla.</small></div>
              <button class="btn small" id="set-layout">Colocar</button></div>`
         + section('En PC')
-        + `<div class="keys">
-             <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o flechas</div><span>moverse</span>
-             <div><kbd>1</kbd>–<kbd>4</kbd> o clic en el icono</div><span>elegir ataque</span>
-             <div><kbd>Q</kbd> / <kbd>E</kbd></div><span>ataque anterior / siguiente</span>
-             <div><kbd>Esc</kbd> o <kbd>P</kbd></div><span>pausa</span>
-             <div><kbd>1</kbd>–<kbd>3</kbd></div><span>elegir carta al subir de nivel</span>
-           </div>`;
+        + `<p class="sub">También puedes hacer clic en el icono de un ataque para cambiarlo.</p>`
+        + keysHtml();
     } else if (tab === 'a11y') {
       box.innerHTML = section('Apuntado')
         + (G.Settings.touch
@@ -132,7 +219,11 @@ G.SettingsUI = (() => {
     } else if (tab === 'acc') {
       renderAccount(box);
     } else {
-      box.innerHTML = `<div class="about-logo">PokéSurvivor</div><p class="sub center">Versión ${esc(VERSION)}</p>`
+      const bi = buildInfo();
+      box.innerHTML = `<div class="about-logo">PokéSurvivor</div>`
+        // La versión exacta (24-11-2026): la huella de esta compilación y cuándo se hizo; en dev.html, «dev».
+        + (bi ? `<p class="sub center" id="set-ver">Versión ${esc(VERSION_N)} · <span class="mono" translate="no">${esc(bi.v)}</span>${bi.at ? ' · ' + esc(bi.at) : ''}</p>`
+              : `<p class="sub center" id="set-ver">Versión ${esc(VERSION_N)} · dev</p>`)
         + `<p class="sub">Juego de fans <b>gratuito y sin ánimo de lucro</b>: sin anuncios ni compras. Pokémon y sus personajes son propiedad de Nintendo, Creatures y GAME FREAK; este proyecto no está afiliado a ellos.</p>`
         + section('Créditos')
         + `<ul class="credits">
@@ -144,6 +235,7 @@ G.SettingsUI = (() => {
         + `<div class="row wrap" style="justify-content:center;gap:8px">
              ${window.PS_PAGES ? `<a class="btn small" href="${G.I18n.lang === 'en' ? 'en/guide/' : 'guia/'}" target="_blank">Guía y preguntas</a>
              <a class="btn small" href="${G.I18n.lang === 'en' ? 'en/pokedex/' : 'pokedex/'}" target="_blank">Pokédex</a>` : ''}
+             <button class="btn small" data-guide>Guías</button>
              <button class="btn small" data-legal>Aviso legal y privacidad</button>
              <a class="btn small" href="contacto/" target="_blank" rel="noopener">Contacto</a>
              <a class="btn small" href="${REPO}" target="_blank" rel="noopener">Código (GitHub)</a>
@@ -278,6 +370,11 @@ G.SettingsUI = (() => {
     });
     const full = $('set-full'); if (full) full.onclick = toggleFull;
     const lay = $('set-layout'); if (lay) lay.onclick = () => G.LayoutUI.open();
+    // Teclas: pulsar un hueco abre «pulsa una tecla»; Restablecer vuelve a las de serie.
+    box.querySelectorAll('[data-kact]').forEach(b => { b.onclick = () => capture(b.dataset.kact, +b.dataset.kslot); });
+    const kr = $('kb-reset');
+    if (kr) kr.onclick = () => { G.Keys.save({}); kbMsg = G.T('Teclas restablecidas: vuelven a ser las de serie.'); render(); };
+    box.querySelectorAll('[data-guide]').forEach(b => { b.onclick = () => G.GuideUI.open(); });
     box.querySelectorAll('[data-lang]').forEach(b => { b.onclick = () => { if (b.dataset.lang !== G.I18n.lang) G.I18n.set(b.dataset.lang); }; });
     const lo = $('set-login'); if (lo) lo.onclick = () => { close(); leave(); };
     const out = $('set-logout'); if (out) out.onclick = () => { close(); leave(); };
@@ -313,5 +410,5 @@ G.SettingsUI = (() => {
     G.DB.logout().then(() => G.Flow.toLogin());
   }
 
-  return { init, open, close, get isOpen() { return isOpen(); } };
+  return { init, open, close, back, get isOpen() { return isOpen(); }, get capturing() { return !!capturing; } };
 })();

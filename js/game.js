@@ -108,6 +108,9 @@ G.Game = (() => {
   }
   addEventListener('popstate', () => {
     trapped = false;                          // (en cuanto haga falta, el bucle vuelve a poner otra)
+    // Ajustes abiertos (también desde la pausa): «atrás» cierra lo de más arriba, como Esc y la B del
+    // mando: el editor de teclas, luego las Guías y luego los Ajustes (24-11-2026).
+    if (G.SettingsUI.isOpen) { G.SettingsUI.back(); return; }
     if (state !== 'ui') {
       // En partida: pausa (en grupo abre la pausa sin parar a los demás). Con las
       // cartas, la pausa o el resumen abiertos, no pasa nada: te quedas donde estás.
@@ -118,7 +121,6 @@ G.Game = (() => {
     if (shown('scr-rkb')) { G.RankingUI.closeBuild(); return; }      // la build de una marca del ranking (24-11-2026)
     if (shown('scr-profile')) { document.getElementById('scr-profile').classList.add('hidden'); return; }
     if (G.StartItem.open) { G.StartItem.close(); return; }       // la ventana del Objeto inicial (24-11-2026)
-    if (G.SettingsUI.isOpen) { G.SettingsUI.close(); return; }
     if (shown('scr-news')) { G.NewsUI.close(); return; }
     if (shown('scr-support')) { G.SupportUI.close(); return; }
     if (BACK_SCREENS.some(shown) && G.DB.save && G.DB.save.partner) G.MenuUI.open();
@@ -836,7 +838,8 @@ G.Game = (() => {
   // ---------------- teclado ----------------
 
   function handleKeys() {
-    if (G.SettingsUI.isOpen) { if (G.Input.tap('escape')) G.SettingsUI.close(); return; }
+    // (Esc cierra lo de más arriba: el editor de teclas, las Guías y, si no hay nada, los Ajustes.)
+    if (G.SettingsUI.isOpen) { if (G.Input.tap('escape')) G.SettingsUI.back(); return; }
     // La Sentencia de Arceus: Espacio, Intro o Esc saltan la animación (si se puede).
     if (G.Judgment.cinematic && state === 'playing') {
       if (['space', 'enter', 'escape'].some(k => G.Input.tap(k))) G.Judgment.skip();
@@ -846,21 +849,22 @@ G.Game = (() => {
     if (G.Casino.isOpen) { G.Casino.keys(); return; }
     if (state === 'levelup') {
       // (Hasta 9: las cartas de evolución de Eevee son más de cuatro.)
+      // (Las teclas de las cartas y de cambiarlas se pueden cambiar en Ajustes: core/keys.js.)
       for (let i = 0; i < 9; i++) {
-        if (G.Input.tap('digit' + (i + 1)) || G.Input.tap('numpad' + (i + 1))) G.RunUI.pick(i);
+        if (G.Keys.cardTap(i)) G.RunUI.pick(i);
       }
-      if (G.Input.tap('keyr')) G.RunUI.reroll();
+      if (G.Keys.tap('reroll')) G.RunUI.reroll();
       return;
     }
     if (G.UI.isOpen('scr-bond')) {
       for (let i = 0; i < 4; i++) {
-        if (G.Input.tap('digit' + (i + 1)) || G.Input.tap('numpad' + (i + 1))) G.RunUI.pickBond(i);
+        if (G.Keys.cardTap(i)) G.RunUI.pickBond(i);
       }
       return;
     }
     if (G.UI.isOpen('scr-power')) {
       for (let i = 0; i < 9; i++) {
-        if (G.Input.tap('digit' + (i + 1)) || G.Input.tap('numpad' + (i + 1))) G.RunUI.pickChoice(i);
+        if (G.Keys.cardTap(i)) G.RunUI.pickChoice(i);
       }
       return;
     }
@@ -868,7 +872,7 @@ G.Game = (() => {
       // (Hasta 5: quedarte con lo que llevas o cambiar uno de tus cuatro.)
       const cards = document.querySelectorAll('#item-cards .card');
       for (let i = 0; i < Math.min(5, cards.length); i++) {
-        if (G.Input.tap('digit' + (i + 1)) || G.Input.tap('numpad' + (i + 1))) cards[i].click();
+        if (G.Keys.cardTap(i)) cards[i].click();
       }
       return;
     }
@@ -881,20 +885,21 @@ G.Game = (() => {
           && document.getElementById('pull-fx').classList.contains('hidden') && document.getElementById('egg-fx').classList.contains('hidden')) G.MenuUI.open();
       return;
     }
-    if (G.Input.tap('escape') || G.Input.tap('keyp')) { togglePause(); return; }
+    // (Todas las teclas de la partida se pueden cambiar en Ajustes › Controles: core/keys.js. Esc siempre pausa.)
+    if (G.Keys.tap('pause')) { togglePause(); return; }
     if (state !== 'playing' || !pl) return;
     for (let i = 0; i < 4; i++) {
-      if (G.Input.tap('digit' + (i + 1)) || G.Input.tap('numpad' + (i + 1))) pl.setActive(i);
+      if (G.Keys.tap('move' + (i + 1))) pl.setActive(i);
     }
     // Caído en grupo: Q / E cambian a quién miras.
-    if (pl.dead) { if (G.Input.tap('keyq')) cycleWatch(-1); if (G.Input.tap('keye') || G.Input.tap('tab')) cycleWatch(1); return; }
-    if (G.Input.tap('keyq')) pl.cycle(-1);
-    if (G.Input.tap('keye') || G.Input.tap('tab')) pl.cycle(1);
+    if (pl.dead) { if (G.Keys.tap('prev')) cycleWatch(-1); if (G.Keys.tap('next')) cycleWatch(1); return; }
+    if (G.Keys.tap('prev')) pl.cycle(-1);
+    if (G.Keys.tap('next')) pl.cycle(1);
     // El poder (systems/powers.js): F, o B en el mando.
-    if (G.Input.tap('keyf') || G.Input.tap('padb')) G.Powers.use(pl);
+    if (G.Keys.tap('power')) G.Powers.use(pl);
     // Esferas: 5-8 (o el teclado numérico); en el mando, X la usa e Y cambia de esfera.
     for (let i = 0; i < 4; i++) {
-      if (G.Input.tap('digit' + (i + 5)) || G.Input.tap('numpad' + (i + 5))) G.Orbs.use(pl, i);
+      if (G.Keys.tap('orb' + (i + 1))) G.Orbs.use(pl, i);
     }
     if (G.Input.tap('padx')) G.Orbs.useSelected(pl);
     if (G.Input.tap('pady')) G.Orbs.next(pl);
@@ -923,9 +928,20 @@ G.Game = (() => {
   // partida se da por terminada a los ~3 s y se guarda: tiempo, derrotados,
   // récords y ranking. Mejor eso que una pantalla negra y perderlo todo.
   let loopErrs = 0, errRun = 0;
+  // Límite de FPS (Ajustes › Gráficos, 'fpsCap'; 24-11-2026): se salta los avisos del navegador que llegan antes
+  // de tiempo. Cada fotograma que sí se hace avanza con el tiempo de verdad desde el anterior (como siempre), así
+  // que la partida, la red del cooperativo y los relojes van igual de rápido con 30 que con 144.
+  // (capAt avanza en pasos fijos: con una pantalla de 144 Hz y límite 60 salen 60, no 48.)
+  let capAt = 0;
   function loop(ts) {
     requestAnimationFrame(loop);
     if (bgOn && !document.hidden) bgStop();   // copia local: vuelve a verse → se acaba el reloj de fondo
+    const cap = +G.Settings.get('fpsCap') || 0;
+    if (cap > 0) {
+      const gap = 1000 / cap;
+      if (ts - capAt < gap - 1) return;
+      capAt = ts - capAt > gap * 2 ? ts : capAt + gap;
+    }
     step(ts);
   }
   function step(ts) {
@@ -945,7 +961,9 @@ G.Game = (() => {
 
   function frame(ts) {
     const real = (ts - last) / 1000 || 0;
-    const dt = Math.min(1 / 30, real) * speedK;
+    // (Con un límite de 30 FPS o menos, un poco más de margen: si no, cada fotograma que llega tarde se perdía tiempo.)
+    const cap = +G.Settings.get('fpsCap') || 0;
+    const dt = Math.min(cap > 0 && cap <= 30 ? 1.15 / cap : 1 / 30, real) * speedK;
     last = ts;
     if (state === 'playing') G.Settings.sample(real);
     fpsAcc += real; fpsN++;
@@ -1073,8 +1091,8 @@ G.Game = (() => {
         else if (specAlive && mates[i].dead) {
           for (let k = 1; k < mates.length; k++) { const j = (i + k) % mates.length; if (!mates[j].dead) { i = j; break; } }
         }
-        if (G.Input.tap('arrowright') || G.Input.tap('keyd') || G.Input.tap('space') || specNext || specDir > 0) i = (i + 1) % mates.length;
-        else if (G.Input.tap('arrowleft') || G.Input.tap('keya') || specDir < 0) i = (i - 1 + mates.length) % mates.length;
+        if (G.Keys.tap('right') || G.Input.tap('space') || specNext || specDir > 0) i = (i + 1) % mates.length;
+        else if (G.Keys.tap('left') || specDir < 0) i = (i - 1 + mates.length) % mates.length;
         specNext = false; specDir = 0;
         spectating = mates[i]; specUid = spectating.uid; specAlive = !spectating.dead;
         camX = spectating.x; camY = spectating.y;
@@ -1236,7 +1254,9 @@ G.Game = (() => {
       ctx.save();
       ctx.font = '700 11px Pixelify, monospace';
       ctx.textAlign = 'right';
-      ctx.fillStyle = fpsShown >= 50 ? '#5fe08a' : fpsShown >= 30 ? '#ffd23f' : '#ff5f6d';
+      // (Verde si va como debe: con límite de FPS, cerca del límite.)
+      const goal = Math.min(60, +G.Settings.get('fpsCap') || 60);
+      ctx.fillStyle = fpsShown >= goal * 0.83 ? '#5fe08a' : fpsShown >= goal * 0.5 ? '#ffd23f' : '#ff5f6d';
       ctx.fillText(fpsShown + ' FPS', w - 10, h - 8);
       ctx.restore();
     }

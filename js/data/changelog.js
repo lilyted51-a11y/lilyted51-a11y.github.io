@@ -23,14 +23,27 @@ G.CHANGELOG = [
     ["Ranking: toca una marca para ver la build de cada jugador: su Pokémon, su nivel, sus ataques con su nivel y el daño que hizo cada uno, y sus objetos. Se cierra con Esc, el botón Atrás del móvil, B en el mando o tocando fuera.",
      "Ranking: tap a record to see each player's build: their Pokémon, level, moves with their level and the damage each one did, and their items. Close it with Esc, the phone's Back button, B on a gamepad or by tapping outside."],
     ["Tu perfil enseña las horas que llevas jugadas (se cuentan desde hoy, sumando todos tus aparatos), y tus amigos también las ven.",
-     "Your profile shows the hours you have played (counted from today, adding up all your devices), and your friends can see them too."]
+     "Your profile shows the hours you have played (counted from today, adding up all your devices), and your friends can see them too."],
+    ["Ajustes → Controles: todas las teclas del ordenador se pueden cambiar, dos por acción (principal y secundaria). Si eliges una tecla que ya usa otra acción, se cambian entre ellas y el juego te lo dice; un botón las devuelve a las de serie. Las ayudas del juego (ataques, esferas, poder, cartas y pausa) enseñan las teclas que pongas.",
+     "Settings → Controls: every computer key can be changed, two per action (main and secondary). If you pick a key another action already uses, they swap and the game tells you; one button puts the defaults back. The game's hints (moves, orbs, power, cards and pause) show the keys you set."],
+    ["Ajustes → Gráficos: límite de FPS (30, 60, 90, 120, 144 o sin límite). La partida va igual de rápida: sólo se dibujan menos fotogramas, para gastar menos batería.",
+     "Settings → Graphics: FPS limit (30, 60, 90, 120, 144 or unlimited). The game runs at the same speed: it only draws fewer frames, to save battery."],
+    ["Guías, en Ajustes: todo el juego explicado, con una portada con Pokémon paseando. Cómo se juega, los Pokémon y sus stats, todos los movimientos (tipo, con qué stat pegan y su evolución, con buscador), objetos, mejoras, poderes, jefes finales, eventos y maestría.",
+     "Guides, in Settings: the whole game explained, with a cover of Pokémon strolling by. How to play, Pokémon and their stats, every move (type, which stat it uses and its evolution, with a search box), items, upgrades, powers, final bosses, events and mastery."]
   ], chg: [
     ["Los ataques exclusivos de los legendarios y singulares evolucionan con su «+» como los demás y, evolucionados, pegan como cualquier ataque evolucionado. Los de Pokémon que no son legendarios (Balón Ígneo, Truco Floral, Placaje Eléctrico…) no evolucionan, pero pegan más de base.",
      "Legendary and Mythical signature moves evolve with their «+» like the rest and, once evolved, hit like any evolved move. Those of non-legendary Pokémon (Pyro Ball, Flower Trick, Volt Tackle…) don't evolve, but hit harder from the start."],
     ["Los ataques que persiguen giran con la mitad de fuerza, empiezan a buscar más cerca y sólo van a por lo que tienen delante (ya no dan la vuelta). Los psíquicos (Confusión, Psíquico, Bola Neblina y Onda Mental) persiguen algo menos todavía.",
      "Homing moves turn with half the strength, start seeking from closer and only go after what is in front of them (no more U-turns). The psychic ones (Confusion, Psychic, Mist Ball and Psystrike) chase a little less still."],
     ["En el ranking sales con el Pokémon con el que acabas la partida (el evolucionado, si ha evolucionado), no con el que empezaste. La maestría sigue siendo del que elegiste.",
-     "In the ranking you appear with the Pokémon you end the run with (the evolved one, if it evolved), not the one you started with. Mastery still goes to the one you picked."]
+     "In the ranking you appear with the Pokémon you end the run with (the evolved one, if it evolved), not the one you started with. Mastery still goes to the one you picked."],
+    ["Ajustes → Acerca de enseña la versión exacta del juego.",
+     "Settings → About shows the exact game version."]
+  ], fix: [
+    ["Con el editor de una tecla abierto, Esc, el botón Atrás del móvil o la B del mando lo cierran a él y no los Ajustes.",
+     "With the key editor open, Esc, the mobile Back button or B on a gamepad close the editor and not Settings."],
+    ["Al subir de nivel, la tecla 4 también sale en la ayuda de las cartas.",
+     "When levelling up, key 4 also shows in the cards' hint."]
   ]},
   { d: '2026-11-23', title: ["La Gran Actualización: Eternatus y sus poderes, dificultades, Vestidor y estelas, huevos, Maestría, desafío semanal, Casino Rocket, grietas y Sentencia nuevas", "The Great Update: Eternatus and its powers, difficulties, Dressing Room and trails, eggs, Mastery, weekly challenge, Rocket Casino, new rifts and Judgment"], new: [
     ["Vestidor, en el menú (y con un botón en la ficha de cada Pokémon): para cada Pokémon eliges su versión normal o shiny, su aspecto (las formas que sólo cambian el dibujo), su skin, un efecto (brillos, aura de su tipo, halo de luz o aura oscura) y su estela, y lo ves dando vueltas antes de jugar.",

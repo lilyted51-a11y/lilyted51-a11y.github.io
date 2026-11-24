@@ -258,7 +258,7 @@ G.Pad = (() => {
       if (hit(BT.A)) press();
       if (hit(BT.B) || hit(BT.BACK)) back();
       if (hit(BT.START)) G.Input.virtual('escape');
-      if (hit(BT.Y)) G.Input.virtual('keyr');
+      if (hit(BT.Y)) G.Input.virtual('pady');            // cambiar las cartas (G.Keys 'reroll', aunque se cambie la R)
       const ry = p.axes[3] || 0;
       if (Math.abs(ry) > DEAD) scrollLists(ry, dt);
     } else {
@@ -267,8 +267,9 @@ G.Pad = (() => {
       vec = [x, y];
       const ax = p.axes[2] || 0, ay = p.axes[3] || 0;
       if (Math.hypot(ax, ay) > 0.35) { aimVec = [ax, ay]; aimAt = performance.now(); } else aimVec = [0, 0];
-      if (hit(BT.LB) || hit(BT.LT)) G.Input.virtual('keyq');
-      if (hit(BT.RB) || hit(BT.RT)) G.Input.virtual('keye');
+      // (Sus propios códigos: siguen valiendo aunque se cambien Q / E en Ajustes, core/keys.js.)
+      if (hit(BT.LB) || hit(BT.LT)) G.Input.virtual('padlb');
+      if (hit(BT.RB) || hit(BT.RT)) G.Input.virtual('padrb');
       if (hit(BT.START) || hit(BT.BACK)) G.Input.virtual('escape');
       if (hit(BT.A)) G.Input.virtual('space');
       if (hit(BT.X)) G.Input.virtual('padx');

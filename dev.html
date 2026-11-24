@@ -315,6 +315,7 @@
       <button class="gen-tab" data-t="a11y">Accesibilidad</button>
       <button class="gen-tab" data-t="acc">Cuenta</button>
       <button class="gen-tab" data-t="about">Acerca de</button>
+      <button class="gen-tab" data-t="guide">Guías</button>
     </div>
     <div id="set-body" class="set-body"></div>
   </div>
@@ -706,10 +707,10 @@
 <section id="scr-levelup" class="scr dim hidden">
   <div class="box center">
     <h2>¡Nivel <span id="lvl-num">2</span>!</h2>
-    <p class="sub">Elige una recompensa<span class="kbd-hint"> · <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></span></p>
+    <p class="sub">Elige una recompensa<span class="kbd-hint" id="lvl-keys"> · <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></span></p>
     <p id="lvl-step" class="sub gold hidden"></p>
     <div id="cards" class="cards"></div>
-    <button id="lvl-reroll" class="btn small ghost hidden" data-sfx="none" style="margin-top:10px">Cambiar opciones (<span id="lvl-rr-n">1</span>)<span class="kbd-hint"> · <kbd>R</kbd></span></button>
+    <button id="lvl-reroll" class="btn small ghost hidden" data-sfx="none" style="margin-top:10px">Cambiar opciones (<span id="lvl-rr-n">1</span>)<span class="kbd-hint" id="lvl-rr-key"> · <kbd>R</kbd></span></button>
     <p id="lvl-wait" class="note hidden"></p>
   </div>
 </section>
@@ -744,7 +745,7 @@
 <section id="scr-pause" class="scr dim hidden">
   <div class="box center pause-box">
     <h2>Pausa</h2>
-    <p class="sub kbd-hint"><kbd>WASD</kbd> moverse · <kbd>1</kbd>–<kbd>4</kbd> movimiento · <kbd>Q</kbd>/<kbd>E</kbd> ciclar · <kbd>5</kbd>–<kbd>8</kbd> esferas · <kbd>Esc</kbd> pausa</p>
+    <p class="sub kbd-hint" id="pause-keys"><kbd>WASD</kbd> moverse · <kbd>1</kbd>–<kbd>4</kbd> movimiento · <kbd>Q</kbd>/<kbd>E</kbd> ciclar · <kbd>5</kbd>–<kbd>8</kbd> esferas · <kbd>Esc</kbd> pausa</p>
     <p class="sub touch-hint">Arrastra el dedo para moverte · toca un ataque para cambiarlo · toca una esfera para usarla</p>
     <p id="pause-coop" class="note hidden">Partida en grupo: el juego sigue mientras estás aquí.</p>
     <div class="row" style="justify-content:center">
@@ -876,6 +877,9 @@
 <script defer src="js/ui/goals-ui.js"></script>
 <script defer src="js/ui/mastery-ui.js"></script>
 <script defer src="js/ui/settings-ui.js"></script>
+<!-- 24-11-2026: teclas cambiables y Guías (Ajustes) -->
+<script defer src="js/core/keys.js"></script>
+<script defer src="js/ui/guide-ui.js"></script>
 <script defer src="js/ui/layout-ui.js"></script>
 <script defer src="js/ui/support-ui.js"></script>
 <script defer src="js/ui/news-ui.js"></script>

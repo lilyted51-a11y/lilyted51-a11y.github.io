@@ -1,5 +1,7 @@
 /* ============ run-ui.js — cartas de nivel, pausa y fin de run ============ */
 G.RunUI = (() => {
+  // La tecla de cada carta, la que se haya puesto en Ajustes (core/keys.js); sin él (pruebas), 1, 2, 3...
+  const keyHtml = i => (G.Keys ? G.Keys.cardKeyHtml(i) : `<div class="key">${i + 1}</div>`);
   const $ = G.UI.$;
   let offers = null, offerCb = null, coopMode = false;
 
@@ -109,7 +111,7 @@ G.RunUI = (() => {
       el.innerHTML =
         `<div class="ico" style="background:${c.color}33">${G.Icons.html(c.icon, 32)}</div>
          <div class="txt"><div class="nm">${c.title} ${tag}</div><div class="ds">${c.desc}</div></div>
-         <div class="key">${i + 1}</div>`;
+         ${keyHtml(i)}`;
       el.dataset.sfx = 'none';             // el juego pone su propio sonido al elegir
       // Evolución en plena partida: en vez del icono, el Pokémon al que evoluciona (o el que se queda).
       if (c.type === 'evolve' && c.dex) {
@@ -341,7 +343,7 @@ G.RunUI = (() => {
       el.dataset.item = o.id;
       el.innerHTML = `<div class="ico">${o.old ? G.Icons.html(o.old, 22) + G.Icons.html(o.id, 30) : G.Icons.html(o.id, 36)}</div>
         <div class="txt"><div class="nm">${o.title}</div><div class="ds">${o.desc}</div></div>
-        <div class="key">${i + 1}</div>`;
+        ${keyHtml(i)}`;
       onTap(el, () => { if (guarded() || !G.UI.isOpen('scr-item')) return; G.UI.hide('scr-item'); o.pick(); });
       box.appendChild(el);
     });
@@ -365,7 +367,7 @@ G.RunUI = (() => {
       el.className = 'card' + (c.color === '#ffd23f' ? ' evo' : '');
       el.innerHTML = `<div class="ico" style="background:${c.color}33">${G.Icons.html(c.icon, 32)}</div>
         <div class="txt"><div class="nm">${c.title} <span class="tag-chip" style="background:${c.color}">${c.tag}</span></div><div class="ds">${c.desc || ''}</div></div>
-        <div class="key">${i + 1}</div>`;
+        ${keyHtml(i)}`;
       if (c.dex && G.SPRITE_META[c.dex]) { const ico = el.querySelector('.ico'); ico.innerHTML = ''; ico.appendChild(G.UI.spriteCanvas(c.dex, 46, 46, { scale: 1 })); }
       el.dataset.sfx = 'none';
       el.dataset.power = c.key;          // (lo lee en/bot.js)
@@ -421,7 +423,7 @@ G.RunUI = (() => {
       el.innerHTML =
         `<div class="ico" style="background:${col}33">${G.Icons.html('move:' + m.id, 32)}</div>
          <div class="txt"><div class="nm">${G.T(m.name, 'move')} <span class="tag-chip" style="background:${col}">Nv.${m.lvl}</span></div><div class="ds">${desc}</div></div>
-         <div class="key">${i + 1}</div>`;
+         ${keyHtml(i)}`;
       el.dataset.sfx = 'none';
       el.dataset.move = m.id;   // copia local: lo lee en/bot.js para elegir qué se fusiona
       onTap(el, () => pickBond(i));
@@ -522,7 +524,7 @@ G.RunUI = (() => {
 
   /** Las esferas que llevas (con su tecla y lo que hacen) y las mejoras que tienes puestas. */
   function orbsSummary(pl) {
-    const key = i => G.Touch.active ? '' : `<kbd>${i + 5}</kbd> `;
+    const key = i => G.Touch.active ? '' : G.Keys.kbd('orb' + (i + 1)) + ' ';   // la tecla puesta (core/keys.js)
     const rows = (pl.orbs || []).map((s, i) => {
       if (!s) return '';
       const o = G.Orbs.BY[s.id];
