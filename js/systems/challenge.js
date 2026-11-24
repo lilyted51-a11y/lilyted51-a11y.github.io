@@ -46,13 +46,21 @@ G.Challenge = (() => {
   const weekId = (date = new Date()) => G.Ranking.periodIds(date).w;
   const weekNum = w => { const m = /^w(\d+)-(\d+)$/.exec(w || ''); return m ? +m[1] * 53 + +m[2] : 0; };
 
+  // Especies que llegaron el 24-11-2026 (tools/add_species.py): no cuentan en el sorteo hasta la semana
+  // LATE.w, para que el desafío de la semana en que se publican no cambie a mitad (el Pokémon y el tipo
+  // salen de un índice en la lista). Si se publica en esa semana o después, subir LATE.w a la siguiente.
+  const LATE = { w: 'w2026-49', dex: new Set([593, 618, 683, 733, 837, 865, 878, 879, 929, 945, 948, 962, 990, 1003, 1021, 1025]) };
+  const isOld = w => !!w && weekNum(w) < weekNum(LATE.w);
+  const inWeek = (p, w) => !(isOld(w) && LATE.dex.has(p.dex));
+
   /** Tipos con al menos 3 Pokémon en cada tramo de enemigos (para «Todos de tipo …»). */
-  let typesCache = null;
-  function types() {
-    if (typesCache) return typesCache;
+  const typesCache = {};
+  function types(w) {
+    const k = isOld(w) ? 'old' : 'new';
+    if (typesCache[k]) return typesCache[k];
     const T = G.Enemies.TIERS;
-    typesCache = Object.keys(G.U.TYPE_NAME).filter(ty => T.every(tier => G.Enemies.candidates(tier).filter(p => p.types.includes(ty)).length >= 3));
-    return typesCache;
+    return (typesCache[k] = Object.keys(G.U.TYPE_NAME).filter(ty => T.every(tier =>
+      G.Enemies.candidates(tier).filter(p => p.types.includes(ty) && inWeek(p, w)).length >= 3)));
   }
 
   const memo = new Map();
@@ -62,12 +70,12 @@ G.Challenge = (() => {
     const r = rng('desafio:' + w);
     const seed = Math.floor(r() * 1e6);
     // Pokémon prestado: de los normales (sin legendarios ni formas), con fuerza para aguantar.
-    const pool = G.DEX.filter(p => p.dex <= 1025 && p.rarity < 5 && !p.excl && p.bst >= 430 && G.SPRITE_META[p.dex]).sort((a, b) => a.dex - b.dex);
+    const pool = G.DEX.filter(p => p.dex <= 1025 && p.rarity < 5 && !p.excl && p.bst >= 430 && G.SPRITE_META[p.dex] && inWeek(p, w)).sort((a, b) => a.dex - b.dex);
     const dex = pool.length ? pool[Math.floor(r() * pool.length)].dex : 25;
     const c = ORDER[weekNum(w) % ORDER.length];
     const info = { w, seed, dex, cond: c.startsWith('wx:') ? 'wx' : c };
     if (info.cond === 'wx') info.wx = c.slice(3);
-    if (info.cond === 'type') { const ts = types(); info.type = ts[Math.floor(r() * ts.length)] || 'normal'; }
+    if (info.cond === 'type') { const ts = types(w); info.type = ts[Math.floor(r() * ts.length)] || 'normal'; }
     memo.set(w, info);
     return info;
   }

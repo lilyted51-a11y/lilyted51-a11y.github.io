@@ -640,7 +640,7 @@ G.I18n.add({
   'Puedes borrar tu cuenta cuando quieras (se borran también tu apodo, tus amigos y tus marcas):': 'You can delete your account whenever you want (your nickname, friends and records are deleted too):',
   'Borrar mi cuenta y mi partida': 'Delete my account and my game',
   'PokéSurvivor necesita JavaScript para funcionar. Actívalo para jugar.': 'PokéSurvivor needs JavaScript to work. Please enable it to play.',
-  'Fan game gratuito de supervivencia con 966 Pokémon de las 9 regiones: elige tu compañero, sobrevive a las hordas, evoluciona tus ataques, enfréntate a legendarios y juega en cooperativo con hasta 4 amigos.': 'A free survival fan game with 966 Pokémon from all 9 regions: choose your partner, survive the hordes, evolve your moves, take on legendaries and play co-op with up to 4 friends.',
+  'Fan game gratuito de supervivencia con 982 Pokémon de las 9 regiones: elige tu compañero, sobrevive a las hordas, evoluciona tus ataques, enfréntate a legendarios y juega en cooperativo con hasta 4 amigos.': 'A free survival fan game with 982 Pokémon from all 9 regions: choose your partner, survive the hordes, evolve your moves, take on legendaries and play co-op with up to 4 friends.',
   'Guía del juego': 'Game guide',
   // donaciones
   'Apoyar': 'Support', 'Apoyar el proyecto': 'Support the project', 'Donar en Ko-fi': 'Donate on Ko-fi', 'Más información': 'More info',
@@ -2006,5 +2006,11 @@ G.I18n.add({
   "De una partida cuentan como mucho {x} minutos. Las partidas con ventajas y el desafío semanal no suman.": "At most {x} minutes of a run count. Runs with boosts and the weekly challenge don't add any.",
   "{x} puntos": "{x} points",
   "Pasados los 100.000 se sigue sumando. En el menú, Maestría enseña todos tus Pokémon de más a menos, con sus números: partidas, tiempo, derrotados, jefes, grietas y más.": "Past 100,000 it keeps adding up. In the menu, Mastery lists all your Pokémon from most to least, with their numbers: runs, time, defeated, bosses, rifts and more."
-  // (fin: teclas, FPS y Guías)
+  // (fin: teclas, FPS y Guías),
+  // 24-11-2026 (copia local): especies y formas nuevas (tools/add_species.py, tools/add_forms.py)
+  "Ferrodada": "Iron Treads",
+  "Electrofuria": "Raging Bolt",
+  "Llegan 16 Pokémon que faltaban: Jellicent, Stunfisk, Aromatisse, Toucannon, Rolycoly, Sirfetch’d, Cufant, Copperajah, Dolliv, Grafaiai, Toedscool, Bombirdier, Ferrodada, Ting-Lu, Electrofuria y Pecharunt. Salen en el gacha de su región, en los huevos, como enemigos y en la Colección; Ting-Lu y Pecharunt, también en las grietas.": "16 missing Pokémon arrive: Jellicent, Stunfisk, Aromatisse, Toucannon, Rolycoly, Sirfetch’d, Cufant, Copperajah, Dolliv, Grafaiai, Toedscool, Bombirdier, Iron Treads, Ting-Lu, Raging Bolt and Pecharunt. They show up in their region's gacha, in eggs, as enemies and in the Collection; Ting-Lu and Pecharunt, in rifts too.",
+  "Tres Megaevoluciones nuevas para el poder Megaevolución: Mega Sceptile, Mega Chimecho y Mega Hawlucha (también en el gacha de su región).": "Three new Mega Evolutions for the Mega Evolution power: Mega Sceptile, Mega Chimecho and Mega Hawlucha (also in their region's gacha).",
+  "94 aspectos nuevos en el Vestidor, que sólo cambian el dibujo: las letras de Unown, los 19 dibujos de Vivillon, las flores de Flabébé, Floette y Florges, las estaciones de Deerling y Sawsbuck, los núcleos de Minior, las tarjetas de Genesect, Mimikyu desenmascarado, Magearna de hace 500 años y más.": "94 new looks in the Dressing Room, which only change the sprite: Unown's letters, Vivillon's 19 patterns, the flowers of Flabébé, Floette and Florges, Deerling and Sawsbuck's seasons, Minior's cores, Genesect's drives, busted Mimikyu, Original Color Magearna and more."
 });

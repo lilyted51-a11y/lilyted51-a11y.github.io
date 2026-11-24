@@ -658,7 +658,7 @@
     { id: 'secret-sword', name: 'Sable Místico', type: 'fighting', kind: 'boomerang', evo: 'atk', sig: [647],
       desc: 'Dos cortes de energía van hacia el enemigo y regresan a ti.',
       cd: 0.85, dmg: 14, speed: 360, count: 2, spread: 0.5, radius: 220, size: 8, look: { proj: 'sword', pal: 'aura' } },
-    { id: 'meteor-assault', name: 'Asalto Estelar', type: 'fighting', kind: 'dash', phys: 1, sig: [1083],
+    { id: 'meteor-assault', name: 'Asalto Estelar', type: 'fighting', kind: 'dash', phys: 1, sig: [865, 1083],
       desc: 'Cargas puerro en ristre y arrasas con todo lo que te encuentras.',
       cd: 0.85, dmg: 34, radius: 130, width: 46, knock: 80, look: { proj: 'sword', pal: 'grass' } },
     // poison
@@ -668,7 +668,7 @@
     { id: 'mortal-spin', name: 'Giro Mortífero', type: 'poison', kind: 'spin', phys: 1, sig: [969, 970],
       desc: 'Giras golpeando todo lo que te rodea y lo dejas envenenado.',
       cd: 1.0, dmg: 13, count: 3, radius: 66, poison: 1, look: { melee: 'impact', proj: 'gem', pal: 'chain' } },
-    { id: 'malignant-chain', name: 'Cadena Virulenta', type: 'poison', kind: 'chain', evo: 'rgn',
+    { id: 'malignant-chain', name: 'Cadena Virulenta', type: 'poison', kind: 'chain', evo: 'rgn', sig: [1025],
       desc: 'Una cadena venenosa que salta de enemigo en enemigo y los intoxica.',
       cd: 1.0, dmg: 20, count: 4, radius: 150, poison: 2, look: { beam: 'shadow', proj: 'blob', pal: 'chain' } },
     // ground

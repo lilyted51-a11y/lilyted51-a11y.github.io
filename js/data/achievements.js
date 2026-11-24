@@ -7,7 +7,7 @@
  * Además hay un logro por CADA legendario: vencerle en una grieta.
  */
 G.AchDefs = (() => {
-  const own = s => Object.keys(s.owned || {}).filter(d => G.DEX_BY[d]).length;
+  const own = s => Object.keys(s.owned || {}).filter(d => G.DEX_BY[d] && !G.DEX_BY[d].excl).length;
   const shinies = s => Object.keys(s.shiny || {}).length;
   const legends = s => Object.keys(s.legends || {}).length;
   const st = k => s => (s.stats && s.stats[k]) || 0;
@@ -82,7 +82,9 @@ G.AchDefs = (() => {
   const totalLegends = LIST.filter(a => a.dex).length;
   for (const a of LIST) if (a.id === 'legAll') { a.goal = totalLegends; a.desc = `Vence a los ${totalLegends} legendarios.`; }
   // Metas que dependen de los datos del juego.
-  for (const a of LIST) if (a.id === 'ownAll') { a.goal = G.DEX.length; a.desc = `Ten los ${G.DEX.length} Pokémon del juego.`; }
+  // (Sin los exclusivos: Mega Rayquaza del administrador y los aspectos del Vestidor, que no se pueden tener.)
+  const ownTotal = G.DEX.filter(p => !p.excl).length;
+  for (const a of LIST) if (a.id === 'ownAll') { a.goal = ownTotal; a.desc = `Ten los ${ownTotal} Pokémon del juego.`; }
   const evoTotal = Object.keys(G.Moves.EVO).length;
   for (const a of LIST) if (a.id === 'evoAll') { a.goal = evoTotal; a.desc = `Evoluciona los ${evoTotal} movimientos distintos.`; }
 
