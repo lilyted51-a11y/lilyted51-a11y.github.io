@@ -1225,6 +1225,11 @@ html:lang(zh) .btn, html:lang(zh) .chip { letter-spacing: 0; }
 .trail-item { grid-template-columns: 132px 1fr auto !important; }
 .rar-dot { display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 2px; vertical-align: middle; }
 .trail-item canvas { border-radius: 6px; image-rendering: pixelated; }
+/* Skins de la semana (25-11-2026, copia local): los estilos del pack, su shiny y sus formas, en pequeño */
+.skin-item .sub span + span::before { content: ' · '; }
+.skin-minis { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+.skin-item .skin-minis canvas { width: 44px; height: 44px; background: rgba(0,0,0,.22); border-radius: 6px; }
+.wd-skins { max-height: none; }
 @media (max-width: 760px) {
   .wd-main { grid-template-columns: 1fr; }
   .wd-stage { width: fit-content; max-width: 100%; margin: 0 auto; }

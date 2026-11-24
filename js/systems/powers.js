@@ -282,16 +282,17 @@ G.Powers = (() => {
   }
   /** Cambia el dibujo (misma dirección). */
   function look(pl, dex, scale) {
-    const dir = pl.anim.dir;
+    const dir = pl.anim.dir, skin = pl.anim.skin;
     pl.dex = dex;
     pl.shiny = pl.shiny && G.Sprites.hasShiny(dex);
     pl.scale = scale;
     pl.anim = new G.Sprites.Animator(dex, scale, pl.shiny);
     pl.anim.dir = dir;
-    pl.anim.skin = null;
+    // La skin sigue si la forma también la tiene (core/skins.js, mega: Kyogre abisal primigenio...).
+    pl.anim.skin = skin && G.Skins.get(skin, dex) ? skin : null;
     pl.r = G.Sprites.playerRadius(dex);
     pl.bodyH = G.Sprites.bodyHeight(dex, scale);
-    G.Sprites.preload([dex], 8000, pl.shiny);
+    G.Sprites.preload([dex], 8000, pl.shiny, pl.anim.skin || '');
   }
 
   // ---------------- Dinamax / Gigamax ----------------

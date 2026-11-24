@@ -113,7 +113,8 @@ G.Sprites = (() => {
     for (const d of dexes) for (const a of ANIMS) {
       const s = sheet(d, a, shiny); if (s) hs.push(s);
       const sk = skin && G.Skins && G.Skins.get(skin, d);
-      const ks = sk && !sk.tint ? sheet(d, a, shiny, skin) : null; if (ks) hs.push(ks);   // (las de color no tienen hojas)
+      // (las de color no tienen hojas; sin las suyas en shiny, la normal)
+      const ks = sk && !sk.tint ? sheet(d, a, shiny && !!sk.sh, skin) : null; if (ks) hs.push(ks);
     }
     return new Promise(res => {
       const t0 = performance.now();
@@ -271,7 +272,8 @@ G.Sprites = (() => {
       // Disfraz: la hoja con el disfraz pintado (más grande: lleva margen para
       // el sombrero). Mientras carga, el Pokémon sin él.
       const sk = this.skin && G.Skins && G.Skins.get(this.skin, this.dex);
-      const ks = sk && !sk.tint ? sheet(this.dex, this.cur, this.shiny, this.skin) : null;
+      // (Las skins sin versión shiny (sh) se ven igual en un shiny: su hoja normal. 25-11-2026)
+      const ks = sk && !sk.tint ? sheet(this.dex, this.cur, this.shiny && !!sk.sh, this.skin) : null;
       let own = true;
       if (ks && ks.ready && m) { s = ks; m = padded(m); }
       else if (s && !s.ready) {
