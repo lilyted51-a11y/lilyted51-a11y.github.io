@@ -187,6 +187,15 @@ G.Mons = (() => {
     if (!me || !st) return statsOf(mon);
     return withAtk(Object.fromEntries(KEYS.map(k => [k, me[k] ? mon[k] * st[k] / me[k] : mon[k]])));
   }
+  /**
+   * Con la fuerza de una fase anterior, pero pegando por SU lado (25-11-2026, como el juego oficial desde el
+   * 16-11): Gallade, Lucario o Volcarona empezaban con el Ataque y el At. Especial de Ralts, Riolu o Larvesta y
+   * pegaban por el lado contrario hasta el nivel 40. Si la fase anterior tiene el lado bueno al revés, se cambian.
+   */
+  function ownSide(s, own) {
+    if ((s.sa > s.pa) === (own.sa > own.pa) || s.pa === s.sa) return s;
+    return withAtk(Object.assign({}, s, { pa: s.sa, sa: s.pa }));
+  }
   function ladderFor(mon) {
     if (!mon || !G.EVOS) return null;
     const line = lineOf(mon.dex), evolves = !!(G.EVOS[mon.dex] || []).length, own = statsOf(mon);
@@ -195,8 +204,8 @@ G.Mons = (() => {
       const s0 = weaken(mon, 0.65);
       return [s0, mix(s0, own, 0.5), own];
     }
-    const s0 = asStage(mon, line[0]);
-    return [s0, line.length >= 3 ? asStage(mon, line[line.length - 2]) : mix(s0, own, 0.5), own];
+    const s0 = ownSide(asStage(mon, line[0]), own);
+    return [s0, line.length >= 3 ? ownSide(asStage(mon, line[line.length - 2]), own) : mix(s0, own, 0.5), own];
   }
 
   return { name, natureOf, setNature, rolledNature, monFor, abilityOf, abilityChoices, setAbility, abilityName,

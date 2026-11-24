@@ -561,9 +561,31 @@ G.HUD = (() => {
    * cofres grandes (dorado, cuadrado), shinies (celeste) y compañeros (su color).
    * Lo que queda más lejos se pega al borde del círculo.
    */
+  // (25-11-2026, como las Gafas Radar del juego oficial desde el 16-11: gasta mucho menos —los enemigos van en un
+  //  solo trazado, sin save/restore por punto— y en el móvil se pinta en un lienzo aparte 10 veces por segundo.)
+  const MM_R = 54, MM_EVERY = 100;
+  let mmCv = null, mmAt = 0;
   function drawMinimap(ctx, w, h, pl, touch) {
-    const R = 54, RANGE = 1500;
+    const R = MM_R;
     const cx = w - 16 - R - (touch ? 56 : 0), cy = 56 + R + (G.Weather.current ? 30 : 0);
+    if (!touch) { paintMinimap(ctx, cx, cy, w, h, pl); return; }
+    const pad = 4, side = R * 2 + pad * 2, sc = (ctx.getTransform ? ctx.getTransform().a : 1) || 1;
+    const now = performance.now(), px = Math.ceil(side * sc);
+    if (!mmCv) mmCv = document.createElement('canvas');
+    if (mmCv.width !== px) { mmCv.width = px; mmCv.height = px; mmAt = 0; }
+    if (now - mmAt >= MM_EVERY) {
+      mmAt = now;
+      const c = mmCv.getContext('2d');
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      c.clearRect(0, 0, px, px);
+      c.setTransform(sc, 0, 0, sc, 0, 0);
+      paintMinimap(c, R + pad, R + pad, w, h, pl);
+    }
+    ctx.drawImage(mmCv, cx - R - pad, cy - R - pad, side, side);
+  }
+  /** Repinta el radar entero con su centro en (cx, cy). */
+  function paintMinimap(ctx, cx, cy, w, h, pl) {
+    const R = MM_R, RANGE = 1500;
     const k = R / RANGE;
     ctx.save();
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.2832);
@@ -580,12 +602,17 @@ G.HUD = (() => {
       ctx.save(); ctx.translate(cx + dx, cy + dy); draw(d > R - 5); ctx.restore();
     };
     const dot = (col, r) => { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 0, r, 0, 6.2832); ctx.fill(); };
-    // Enemigos normales: puntitos rojos tenues (sólo los cercanos)
+    // Enemigos normales: puntitos rojos tenues (sólo los cercanos), todos de una vez. Jefes y legendarios, aparte.
     ctx.globalAlpha = 0.55;
+    ctx.fillStyle = '#ff6b6b';
+    const bosses = [], lim = (R - 5) * (R - 5);
     for (const e of G.EnemyMgr.all()) {
-      if (e.dead || e.boss || e.legend || e.shiny) continue;
-      if (Math.abs(e.x - pl.x) > RANGE || Math.abs(e.y - pl.y) > RANGE) continue;
-      put(e.x, e.y, () => dot('#ff6b6b', 1.5));
+      if (e.dead) continue;
+      if (e.boss || e.legend) { bosses.push(e); continue; }
+      if (e.shiny) continue;
+      const dx = (e.x - pl.x) * k, dy = (e.y - pl.y) * k;
+      if (dx * dx + dy * dy > lim) continue;
+      ctx.fillRect(cx + dx - 1.5, cy + dy - 1.5, 3, 3);
     }
     ctx.globalAlpha = 1;
     for (const e of G.EnemyMgr.shinies()) put(e.x, e.y, () => dot('#9ae6ff', 3));
@@ -597,8 +624,7 @@ G.HUD = (() => {
     if (rift) put(rift.x, rift.y, edge => { dot('#c47bff', edge ? 4 : 5); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke(); });
     if (G.Coop.active) for (const m of G.Coop.puppets()) put(m.x, m.y, () => { dot(m.tagColor || '#5fc8ff', 3.5); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke(); });
     const blink = Math.sin(performance.now() / 150) > 0;
-    for (const e of G.EnemyMgr.all()) {
-      if (e.dead || !(e.boss || e.legend)) continue;
+    for (const e of bosses) {
       put(e.x, e.y, () => { dot(e.legend ? '#c47bff' : '#ffcb3d', blink ? 6 : 5); ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.stroke(); });
     }
     // Tú

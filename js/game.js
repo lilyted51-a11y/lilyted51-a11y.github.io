@@ -39,6 +39,11 @@ G.Game = (() => {
     if (window.visualViewport) visualViewport.addEventListener('resize', resizeSoon);
     if (window.ResizeObserver) new ResizeObserver(() => resize()).observe(cv);
     G.Touch.init(cv);
+    // La gráfica del navegador se reinicia (un parpadeo de toda la página): lo ya pintado en lienzos aparte (el
+    // suelo, árboles y rocas, efectos, destellos) se pierde y salía negro o no se veía hasta recargar. Al volver,
+    // se rehace todo solo (25-11-2026, como el juego oficial desde el 14-11).
+    cv.addEventListener('contextrestored', repaintAll);
+    cv.addEventListener('contextlost', e => { if (e.preventDefault) e.preventDefault(); });
     // En móvil: al cambiar de app o girarlo en vertical, la partida se pausa.
     document.addEventListener('visibilitychange', () => { if (document.hidden) autoPause(); bgDrive(); });
     // En el móvil, bajar la cortina de avisos o abrir otra app por encima a veces
@@ -299,6 +304,18 @@ G.Game = (() => {
   function quitRun() {
     if (G.Coop.active) G.Coop.leave();
     endRun(false);
+  }
+
+  /** Vuelve a pintar todo lo guardado en lienzos aparte (tras reiniciarse la gráfica: ver init). */
+  function repaintAll() {
+    try {
+      G.World.repaint();
+      G.Tiles.clearProps();
+      if (G.VFX.clearCache) G.VFX.clearCache();
+      if (G.Trails && G.Trails.clearArt) G.Trails.clearArt();
+      if (G.Sprites.clearWhite) G.Sprites.clearWhite();
+      resize();
+    } catch (e) { console.warn(e); }
   }
 
   /** Todos los jugadores de la partida (tú primero). */
@@ -1371,7 +1388,7 @@ G.Game = (() => {
   })();
 
   return {
-    init, startRun, everyone, levelXp, flash, offerBond, choose, giveLevel,
+    init, startRun, everyone, levelXp, flash, offerBond, choose, giveLevel, repaintAll,
     /** Un objeto equipable para ti (premio de Munchlax, events.js): como si lo cogieras del suelo. */
     giveItem(id) { offerItem(id); },
     /** Para pruebas: salta el reloj de la run. */

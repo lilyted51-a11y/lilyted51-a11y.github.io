@@ -482,7 +482,8 @@ G.Moves2 = (() => {
       }
       if (!f.ghost) {
         const hits = circle(pl, m, hx, hy, hr, dmgOf(pl, m) * (last ? 1.25 : 1), last ? 110 : 45);
-        if (m.drain && hits.length) pl.heal(Math.min(6, m.drain * hits.length) * (1 + (pl.level || 1) * 0.02));
+        const fed = hits.filter(e => !e.arceus).length;         // (pegar a Arceus no cura)
+        if (m.drain && fed) pl.heal(Math.min(6, m.drain * fed) * (1 + (pl.level || 1) * 0.02));
         if (last && m.freeze) for (const e of hits) if (!e.dead) e.applyStun(m.freeze * (e.boss || e.judge ? 0.35 : 1));
         if (last && m.chain) chainFrom(pl, m, hx, hy, hits, m.chain | 0);
         if (last && m.zap) zap(pl, m, hx, hy, m.zap, new Set(hits.map(e => e.id)));

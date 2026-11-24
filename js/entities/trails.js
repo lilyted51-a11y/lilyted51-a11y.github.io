@@ -600,5 +600,7 @@ G.Trails = (() => {
     ctx.globalAlpha = 1;
   }
 
-  return { LIST, BY, FX, FX_ORDER, PRICE, RAR_NAME, RAR_COLOR, SHAPES, make, tick, update, drawUnder, drawAir, run, clear, preview, world };
+  return { LIST, BY, FX, FX_ORDER, PRICE, RAR_NAME, RAR_COLOR, SHAPES, make, tick, update, drawUnder, drawAir, run, clear, preview, world,
+           /** Fuera lo pintado (se rehace al usarlo): tras reiniciarse la gráfica del navegador. */
+           clearArt() { cache.clear(); } };
 })();

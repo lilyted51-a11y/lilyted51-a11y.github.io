@@ -744,6 +744,8 @@ G.MenuUI = (() => {
         if (now >= u.max || (u.needs && !lv[u.needs])) { renderUpgrades(); return; }
         const price = G.Upgrades.cost(u.id, now);
         if (sv.coins < price) { renderUpgrades(); return; }
+        // Con cuenta, comprar necesita conexión (25-11-2026, data/shop.js).
+        if (G.Shop.offline()) { G.Audio.sfx('error'); G.UI.toast(G.T(G.Shop.NET_ERR), 3200); return; }
         sv.coins -= price;
         lv[u.id] = now + 1;
         G.DB.commit(true);

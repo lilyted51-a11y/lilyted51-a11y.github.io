@@ -11,6 +11,10 @@
  * MT a la venta: 8 cada día, iguales para todos (semilla: la fecha en España).
  * Si ninguna sirve a tu compañero, la última se cambia por una que sí aprenda.
  * Estelas (23-11-2026): 12 cada semana, iguales para todos (abajo, weeklyTrails).
+ *
+ * Con cuenta, comprar necesita conexión (25-11-2026, como el juego oficial desde el 14-11 y como ya el gacha, el
+ * casino y abrir huevos): objetos, MT, estelas, objetos de partida, fotos y marcos (core/photo.js) y Mejoras
+ * (ui/menu.js). Así una compra hecha sin red en un aparato no se cruza con otra en el otro. Los invitados, igual.
  */
 G.Shop = (() => {
   const ITEMS = {
@@ -30,6 +34,9 @@ G.Shop = (() => {
   const DAILY = 8;
 
   const save = () => G.DB.save;
+  /** ¿Sin conexión y con cuenta? (entonces no se compra) */
+  const offline = () => !!(G.DB.online && typeof navigator !== 'undefined' && navigator.onLine === false);
+  const NET_ERR = 'Sin conexión: con tu cuenta, comprar necesita internet.';
 
   // ---------------- Mochila ----------------
 
@@ -84,6 +91,7 @@ G.Shop = (() => {
     const tm = key.startsWith('tm:') ? key.slice(3) : null;
     if (tm && !dailyTms().includes(tm)) return { ok: false, error: 'Esa MT ya no está a la venta.' };
     if (!tm && (!ITEMS[key] || ITEMS[key].event)) return { ok: false };
+    if (offline()) return { ok: false, error: NET_ERR };
     const price = tm ? tmPrice(tm) : ITEMS[key].price;
     if (s.coins < price) return { ok: false, error: 'No tienes Pokémonedas suficientes.' };
     s.coins -= price;
@@ -98,6 +106,7 @@ G.Shop = (() => {
     const s = save(), sk = G.Skins.SKINS[id], price = G.Halloween.SKIN_PRICE;
     if (!s || !sk || sk.shop === false) return { ok: false };
     if (!G.Halloween.on) return { ok: false, error: 'Las skins de bruja sólo se venden en Halloween.' };
+    if (offline()) return { ok: false, error: NET_ERR };
     if (G.Skins.owns(s, id)) return { ok: false, error: 'Ya tienes esta skin.' };
     if (count('candy') < price) return { ok: false, error: 'No tienes caramelos suficientes.' };
     s.bag.candy -= price;
@@ -139,6 +148,7 @@ G.Shop = (() => {
     if (!s || !t) return { ok: false };
     if (G.Dress.ownsTrail(s, id)) return { ok: false, error: 'Ya tienes esta estela.' };
     if (!weeklyTrails().includes(id)) return { ok: false, error: 'Esa estela ya no está a la venta.' };
+    if (offline()) return { ok: false, error: NET_ERR };
     if (s.coins < t.price) return { ok: false, error: 'No tienes Pokémonedas suficientes.' };
     s.coins -= t.price;
     s.trails = s.trails || {};
@@ -171,6 +181,7 @@ G.Shop = (() => {
     const s = save();
     if (!s || !G.Items.BY[id]) return { ok: false };
     if (!heldForSale().includes(id)) return { ok: false, error: 'Ese objeto no se vende.' };
+    if (offline()) return { ok: false, error: NET_ERR };
     if (s.coins < HELD_PRICE) return { ok: false, error: 'No tienes Pokémonedas suficientes.' };
     s.coins -= HELD_PRICE;
     s.held = s.held || {};
@@ -180,5 +191,5 @@ G.Shop = (() => {
   }
 
   return { ITEMS, ORDER, count, take, tmCount, takeTm, dailyTms, tmPrice, buy, buySkin, today, week, weeklyTrails, buyTrail,
-           HELD_PRICE, heldForSale, heldCount, takeHeld, buyHeld };
+           HELD_PRICE, heldForSale, heldCount, takeHeld, buyHeld, offline, NET_ERR };
 })();

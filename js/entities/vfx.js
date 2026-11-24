@@ -493,5 +493,7 @@ G.VFX = (() => {
   }
   function forType(type) { return { proj: TYPE_SHAPE[type] || 'ball', pal: PAL[type] ? type : 'normal' }; }
 
-  return { PAL, SHAPES, draw, sprite, forMove, forType, isDir, spins, frames };
+  return { PAL, SHAPES, draw, sprite, forMove, forType, isDir, spins, frames,
+           /** Fuera lo pintado (se rehace al usarlo): tras reiniciarse la gráfica del navegador. */
+           clearCache() { cache.clear(); } };
 })();

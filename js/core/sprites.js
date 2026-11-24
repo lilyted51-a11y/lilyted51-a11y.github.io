@@ -25,7 +25,7 @@ G.Sprites = (() => {
    * que ctx.filter en cada dibujo, que era lo que más ralentizaba con muchos
    * enemigos a la vez.
    */
-  const whites = new WeakMap();
+  let whites = new WeakMap();
   function white(img) {
     let c = whites.get(img);
     if (c) return c;
@@ -306,5 +306,7 @@ G.Sprites = (() => {
   }
 
   return { PX, meta, hasShiny, hovers, white, animMeta, sheet, preload, dirFromAngle, bodyRadius, bodyHeight, playerScale, playerRadius,
-           drawShadow, Animator, ANIMS, get sheetCount() { return sheets.size; } };
+           drawShadow, Animator, ANIMS, get sheetCount() { return sheets.size; },
+           /** Fuera los destellos blancos ya hechos (se rehacen): tras reiniciarse la gráfica del navegador. */
+           clearWhite() { whites = new WeakMap(); } };
 })();

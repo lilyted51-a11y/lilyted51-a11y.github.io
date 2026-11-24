@@ -144,6 +144,10 @@ G.Judgment = (() => {
   let A = null;                       // Arceus
   let center = null;                  // centro de la arena (mundo)
   let arenaT = 0, downs = 0, dealt = 0, brk = 0, breakN = 0, shown = 0;
+  // Cuándo empezó la pelea, con el reloj de la partida (25-11-2026): el «Ante Arceus» del resumen va con él. En
+  // grupo, arenaT lo cuenta cada uno con su propio fotograma y podía salir más largo de lo que fue; el reloj de la
+  // partida lo manda el anfitrión (como el juego oficial desde el 16-11).
+  let fightAt = -1;
   let embers = [];
   let cineAnim = null;
   // Lo nuevo (23-11-2026)
@@ -166,7 +170,7 @@ G.Judgment = (() => {
 
   function reset() {
     phase = null; ct = 0; cfg = null; ported = landed = canSkip = false;
-    A = null; center = null; arenaT = 0; downs = 0; dealt = 0; brk = 0; breakN = 0; shown = 0;
+    A = null; center = null; arenaT = 0; downs = 0; dealt = 0; brk = 0; breakN = 0; shown = 0; fightAt = -1;
     hits = new Map(); hitT = 0; samples = []; embers = []; cam = null;
     slabs = []; slabMax = 0; fallen = new Set(); cracks = []; falling = []; holeT = 0; holeSaid = false;
     grav = 0; gravAt = -99; gravVol = 0; gravFx = 0; plates = null; bullets = [];
@@ -290,6 +294,7 @@ G.Judgment = (() => {
     if (!ported) port();
     land(true);
     arenaT = 0; downs = 0; shown = 0; holeT = HOLE_FROM;
+    fightAt = G.Game.st.time;
     G.Progress.event('judge');
     if (BOSS === GENGAR_B) G.Spawner.say('¡El gran Gengar te ha arrastrado a su Noche Espectral!', 4, true);
     else G.Spawner.say(G.I18n.f('¡Arceus lleva la {x}! Ahora es de tipo {x}', G.T(PLATES[cfg.pl]), G.T(G.U.TYPE_NAME[cfg.pl])), 4, true);
@@ -492,6 +497,8 @@ G.Judgment = (() => {
     // Gravedad: una tanda de pilares tras otra mientras dura.
     if (grav > 0 && gravVol < GRAV_VOLLEYS.length && GRAV_T - grav >= GRAV_VOLLEYS[gravVol]) {
       gravVol++;
+      // (25-11-2026, como el juego oficial desde el 16-11: primero su animación de gravedad y luego otra en cada tanda.)
+      if (A && A.anim && !A.judge) A.anim.play('Shoot', { speed: 1.2 });
       for (const p of G.Game.everyone()) {
         if (p.dead) continue;
         for (let i = 0; i < 4; i++) {
@@ -610,7 +617,10 @@ G.Judgment = (() => {
     const still = grav > 0 || (c && c.id === 'extreme');
     const slow = c && (c.id === 'cross' || c.id === 'hyper' || c.id === 'nova') ? 0.45 : 1;
     if (!still) {
-      const spd = Math.max(70, (tg.spd || 100) * speedK(arenaT)) * slow;
+      // (Un compañero: su velocidad de verdad, que manda su juego; su copia aquí no lleva sus cartas ni mejoras y
+      //  Arceus le perseguía más despacio de lo que corría. 25-11-2026.)
+      const tsp = tg.remote && tg.net && tg.net.sp > 0 ? tg.net.sp : tg.spd;
+      const spd = Math.max(70, (tsp || 100) * speedK(arenaT)) * slow;
       const [dx, dy] = G.U.norm(tg.x - A.x, tg.y - A.y);
       A.x += dx * spd * dt; A.y += dy * spd * dt;
       A.anim.dir = G.Sprites.dirFromAngle(Math.atan2(dy, dx));
@@ -1731,7 +1741,7 @@ G.Judgment = (() => {
     /** Lo que suena: nada en la animación hasta que aterriza. */
     get music() { return phase === 'cine' && ct < T_LAND ? null : 'judgment'; },
     /** Para el resumen de la partida: { time, bosses, dmg, plate } o null. */
-    summary() { return phase === 'fight' ? { time: arenaT, bosses: downs, dmg: Math.round(dealt), plate: cfg.pl, gengar: BOSS === GENGAR_B } : null; },
+    summary() { return phase === 'fight' ? { time: fightAt >= 0 ? Math.max(0, G.Game.st.time - fightAt) : arenaT, bosses: downs, dmg: Math.round(dealt), plate: cfg.pl, gengar: BOSS === GENGAR_B } : null; },
     /** Para pruebas: daño medido. */
     get debug() { return { single: singleDps(), samples: samples.length, cracks: cracks.length, holes: fallen.size, slabs: slabs.length }; },
     /** Para pruebas: la Sentencia ya. */

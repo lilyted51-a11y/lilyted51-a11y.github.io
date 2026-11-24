@@ -164,6 +164,7 @@ G.Player = class Player {
     this.bodyH = G.Sprites.bodyHeight(to.dex, this.scale);
     G.Sprites.preload([to.dex], 8000, this.shiny);
     if (G.StatForms) G.StatForms.evolved(this, fromDex);     // su forma elegida, si la nueva especie la tiene
+    if (G.Powers && G.Powers.evolved && !this.remote) G.Powers.evolved(this);   // y su poder, al nuevo (25-11-2026)
     return true;
   }
   /**

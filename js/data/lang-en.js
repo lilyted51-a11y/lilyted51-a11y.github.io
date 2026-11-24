@@ -2202,5 +2202,8 @@ G.I18n.add({
   "Gigatrampa acero": "G-Max Steelsurge",
   "Gigadesgaste": "G-Max Depletion",
   "Gigagolpe brusco": "G-Max One Blow",
-  "Gigagolpe fluido": "G-Max Rapid Flow"
+  "Gigagolpe fluido": "G-Max Rapid Flow",
+  // 25-11-2026 (copia local): auditoría de las novedades oficiales 13-16/11
+  "Sin conexión: con tu cuenta, comprar necesita internet.": "No connection: with your account, buying needs internet.",
+  "Tu poder se adapta a {x}: {x}": "Your power adapts to {x}: {x}"
 });

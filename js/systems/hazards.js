@@ -65,7 +65,7 @@ G.Hazards = (() => {
     if (h.pure && G.Judgment && G.Judgment.boom && G.Judgment.boom(h, near)) return;
     if (h.vis === 'pillar') {
       // Pilar de luz que cae del cielo.
-      G.FX.beam(h.x, h.y, -Math.PI / 2, 420, h.r * 1.1, h.color, G.VFX.forType('electric'));
+      G.FX.beam(h.x, h.y, -Math.PI / 2, 420, h.r * 1.1, h.color, Object.assign({ fade: 1 }, G.VFX.forType('electric')));   // (se desvanece arriba)
       G.FX.ring(h.x, h.y, 4, h.r * 1.3, '#fff3c8', 0.4, 5);
       G.FX.burst(h.x, h.y - 6, h.color, 10, 180);
       if (near) { G.Audio.sfx('judge'); G.Camera.kick(0.2); }
@@ -77,6 +77,18 @@ G.Hazards = (() => {
       G.FX.beam(h.x, h.y - G.LIFT, h.angle, h.len, h.w, h.color, G.VFX.forType(h.type || (h.pure ? 'electric' : 'normal')));
       if (near) G.Audio.sfx('shot', { kind: 'beam', type: h.type });
     }
+  }
+
+  /** Trazado de una franja de largo `len` y ancho `w` desde (0, 0) hacia la derecha, con los extremos redondos. */
+  function capsule(ctx, len, w) {
+    const r = Math.max(0.5, Math.min(w / 2, len / 2));
+    ctx.beginPath();
+    ctx.moveTo(r, -w / 2);
+    ctx.lineTo(len - r, -w / 2);
+    ctx.arc(len - r, 0, r, -Math.PI / 2, Math.PI / 2);
+    ctx.lineTo(r, w / 2);
+    ctx.arc(r, 0, r, Math.PI / 2, Math.PI * 1.5);
+    ctx.closePath();
   }
 
   /** Avisos en el suelo (debajo de los Pokémon). */
@@ -99,17 +111,18 @@ G.Hazards = (() => {
         ctx.setLineDash([4, 4]);
         ctx.beginPath(); ctx.ellipse(h.x, h.y, h.r, h.r * 0.75, 0, 0, 6.2832); ctx.stroke();
       } else {
+        // Franja con los extremos redondeados (25-11-2026, como el juego oficial; antes, un rectángulo).
         ctx.translate(h.x, h.y);
         ctx.rotate(h.angle);
         ctx.globalAlpha = 0.14;
         ctx.fillStyle = h.color;
-        ctx.fillRect(0, -h.w / 2, h.len, h.w);
+        capsule(ctx, h.len, h.w); ctx.fill();
         ctx.globalAlpha = 0.34;
-        ctx.fillRect(0, -h.w / 2 * k, h.len, h.w * k);
+        capsule(ctx, h.len, h.w * k); ctx.fill();
         ctx.globalAlpha = k > 0.75 && blink ? 0.95 : 0.55;
         ctx.strokeStyle = h.color; ctx.lineWidth = 2;
         ctx.setLineDash([6, 4]);
-        ctx.strokeRect(0, -h.w / 2, h.len, h.w);
+        capsule(ctx, h.len, h.w); ctx.stroke();
       }
       ctx.restore();
     }

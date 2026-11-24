@@ -215,7 +215,7 @@ G.Combat = (() => {
     let healed = 0;
     for (const e of G.EnemyMgr.queryCircle(pl.x, pl.y, m.radius)) {
       hit(pl, e, m.dmg * pl.atkFor(m), col, e.x - pl.x, e.y - pl.y, 0, m);
-      if (m.drain) healed += m.drain;
+      if (m.drain && !e.arceus) healed += m.drain;      // (pegar a Arceus no cura: abajo, en hit)
     }
     for (const p of G.World.propsInCircle(pl.x, pl.y, m.radius)) G.World.damageProp(p, m.dmg * pl.atkFor(m), col);
     if (healed > 0) pl.heal(Math.min(healed, 6));
@@ -809,7 +809,8 @@ G.Combat = (() => {
     dmg *= k * (crit ? critMul(pl) : 1);
     e.hurt(dmg, col, dx, dy, sk ? knock : 0, crit ? 'crit' : G.Types.label(G.Types.mult(m.type, e.types)));
     if (pl.dyna && !ghost) G.Powers.splash(pl, e, dmg);   // Dinamax: cada golpe salpica
-    if (!ghost) pl.onDealt(dmg);
+    // Pegarle a Arceus no cura (25-11-2026, como el juego oficial): ni robo de vida ni Cascabel Concha.
+    if (!ghost && !e.arceus) pl.onDealt(dmg);
     pl.dmgDealt += dmg;
     m.dealt = (m.dealt || 0) + dmg;               // por ataque, para el resumen de la pausa
     if (m.burn && sk) e.applyBurn(m.burn * sk);
@@ -927,11 +928,11 @@ G.Combat = (() => {
         if (Math.random() < 0.5) G.FX.sp('impact', p.vis ? p.vis.pal : 'normal', e.x, e.y - e.bodyH * 0.5, { life: 0.12, scale: 1 });
         pl.dmgDealt += p.dmg * k;
         if (p.src) p.src.dealt = (p.src.dealt || 0) + p.dmg * k;
-        pl.onDealt(p.dmg * k);
+        if (!e.arceus) pl.onDealt(p.dmg * k);
         if (p.burn && sk) e.applyBurn(p.burn * sk);
         if (p.poison && sk) e.applyPoison(p.poison * sk);
         if (p.slow && sk) e.applySlow(Math.min(0.8, p.slow * sk));
-        if (p.drain) pl.heal(p.drain);                    // Beso Drenaje
+        if (p.drain && !e.arceus) pl.heal(p.drain);       // Beso Drenaje (a Arceus, no)
         if (p.pstun && sk && !e.dead) e.applyStun(p.pstun * (e.boss || e.judge ? 0.35 : 1));   // Hidropulso
         if (p.splash) splashAt(pl, p, e);                  // Fuerza Lunar
         afterHit(pl, e, p.src);

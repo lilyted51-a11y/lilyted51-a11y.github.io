@@ -818,6 +818,11 @@
   "The {x} Ghost-type Pokémon from every region, with double shiny odds. Only until November 2.": "來自所有地區的 {x} 隻幽靈屬性寶可夢，異色機率加倍。僅限 11 月 2 日前。",
   "El banner de Halloween ya ha terminado.": "萬聖節卡池已結束。",
   "The Halloween banner has ended.": "萬聖節卡池已結束。",
+  // 25-11-2026 (copia local): auditoría de las novedades oficiales 13-16/11 (compras con conexión, poder al evolucionar)
+  "Sin conexión: con tu cuenta, comprar necesita internet.": "沒有連線：使用帳號時，購買需要網路。",
+  "No connection: with your account, buying needs internet.": "沒有連線：使用帳號時，購買需要網路。",
+  "Tu poder se adapta a {x}: {x}": "你的力量配合{x}改變了：{x}",
+  "Your power adapts to {x}: {x}": "你的力量配合{x}改變了：{x}",
   // 25-11-2026 (copia local): formas de combate (systems/battleforms.js)
   "¡{x} cambia de forma!": "{x}的形態改變了！",
   "{x} changes form!": "{x}的形態改變了！",
