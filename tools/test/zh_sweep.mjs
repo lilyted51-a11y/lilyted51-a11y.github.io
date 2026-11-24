@@ -12,7 +12,7 @@ import { tab, sleep } from './cdp.lib.mjs';
 const port = +(process.argv[2] || 9337);
 const A = await tab(port);
 // Lo que puede quedar en latín: teclas, marcas, nombres propios de jugadores de prueba
-const OK = /^(WASD|Esc|Enter|Tab|Shift|Ctrl|Space|Start|Select|HP|XP|PC|OK|LB|RB|FPS|USB|Wi-?Fi|App|IP|NFT|OFL|Inc\.?|Sans|MiNG|tester1|Folagor|Sekiam|PokeAlex|lindaolin|Minecraft|YouTube|Google|Gmail|GitHub|Chrome|Safari|iPhone|Android|PlayStation|Switch|Xbox|Firebase|PokéSurvivor|Pok[eé]mon|Pok[eé]API|SpriteCollab|PMD|Nintendo|Creatures|GAME|FREAK|Company|The|HUD|TheAdro7?|JPTER78|CC|BY-NC|PolyForm|Noncommercial|Pixelify|Survivor\.io|CREDITS\.md|Kecleon|Kyogre|Mewtwo|Gengar|Pikachu|Umbreon|Arceus|Mega|Lv|Nv|AI|Bot|BENCH|Español|English|Français|Italiano|Português|Brasil|ms|fps|px|s|x|v\d+)$/i;
+const OK = /^(WASD|Esc|Enter|Tab|Shift|Ctrl|Alt|AltGr|Del|Home|End|PgUp|PgDn|Insert|dev|Space|Start|Select|HP|XP|PC|OK|LB|RB|FPS|USB|Wi-?Fi|App|IP|NFT|OFL|Inc\.?|Sans|MiNG|tester1|Folagor|Sekiam|PokeAlex|lindaolin|Minecraft|YouTube|Google|Gmail|GitHub|Chrome|Safari|iPhone|Android|PlayStation|Switch|Xbox|Firebase|PokéSurvivor|Pok[eé]mon|Pok[eé]API|SpriteCollab|PMD|Nintendo|Creatures|GAME|FREAK|Company|The|HUD|TheAdro7?|JPTER78|CC|BY-NC|PolyForm|Noncommercial|Pixelify|Survivor\.io|CREDITS\.md|Kecleon|Kyogre|Mewtwo|Gengar|Pikachu|Umbreon|Arceus|Mega|Lv|Nv|AI|Bot|BENCH|Español|English|Français|Italiano|Português|Brasil|ms|fps|px|s|x|v\d+)$/i;
 const latinBits = s => [...new Set((String(s).match(/[A-Za-zÀ-ž][A-Za-zÀ-ž'’.\-]{2,}/g) || []).map(w => w.replace(/[.'’\-]+$/, '')))].filter(w => !OK.test(w) && !/^(pokesurvivor\.com|pokeapi\.co|MIT|Noncommercial|Anchored|Floating)$/i.test(w));
 const found = new Map();   // texto -> dónde
 const note = (where, texts) => { for (const t of texts) if (t && latinBits(t).length) found.set(t.trim().slice(0, 160), (found.get(t.trim().slice(0, 160)) || where)); };
@@ -73,7 +73,28 @@ for (const go of ['dex', 'wardrobe', 'upgrades', 'shop', 'bag', 'gacha', 'goals'
     await A.ev(`G.DB.save.stats.x10 = 9; 1`);   // (la décima ×10 trae un huevo místico)
     await click('#pull-10'); await sleep(5000); await grab('gacha ×10 resultado'); await click('#pull-close');
   }
-  if (go === 'settings') { await clickAll('#set-tabs .gen-tab'); await A.ev(`G.SettingsUI.close(); 1`); }
+  if (go === 'settings') {
+    await clickAll('#set-tabs .gen-tab'); await A.ev(`G.GuideUI.close(); 1`);
+    // Teclas (24-11-2026): el editor, «pulsa una tecla», una tecla que ya era de otra acción (aviso), quitar una y restablecer.
+    await A.ev(`G.SettingsUI.open('ctl'); 1`); await sleep(500); await grab('Ajustes: teclas');
+    await click('[data-kact=power][data-kslot="0"]'); await grab('Ajustes: pulsa una tecla');
+    await A.ev(`dispatchEvent(new KeyboardEvent('keydown', { code: 'F1', key: 'F1', bubbles: true })); 1`); await sleep(300);   // (vale: F1)
+    await click('[data-kact=power][data-kslot="0"]');
+    await A.ev(`dispatchEvent(new KeyboardEvent('keydown', { code: 'F5', key: 'F5', bubbles: true })); 1`); await sleep(300); await grab('Ajustes: tecla que no se puede usar');
+    await A.ev(`dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE', key: 'e', bubbles: true })); 1`); await sleep(500); await grab('Ajustes: tecla cambiada (aviso)');
+    await click('[data-kact=next][data-kslot="1"]'); await A.ev(`dispatchEvent(new KeyboardEvent('keydown', { code: 'Numpad9', key: '9', bubbles: true })); 1`); await sleep(400);
+    await click('[data-kact=prev][data-kslot="1"]'); await A.ev(`dispatchEvent(new KeyboardEvent('keydown', { code: 'Space', key: ' ', bubbles: true })); 1`); await sleep(400);
+    await click('[data-kact=reroll][data-kslot="0"]'); await click('#keycap-clear'); await grab('Ajustes: teclas cambiadas');
+    await click('#kb-reset'); await grab('Ajustes: teclas restablecidas');
+    // Guías (24-11-2026): la portada, cada apartado, el buscador sin resultados y un tipo.
+    await A.ev(`G.GuideUI.open(); 1`); await sleep(900); await grab('Guías: portada');
+    for (const id of await A.ev(`G.GuideUI.SECTIONS.map(s => s.id)`)) { await A.ev(`G.GuideUI.show('${id}'); 1`); await sleep(500); await grab('Guías: ' + id); }
+    await A.ev(`G.GuideUI.show('moves'); 1`); await sleep(400); await click('[data-ft=fire]'); await grab('Guías: movimientos de Fuego');
+    await A.ev(`(() => { const q = document.getElementById('guide-q'); q.value = 'zzzz'; q.oninput(); return 1; })()`); await sleep(400); await grab('Guías: buscar sin resultado');
+    await A.ev(`G.GuideUI.show('items'); 1`); await sleep(400); await A.ev(`(() => { const q = document.getElementById('guide-q'); q.value = 'zzzz'; q.oninput(); return 1; })()`); await sleep(400); await grab('Guías: objetos sin resultado');
+    await misses('Guías');
+    await A.ev(`G.GuideUI.close(); G.SettingsUI.close(); 1`);
+  }
   // Maestría (23-11-2026): la lista, buscar, la ficha con los premios (ponerse foto, título y marco) y una sin premios.
   if (go === 'mastery') {
     await A.ev(`(() => { const i = document.getElementById('mast-q'); i.value = 'zzz'; i.oninput(); return 1; })()`); await sleep(500); await grab('Maestría: buscar sin resultado');

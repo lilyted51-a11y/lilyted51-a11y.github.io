@@ -84,6 +84,9 @@ for (const f of ['js/zh-tw.js', 'en/bot.js']) {
   } catch (e) { /* no está */ }
 }
 html = html.replace(/<meta name="robots" content="noindex">\s*/, '');
+// La versión exacta, para Ajustes › Acerca de (ui/settings-ui.js): la misma huella y hora que version.json.
+const AT = new Date().toISOString();
+html = html.replace('</head>', `<meta name="ps-version" content="${hash}" data-at="${AT}">\n</head>`);
 // --sin-seo: sin canonical/redes/datos estructurados ni enlaces a las páginas
 // (para publicar antes de tener el dominio pokesurvivor.com).
 const SIN_SEO = process.argv.includes('--sin-seo');
@@ -94,6 +97,6 @@ fs.writeFileSync(OUT, html);
 // actualiza solo (en el menú, o al acabar la partida). Ver js/core/updater.js.
 // --forzar: versión obligatoria, también corta las partidas en curso (guardándolas).
 const FORZAR = process.argv.includes('--forzar');
-fs.writeFileSync(path.join(ROOT, 'version.json'), JSON.stringify(Object.assign({ v: hash, at: new Date().toISOString() }, FORZAR ? { force: true } : {})) + '\n');
+fs.writeFileSync(path.join(ROOT, 'version.json'), JSON.stringify(Object.assign({ v: hash, at: AT }, FORZAR ? { force: true } : {})) + '\n');
 console.log('ok: diccionarios ' + langSizes.join(' · '));
 console.log(`${FORZAR ? '[OBLIGATORIA] ' : ''}${SIN_SEO ? '[sin SEO] ' : ''}${EXPOSE ? '[SIN PROTEGER, sólo pruebas] ' : ''}ok: ${files.length} scripts · ${(joined.length / 1024).toFixed(0)} KB -> ${(min.length / 1024).toFixed(0)} KB (app.min.js?v=${hash})`);

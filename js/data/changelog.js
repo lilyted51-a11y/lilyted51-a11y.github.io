@@ -5,6 +5,26 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-11-24', title: ["Lo que faltaba de la Gran Actualización", "The rest of the Great Update"],
+    new: [
+    ["Ajustes → Controles: todas las teclas del ordenador se pueden cambiar, dos por acción (principal y secundaria). Si eliges una tecla que ya usa otra acción, se cambian entre ellas y el juego te lo dice; un botón las devuelve a las de serie. Las ayudas del juego (ataques, esferas, poder, cartas y pausa) enseñan las teclas que pongas.",
+     "Settings → Controls: every computer key can be changed, two per action (main and secondary). If you pick a key another action already uses, they swap and the game tells you; one button puts the defaults back. The game's hints (moves, orbs, power, cards and pause) show the keys you set."],
+    ["Ajustes → Gráficos: límite de FPS (30, 60, 90, 120, 144 o sin límite). La partida va igual de rápida: sólo se dibujan menos fotogramas, para gastar menos batería.",
+     "Settings → Graphics: FPS limit (30, 60, 90, 120, 144 or unlimited). The game runs at the same speed: it only draws fewer frames, to save battery."],
+    ["Guías, en Ajustes: todo el juego explicado, con una portada con Pokémon paseando. Cómo se juega, los Pokémon y sus stats, todos los movimientos (tipo, con qué stat pegan y su evolución, con buscador), objetos, mejoras, poderes, jefes finales, eventos y maestría.",
+     "Guides, in Settings: the whole game explained, with a cover of Pokémon strolling by. How to play, Pokémon and their stats, every move (type, which stat it uses and its evolution, with a search box), items, upgrades, powers, final bosses, events and mastery."]
+    ],
+    chg: [
+    ["Ajustes → Acerca de enseña la versión exacta del juego.",
+     "Settings → About shows the exact game version."]
+    ],
+    fix: [
+    ["Con el editor de una tecla abierto, Esc, el botón Atrás del móvil o la B del mando lo cierran a él y no los Ajustes.",
+     "With the key editor open, Esc, the mobile Back button or B on a gamepad close the editor and not Settings."],
+    ["Al subir de nivel, la tecla 4 también sale en la ayuda de las cartas.",
+     "When levelling up, key 4 also shows in the cards' hint."]
+    ]
+  },
   { d: '2026-11-23', title: ["La Gran Actualización: Eternatus y sus poderes, dificultades, Vestidor y estelas, huevos, Maestría, desafío semanal, Casino Rocket, grietas y Sentencia nuevas", "The Great Update: Eternatus and its powers, difficulties, Dressing Room and trails, eggs, Mastery, weekly challenge, Rocket Casino, new rifts and Judgment"], new: [
     ["Vestidor, en el menú (y con un botón en la ficha de cada Pokémon): para cada Pokémon eliges su versión normal o shiny, su aspecto (las formas que sólo cambian el dibujo), su skin, un efecto (brillos, aura de su tipo, halo de luz o aura oscura) y su estela, y lo ves dando vueltas antes de jugar.",
      "Dressing Room, in the menu (and with a button on each Pokémon's page): for each Pokémon you choose its normal or shiny version, its look (forms that only change the sprite), its skin, an effect (sparkles, type aura, halo of light or dark aura) and its trail, and you can watch it walk around before playing."],

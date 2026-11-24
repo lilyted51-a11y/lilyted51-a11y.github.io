@@ -16,6 +16,8 @@
  *   trails      'all' | 'mine' | 'off'            estelas: las de todos, sólo la tuya o ninguna (entities/trails.js)
  *   trailLite   true/false                        estelas con la mitad de partículas
  *   dressFx     true/false                        efectos del Vestidor (brillos, auras, halo) en la partida
+ *   keys        { acción: [tecla, tecla] }        teclas cambiadas (sólo las que no son de serie; core/keys.js)
+ *   fpsCap      0 | 30 | 60 | 90 | 120 | 144      límite de FPS (0: sin límite; game.js loop)
  *
  *   G.Settings.get('quality')  ·  G.Settings.set('fps', true)  ·  G.Settings.on(fn)
  *   G.Settings.fx   nivel efectivo 0 (bajo) .. 2 (alto), ya resuelto el 'auto'
@@ -24,7 +26,8 @@ G.Settings = (() => {
   const KEY = 'ps.settings';
   const DEF = { quality: 'auto', dmgNumbers: true, calm: false, fps: false, stick: 1, stickMode: 'float', pad: null, gamepad: true, padRumble: true, aimManual: false,
                 gachaSkip: false, minimap: true,    // copia local: saltar animación del gacha · minimapa
-                trails: 'all', trailLite: false, dressFx: true };   // estelas y efectos (23-11-2026)
+                trails: 'all', trailLite: false, dressFx: true,     // estelas y efectos (23-11-2026)
+                keys: {}, fpsCap: 0 };                              // teclas cambiadas y límite de FPS (24-11-2026)
   let s = Object.assign({}, DEF);
   try { Object.assign(s, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { /* nada */ }
   const fns = new Set();
@@ -46,7 +49,9 @@ G.Settings = (() => {
     const fps = frames / acc;
     acc = 0; frames = 0;
     // 3 s seguidos por debajo de 45 FPS: baja un nivel; 8 s por encima de 57: sube.
-    if (fps < 45) { slowT++; fastT = 0; } else if (fps > 57) { fastT++; slowT = 0; } else { slowT = fastT = 0; }
+    // (Con límite de FPS, en proporción al límite: a 30 FPS puestos a mano no hay que bajar la calidad.)
+    const goal = Math.min(60, +s.fpsCap || 60) / 60;
+    if (fps < 45 * goal) { slowT++; fastT = 0; } else if (fps > 57 * goal) { fastT++; slowT = 0; } else { slowT = fastT = 0; }
     if (slowT >= 3 && autoLevel > 0) { autoLevel--; slowT = 0; }
     if (fastT >= 8 && autoLevel < (touchy ? 1 : 2)) { autoLevel++; fastT = 0; }
   }

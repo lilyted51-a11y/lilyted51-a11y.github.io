@@ -77,7 +77,7 @@ G.Orbs = (() => {
       // La primera vez en la partida: qué hace y cómo se usa.
       seen.add(id);
       const i = bag(pl).findIndex(s => s && s.id === id);
-      const how = G.Pad.name ? G.T('X para usarla') : G.Touch.active ? G.T('tócala encima de tus ataques') : G.I18n.f('tecla {x}', i + 5);
+      const how = G.Pad.name ? G.T('X para usarla') : G.Touch.active ? G.T('tócala encima de tus ataques') : G.I18n.f('tecla {x}', G.T(G.Keys.label('orb' + (i + 1))));
       G.Spawner.say(G.T(o.name) + ' (' + how + '): ' + G.T(o.desc), 5);
     }
   }

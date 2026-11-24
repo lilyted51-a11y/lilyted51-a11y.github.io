@@ -20,6 +20,8 @@ G.Input = (() => {
     down.add(c);
     // Evita que el navegador haga scroll con flechas/espacio durante el juego.
     if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'space', 'tab'].includes(c)) e.preventDefault();
+    // Teclas cambiadas (core/keys.js): en la partida, una tecla puesta a una acción no hace lo del navegador (/ busca, ' ...).
+    else if (G.Keys && G.Game && G.Game.state !== 'ui' && G.Keys.isBound(c) && !e.ctrlKey && !e.metaKey && !e.altKey) e.preventDefault();
   });
   addEventListener('keyup', e => down.delete(code(e)));
   // Copia local: con el bot jugando no se sueltan sus teclas al cambiar de ventana (él sabe cuáles tiene pulsadas).
@@ -37,10 +39,12 @@ G.Input = (() => {
       const g = G.Pad && G.Pad.vector();
       if (g && (g[0] || g[1])) return g;
       let x = 0, y = 0;
-      if (MOVE_KEYS.left.some(k => down.has(k))) x -= 1;
-      if (MOVE_KEYS.right.some(k => down.has(k))) x += 1;
-      if (MOVE_KEYS.up.some(k => down.has(k))) y -= 1;
-      if (MOVE_KEYS.down.some(k => down.has(k))) y += 1;
+      // Las teclas de moverse las pone el jugador (core/keys.js); sin él, las de siempre.
+      const on = d => (G.Keys ? G.Keys.held(d) : MOVE_KEYS[d].some(k => down.has(k)));
+      if (on('left')) x -= 1;
+      if (on('right')) x += 1;
+      if (on('up')) y -= 1;
+      if (on('down')) y += 1;
       return G.U.norm(x, y);
     },
     held(c) { return down.has(c); },

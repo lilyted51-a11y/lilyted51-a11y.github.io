@@ -68,7 +68,7 @@ G.Powers = (() => {
     cards.push(card('z', 'Pulsera Z', G.I18n.f('{x} s lanzando grandes Z de un tipo y, al final, un movimiento Z a toda la pantalla.', DEF.z.dur)));
     cards.push(card('tera', 'Teracristal', G.I18n.f('{x} s del tipo que elijas: sus ataques de ese tipo pegan mucho más.', DEF.tera.dur)));
     G.Game.choose(done => {
-      G.RunUI.showChoice('¡Elige tu poder!', 'Uno para el resto de la partida · se usa con F (en el mando, B)', cards, c => {
+      G.RunUI.showChoice('¡Elige tu poder!', G.I18n.f('Uno para el resto de la partida · se usa con {x} (en el mando, B)', G.T(G.Keys.label('power'))), cards, c => {
         if (c.id === 'mega' && forms.length > 1) return pickForm(pl, forms, done);
         if (c.id === 'z' || c.id === 'tera') return pickType(pl, c.id, done);
         set(pl, c.id, c.arg); done();
@@ -98,7 +98,7 @@ G.Powers = (() => {
     pl.powerId = id; pl.powerArg = arg; pl.powerCd = 0; pl.powerOn = false; pl.powerT = 0;
     pl.powerCdMul = pl.powerCdMul || 1;
     G.Audio.sfx('legend');
-    G.Spawner.say(G.I18n.f('¡Poder: {x}! Úsalo con F', G.T(DEF[id].name)), 3, true);
+    G.Spawner.say(G.I18n.f('¡Poder: {x}! Úsalo con {x}', G.T(DEF[id].name), G.T(G.Keys.label('power'))), 3, true);   // (su tecla: core/keys.js)
   }
 
   // ---------------- usar ----------------
@@ -386,7 +386,8 @@ G.Powers = (() => {
     ctx.font = F(800, 9); ctx.textAlign = 'left';
     ctx.fillStyle = rdy ? d.color : '#a8b4cc';
     const up = d.name.toUpperCase();
-    ctx.fillText(rdy ? G.T('[F] ' + up) : G.I18n.f(up + ' · {x} s', Math.ceil(pl.powerOn ? pl.powerT : pl.powerCd)), x + w + 6, y + 6);
+    // (La tecla del poder es la que se haya puesto en Ajustes › Controles; de serie, F.)
+    ctx.fillText(rdy ? '[' + G.T(G.Keys.label('power')) + '] ' + G.T(up) : G.I18n.f(up + ' · {x} s', Math.ceil(pl.powerOn ? pl.powerT : pl.powerCd)), x + w + 6, y + 6);
     ctx.restore();
   }
   /** Botón redondo del móvil, cuando está listo. */
