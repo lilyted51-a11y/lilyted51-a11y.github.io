@@ -149,5 +149,36 @@ G.Shop = (() => {
     return { ok: true };
   }
 
-  return { ITEMS, ORDER, count, take, tmCount, takeTm, dailyTms, tmPrice, buy, buySkin, today, week, weeklyTrails, buyTrail };
+  // ---------------- objetos de la partida (24-11-2026, copia local: systems/startitem.js) ----------------
+  /*
+   * Los objetos equipables de la partida (data/items.js), a 500 cada uno, para la Mejora Objeto inicial.
+   * Van a save.held[id] (cuántos), en la libreta como la Mochila ('h:<id>'), y se gasta uno al empezar
+   * una partida con él. Los que dan experiencia (Huevo Suerte, Amuleto Exp.) no se venden; si ya tienes
+   * alguno, lo puedes seguir usando.
+   */
+  const HELD_PRICE = 500;
+  const NO_SALE = ['luckyegg', 'expcharm'];
+  const heldForSale = () => G.Items.LIST.map(i => i.id).filter(id => !NO_SALE.includes(id));
+  const heldCount = id => { const s = save(); return (s && s.held && s.held[id]) || 0; };
+  function takeHeld(id) {
+    const s = save();
+    if (!heldCount(id)) return false;
+    if (--s.held[id] <= 0) delete s.held[id];
+    return true;
+  }
+  /** Compra uno de los objetos de la partida. → { ok, error? } */
+  function buyHeld(id) {
+    const s = save();
+    if (!s || !G.Items.BY[id]) return { ok: false };
+    if (!heldForSale().includes(id)) return { ok: false, error: 'Ese objeto no se vende.' };
+    if (s.coins < HELD_PRICE) return { ok: false, error: 'No tienes Pokémonedas suficientes.' };
+    s.coins -= HELD_PRICE;
+    s.held = s.held || {};
+    s.held[id] = Math.min(999, (s.held[id] || 0) + 1);
+    G.DB.commit();
+    return { ok: true };
+  }
+
+  return { ITEMS, ORDER, count, take, tmCount, takeTm, dailyTms, tmPrice, buy, buySkin, today, week, weeklyTrails, buyTrail,
+           HELD_PRICE, heldForSale, heldCount, takeHeld, buyHeld };
 })();

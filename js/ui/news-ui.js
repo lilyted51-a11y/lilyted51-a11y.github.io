@@ -16,7 +16,19 @@ G.NewsUI = (() => {
     $('news-close').onclick = close;
     refresh();
   }
-  function refresh() { $('btn-news').classList.toggle('new', seen() < latest()); }
+  function refresh() { $('btn-news').classList.toggle('new', seen() < latest()); card(); }
+
+  /** Tarjeta del menú principal (24-11-2026): la última novedad, con «Nuevo» si no la has visto; abre la lista. */
+  function card() {
+    const el = $('menu-news'), v = G.CHANGELOG[0];
+    if (!el || !v) return;
+    const p = v.title, title = !p ? '' : G.I18n.lang === 'es' ? p[0] : G.I18n.lang === 'en' || !G.I18n.has(p[0]) ? p[1] : G.T(p[0]);
+    const fresh = seen() < latest();
+    el.classList.toggle('new', fresh);
+    el.innerHTML = `<span class="m2-news-h">${G.Icons.html('book', 18)} <b>${G.T('Novedades')}</b>${fresh ? `<i class="m2-new">${G.T('Nuevo')}</i>` : ''}<small>${fmt(v.d)}</small></span>
+      <span class="m2-news-t">${esc(title)}</span>`;
+    el.onclick = open;
+  }
 
   function fmt(d) {
     const [y, m, day] = d.split('-').map(Number);
@@ -42,5 +54,5 @@ G.NewsUI = (() => {
   }
   function close() { $('scr-news').classList.add('hidden'); }
 
-  return { init, open, close };
+  return { init, open, close, card };
 })();

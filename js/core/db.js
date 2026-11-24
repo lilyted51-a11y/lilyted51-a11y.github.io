@@ -95,6 +95,10 @@ G.DB = (() => {
       // Tienda Kecleon (20-10-2026, ver data/shop.js y systems/mons.js):
       bag: {},                // Mochila: id -> cuántos (mint, cap, caph); en la libreta, como las monedas
       tms: {},                // MT sin usar: movimiento -> cuántas; también en la libreta
+      // Objeto inicial (24-11-2026, systems/startitem.js): objetos de la partida comprados (id -> cuántos; en la
+      // libreta como 'h:<id>') y el elegido para empezar con cada Pokémon (dex -> id).
+      held: {},
+      psitem: {},
       ptm: {},                // dex -> [movimientos aprendidos con MT] (para siempre)
       ptmT: {},               // 'dex:movimiento' -> fecha: + enseñada entonces, − borrada con la MT vacía (para fusionar)
       pnat: {},               // dex -> [naturaleza, fecha]: la cambiada con Menta (si no, la que le tocó)
@@ -185,8 +189,14 @@ G.DB = (() => {
         if (typeof s[k][d] !== 'string' || (G.DEX_BY && !G.DEX_BY[d]) || (G.Moves && !G.Moves.BY_ID[s[k][d]])) delete s[k][d];
       }
     }
+    // Objeto inicial elegido de cada Pokémon: un objeto que exista ('' = ninguno).
+    if (!isObj(s.psitem)) s.psitem = {};
+    for (const d of Object.keys(s.psitem)) {
+      const v = s.psitem[d];
+      if (typeof v !== 'string' || (v && G.Items && !G.Items.BY[v]) || (G.DEX_BY && !G.DEX_BY[d])) delete s.psitem[d];
+    }
     // Mochila y MT: cuántas de cada cosa que exista (tope 999).
-    for (const [k, ok] of [['bag', id => !G.Shop || G.Shop.ITEMS[id]], ['tms', id => !G.Moves || G.Moves.BY_ID[id]]]) {
+    for (const [k, ok] of [['bag', id => !G.Shop || G.Shop.ITEMS[id]], ['tms', id => !G.Moves || G.Moves.BY_ID[id]], ['held', id => !G.Items || G.Items.BY[id]]]) {
       if (!isObj(s[k])) s[k] = {};
       for (const id of Object.keys(s[k])) {
         s[k][id] = Math.min(999, num(s[k][id]));
@@ -287,8 +297,9 @@ G.DB = (() => {
    * libreta: 'b:<objeto>' (save.bag) y 'm:<movimiento>' (save.tms). Así una Menta
    * gastada en un aparato no vuelve a aparecer al fusionar con el otro.
    */
-  const isCurKey = k => !!CUR[k] || /^b:[a-z0-9]{1,12}$/.test(k) || /^m:[a-z0-9-]{1,40}$/.test(k);
-  const SUB = { b: 'bag', m: 'tms' };
+  // (24-11-2026) Y los objetos de la partida comprados para el Objeto inicial: 'h:<objeto>' (save.held).
+  const isCurKey = k => !!CUR[k] || /^b:[a-z0-9]{1,12}$/.test(k) || /^m:[a-z0-9-]{1,40}$/.test(k) || /^h:[a-z0-9]{1,20}$/.test(k);
+  const SUB = { b: 'bag', m: 'tms', h: 'held' };
   function curGet(s, k) {
     if (CUR[k]) return CUR[k][0](s);
     const o = s[SUB[k[0]]];
@@ -304,6 +315,7 @@ G.DB = (() => {
     const ks = new Set(Object.keys(CUR));
     for (const id of Object.keys(s.bag || {})) ks.add('b:' + id);
     for (const id of Object.keys(s.tms || {})) ks.add('m:' + id);
+    for (const id of Object.keys(s.held || {})) ks.add('h:' + id);
     for (const dev in led || {}) for (const k in led[dev]) if (isCurKey(k)) ks.add(k);
     return [...ks];
   }
@@ -391,8 +403,8 @@ G.DB = (() => {
     }
     r.led = led;
     r.tickets = r.tickets || { t1: 0, t10: 0 };
-    r.bag = {}; r.tms = {};
-    for (const k of curKeys({ bag: {}, tms: {} }, led)) curSet(r, k, Math.max(0, ledSum(led, k)));
+    r.bag = {}; r.tms = {}; r.held = {};
+    for (const k of curKeys({ bag: {}, tms: {}, held: {} }, led)) curSet(r, k, Math.max(0, ledSum(led, k)));
     // MT aprendidas: nunca se olvidan (unión). Naturaleza y habilidad: la elegida más tarde.
     r.ptm = r.ptm || {};
     for (const d in older.ptm || {}) r.ptm[d] = [...new Set((r.ptm[d] || []).concat(older.ptm[d] || []))];
@@ -433,7 +445,7 @@ G.DB = (() => {
       for (const d in older[coll] || {}) r[coll][d] = Math.max(+r[coll][d] || 0, +older[coll][d] || 0);
     }
     // Movimiento inicial: el de la versión más reciente; si no lo tenía elegido, el de la otra.
-    for (const k of ['pstart', 'pstart2']) {
+    for (const k of ['pstart', 'pstart2', 'psitem']) {
       r[k] = r[k] || {};
       for (const d in older[k] || {}) if (!(d in r[k])) r[k][d] = older[k][d];
     }
@@ -442,7 +454,7 @@ G.DB = (() => {
     // devolvía el veto viejo al guardar (21-10-2026, el Torbellino de Kyogre).
     const ta = a.pickT || {}, tb = b.pickT || {};
     r.pickT = Object.assign({}, ta, tb);
-    for (const k of ['pban', 'pstart', 'pstart2']) {
+    for (const k of ['pban', 'pstart', 'pstart2', 'psitem']) {
       r[k] = r[k] || {};
       const ds = new Set([...Object.keys((a[k] || {})), ...Object.keys((b[k] || {}))]);
       for (const d of ds) {

@@ -100,7 +100,7 @@ G.Game = (() => {
   let trapped = false;
   function needsTrap() {
     if (state !== 'ui') return true;
-    return BACK_SCREENS.some(shown) || ['scr-settings', 'scr-news', 'scr-support', 'scr-profile', 'pull-fx', 'egg-fx'].some(shown);
+    return BACK_SCREENS.some(shown) || ['scr-settings', 'scr-news', 'scr-support', 'scr-profile', 'pull-fx', 'egg-fx', 'scr-sitem'].some(shown);
   }
   function ensureTrap() {
     if (trapped || !needsTrap() || !window.history || !history.pushState) return;
@@ -116,6 +116,7 @@ G.Game = (() => {
     }
     if (shown('pull-fx') || shown('egg-fx')) return;               // la tirada del gacha, un huevo abriéndose
     if (shown('scr-profile')) { document.getElementById('scr-profile').classList.add('hidden'); return; }
+    if (G.StartItem.open) { G.StartItem.close(); return; }       // la ventana del Objeto inicial (24-11-2026)
     if (G.SettingsUI.isOpen) { G.SettingsUI.close(); return; }
     if (shown('scr-news')) { G.NewsUI.close(); return; }
     if (shown('scr-support')) { G.SupportUI.close(); return; }
@@ -271,6 +272,9 @@ G.Game = (() => {
       else if (pool.length) pl.addMove(G.U.pick(pool));
       pl.setActive(0);
     }
+    // Mejora "Objeto inicial" (24-11-2026, systems/startitem.js): el elegido, si te queda (se gasta uno).
+    // En grupo, cada uno el suyo; en el desafío, nada.
+    G.StartItem.apply(pl, mon.dex, ch);
 
     if (coop) {
       G.Coop.begin(coop, pl, coopApi);
