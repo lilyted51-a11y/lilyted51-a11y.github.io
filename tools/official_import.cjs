@@ -44,13 +44,13 @@ const TYPE_ES = { normal: 'Normal', fire: 'Fuego', water: 'Agua', electric: 'El�
 const TYPE_ZH = { normal: '一般', fire: '火', water: '水', electric: '電', grass: '草', ice: '冰', fighting: '格鬥', poison: '毒', ground: '地面',
   flying: '飛行', psychic: '超能力', bug: '蟲', rock: '岩石', ghost: '幽靈', dragon: '龍', dark: '惡', steel: '鋼', fairy: '妖精' };
 const TYPE_EN = t => t[0].toUpperCase() + t.slice(1);
-const CREAM = { 'vanilla-cream': ['Vanilla Cream', '奶香奶油'], 'ruby-cream': ['Ruby Cream', '紅寶石奶油'], 'matcha-cream': ['Matcha Cream', '抹茶奶油'],
-  'mint-cream': ['Mint Cream', '薄荷奶油'], 'lemon-cream': ['Lemon Cream', '檸檬奶油'], 'salted-cream': ['Salted Cream', '鹽味奶油'],
-  'ruby-swirl': ['Ruby Swirl', '紅寶石綜合'], 'caramel-swirl': ['Caramel Swirl', '焦糖綜合'], 'rainbow-swirl': ['Rainbow Swirl', '三色綜合'] };
-const SWEET = { strawberry: ['Strawberry', '草莓糖飾'], berry: ['Berry', '莓果糖飾'], love: ['Love', '愛心糖飾'], star: ['Star', '星星糖飾'],
-  clover: ['Clover', '四葉草糖飾'], flower: ['Flower', '花朵糖飾'], ribbon: ['Ribbon', '蝴蝶結糖飾'] };
+const CREAM = { 'vanilla-cream': ['Vanilla Cream', '奶香香草'], 'ruby-cream': ['Ruby Cream', '奶香紅鑽'], 'matcha-cream': ['Matcha Cream', '奶香抹茶'],
+  'mint-cream': ['Mint Cream', '奶香薄荷'], 'lemon-cream': ['Lemon Cream', '奶香檸檬'], 'salted-cream': ['Salted Cream', '奶香雪鹽'],
+  'ruby-swirl': ['Ruby Swirl', '紅鑽綜合'], 'caramel-swirl': ['Caramel Swirl', '焦糖綜合'], 'rainbow-swirl': ['Rainbow Swirl', '三色綜合'] };
+const SWEET = { strawberry: ['Strawberry', '草莓糖飾'], berry: ['Berry', '野莓糖飾'], love: ['Love', '愛心糖飾'], star: ['Star', '星星糖飾'],
+  clover: ['Clover', '幸運草糖飾'], flower: ['Flower', '花朵糖飾'], ribbon: ['Ribbon', '蝴蝶結糖飾'] };
 const PIKA = { belle: ['Pikachu Belle', '貴婦皮卡丘'], cosplay: ['Pikachu Cosplay', '換裝皮卡丘'], libre: ['Pikachu Libre', '面罩摔角手皮卡丘'],
-  phd: ['Pikachu Ph.D.', '博士皮卡丘'], 'pop-star': ['Pikachu Pop Star', '流行偶像皮卡丘'], 'rock-star': ['Pikachu Rock Star', '搖滾巨星皮卡丘'] };
+  phd: ['Pikachu Ph.D.', '博士皮卡丘'], 'pop-star': ['Pikachu Pop Star', '偶像皮卡丘'], 'rock-star': ['Pikachu Rock Star', '硬搖滾皮卡丘'] };
 const REGION_ZH = { alola: '阿羅拉', galar: '伽勒爾', hisui: '洗翠', paldea: '帕底亞' };
 
 /** [inglés, chino] de una forma nueva (las que ya teníamos conservan los suyos). */
