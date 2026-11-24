@@ -611,7 +611,7 @@ G.Game = (() => {
       moves: pl.moves, caught,
       challenge: ch ? { label: G.Challenge.label(ch), desc: G.Challenge.desc(ch), dex: ch.dex, tk: time >= G.Challenge.TICKET_AT } : null,
       breakdown: Object.entries(parts).filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(' · ') +
-                 (mul > 1 ? ` · ×${mul.toFixed(2)} Fortuna` : '') + (mk > 1 ? ' · ' + G.I18n.f('×{x} {x}', String(mk).replace('.', ','), G.T(G.Modes.cur.name)) : '') + (boosted ? ' · ×5 · +' + survival.toLocaleString() + ' (' + Math.floor(time) + ' s × 10000)' : ck > 1 ? ' · ×' + ck : '')
+                 (mul > 1 ? ` · ×${mul.toFixed(2)} Fortuna` : '') + (mk > 1 ? ' · ' + G.I18n.f('×{x} {x}', (window.PSZH_T ? String(mk) : String(mk).replace('.', ',')), G.T(G.Modes.cur.name)) : '') + (boosted ? ' · ×5 · +' + survival.toLocaleString() + ' (' + Math.floor(time) + ' s × 10000)' : ck > 1 ? ' · ×' + ck : '')
     }, () => { pl = null; G.Flow.afterRun(); });
   }
 

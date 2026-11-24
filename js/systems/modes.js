@@ -63,7 +63,7 @@ G.Modes = (() => {
       const ok = unlocked(m.id, s);
       b.className = (m.id === on ? 'on' : '') + (ok ? '' : ' locked');
       b.style.setProperty('--mc', m.col);
-      b.innerHTML = (ok ? '' : G.Icons.html('lock', 11) + ' ') + G.T(m.name) + (m.reward > 1 ? ` <small>×${String(m.reward).replace('.', ',')}</small>` : '');
+      b.innerHTML = (ok ? '' : G.Icons.html('lock', 11) + ' ') + G.T(m.name) + (m.reward > 1 ? ` <small>×${(window.PSZH_T ? String(m.reward) : String(m.reward).replace('.', ','))}</small>` : '');
       b.title = ok ? G.T(desc(m)) : G.T(m.id === 'hard' ? 'Vence a Eternatus en Normal para desbloquearlo' : 'Vence a Eternatus en Difícil para desbloquearlo');
       b.dataset.sfx = ok ? 'click' : 'none';
       b.onclick = () => {
