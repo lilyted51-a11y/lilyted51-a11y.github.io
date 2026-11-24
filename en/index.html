@@ -9,7 +9,7 @@
 <meta http-equiv="Content-Security-Policy" content="script-src 'self' file: https://www.gstatic.com https://apis.google.com https://*.firebaseio.com https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>PokéSurvivor – Free online Pokémon survival game (Survivor.io style)</title>
-<meta name="description" content="Survive hordes of Pokémon with your partner in this free fan game for browser and mobile: 1110 Pokémon, shinies, legendaries and online co-op with friends. No downloads, no ads.">
+<meta name="description" content="Survive hordes of Pokémon with your partner in this free fan game for browser and mobile: 1171 Pokémon, shinies, legendaries and online co-op with friends. No downloads, no ads.">
 <link rel="canonical" href="https://pokesurvivor.com/en/">
 <meta name="robots" content="noindex, nofollow">   <!-- copia privada: fuera de los buscadores -->
 <meta name="theme-color" content="#0a1430">
@@ -20,7 +20,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://pokesurvivor.com/en/">
 <meta property="og:title" content="PokéSurvivor – Survive the Pokémon hordes">
-<meta property="og:description" content="A free fan game for browser and mobile: 1110 Pokémon, shinies, legendaries and co-op with up to 8 friends. No downloads, no ads.">
+<meta property="og:description" content="A free fan game for browser and mobile: 1171 Pokémon, shinies, legendaries and co-op with up to 8 friends. No downloads, no ads.">
 <meta property="og:image" content="https://pokesurvivor.com/assets/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -77,8 +77,8 @@
   ]
 }
 </script>
-<link rel="stylesheet" href="css/style.css?v=326fc2e0d4">
-<script src="js/core/locales.js?v=3a02555c2d"></script>
+<link rel="stylesheet" href="css/style.css?v=6a11d9f29e">
+<script src="js/core/locales.js?v=124ff74cfc"></script>
 <script src="js/noframe.js"></script>
 </head>
 <body>
@@ -188,47 +188,59 @@
   </div>
 </section>
 
-<!-- ====== Menú principal ====== -->
-<section id="scr-menu" class="scr hidden">
-  <div class="menu-left">
-    <div class="logo">
-      <div class="t1">PokéSurvivor<span class="splash">Folagor, Sekiam, PokeAlex: ¿un hueco?</span></div>
-      <div class="t2">Mundo Misterioso</div>
-      <div id="menu-hw" class="hw-count hidden"></div>
-    </div>
-    <div class="partner-card">
-      <canvas id="menu-partner" class="stage" width="260" height="200"></canvas>
-      <div class="nm" id="menu-partner-name"></div>
-      <div class="lv" id="menu-partner-info"></div>
-      <div id="menu-mast"></div>
-      <div class="seg hidden" id="menu-shiny"><button data-v="0">Normal</button><button data-v="1"></button></div>
-    </div>
-    <!-- Desafío semanal (js/ui/challenge-ui.js): el Pokémon y la condición de esta semana -->
-    <button class="box ch-card" id="menu-ch" type="button">
-      <canvas id="ch-card-mon" width="64" height="56"></canvas>
-      <span class="ch-txt"><b class="gold">Desafío semanal</b><span id="ch-card-cond"></span><small id="ch-card-sub"></small></span>
-    </button>
+<!-- ====== Menú principal ======
+     Sin scroll (24-11-2026, como la Gran Actualización del juego oficial): todo cabe en la pantalla, en el PC y
+     en el móvil en vertical y en horizontal, con la dificultad y el desafío semanal a la vista. La rejilla está
+     en css/style.css («menú principal sin scroll», al final). Cada botón con data-go lo abre js/ui/menu.js. -->
+<section id="scr-menu" class="scr hidden m2">
+  <div class="m2-logo logo">
+    <div class="t1">PokéSurvivor<span class="splash">Folagor, Sekiam, PokeAlex: ¿un hueco?</span></div>
+    <div class="t2">Mundo Misterioso</div>
+    <div id="menu-hw" class="hw-count hidden"></div>
   </div>
-  <div class="menu-right">
-    <div class="box">
-      <!-- Dificultad (systems/modes.js) -->
-      <div class="mode-pick"><div class="seg" id="menu-mode"></div><div id="menu-mode-sub" class="mode-sub"></div></div>
-      <div class="menu-list">
-        <button class="menu-item play" data-go="play">Jugar<small>Entra en la mazmorra</small></button>
-        <button class="menu-item" data-go="dex">Pokémon<small id="menu-dex-count">Tu colección</small></button>
-        <button class="menu-item" data-go="wardrobe">Vestidor<small>Shiny, aspecto, skin, efectos y estela</small></button>
-        <button class="menu-item" data-go="upgrades">Mejoras<small>Haz más fuerte cada run</small></button>
-        <button class="menu-item" data-go="shop">Tienda Kecleon<small>Mentas, Cápsulas, MT y estelas</small></button>
-        <button class="menu-item" data-go="bag">Mochila<small id="menu-bag-sub">Vacía</small></button>
-        <button class="menu-item" data-go="gacha">Gacha<small>9 regiones · Pokémon y shinies</small></button>
-        <button class="menu-item" data-go="goals">Misiones<small id="menu-goals-sub">Misiones, logros y perfil</small></button>
-        <button class="menu-item" data-go="friends" style="position:relative">Amigos<small id="menu-friends-sub">Juega en grupo, hasta 10</small><span id="menu-dm-badge" class="dm-badge hidden" title="Mensajes nuevos"></span></button>
-        <button class="menu-item" data-go="rank">Ranking<small>Quién aguanta más</small></button>
-        <button class="menu-item" data-go="mastery">Maestría<small id="menu-mast-sub">Tus Pokémon y sus premios</small></button>
-      </div>
+  <div class="box m2-panel">
+    <div class="m2-top">
+      <button class="menu-item m2-tile play" data-go="play">Jugar<small>Entra en la mazmorra</small></button>
+      <button class="menu-item m2-tile" data-go="gacha">Gacha<small>9 regiones · Pokémon y shinies</small></button>
+      <button class="menu-item m2-tile" data-go="wardrobe">Vestidor<small>Shiny, aspecto, skin, efectos y estela</small></button>
+      <button class="menu-item m2-tile" data-go="friends">Amigos<small id="menu-friends-sub">Juega en grupo, hasta 10</small><span id="menu-dm-badge" class="dm-badge hidden" title="Mensajes nuevos"></span></button>
+      <button class="menu-item m2-tile" data-go="shop">Tienda Kecleon<small>Mentas, Cápsulas, MT y estelas</small></button>
     </div>
-    <div class="box" style="padding:14px 18px">
-      <div id="menu-stats" style="font-size:14px;color:var(--muted)"></div>
+    <div class="m2-mid">
+      <!-- Desafío semanal (js/ui/challenge-ui.js): el Pokémon y la condición de esta semana -->
+      <button class="ch-card m2-ch" id="menu-ch" type="button">
+        <canvas id="ch-card-mon" width="64" height="56"></canvas>
+        <span class="ch-txt"><b class="gold">Desafío semanal</b><span id="ch-card-cond"></span><small id="ch-card-sub"></small></span>
+      </button>
+      <!-- Dificultad (systems/modes.js) -->
+      <div class="mode-pick m2-mode"><div class="seg" id="menu-mode"></div><div id="menu-mode-sub" class="mode-sub"></div></div>
+    </div>
+    <div class="m2-row">
+      <button class="menu-item m2-tile sm" data-go="dex">Pokémon<small id="menu-dex-count">Tu colección</small></button>
+      <button class="menu-item m2-tile sm" data-go="upgrades">Mejoras<small>Haz más fuerte cada run</small></button>
+      <button class="menu-item m2-tile sm" data-go="bag">Mochila<small id="menu-bag-sub">Vacía</small></button>
+      <button class="menu-item m2-tile sm" data-go="goals">Misiones<small id="menu-goals-sub">Misiones, logros y perfil</small></button>
+      <button class="menu-item m2-tile sm" data-go="rank">Ranking<small>Quién aguanta más</small></button>
+    </div>
+    <div class="m2-foot">
+      <button class="menu-item m2-tile line" data-go="mastery">Maestría<small id="menu-mast-sub">Tus Pokémon y sus premios</small></button>
+      <div id="menu-stats" class="m2-stats"></div>
+    </div>
+  </div>
+  <div class="m2-side">
+    <!-- Novedades: la última (js/ui/news-ui.js, card); la lista entera, como el botón de la barra de arriba -->
+    <button class="box m2-news" id="menu-news" type="button"></button>
+    <div class="box partner-card m2-partner">
+      <div class="m2-ph"><span>Tu compañero</span><button class="btn small ghost" id="menu-partner-go" type="button">Cambiar</button></div>
+      <canvas id="menu-partner" class="stage" width="260" height="200"></canvas>
+      <div class="m2-pinfo">
+        <div class="nm" id="menu-partner-name"></div>
+        <div class="lv" id="menu-partner-info"></div>
+        <div id="menu-mast"></div>
+        <div class="seg hidden" id="menu-shiny"><button data-v="0">Normal</button><button data-v="1"></button></div>
+        <!-- Mejora Objeto inicial (systems/startitem.js): con qué objeto empieza -->
+        <button class="m2-sitem hidden" id="menu-sitem" type="button"></button>
+      </div>
     </div>
   </div>
 </section>
@@ -298,6 +310,7 @@
       <button class="gen-tab" data-t="a11y">Accesibilidad</button>
       <button class="gen-tab" data-t="acc">Cuenta</button>
       <button class="gen-tab" data-t="about">Acerca de</button>
+      <button class="gen-tab" data-t="guide">Guías</button>
     </div>
     <div id="set-body" class="set-body"></div>
   </div>
@@ -367,7 +380,7 @@
     <div class="boot-in">
       <h1>PokéSurvivor</h1>
       <p>PokéSurvivor necesita JavaScript para funcionar. Actívalo para jugar.</p>
-      <p>Fan game gratuito de supervivencia con 966 Pokémon de las 9 regiones: elige tu compañero, sobrevive a las hordas, evoluciona tus ataques, enfréntate a legendarios y juega en cooperativo con hasta 8 amigos.</p>
+      <p>Fan game gratuito de supervivencia con 1024 Pokémon de las 9 regiones: elige tu compañero, sobrevive a las hordas, evoluciona tus ataques, enfréntate a legendarios y juega en cooperativo con hasta 8 amigos.</p>
       <p><a href="en/guide/">Guía del juego</a> · <a href="en/pokedex/">Pokédex: todos los Pokémon jugables</a></p>    </div>
   </div>
 </noscript>
@@ -525,6 +538,15 @@
   </div>
 </section>
 
+<!-- ====== Build de una marca del ranking (24-11-2026, js/ui/ranking-ui.js openBuild) ====== -->
+<section id="scr-rkb" class="scr dim hidden">
+  <div class="box profile-box rkb-box">
+    <div class="row between"><h2>Build de la marca</h2><button class="btn small ghost" id="rkb-close">Cerrar</button></div>
+    <p class="sub" id="rkb-mark"></p>
+    <div id="rkb-body"></div>
+  </div>
+</section>
+
 <!-- ====== Invitación recibida ====== -->
 <div id="invite-pop" class="box invite-pop hidden">
   <div id="inv-text"></div>
@@ -679,10 +701,10 @@
 <section id="scr-levelup" class="scr dim hidden">
   <div class="box center">
     <h2>¡Nivel <span id="lvl-num">2</span>!</h2>
-    <p class="sub">Elige una recompensa<span class="kbd-hint"> · <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></span></p>
+    <p class="sub">Elige una recompensa<span class="kbd-hint" id="lvl-keys"> · <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></span></p>
     <p id="lvl-step" class="sub gold hidden"></p>
     <div id="cards" class="cards"></div>
-    <button id="lvl-reroll" class="btn small ghost hidden" data-sfx="none" style="margin-top:10px">Cambiar opciones (<span id="lvl-rr-n">1</span>)<span class="kbd-hint"> · <kbd>R</kbd></span></button>
+    <button id="lvl-reroll" class="btn small ghost hidden" data-sfx="none" style="margin-top:10px">Cambiar opciones (<span id="lvl-rr-n">1</span>)<span class="kbd-hint" id="lvl-rr-key"> · <kbd>R</kbd></span></button>
     <p id="lvl-wait" class="note hidden"></p>
   </div>
 </section>
@@ -717,7 +739,7 @@
 <section id="scr-pause" class="scr dim hidden">
   <div class="box center pause-box">
     <h2>Pausa</h2>
-    <p class="sub kbd-hint"><kbd>WASD</kbd> moverse · <kbd>1</kbd>–<kbd>4</kbd> movimiento · <kbd>Q</kbd>/<kbd>E</kbd> ciclar · <kbd>5</kbd>–<kbd>8</kbd> esferas · <kbd>Esc</kbd> pausa</p>
+    <p class="sub kbd-hint" id="pause-keys"><kbd>WASD</kbd> moverse · <kbd>1</kbd>–<kbd>4</kbd> movimiento · <kbd>Q</kbd>/<kbd>E</kbd> ciclar · <kbd>5</kbd>–<kbd>8</kbd> esferas · <kbd>Esc</kbd> pausa</p>
     <p class="sub touch-hint">Arrastra el dedo para moverte · toca un ataque para cambiarlo · toca una esfera para usarla</p>
     <p id="pause-coop" class="note hidden">Partida en grupo: el juego sigue mientras estás aquí.</p>
     <div class="row" style="justify-content:center">
@@ -742,9 +764,9 @@
 </section>
 
 <!-- datos generados -->
-<script defer src="js/app.min.js?v=759578fa0e"></script>
+<script defer src="js/app.min.js?v=c638d01c21"></script>
 <!-- interfaz en chino tradicional (fuera del bloque: no se empaqueta en app.min.js; va antes que los defer para traducir también el canvas) -->
-<script src="js/zh-tw.js?v=442f574fe5"></script>
+<script src="js/zh-tw.js?v=ad60731c1d"></script>
 <!-- bot local de juego automático (la partida con el bot activo no sube al ranking) -->
 <script src="en/bot.js?v=2aad165d9f"></script>
 </body>
