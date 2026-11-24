@@ -14,6 +14,12 @@ Las 42 especies que SpriteCollab aún no tiene (514, 516, 520, 522, 523, 538, 55
 (`tools/fetch_official_sprites.py`), que las convirtió de los sprites de *Pokémon Edición Reloaded*
 (F3R, Jhony_Ryu).
 
+Las formas, megas y Gigamax del juego oficial (sus números: 5xxxxx formas, 1xxxxx megas, 15xxxx Gigamax,
+3xxxxx/4xxxxx segundas megas) y los sprites que el oficial tiene mejores que los nuestros (más animaciones o
+shiny) se han tomado también de él (`tools/fetch_official_assets.py`, `tools/official_import.cjs`), con permiso
+del dueño de esta copia. Casi todos son de SpriteCollab (artistas de la tabla de abajo y de su repositorio);
+los que el oficial marca como convertidos, de *Pokémon Edición Reloaded* (F3R, Jhony_Ryu).
+
 | Artista | Contacto | Sprites (nº de Pokédex) |
 |---|---|---|
 | 3Monika4 | <@270755102178934785> | 20, 61, 63 |

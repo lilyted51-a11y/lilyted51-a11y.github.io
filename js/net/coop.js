@@ -222,12 +222,12 @@ G.Coop = (() => {
              mag: num(a[9], 0, 0, 5000), aim: num(a[10], 0, -10, 10), xpMul: num(a[11], 1, 0.1, 20),
              rev: num(a[12], 0, 0, 60), ch: a[13] === undefined ? undefined : a[13] ? 1 : 0, ld: num(a[14], 0, 0, 1e9),
              // copia local: Pokémon y shiny del compañero (cambio de Pokémon en la sala)
-             dx: num(a[15], 0, 0, 1e6), sh: a[16] ? 1 : 0,
+             dx: num(a[15], 0, 0, 2e6), sh: a[16] ? 1 : 0,
              wa: typeof a[17] === 'string' ? a[17].slice(0, 64) : '', zm: num(a[18], 1, 1, 1.5),
              pw: Math.floor(num(a[19], 0, 0, 40)),
              // Vestidor: estela, efecto y aspecto (G.Dress.applyNet sólo acepta los que existen)
              tr: typeof a[20] === 'string' ? a[20].slice(0, 24) : '', fx: typeof a[21] === 'string' ? a[21].slice(0, 12) : '',
-             lk: Math.floor(num(a[22], 0, 0, 1e5)),
+             lk: Math.floor(num(a[22], 0, 0, 2e6)),
              au: a[23] === 1 ? 1 : 0 };            // aura de maestro (systems/mastery.js)
   }
 

@@ -36,7 +36,7 @@ G.Photo = (() => {
 
   // ---------------- caras ----------------
 
-  const base = d => { d = Math.floor(+d) || 0; while (d > 1025) d -= 1000; return d; };
+  const base = d => { d = Math.floor(+d) || 0; if (G.formBase) return G.formBase(d); while (d > 1025) d -= 1000; return d; };   // (data/forms.js)
   const mask = d => (G.PORTRAITS && G.PORTRAITS[base(d)]) || 0;
   const has = (d, e) => { const i = EX.indexOf(e); return i >= 0 && !!(mask(d) & (1 << i)); };
   const exOf = d => EX.filter(e => has(d, e));

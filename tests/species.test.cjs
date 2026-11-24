@@ -12,7 +12,7 @@ const G = {};
 const zhNames = {};
 const ctx = vm.createContext({ G, console });
 G.I18n = { add: d => Object.assign(zhNames, d) };
-for (const f of ['js/data/pokedex.js', 'js/data/sprites-meta.js', 'js/data/abilities.js', 'js/data/evolutions.js', 'js/data/tms.js'])
+for (const f of ['js/data/pokedex.js', 'js/data/sprites-meta.js', 'js/data/forms.js', 'js/data/abilities.js', 'js/data/evolutions.js', 'js/data/tms.js'])
   vm.runInContext(src(f), ctx, { filename: f });
 vm.runInContext(src('js/data/lang-zh-hant-names.js'), ctx, { filename: 'lang-zh-hant-names.js' });
 // zh-tw.js: las líneas «  "clave": "valor",» de su diccionario
@@ -30,10 +30,11 @@ test('cada Pokémon de la Pokédex tiene su entrada en sprites-meta y sus hojas 
     assert.ok(m.a.Idle || m.a.Walk, p.dex + ': sin Idle ni Walk');
     const dir = path.join(root, 'assets/pokemon', String(p.dex));
     const have = new Set(fs.existsSync(dir) ? fs.readdirSync(dir) : []);
-    for (const a of Object.keys(m.a)) if (!have.has(a + '.png')) files.push(p.dex + '/' + a);
+    // (f: esa animación usa la hoja de otra: sprites del juego oficial)
+    for (const a of Object.keys(m.a)) if (!m.a[a].f && !have.has(a + '.png')) files.push(p.dex + '/' + a);
     if (m.sh) {
       const sh = new Set(have.has('s') ? fs.readdirSync(path.join(dir, 's')) : []);
-      for (const a of Object.keys(m.a)) if (!(m.sm || []).includes(a) && !sh.has(a + '.png')) files.push(p.dex + '/s/' + a);
+      for (const a of Object.keys(m.a)) if (!m.a[a].f && !(m.sm || []).includes(a) && !sh.has(a + '.png')) files.push(p.dex + '/s/' + a);
     }
   }
   assert.deepEqual(miss, [], 'sin sprites-meta');
@@ -58,19 +59,19 @@ test('las especies nuevas: datos, habilidades con nombre, MT, rareza y sin rompe
   }
   assert.equal(G.DEX_BY[1025].rarity, 5); assert.ok(G.DEX_BY[1025].leg, 'Pecharunt es singular');
   assert.ok(G.DEX_BY[1003].leg, 'Ting-Lu es legendario');
-  // Evoluciones: sólo entre Pokémon que están (592 Frillish no está: nadie evoluciona a 593 desde él)
+  // Evoluciones: sólo entre Pokémon que están (desde el 24-11-2026 también Frillish → Jellicent)
   for (const [from, to] of Object.entries(G.EVOS)) for (const t of to) {
     assert.ok(G.DEX_BY[from] && G.DEX_BY[t], `evolución ${from} → ${t} con alguno que falta`);
   }
   assert.deepEqual(plain(G.EVOS[878]), [879]); assert.deepEqual(plain(G.EVOS[928]), [929]); assert.deepEqual(plain(G.EVOS[929]), [930]);
-  assert.ok(!Object.values(G.EVOS).some(l => l.includes(593)), 'Jellicent sin Frillish');
+  assert.deepEqual(plain(G.EVOS[592]), [593], 'Frillish → Jellicent');
 });
 
-test('los aspectos (excl) llevan los tipos de su especie y el número especie + 1000·k', () => {
-  const looks = G.DEX.filter(p => p.dex > 1025 && p.excl && p.dex !== 1384);
-  assert.ok(looks.length >= 90);
+test('los aspectos (forma «look» del juego oficial) llevan los tipos de su especie', () => {
+  const looks = G.DEX.filter(p => p.form === 'look');
+  assert.ok(looks.length >= 220);
   for (const p of looks) {
-    const b = G.DEX_BY[p.dex % 1000];
+    const b = G.DEX_BY[G.FORMS[p.dex].d];
     assert.ok(b, p.name + ': su especie');
     assert.deepEqual(plain(p.types), plain(b.types), p.name);
   }

@@ -1006,7 +1006,7 @@
     const dex = mon && mon.dex;
     if (!dex) return [];
     let l = SIG.filter(m => m.sig.includes(dex));
-    if (!l.length && dex > 1025) { let b = dex; while (b > 1025) b -= 1000; l = SIG.filter(m => m.sig.includes(b)); }
+    if (!l.length && dex > 1025) { const b = G.formBase(dex); l = SIG.filter(m => m.sig.includes(b)); }
     return l.map(m => m.id);
   }
   /** ¿Es exclusivo de algún Pokémon? */

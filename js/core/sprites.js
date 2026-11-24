@@ -52,7 +52,8 @@ G.Sprites = (() => {
     const m = meta(dex);
     if (!m) return null;
     shiny = shiny && !!m.sh;
-    if (has(m, anim, shiny)) return anim;
+    // f: esa animación usa la hoja de otra (sprites del juego oficial: Attack → Walk...).
+    if (has(m, anim, shiny)) { const f = m.a[anim].f; return f && has(m, f, shiny) ? f : anim; }
     return has(m, 'Idle', shiny) ? 'Idle' : 'Walk';
   }
 

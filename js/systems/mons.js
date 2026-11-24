@@ -78,8 +78,10 @@ G.Mons = (() => {
   /** [habilidad 1, habilidad 2 o 0, oculta o 0] */
   // Las formas propias de esta copia (Mega, regionales... nº = base + 1000·k) no vienen en los datos de
   // PokeAPI: usan las de su forma base.
-  const baseDex = dex => { while (dex > 1025) dex -= 1000; return dex; };
-  const slots = dex => (G.DEX_ABIL && (G.DEX_ABIL[dex] || G.DEX_ABIL[baseDex(dex)])) || [0, 0, 0];
+  const baseDex = dex => (G.formBase ? G.formBase(dex) : dex);   // (25-11-2026: data/forms.js; los números del oficial no se restan)
+  // (25-11-2026) Las formas del juego oficial traen las suyas (data/forms.js).
+  const formAbil = dex => { const f = G.FORMS && G.FORMS[dex]; return f && f.abl && f.abl.some(Boolean) ? f.abl : null; };
+  const slots = dex => (G.DEX_ABIL && (G.DEX_ABIL[dex] || formAbil(dex) || G.DEX_ABIL[baseDex(dex)])) || [0, 0, 0];
   /** Hueco que le tocó: 2 (oculta) 1 de cada 20 si tiene; si no, 0 o 1. */
   function rolledSlot(dex) {
     const l = slots(dex);
