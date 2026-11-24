@@ -8,6 +8,7 @@ juego oficial (pokesurvivor.com, con permiso del dueño), y les hace su entrada 
     python tools/fetch_official_sprites.py --faltan         # las especies 1-1025 sin sprite en el juego
     python tools/fetch_official_sprites.py --base URL ...   # otra raíz (pruebas: un servidor local)
     python tools/fetch_official_sprites.py --dry ...        # sólo dice qué hay, sin guardar nada
+    python tools/fetch_official_sprites.py --local ...      # vuelve a medir lo ya bajado, sin red
 
 Luego:  python tools/add_species.py --no-sprites <los mismos números>   (datos, nombres, MT, meta)
         node tools/make_evolutions.js
@@ -70,8 +71,33 @@ def alpha_of(png):
     return im, im.getchannel('A').point(lambda a: 255 if a > 40 else 0)
 
 
-def measure(png):
-    """→ (w, h, n, r) del fotograma, o None si no se puede cortar bien."""
+def alike(a, W, fh):
+    """Hojas cuyos fotogramas se tocan (sin columna transparente entre ellos): si al partir la fila 0 en
+    k trozos iguales cada uno se parece al primero (mismo tamaño de dibujo y casi los mismos píxeles), son
+    k fotogramas. → k, o 1."""
+    for k in range(2, 9):
+        if W % k:
+            continue
+        fw = W // k
+        if fw < 12:
+            break
+        fr = [a.crop((x * fw, 0, (x + 1) * fw, fh)) for x in range(k)]
+        bbs = [f.getbbox() for f in fr]
+        if any(bb is None for bb in bbs):
+            continue
+        b0 = bbs[0]
+        if any(abs((bb[2] - bb[0]) - (b0[2] - b0[0])) > 3 or abs((bb[3] - bb[1]) - (b0[3] - b0[1])) > 3 for bb in bbs):
+            continue
+        d0 = list(fr[0].getdata())
+        on = sum(1 for v in d0 if v) or 1
+        if all(sum(1 for u, v in zip(d0, f.getdata()) if u != v) / on < 0.45 for f in fr[1:]):
+            return k
+    return 1
+
+
+def measure(png, hint=None):
+    """→ (w, h, n, r) del fotograma, o None si no se puede cortar bien. hint: ancho del fotograma de Idle
+    (si Idle es un solo fotograma, suele ser el mismo en las demás hojas)."""
     im, a = alpha_of(png)
     W, H = im.size
     dens_all = a.histogram()[255] / (W * H)
@@ -81,7 +107,13 @@ def measure(png):
         fh = H // rows
         if rows > 1 and any(a.crop((0, y * fh, W, (y + 1) * fh)).getbbox() is None for y in range(rows)):
             continue
-        for fw in [w for w in range(8, W, 8) if W % w == 0] + [W]:
+        # Las hojas del oficial que no vienen de SpriteCollab tienen anchos sueltos (23, 37...): vale
+        # cualquier divisor del ancho, empezando por el de Idle; el corte por columnas transparentes
+        # descarta los que caen dentro del Pokémon.
+        cands = [w for w in range(10, W) if W % w == 0] + [W]
+        if hint and W % hint == 0 and hint in cands:
+            cands.remove(hint); cands.insert(0, hint)
+        for fw in cands:
             n = W // fw
             # en la fila 0, todos con dibujo (salvo huecos al final)
             filled = [a.crop((x * fw, 0, (x + 1) * fw, fh)).getbbox() is not None for x in range(n)]
@@ -89,7 +121,8 @@ def measure(png):
             if not last or not all(filled[:last]):
                 continue
             if n == 1:
-                return fw, fh, 1, rows
+                k = alike(a, W, fh)
+                return (W // k, fh, k, rows) if k > 1 else (fw, fh, 1, rows)
             # los cortes entre fotogramas caen en columnas (casi) transparentes: un ataque puede rozar el
             # borde en alguna dirección, pero un corte por dentro del Pokémon atraviesa mucho dibujo.
             cut = sum(a.crop((xx, 0, xx + 1, H)).histogram()[255] for k in range(1, n) for xx in (k * fw - 1, k * fw))
@@ -107,26 +140,37 @@ def feet(png, fw, fh, n):
     return fw / 2 - 0.5, (bb[3] - 1 - 1.5) if bb else round(fh * 0.78, 1)
 
 
-def one(dex, base, dry):
+def read_local(path):
+    try:
+        with open(path, 'rb') as f:
+            return f.read()
+    except OSError:
+        return None
+
+
+def one(dex, base, dry, local=False):
     out = os.path.join(fs.OUT_ASSETS, str(dex))
     got, shiny = {}, {}
+    get = (lambda an, s='': read_local(os.path.join(out, s, an + '.png'))) if local else           (lambda an, s='': fetch_png(f'{base}/assets/pokemon/{dex}/{s + "/" if s else ""}{an}.png'))
     for an in ANIMS:
-        png = fetch_png(f'{base}/assets/pokemon/{dex}/{an}.png')
+        png = get(an)
         if png:
             got[an] = png
     if 'Idle' not in got and 'Walk' not in got:
         print(f'{dex}: no hay hojas'); return None
     for an in got:
-        png = fetch_png(f'{base}/assets/pokemon/{dex}/s/{an}.png')
+        png = get(an, 's')
         if png:
             shiny[an] = png
     meta = {'a': {}}
     widest = 0
-    foot = None
+    hint = None
     for an in ANIMS:
         if an not in got:
             continue
-        m = measure(got[an])
+        m = measure(got[an], hint)
+        if an == 'Idle' and m and m[2] == 1:
+            hint = m[0]
         if not m:
             print(f'   {dex} {an}: no sé cortar la hoja ({Image.open(io.BytesIO(got[an])).size}), se deja fuera'); continue
         fw, fh, n, rows = m
@@ -150,7 +194,7 @@ def one(dex, base, dry):
     if dry:
         return meta
     os.makedirs(out, exist_ok=True)
-    for an in meta['a']:
+    for an in ([] if local else meta['a']):
         fs.save_optimized(got[an], os.path.join(out, an + '.png'))
         if an in shiny:
             os.makedirs(os.path.join(out, 's'), exist_ok=True)
@@ -167,13 +211,14 @@ def main():
     if '--base' in args:
         base = args[args.index('--base') + 1].rstrip('/')
     dry = '--dry' in args
+    local = '--local' in args     # volver a medir las hojas ya bajadas (assets/pokemon/<dex>/), sin red
     nums = [int(a) for a in args if a.isdigit() and (not ('--base' in args) or a != args[args.index('--base') + 1])]
     if '--faltan' in args:
         src = open(os.path.join(fs.ROOT, 'js', 'data', 'pokedex.js'), encoding='utf-8').read()
         have = {int(d) for d in re.findall(r'"dex":(\d+),', src)}
         nums = [d for d in range(1, 1026) if d not in have]
         print(f'{len(nums)} especies sin sprite: {nums}')
-    ok = [d for d in nums if one(d, base, dry)]
+    ok = [d for d in nums if one(d, base, dry, local)]
     print(f'\n{len(ok)} de {len(nums)} con sprites: {ok}')
 
 

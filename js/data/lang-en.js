@@ -640,7 +640,7 @@ G.I18n.add({
   'Puedes borrar tu cuenta cuando quieras (se borran también tu apodo, tus amigos y tus marcas):': 'You can delete your account whenever you want (your nickname, friends and records are deleted too):',
   'Borrar mi cuenta y mi partida': 'Delete my account and my game',
   'PokéSurvivor necesita JavaScript para funcionar. Actívalo para jugar.': 'PokéSurvivor needs JavaScript to work. Please enable it to play.',
-  'Fan game gratuito de supervivencia con 982 Pokémon de las 9 regiones: elige tu compañero, sobrevive a las hordas, evoluciona tus ataques, enfréntate a legendarios y juega en cooperativo con hasta 4 amigos.': 'A free survival fan game with 982 Pokémon from all 9 regions: choose your partner, survive the hordes, evolve your moves, take on legendaries and play co-op with up to 4 friends.',
+  'Fan game gratuito de supervivencia con 1024 Pokémon de las 9 regiones: elige tu compañero, sobrevive a las hordas, evoluciona tus ataques, enfréntate a legendarios y juega en cooperativo con hasta 4 amigos.': 'A free survival fan game with 1024 Pokémon from all 9 regions: choose your partner, survive the hordes, evolve your moves, take on legendaries and play co-op with up to 4 friends.',
   'Guía del juego': 'Game guide',
   // donaciones
   'Apoyar': 'Support', 'Apoyar el proyecto': 'Support the project', 'Donar en Ko-fi': 'Donate on Ko-fi', 'Más información': 'More info',
@@ -2010,7 +2010,11 @@ G.I18n.add({
   // 24-11-2026 (copia local): especies y formas nuevas (tools/add_species.py, tools/add_forms.py)
   "Ferrodada": "Iron Treads",
   "Electrofuria": "Raging Bolt",
-  "Llegan 16 Pokémon que faltaban: Jellicent, Stunfisk, Aromatisse, Toucannon, Rolycoly, Sirfetch’d, Cufant, Copperajah, Dolliv, Grafaiai, Toedscool, Bombirdier, Ferrodada, Ting-Lu, Electrofuria y Pecharunt. Salen en el gacha de su región, en los huevos, como enemigos y en la Colección; Ting-Lu y Pecharunt, también en las grietas.": "16 missing Pokémon arrive: Jellicent, Stunfisk, Aromatisse, Toucannon, Rolycoly, Sirfetch’d, Cufant, Copperajah, Dolliv, Grafaiai, Toedscool, Bombirdier, Iron Treads, Ting-Lu, Raging Bolt and Pecharunt. They show up in their region's gacha, in eggs, as enemies and in the Collection; Ting-Lu and Pecharunt, in rifts too.",
+  "Furioseta": "Brute Bonnet",
+  "Ferrocuello": "Iron Jugulis",
+  "Ferromole": "Iron Boulder",
+  "Ferrotesta": "Iron Crown",
+  "Llegan 58 Pokémon que faltaban, como Jellicent, Sirfetch’d, Copperajah, Grafaiai, Gimmighoul, Flamigo, los tesoros funestos Wo-Chien, Chien-Pao y Ting-Lu, Okidogi, Miraidon, Pecharunt y las paradojas Furioseta, Ferrocuello, Ferrodada, Electrofuria, Ferromole y Ferrotesta. Salen en el gacha de su región, en los huevos, como enemigos y en la Colección; los legendarios, también en las grietas.": "58 missing Pokémon arrive, like Jellicent, Sirfetch’d, Copperajah, Grafaiai, Gimmighoul, Flamigo, the Treasures of Ruin Wo-Chien, Chien-Pao and Ting-Lu, Okidogi, Miraidon, Pecharunt and the paradoxes Brute Bonnet, Iron Jugulis, Iron Treads, Raging Bolt, Iron Boulder and Iron Crown. They show up in their region's gacha, in eggs, as enemies and in the Collection; the legendaries, in rifts too.",
   "Tres Megaevoluciones nuevas para el poder Megaevolución: Mega Sceptile, Mega Chimecho y Mega Hawlucha (también en el gacha de su región).": "Three new Mega Evolutions for the Mega Evolution power: Mega Sceptile, Mega Chimecho and Mega Hawlucha (also in their region's gacha).",
   "94 aspectos nuevos en el Vestidor, que sólo cambian el dibujo: las letras de Unown, los 19 dibujos de Vivillon, las flores de Flabébé, Floette y Florges, las estaciones de Deerling y Sawsbuck, los núcleos de Minior, las tarjetas de Genesect, Mimikyu desenmascarado, Magearna de hace 500 años y más.": "94 new looks in the Dressing Room, which only change the sprite: Unown's letters, Vivillon's 19 patterns, the flowers of Flabébé, Floette and Florges, Deerling and Sawsbuck's seasons, Minior's cores, Genesect's drives, busted Mimikyu, Original Color Magearna and more.",
   // 24-11-2026 (copia local): movimientos con formas de atacar nuevas (systems/moves2.js)

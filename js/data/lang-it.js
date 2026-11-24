@@ -487,7 +487,7 @@ G.I18n.add({
   'Puedes borrar tu cuenta cuando quieras (se borran también tu apodo, tus amigos y tus marcas):': 'Puoi eliminare il tuo account in qualsiasi momento (verranno cancellati anche il tuo soprannome, i tuoi amici e i tuoi record):',
   'Borrar mi cuenta y mi partida': 'Elimina il mio account e la mia partita',
   'PokéSurvivor necesita JavaScript para funcionar. Actívalo para jugar.': 'PokéSurvivor richiede JavaScript per funzionare. Attivalo per giocare.',
-  'Fan game gratuito de supervivencia con 982 Pokémon de las 9 regiones: elige tu compañero, sobrevive a las hordas, evoluciona tus ataques, enfréntate a legendarios y juega en cooperativo con hasta 4 amigos.': 'Fan game gratuito di sopravvivenza con 982 Pokémon di tutte le 9 regioni: scegli il tuo compagno, sopravvivi alle orde, fai evolvere i tuoi attacchi, affronta leggendari e gioca in cooperativa fino a 4 amici.',
+  'Fan game gratuito de supervivencia con 1024 Pokémon de las 9 regiones: elige tu compañero, sobrevive a las hordas, evoluciona tus ataques, enfréntate a legendarios y juega en cooperativo con hasta 4 amigos.': 'Fan game gratuito di sopravvivenza con 1024 Pokémon di tutte le 9 regioni: scegli il tuo compagno, sopravvivi alle orde, fai evolvere i tuoi attacchi, affronta leggendari e gioca in cooperativa fino a 4 amici.',
   'Guía del juego': 'Guida del gioco', 'Apoyar': 'Supporta', 'Apoyar el proyecto': 'Supporta il progetto',
   'Donar en Ko-fi': 'Dona su Ko-fi', 'Más información': 'Maggiori informazioni',
   'PokéSurvivor es y será': 'PokéSurvivor è e rimarrà', 'gratis': 'gratuito',

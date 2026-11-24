@@ -49,7 +49,9 @@ G.Challenge = (() => {
   // Especies que llegaron el 24-11-2026 (tools/add_species.py): no cuentan en el sorteo hasta la semana
   // LATE.w, para que el desafío de la semana en que se publican no cambie a mitad (el Pokémon y el tipo
   // salen de un índice en la lista). Si se publica en esa semana o después, subir LATE.w a la siguiente.
-  const LATE = { w: 'w2026-49', dex: new Set([593, 618, 683, 733, 837, 865, 878, 879, 929, 945, 948, 962, 990, 1003, 1021, 1025]) };
+  const LATE = { w: 'w2026-49', dex: new Set([593, 618, 683, 733, 837, 865, 878, 879, 929, 945, 948, 962, 990, 1003, 1021, 1025,
+    514, 516, 520, 522, 523, 538, 558, 564, 565, 591, 592, 616, 626, 668, 732, 735, 756, 765, 838, 839, 866, 870, 893, 931,
+    942, 943, 944, 947, 949, 950, 954, 956, 973, 986, 993, 999, 1001, 1002, 1008, 1014, 1022, 1023]) };
   const isOld = w => !!w && weekNum(w) < weekNum(LATE.w);
   const inWeek = (p, w) => !(isOld(w) && LATE.dex.has(p.dex));
 

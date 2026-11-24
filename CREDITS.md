@@ -8,6 +8,12 @@ Los sprites estilo *Pokémon Mundo Misterioso* vienen de
 uso **no comercial** y con atribución a sus artistas. Los números mayores de 1025 son formas, con la
 numeración del juego (especie + 1000·k, ver `js/data/pokedex.js`).
 
+Las 42 especies que SpriteCollab aún no tiene (514, 516, 520, 522, 523, 538, 558, 564, 565, 591, 592, 616,
+626, 668, 732, 735, 756, 765, 838, 839, 866, 870, 893, 931, 942, 943, 944, 947, 949, 950, 954, 956, 973, 986,
+993, 999, 1001, 1002, 1008, 1014, 1022 y 1023) se han tomado del juego oficial, [PokéSurvivor](https://pokesurvivor.com/)
+(`tools/fetch_official_sprites.py`), que las convirtió de los sprites de *Pokémon Edición Reloaded*
+(F3R, Jhony_Ryu).
+
 | Artista | Contacto | Sprites (nº de Pokédex) |
 |---|---|---|
 | 3Monika4 | <@270755102178934785> | 20, 61, 63 |
