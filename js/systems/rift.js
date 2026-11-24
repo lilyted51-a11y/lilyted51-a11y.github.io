@@ -35,10 +35,13 @@ G.Rift = (() => {
   // La última sólo da vínculo si te has dejado alguna de las anteriores (wins).
   const RIFT_AT = [240, 480, 720, 960, 1500];
   let riftIdx = 0, wins = 0, egg = false;
+  // Grietas ya pasadas en este ordenador (la pelea acabada o la grieta cerrada sin entrar): tras la 3.ª
+  // se elige la forma (systems/statforms.js, 25-11-2026). En grupo también la cuenta cada invitado.
+  let over = 0;
   const authority = () => !G.Coop.active || G.Coop.isHost;
   const TS = () => G.Tiles.T * G.Sprites.PX;
 
-  function reset() { rift = null; arena = null; zone = null; checkT = 0; asked = false; downT = 0; riftIdx = 0; wins = 0; egg = false; G.Legend.reset(); }
+  function reset() { rift = null; arena = null; zone = null; checkT = 0; asked = false; downT = 0; riftIdx = 0; wins = 0; egg = false; over = 0; G.Legend.reset(); }
 
   /**
    * ¿Sigue este jugador en la arena aunque aquí ya se haya vuelto al mapa?
@@ -56,7 +59,7 @@ G.Rift = (() => {
     if (rift) {
       rift.t += dt;
       rift.ttl -= dt;
-      if (rift.ttl <= 0) { rift = null; return; }
+      if (rift.ttl <= 0) { rift = null; over++; return; }
       // (No se entra con Eternatus en marcha, ni durante su aviso.)
       if (!arena && !pl.dead && !G.Eternatus.active && G.U.dist2(pl.x, pl.y, rift.x, rift.y - 10) < 30 * 30) enter();
     } else if (!arena && authority() && !G.Judgment.active && !G.Eternatus.active && riftIdx < RIFT_AT.length && time >= RIFT_AT[riftIdx]) {
@@ -243,6 +246,7 @@ G.Rift = (() => {
     const pl = G.Game.player;
     const a = arena;
     arena = null;
+    over++;
     G.Legend.reset();
     G.World.setBiome(a.biome, true);
     G.Weather.clear();
@@ -316,6 +320,10 @@ G.Rift = (() => {
     hidePortal() { rift = null; asked = false; },
     get rift() { return rift; }, get arena() { return arena; },
     get inArena() { return !!arena; },
+    /** Grietas ya pasadas en esta partida (statforms.js). */
+    get over() { return over; },
+    /** Para pruebas: como si ya hubieran pasado n grietas. */
+    debugOver(n) { over = n | 0; },
     get timeLeft() { return arena ? Math.max(0, ARENA_TIME - arena.t) : 0; },
     debugOpen() { open(); },
     /** Para pruebas: arena de un tipo ya. */

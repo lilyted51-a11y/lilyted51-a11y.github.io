@@ -188,7 +188,8 @@ G.Coop = (() => {
   const mySum = () => (api && api.mySum ? api.mySum() : null);
   function cleanSum(s) {
     if (!s || typeof s !== 'object') return null;
-    const dex = Math.floor(num(s.dex, 0, 0, 5000));
+    // (Hasta 2e6: las formas con número del juego oficial, como Arceus Bicho 500493; statforms.js.)
+    const dex = Math.floor(num(s.dex, 0, 0, 2e6));
     if (!G.DEX_BY[dex]) return null;
     const mv = (Array.isArray(s.mv) ? s.mv : []).slice(0, 8)
       .filter(m => Array.isArray(m) && typeof m[0] === 'string' && G.Moves.BY_ID[m[0]])

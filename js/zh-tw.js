@@ -866,6 +866,18 @@
   "Caramel Swirl": "焦糖綜合",
   "Mezcla tricolor": "三色綜合",
   "Rainbow Swirl": "三色綜合",
+  // 25-11-2026 (copia local): formas que cambian tipos y stats (systems/statforms.js)
+  "¡Elige la forma de {x}!": "選擇{x}的形態！",
+  "Choose {x}'s form!": "選擇{x}的形態！",
+  "Sólo una vez: se queda hasta el final de la partida": "只能選一次：會一直維持到對局結束",
+  "Only once: it stays until the end of the run": "只能選一次：會一直維持到對局結束",
+  "La de ahora": "目前形態",
+  "Current": "目前形態",
+  "Stats": "能力值",
+  "{x} se queda con su forma": "{x}維持原本的形態",
+  "{x} keeps its form": "{x}維持原本的形態",
+  "¡{x} cambia a {x}!": "{x}變成了{x}！",
+  "{x} changes into {x}!": "{x}變成了{x}！",
   // 24-11-2026 (copia local): menú sin scroll y Objeto inicial (systems/startitem.js, Tienda Kecleon: Objetos de partida)
   "Objeto inicial": "初始道具",
   "Starting item": "初始道具",

@@ -420,6 +420,21 @@ console.log('poderes: pantallas abiertas', pwSeen.filter(Boolean).length + '/' +
 for (const d of [1778, 501024, 1681]) { await A.ev(`(() => { G.BattleForms.debugAnnounce(G.Game.player, ${d}); return 1; })()`); await sleep(500); await canvas('forma de combate ' + d); }
 await misses('formas de combate');
 
+// ---------- Formas que cambian tipos y stats (tras la 3.ª grieta, 25-11-2026, systems/statforms.js): la carta de cada
+// clase (formas con stats, los 18 tipos de Arceus, una con otra habilidad), elegir y el aviso; luego vuelve el Pokémon de antes ----------
+const sfSeen = [];
+const sfDex0 = await A.ev(`(() => { const p = G.Game.player; G.Powers.stop(p); p.powerId = null; return p.dex; })()`);
+for (const [d, pick] of [[386, 1386], [493, 560493], [745, 2745]]) {
+  for (let i = 0; i < 20 && (await A.ev(`G.Game.state`)) !== 'playing'; i++) { await sleep(300); await etPick(); }
+  await A.ev(`(() => { const p = G.Game.player; p.evolveTo(${d}, false); return G.StatForms.debugOffer(p); })()`);
+  for (let i = 0; i < 10 && !(await A.ev(`G.UI.isOpen('scr-power')`)); i++) await sleep(300);
+  sfSeen.push(await A.ev(`G.UI.isOpen('scr-power')`)); await sleep(1200);
+  await grab('forma: carta ' + d); await misses('forma: carta ' + d);
+  await pwTap('form:' + pick); await sleep(800); await canvas('forma: elegida ' + pick); await misses('forma: elegida ' + pick);
+}
+await A.ev(`(() => { const p = G.Game.player; if (G.DEX_BY[${sfDex0}]) p.evolveTo(${sfDex0}, false); return 1; })()`);
+console.log('formas: cartas abiertas', sfSeen.filter(Boolean).length + '/' + sfSeen.length, '· ahora', await A.ev(`G.Game.player.dex`));
+
 // ---------- El Team Rocket y su Casino Rocket (23-11-2026): el secuestro, la entrada y los 4 juegos, con lo que puede salir ----------
 const cas = async where => { await grab('casino: ' + where); await misses('casino: ' + where); await canvas('casino: ' + where); };
 const casClick = async sel => { await A.ev(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (b) b.click(); return !!b; })()`); };

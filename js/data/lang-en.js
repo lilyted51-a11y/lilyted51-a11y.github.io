@@ -2128,5 +2128,12 @@ G.I18n.add({
   "Crema salada": "Salted Cream",
   "Mezcla rubí": "Ruby Swirl",
   "Mezcla caramelo": "Caramel Swirl",
-  "Mezcla tricolor": "Rainbow Swirl"
+  "Mezcla tricolor": "Rainbow Swirl",
+  // 25-11-2026 (copia local): formas que cambian tipos y stats (systems/statforms.js)
+  "¡Elige la forma de {x}!": "Choose {x}'s form!",
+  "Sólo una vez: se queda hasta el final de la partida": "Only once: it stays until the end of the run",
+  "La de ahora": "Current",
+  "Stats": "Stats",
+  "{x} se queda con su forma": "{x} keeps its form",
+  "¡{x} cambia a {x}!": "{x} changes into {x}!"
 });

@@ -1122,6 +1122,7 @@ G.Game = (() => {
     G.Eternatus.update(dt, pl, time);
     G.Powers.update(dt, pl);
     if (G.BattleForms) G.BattleForms.update(dt, pl);    // formas de combate (systems/battleforms.js)
+    if (G.StatForms) G.StatForms.update(dt, pl);       // tras la 3.ª grieta, elegir su forma (systems/statforms.js)
     G.Consum.update(dt, pl);
     G.Events.update(dt, awake, time);
     G.Weather.update(dt, time, pl);
