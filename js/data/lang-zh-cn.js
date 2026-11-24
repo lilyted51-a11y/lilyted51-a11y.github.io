@@ -807,7 +807,7 @@ G.I18n.add({
   "Puedes borrar tu cuenta cuando quieras (se borran también tu apodo, tus amigos y tus marcas):": "你可以随时删除账号，暱称、好友与记录也会一并删除：",
   "Borrar mi cuenta y mi partida": "删除我的账号与存档",
   "PokéSurvivor necesita JavaScript para funcionar. Actívalo para jugar.": "PokéSurvivor 需要 JavaScript 才能执行，请启用后再游玩。",
-  "Fan game gratuito de supervivencia con 1024 Pokémon de las 9 regiones: elige tu compañero, sobrevive a las hordas, evoluciona tus ataques, enfréntate a legendarios y juega en cooperativo con hasta 4 amigos.": "免费生存同人游戏，收录 9 个地区共 1024 只宝可梦：选择伙伴、对抗大群敌人、进化招式、挑战传说宝可梦，并与好友合作游玩，最多 4 人。",
+  "Fan game gratuito de supervivencia con 1025 Pokémon de las 9 regiones: elige tu compañero, sobrevive a las hordas, evoluciona tus ataques, enfréntate a legendarios y juega en cooperativo con hasta 4 amigos.": "免费生存同人游戏，收录 9 个地区共 1025 只宝可梦：选择伙伴、对抗大群敌人、进化招式、挑战传说宝可梦，并与好友合作游玩，最多 4 人。",
   "Guía del juego": "游戏指南",
   "Apoyar": "支持",
   "Apoyar el proyecto": "支持本专案",

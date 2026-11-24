@@ -524,7 +524,7 @@ G.I18n.add({
   "Sobrevive a las hordas con tu compañero Pokémon · gratis, en PC y móvil": "Survis aux hordes avec ton partenaire Pokémon · gratuit, sur PC et mobile",
   "Sobrevive a las hordas con tu compañero Pokémon": "Survis aux hordes avec ton partenaire Pokémon",
   "Juego de supervivencia con Pokémon, gratis en el navegador y en el móvil.": "Un jeu de survie Pokémon, gratuit sur navigateur et sur mobile.",
-  "Fan game gratuito de supervivencia con 1024 Pokémon de las 9 regiones: elige tu compañero, sobrevive a las hordas, evoluciona tus ataques, enfréntate a legendarios y juega en cooperativo con hasta 4 amigos.": "Fan game de survie gratuit avec 1024 Pokémon des 9 régions\u00a0: choisis ton partenaire, survis aux hordes, fais évoluer tes attaques, affronte des légendaires et joue en coopération avec jusqu'à 4 amis.",
+  "Fan game gratuito de supervivencia con 1025 Pokémon de las 9 regiones: elige tu compañero, sobrevive a las hordas, evoluciona tus ataques, enfréntate a legendarios y juega en cooperativo con hasta 4 amigos.": "Fan game de survie gratuit avec 1025 Pokémon des 9 régions\u00a0: choisis ton partenaire, survis aux hordes, fais évoluer tes attaques, affronte des légendaires et joue en coopération avec jusqu'à 4 amis.",
   "PokéSurvivor necesita JavaScript para funcionar. Actívalo para jugar.": "PokéSurvivor a besoin de JavaScript pour fonctionner. Active-le pour jouer.",
   "Cargando…": "Chargement…",
   "Pulsa para empezar": "Appuie pour commencer",
