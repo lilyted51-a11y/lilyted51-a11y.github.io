@@ -423,6 +423,7 @@ G.MenuUI = (() => {
         <p style="font-size:14px;margin:10px 0 4px">Empieza con <b class="gold">${G.T(G.Moves.BY_ID[G.startMoveOf(dex)].name, 'move')}</b></p>
         <p class="move-icons" id="dex-moves">
           ${G.Moves.poolFor(p).map(id => `<span data-move="${id}">${G.Icons.html('move:' + id, 32)}</span>`).join('')}</p>
+        ${sigRow(p)}
         ${giftTo
           ? `<button id="dex-gift" class="btn gold" data-sfx="confirm" style="width:100%">Regalar a ${giftTo.name}${viewShiny ? ' (shiny)' : ''}</button>`
           : usingThis
@@ -433,6 +434,7 @@ G.MenuUI = (() => {
     `;
     for (const [el, t] of scrolls) el.scrollTop = t;
     moveTips($('dex-moves'));
+    moveTips($('dex-sig'));
     $('dex-big').style.setProperty('--stage-c', !own ? '#5b83d6' : viewShiny ? '#9ae6ff' : G.U.TYPE_COLOR[p.types[0]]);
     $('dex-big').classList.toggle('shiny', own && viewShiny);
     G.UI.sprite($('dex-big'), dex, { lively: own, spin: own, silhouette: !own, scale: 3, hero: true, shiny: own && viewShiny,
@@ -469,11 +471,22 @@ G.MenuUI = (() => {
    * o especial y lo que hace (lo mismo que enseña la Tienda Kecleon). El
    * recuadro va en #scr-dex: se va con la pantalla. */
   let tipOn = null;
+  /**
+   * Ataques exclusivos (24-11-2026, data/moves.js `sig`): en la ficha, aparte, con su nombre; salen en una
+   * carta especial desde el nivel 10.
+   */
+  function sigRow(p) {
+    const ids = G.Moves.sigFor(p);
+    if (!ids.length) return '';
+    return `<p class="mx-sig center" id="dex-sig" style="margin:2px 0 8px"><span class="sub">${G.T(ids.length > 1 ? 'Ataques exclusivos' : 'Ataque exclusivo')}</span>
+      ${ids.map(id => `<span class="sig-chip" data-move="${id}">${G.Icons.html('move:' + id, 16)} <span>${G.T(G.Moves.BY_ID[id].name, 'move')}</span></span>`).join(' ')}
+      <br><small class="sub">${G.T('Sale en una carta especial desde el nivel 10.')}</small></p>`;
+  }
   function moveTipHtml(id) {
     const m = G.Moves.BY_ID[id];
     const cat = G.Stats.NAME[m.cat || (m.stat === 'patk' ? 'physical' : m.stat === 'satk' ? 'special' : '')];
     return `<b>${G.T(m.name, 'move')}</b>
-      <div class="move-tip-tags"><span class="tag-chip" style="background:${G.U.TYPE_COLOR[m.type]}">${G.U.TYPE_NAME[m.type]}</span>${cat ? `<span class="tag-chip cat">${cat}</span>` : ''}</div>
+      <div class="move-tip-tags">${m.sig ? `<span class="tag-chip sig">${G.T('Exclusivo')}</span>` : ''}<span class="tag-chip" style="background:${G.U.TYPE_COLOR[m.type]}">${G.U.TYPE_NAME[m.type]}</span>${cat ? `<span class="tag-chip cat">${cat}</span>` : ''}</div>
       <div class="sub">${G.T(m.desc)}</div>`;
   }
   function hideMoveTip() { tipOn = null; const t = $('move-tip'); if (t) t.classList.add('hidden'); }
@@ -485,7 +498,7 @@ G.MenuUI = (() => {
       const scr = $('scr-dex');
       scr.appendChild(tip);
       // Tocar fuera de los iconos o desplazar la lista lo quita (en el móvil no hay "salir con el ratón").
-      scr.addEventListener('pointerdown', e => { if (!e.target.closest('#dex-moves')) hideMoveTip(); }, true);
+      scr.addEventListener('pointerdown', e => { if (!e.target.closest('#dex-moves, #dex-sig')) hideMoveTip(); }, true);
       scr.addEventListener('scroll', hideMoveTip, true);
     }
     tipOn = ic;
@@ -849,7 +862,8 @@ G.MenuUI = (() => {
   function banPicker(max) {
     const mon = G.DEX_BY[upgDex];
     const start = G.startMoveOf(upgDex), start2 = G.startMove2Of(upgDex);
-    const ids = G.Moves.poolFor(mon).filter(id => id !== start && id !== start2)
+    // (24-11-2026: sus ataques exclusivos también se pueden vetar: así no sale su carta especial.)
+    const ids = G.Moves.poolFor(mon).concat(G.Moves.sigFor(mon)).filter(id => id !== start && id !== start2)
       .sort((a, b) => G.Moves.BY_ID[a].name.localeCompare(G.Moves.BY_ID[b].name, 'es'));
     const list = banList();
     const el = document.createElement('div');

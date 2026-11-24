@@ -94,7 +94,9 @@ G.Combat = (() => {
 
   function payload(m) {
     return { burn: m.burn || 0, poison: m.poison || 0, slow: m.slow || 0, knock: m.knock || 0, mtype: m.type, mcat: m.cat, src: m,
-             bounce: m.bounce | 0, drain: m.drain || 0 };
+             bounce: m.bounce | 0, drain: m.drain || 0,
+             // (24-11-2026: Hidropulso aturde, Fuerza Lunar estalla alrededor, Bomba Lodo y Ola-Lava dejan charcos.)
+             pstun: m.pstun || 0, splash: m.splash || 0, puddle: m.puddle ? 1 : 0 };
   }
 
   /** Tabla de tipos × clima para un ataque de tipo `type` contra `e`. */
@@ -106,7 +108,7 @@ G.Combat = (() => {
       x: pl.x + Math.cos(a) * 3, y: pl.y + Math.sin(a) * 3,
       vx: Math.cos(a) * m.speed, vy: Math.sin(a) * m.speed,
       dmg: m.dmg * pl.atkFor(m), r: m.size, life: m.life,
-      pierce: m.pierce | 0, color: col, homing: m.homing || 0,
+      pierce: m.pierce | 0, color: col, homing: (m.homing || 0) * (m.type === 'psychic' ? 0.8 : 1),
       hits: new Set(), vis, ghost, owner: pl
     }, payload(m)));
   }
@@ -294,7 +296,7 @@ G.Combat = (() => {
       const e = near[i];
       const x = e ? e.x + G.U.rand(-8, 8) : pl.x + G.U.rand(-140, 140);
       const y = e ? e.y + G.U.rand(-6, 6) : pl.y + G.U.rand(-110, 110);
-      fields.push({ kind: 'meteor', owner: pl, ghost, m, col, vis, x, y, t: -i * 0.09, fall: 0.5, r: m.radius, dmg: m.dmg * pl.atkFor(m) });
+      fields.push({ kind: 'meteor', owner: pl, ghost, m, col, vis, x, y, t: -i * 0.09, fall: m.fall || 0.5, r: m.radius, dmg: m.dmg * pl.atkFor(m) });
     }
   }
 
@@ -367,6 +369,11 @@ G.Combat = (() => {
       }, payload(m)));
     }
     G.FX.spark(pl.x + Math.cos(pl.aim) * pl.r, pl.y - G.LIFT + Math.sin(pl.aim) * pl.r, col, Math.cos(pl.aim), Math.sin(pl.aim), 5);
+    // Viento Plata (24-11-2026): de vez en cuando te sube el Ataque y la Velocidad un rato.
+    if (m.boost && !ghost && Math.random() < m.boost) {
+      pl.addBuff('atk', 0.06, 6, 3); pl.addBuff('spd', 0.06, 6, 3);
+      G.FX.ring(pl.x, pl.y, pl.r * 2.4, pl.r * 1.1, col, 0.35, 2.5);
+    }
   }
 
   // ---------------- familias nuevas (2026-10-19) ----------------
@@ -535,6 +542,21 @@ G.Combat = (() => {
       return true;
     }
     return false;
+  }
+
+  /** Charco que deja un disparo al reventar (Bomba Lodo, Ola-Lava): como los del rastro; como mucho 8 por jugador. */
+  function puddleAt(pl, p, x, y) {
+    const m = p.src;
+    if (!m) return;
+    const mine = fields.filter(f => f.splat && f.owner === pl && !f.gone);
+    if (mine.length >= 8) mine[0].gone = true;
+    fields.push({ kind: 'patch', splat: true, owner: pl, ghost: !!p.ghost, m, col: p.color, vis: p.vis, x, y, t: 0, life: 2.6, r: 30,
+                  tick: 0.2, dmg: p.dmg * 0.35 });
+  }
+  /** Fuerza Lunar: al dar, estalla y pega la mitad a todo lo de alrededor. */
+  function splashAt(pl, p, e) {
+    G.FX.ring(e.x, e.y, 4, p.splash, p.color, 0.3, 3);
+    blast({ ghost: !!p.ghost, owner: pl, m: p.src, col: p.color, dmg: p.dmg * 0.5, x: e.x, y: e.y }, p.splash);
   }
 
   /** Daño de un campo (mina, meteoro, charco) a todo lo que hay en su círculo. */
@@ -733,7 +755,10 @@ G.Combat = (() => {
   // Golpe crítico (Mejoras → Golpe Crítico y carta Ojo Crítico): x1,5 de daño, número naranja y grande.
   // Topes (16-11-2026): 60 % de probabilidad y ×3,5 de daño (carta Golpe Brutal, pl.critBonus).
   const CRIT_MUL = 1.5, CRIT_MAX_P = 0.6, CRIT_MAX_K = 3.5;
-  const isCrit = pl => !ghost && pl.critChance > 0 && Math.random() < Math.min(CRIT_MAX_P, pl.critChance);
+  // (24-11-2026: algunos movimientos suben la probabilidad por su cuenta, `critUp`.)
+  const isCrit = (pl, m) => { const c = (pl.critChance || 0) + ((m && m.critUp) || 0); return !ghost && c > 0 && Math.random() < Math.min(CRIT_MAX_P, c); };
+  /** Triturar (24-11-2026): el mordido recibe un 25 % más de tus golpes un rato. */
+  const weakK = e => (e.weakUntil > performance.now() ? 1.25 : 1);
   /** Carta Cazador: × al daño a jefes y legendarios. */
   const bossK = (pl, e) => (e.boss && pl.bossMul ? pl.bossMul : 1);
   const has = (pl, id) => !!(pl.hasItem && pl.hasItem(id));
@@ -765,8 +790,8 @@ G.Combat = (() => {
   const arcK = e => (e.arceus ? G.Judgment.dmgK() : 1);
 
   function hit(pl, e, dmg, col, dx, dy, knock, m) {
-    const k = typeK(m.type, e) * G.Stats.taken(e.mon, m.cat) * abilOut(pl, m, e) * arcK(e) * bossK(pl, e) * itemK(pl, m.type, m.cat, m.kind);
-    const crit = isCrit(pl), sk = statusK(pl);
+    const k = typeK(m.type, e) * G.Stats.taken(e.mon, m.cat) * abilOut(pl, m, e) * arcK(e) * bossK(pl, e) * itemK(pl, m.type, m.cat, m.kind) * weakK(e);
+    const crit = isCrit(pl, m), sk = statusK(pl);
     dmg *= k * (crit ? critMul(pl) : 1);
     e.hurt(dmg, col, dx, dy, sk ? knock : 0, crit ? 'crit' : G.Types.label(G.Types.mult(m.type, e.types)));
     if (pl.dyna && !ghost) G.Powers.splash(pl, e, dmg);   // Dinamax: cada golpe salpica
@@ -776,6 +801,7 @@ G.Combat = (() => {
     if (m.burn && sk) e.applyBurn(m.burn * sk);
     if (m.poison && sk) e.applyPoison(m.poison * sk);
     if (m.slow && sk) e.applySlow(Math.min(0.8, m.slow * sk));
+    if (m.weakT && !ghost) e.weakUntil = performance.now() + m.weakT * 1000;
     afterHit(pl, e, m);
   }
 
@@ -873,13 +899,14 @@ G.Combat = (() => {
           G.FX.sp('impact', p.vis ? p.vis.pal : 'normal', e.x, e.y - e.bodyH * 0.5, { life: 0.12, scale: 1 });
           if (rebound(p, e)) break;
           if (p.pierce > 0) { p.pierce--; continue; }
+          if (p.puddle) puddleAt(p.owner || pl, p, e.x, e.y);
           G.FX.burst(p.x, p.y - G.LIFT, p.color, 5, 80);
           projectiles.splice(i, 1);
           break;
         }
 
-        const crit = isCrit(pl), sk = statusK(pl);
-        const k = (p.mtype ? typeK(p.mtype, e) : 1) * G.Stats.taken(e.mon, p.mcat) * (crit ? critMul(pl) : 1) * abilOut(pl, p.src, e) * arcK(e) * bossK(pl, e) * itemK(pl, p.mtype, p.mcat, null);
+        const crit = isCrit(pl, p.src), sk = statusK(pl);
+        const k = (p.mtype ? typeK(p.mtype, e) : 1) * G.Stats.taken(e.mon, p.mcat) * (crit ? critMul(pl) : 1) * abilOut(pl, p.src, e) * arcK(e) * bossK(pl, e) * itemK(pl, p.mtype, p.mcat, null) * weakK(e);
         e.hurt(p.dmg * k, p.color, p.vx || (e.x - pl.x), p.vy || (e.y - pl.y), sk ? p.knock : 0,
                crit ? 'crit' : p.mtype ? G.Types.label(G.Types.mult(p.mtype, e.types)) : null);
         if (pl.dyna) G.Powers.splash(pl, e, p.dmg * k);
@@ -891,12 +918,15 @@ G.Combat = (() => {
         if (p.poison && sk) e.applyPoison(p.poison * sk);
         if (p.slow && sk) e.applySlow(Math.min(0.8, p.slow * sk));
         if (p.drain) pl.heal(p.drain);                    // Beso Drenaje
+        if (p.pstun && sk && !e.dead) e.applyStun(p.pstun * (e.boss || e.judge ? 0.35 : 1));   // Hidropulso
+        if (p.splash) splashAt(pl, p, e);                  // Fuerza Lunar
         afterHit(pl, e, p.src);
 
         if (!p.orb && rebound(p, e)) break;
         if (!p.orb) {
           if (p.pierce > 0) { p.pierce--; }
           else {
+            if (p.puddle) puddleAt(pl, p, e.x, e.y);         // Bomba Lodo, Ola-Lava
             G.FX.burst(p.x, p.y - G.LIFT, p.color, 5, 80);
             projectiles.splice(i, 1);
             break;

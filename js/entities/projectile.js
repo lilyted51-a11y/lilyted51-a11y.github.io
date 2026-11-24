@@ -69,13 +69,15 @@ G.Projectiles = (() => {
       }
 
       // Teledirigido: curva la velocidad hacia el enemigo más cercano.
+      // (24-11-2026, como el oficial desde el 13-11: giran con la mitad de fuerza, empiezan a buscar más
+      //  cerca y sólo van a por lo que tienen delante: ya no dan la vuelta. Los psíquicos, algo menos aún: combat.js.)
       if (p.homing > 0 && p.friendly) {
-        const tg = nearest(enemies, p.x, p.y, 340);
+        const tg = ahead(enemies, p, 230);
         if (tg) {
           const [dx, dy] = G.U.norm(tg.x - p.x, tg.cy() - p.y);
           const sp = Math.hypot(p.vx, p.vy);
-          p.vx = G.U.damp(p.vx, dx * sp, p.homing, dt);
-          p.vy = G.U.damp(p.vy, dy * sp, p.homing, dt);
+          p.vx = G.U.damp(p.vx, dx * sp, p.homing * 0.5, dt);
+          p.vy = G.U.damp(p.vy, dy * sp, p.homing * 0.5, dt);
         }
       }
 
@@ -90,6 +92,20 @@ G.Projectiles = (() => {
       // Fuera de la vista con margen generoso -> se descarta.
       if (!G.Camera.sees(p.x, p.y, 260)) { list.splice(i, 1); continue; }
     }
+  }
+
+  /** El más cercano de los que un disparo tiene delante (a menos de unos 70° de por donde va). */
+  function ahead(enemies, p, maxDist) {
+    let best = null, bd = maxDist * maxDist;
+    const sp = Math.hypot(p.vx, p.vy) || 1, ux = p.vx / sp, uy = p.vy / sp;
+    const shield = G.Judgment && G.Judgment.shielded;
+    for (const e of enemies) {
+      if (e.dead || (e.arceus && shield)) continue;
+      const dx = e.x - p.x, dy = e.cy() - p.y, d = dx * dx + dy * dy;
+      if (d >= bd || (dx * ux + dy * uy) < 0.34 * Math.sqrt(d)) continue;
+      bd = d; best = e;
+    }
+    return best;
   }
 
   function nearest(enemies, x, y, maxDist) {

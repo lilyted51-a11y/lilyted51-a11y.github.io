@@ -789,6 +789,14 @@ a.plink:hover { color: var(--gold); }
 .bond-title { color: #ff8ad8; }
 .card.bond { border-color: #ff8ad8; background: linear-gradient(90deg, rgba(255,138,216,.18), rgba(255,138,216,.04)); }
 .card.bond .nm { color: #ff8ad8; }
+/* Ataque exclusivo de tu Pokémon (24-11-2026, levelup.js): morado con borde dorado */
+.card.sig { border-color: #c9a6ff; box-shadow: 0 0 0 1px rgba(255,210,63,.55) inset, 0 0 14px rgba(201,166,255,.35);
+  background: linear-gradient(90deg, rgba(201,166,255,.24), rgba(255,210,63,.08)); }
+.card.sig .nm { color: #e2d0ff; }
+.tag-chip.sig { background: linear-gradient(90deg, #9b6bff, #d9a521); color: #fff; }
+.card .sig-note { display: block; margin-top: 2px; color: #e2d0ff; font-size: .92em; }
+.mx-sig .sig-chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px;
+  border: 1px solid #c9a6ff; background: rgba(155,107,255,.22); color: #f1e6ff; font-weight: 700; }
 @media (max-height: 520px) {
   #scr-bond .bond-hint { display: none; }
   #scr-bond .box { width: min(820px, 100%); }

@@ -6,6 +6,8 @@
  *   evolve  evolución de tu Pokémon en plena partida (niveles 20 y 40, ver Player.growDue)
  *   remove  Quitamovimientos: quitas uno de tus movimientos y pones en su hueco otro de los
  *           de tu Pokémon, o lo dejas libre (dos pasos más en la misma pantalla: run-ui.js)
+ *   sig     ataque exclusivo de tu Pokémon (desde el nivel 10): con un hueco libre lo aprende; con
+ *           los cuatro llenos, eliges cuál cambias por él (un paso más: run-ui.js)
  *
  * 16-11-2026 (como la Gran Actualización del juego oficial, hecho aquí a partir de sus
  * guías): cuatro cartas en vez de tres, cartas nuevas de crítico, cazador, esquiva y
@@ -14,6 +16,11 @@
  * 23-11-2026 (como la Gran Actualización del juego oficial, hecho aquí a partir de su
  * novedad): la carta Quitamovimientos, para rehacer la build (también tras evolucionar y
  * cambiar de tipo). Sólo ofrece ataques de tu Pokémon, no los del Tera ni de la Mega puestos.
+ *
+ * 24-11-2026 (como la Gran Actualización del juego oficial, hecho aquí a partir de su novedad y su
+ * guía de movimientos): los ataques exclusivos (`sig` en data/moves.js) no salen en las cartas de
+ * siempre: desde el nivel 10 tienen su propia carta especial (morada y dorada). Valen el Veto, el
+ * Quitamovimientos (también los ofrece) y, con Mega o Tera, cuentan los de tu Pokémon.
  */
 G.LevelUp = (() => {
 
@@ -61,6 +68,9 @@ G.LevelUp = (() => {
       apply: pl => pl.itemSlots = 4, max: 1, rare: true, cond: pl => pl.itemSlots === 3 }
   ];
 
+  /** Nivel desde el que sale la carta de los ataques exclusivos (24-11-2026). */
+  const SIG_LEVEL = 10;
+
   /** n elementos distintos de list, cada uno con probabilidad según weight(x). */
   function pickWeighted(list, n, weight) {
     const rest = list.map(x => [x, weight(x)]), out = [];
@@ -106,6 +116,31 @@ G.LevelUp = (() => {
           cat: G.Stats.NAME[d.cat || (d.stat === 'patk' ? 'physical' : d.stat === 'satk' ? 'special' : '')] || '',
           title: G.T(d.name, 'move'), desc: d.desc + fitNote(pl.mon, d.cat),
           apply: p => p.addMove(id)
+        });
+      }
+    }
+
+    // --- 24-11-2026 (copia local): carta especial de los ataques exclusivos, desde el nivel 10 ---
+    // (Los de tu Pokémon, no los de la Mega ni del Tera puestos; ni los vetados ni los que ya sabes.)
+    if (pl.level >= SIG_LEVEL) {
+      const full = pl.slots.length >= pl.maxMoves, buffs = pl.moves.filter(m => m.kind === 'buff').length;
+      for (const id of G.Moves.sigFor(pl.ownMon || pl.mon)) {
+        const d = G.Moves.BY_ID[id];
+        if (pl.hasMove(id) || (pl.banned && pl.banned.has(id)) || (!full && buffs >= 2 && d.kind === 'buff')) continue;
+        out.push({
+          w: 24, type: 'sig', key: 'sig:' + id, id, swap: full, buff: d.kind === 'buff', mkind: d.kind, stat: d.stat,
+          icon: 'move:' + id, color: G.U.TYPE_COLOR[d.type], tag: G.U.TYPE_NAME[d.type],
+          cat: G.Stats.NAME[d.cat || (d.stat === 'patk' ? 'physical' : d.stat === 'satk' ? 'special' : '')] || '',
+          title: G.T(d.name, 'move'),
+          desc: d.desc + fitNote(pl.mon, d.cat) + ' <span class="sig-note">' + G.T(full
+            ? 'Tienes los cuatro huecos llenos: eliges cuál cambias por él.'
+            : 'Sólo lo puede aprender tu Pokémon.') + '</span>',
+          apply: p => {
+            if (!p.addMove(id)) return;
+            G.FX.ring(p.x, p.y, 8, 130, '#c9a6ff', 0.8, 6);
+            G.FX.burst(p.x, p.y - p.bodyH * 0.5, '#ffd23f', 34, 230);
+            G.Audio.sfx('legend');
+          }
         });
       }
     }
@@ -219,8 +254,10 @@ G.LevelUp = (() => {
    */
   function swapPool(pl, m) {
     const buffs = pl.moves.filter(x => x !== m && x.kind === 'buff').length, mon = pl.ownMon || pl.mon;
-    const fit = id => { const d = G.Moves.BY_ID[id]; return d.kind === 'buff' ? 1 : G.Stats.fit(pl.mon, d.cat) >= 0.999 ? 0 : 2; };
-    return G.Moves.poolFor(mon).filter(id => !pl.hasMove(id) && !(pl.banned && pl.banned.has(id)) && !(buffs >= 2 && G.Moves.BY_ID[id].kind === 'buff'))
+    // (24-11-2026: sus exclusivos también, desde el nivel de su carta, y los primeros.)
+    const sig = pl.level >= SIG_LEVEL ? G.Moves.sigFor(mon) : [];
+    const fit = id => { const d = G.Moves.BY_ID[id]; return sig.includes(id) ? -1 : d.kind === 'buff' ? 1 : G.Stats.fit(pl.mon, d.cat) >= 0.999 ? 0 : 2; };
+    return sig.concat(G.Moves.poolFor(mon)).filter(id => !pl.hasMove(id) && !(pl.banned && pl.banned.has(id)) && !(buffs >= 2 && G.Moves.BY_ID[id].kind === 'buff'))
       .sort((a, b) => fit(a) - fit(b) || G.T(G.Moves.BY_ID[a].name, 'move').localeCompare(G.T(G.Moves.BY_ID[b].name, 'move'), G.I18n.locale));
   }
 
@@ -252,5 +289,5 @@ G.LevelUp = (() => {
     return picked;
   }
 
-  return { offer, evolveCards, swapPool, STATS };
+  return { offer, evolveCards, swapPool, STATS, SIG_LEVEL };
 })();

@@ -82,6 +82,10 @@ for (const go of ['dex', 'wardrobe', 'upgrades', 'shop', 'bag', 'gacha', 'goals'
     // Pokédex de vistos y derrotados: la ficha de uno visto que no tienes
     await A.ev(`(() => { G.UI.hideAll(); G.MenuUI.openDex(); const c = [...document.querySelectorAll('#dex-grid .cell')].find(c => (c.querySelector('.no') || {}).textContent === '019'); if (c) c.click(); return !!c; })()`); await sleep(800);
     await grab('Pokédex: visto sin tenerlo');
+    // Ataques exclusivos (24-11-2026): la ficha de Mewtwo con su ataque exclusivo y el recuadro al pasar el ratón
+    await A.ev(`(() => { G.UI.hideAll(); G.MenuUI.openDex(); const c = [...document.querySelectorAll('#dex-grid .cell')].find(c => (c.querySelector('.no') || {}).textContent === '150'); if (c) c.click(); return !!c; })()`); await sleep(800);
+    await A.ev(`(() => { const s = document.querySelector('#dex-sig [data-move]'); if (s) s.dispatchEvent(new PointerEvent('pointerover', { bubbles: true, pointerType: 'mouse' })); return !!s; })()`); await sleep(400);
+    await grab('ficha con ataque exclusivo');
   }
   if (go === 'upgrades') { await clickAll('#scr-upgrades button.btn:not([data-back])'); await A.ev(`G.StartItem.close(); 1`); }
   if (go === 'shop') { await clickAll('#scr-shop .gen-tab'); }
@@ -238,6 +242,22 @@ await A.ev(`(() => { const p = G.Game.player; const r = window.__rmCards; r.forE
 await A.ev(`G.RunUI.pick(window.__rmCards.findIndex(c => c.type === 'remove')); 1`); await sleep(300); await A.ev(`G.RunUI.pick(0); 1`); await sleep(300);
 await A.ev(`G.RunUI.pick([...document.querySelectorAll('#cards .card')].findIndex(c => c.dataset.key === 'rm:empty')); 1`); await sleep(1200);
 await canvas('Quitamovimientos (hueco libre)'); await misses('Quitamovimientos');
+// Ataques exclusivos (24-11-2026): su carta especial (Kyogre Primigenio: Pulso Primigenio), con hueco libre y con los cuatro llenos (qué cambias)
+await A.ev(`(() => { const p = G.Game.player; p.level = Math.max(p.level, 10); p.banned.clear(); const sig = G.Moves.sigFor(p.ownMon || p.mon); for (const id of sig) { const m = p.moves.find(x => x.id === id); if (m) p.swapMove(m, null); }
+  if (p.slots.length >= p.maxMoves) p.swapMove(p.moves[p.moves.length - 1], null);
+  let r = []; for (let i = 0; i < 400 && !r.some(c => c.type === 'sig'); i++) r = G.LevelUp.offer(p); window.__sgCards = r;
+  G.RunUI.showLevelUp(p.level, r, c => { c.apply(p); G.UI.hide('scr-levelup'); }); return r.length; })()`); await sleep(900);
+await grab('carta de ataque exclusivo');
+await A.ev(`G.RunUI.pick(window.__sgCards.findIndex(c => c.type === 'sig')); 1`); await sleep(1200);
+await canvas('ataque exclusivo aprendido');
+await A.ev(`(() => { const p = G.Game.player; for (const id of G.Moves.sigFor(p.ownMon || p.mon)) { const m = p.moves.find(x => x.id === id); if (m) p.swapMove(m, null); }
+  for (const id of G.Moves.poolFor(p.mon)) if (p.slots.length < p.maxMoves && !p.hasMove(id)) p.addMove(id);
+  let r = []; for (let i = 0; i < 400 && !r.some(c => c.type === 'sig'); i++) r = G.LevelUp.offer(p); window.__sgCards = r;
+  G.RunUI.showLevelUp(p.level, r, c => { c.apply(p); G.UI.hide('scr-levelup'); }); return r.length; })()`); await sleep(900);
+await grab('carta de ataque exclusivo (huecos llenos)');
+await A.ev(`G.RunUI.pick(window.__sgCards.findIndex(c => c.type === 'sig')); 1`); await sleep(400); await grab('ataque exclusivo: qué cambias');
+await A.ev(`G.RunUI.pick(0); 1`); await sleep(1200);
+await canvas('ataque exclusivo (cambiado)'); await misses('ataque exclusivo');
 // Varios objetos a la vez (16-11-2026): la elección con los huecos llenos, y todos los objetos (nombre y lo que hacen) en la pausa.
 await A.ev(`G.RunUI.showItemChoice(['leftovers', 'metronome', 'heavyboots'], 'luckincense', () => {}); 1`); await sleep(800); await grab('elegir objeto (tres huecos)');
 await A.ev(`G.UI.hide('scr-item'); (() => { const p = G.Game.player; p.itemSlots = 40; for (const it of G.Items.LIST) p.equip(it.id); return p.items.length; })()`); await sleep(400);
