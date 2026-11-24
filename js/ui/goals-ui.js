@@ -154,6 +154,8 @@
         : 'Tu perfil se publica cuando juegas con una cuenta online.'}</p>`);
       // Foto y marco (ui/mastery-ui.js).
       G.PhotoUI.editor(box, () => { tab = 'profile'; render(); });
+      // Horas jugadas (24-11-2026): las de todos tus aparatos; también las ven los demás en tu perfil.
+      box.insertAdjacentHTML('beforeend', `<div class="prof-play">${G.Icons.html('clock', 16)} <span>Horas jugadas</span> <b>${G.ProfileUI.playText(G.DB.playSecs() / 60)}</b></div>`);
       box.insertAdjacentHTML('beforeend', `<h3>Tus 3 Pokémon favoritos</h3>`);
       const favs = document.createElement('div');
       favs.className = 'fav-slots';
@@ -237,6 +239,13 @@
     }
     function close() { $('scr-profile').classList.add('hidden'); }
 
+    /** Horas jugadas (24-11-2026, core/db.js playSecs), de minutos: «45 min», «12 h 30 min», «150 h». */
+    function playText(min) {
+      min = Math.max(0, Math.floor(+min || 0));
+      const h = Math.floor(min / 60), m = min % 60;
+      return h >= 100 ? G.I18n.f('{x} h', h.toLocaleString(G.I18n.locale)) : h ? G.I18n.f('{x} h {x} min', h, m) : G.I18n.f('{x} min', m);
+    }
+
     /** Abre el perfil de otro jugador por su uid. */
     async function show(uid) {
       if (!uid) return;
@@ -261,6 +270,7 @@
           <div><span>Jefes</span><b>${(b.bosses || 0).toLocaleString(G.I18n.locale)}</b></div>
           <div><span>Legendarios</span><b>${b.legends || 0}</b></div>
           <div><span>Derrotados</span><b>${(b.kills || 0).toLocaleString(G.I18n.locale)}</b></div>
+          ${d.play != null ? `<div><span>Horas jugadas</span><b>${playText(d.play)}</b></div>` : ''}
         </div>
         <h3>Medallas <span class="sub">${b.medals || 0}</span></h3>
         <div class="prof-medals" id="prof-medals"></div>`;
@@ -290,6 +300,6 @@
       $('scr-profile').classList.remove('hidden');
     }
 
-    return { init, show, showData };
+    return { init, show, showData, playText };
   })();
 })();

@@ -6,6 +6,8 @@
  * tiempo aguantado. Salen de la misma lectura (el mismo resumen).
  * Desafío semanal (23-11-2026, systems/challenge.js): tercera pestaña, con la tabla de la semana
  * (sólo tiempo, sin periodos ni filtro por Pokémon) y arriba el desafío de esta semana.
+ * Foto, marco y build (24-11-2026): cada fila lleva la foto y el marco de cada jugador junto a su
+ * Pokémon; al tocarla se abre la build de cada uno (openBuild, ventana #scr-rkb).
  */
 G.RankingUI = (() => {
   const $ = G.UI.$;
@@ -25,6 +27,9 @@ G.RankingUI = (() => {
     };
     $('rk-clear').onclick = () => { $('rk-poke').value = ''; setDex(null); };
     $('rk-mod').onclick = () => G.ModUI.open();
+    // Build de una marca: Cerrar o tocar fuera de la ventana (Esc, Atrás y B: game.js / gamepad.js).
+    $('rkb-close').onclick = closeBuild;
+    $('scr-rkb').onclick = e => { if (e.target.id === 'scr-rkb') closeBuild(); };
   }
 
   /** El filtro por Pokémon sólo existe en el histórico: al elegir uno se pasa a esa pestaña. */
@@ -178,15 +183,24 @@ G.RankingUI = (() => {
 
   const num = n => (n || 0).toLocaleString(G.I18n.locale);
 
-  /** Una fila: de tiempo o, con dmg, de daño a Arceus. */
+  /** Una fila: de tiempo o, con dmg, de daño a Arceus. Tocarla abre su build (24-11-2026). */
   function rowEl(r, pos, mine, b, done, dmg = false) {
     const el = document.createElement('div');
-    el.className = 'rk-row' + (mine ? ' mine' : '') + (pos <= 3 ? ' top' + pos : '');
+    el.className = 'rk-row tap' + (mine ? ' mine' : '') + (pos <= 3 ? ' top' + pos : '');
     el.insertAdjacentHTML('beforeend', `<span class="pos">${pos <= 3 ? G.Icons.html('trophy', 20) : ''}${pos}</span>`);
-    const mons = document.createElement('span');
-    mons.className = 'mons';
-    r.dex.forEach((d, i) => { if (G.DEX_BY[d]) mons.appendChild(G.UI.spriteCanvas(d, 44, 40, { scale: 1, shiny: !!r.shiny[i] })); });
+    // Cada jugador con su foto y su marco, y su Pokémon (en grupo, más pequeños: el Pokémon sobre la esquina de la foto).
+    const mons = document.createElement('span'), phs = G.Ranking.phs(r), group = r.dex.length > 1;
+    mons.className = 'mons' + (group ? ' grp' : '');
+    r.dex.forEach((d, i) => {
+      if (!G.DEX_BY[d]) return;
+      const pm = document.createElement('span');
+      pm.className = 'rk-pm';
+      if (phs[i]) pm.insertAdjacentHTML('beforeend', G.Photo.html(phs[i], group ? 30 : 34));
+      pm.appendChild(group ? G.UI.spriteCanvas(d, 34, 30, { scale: 1, shiny: !!r.shiny[i] }) : G.UI.spriteCanvas(d, 44, 40, { scale: 1, shiny: !!r.shiny[i] }));
+      mons.appendChild(pm);
+    });
     el.appendChild(mons);
+    el.onclick = e => { if (!e.target.closest('a, button')) openBuild(r, b, dmg); };
     el.insertAdjacentHTML('beforeend',
       `<span class="who"><b translate="no">${r.names.map((n, i) => `<a href="#" class="plink" data-u="${esc(r.uids[i] || '')}">${esc(n)}</a>`).join(' · ')}</b>${dmg ? '' : `<small>Nv. ${r.lv || 1} · ${num(r.kills)} derrotados</small>`}</span>
        <span class="time">${dmg ? num(r.d) : fmt(r.t)}</span>`);
@@ -210,5 +224,70 @@ G.RankingUI = (() => {
     return el;
   }
 
-  return { init, open };
+  // ---------------- build de una marca (24-11-2026) ----------------
+  /*
+   * Toca una marca y sale la build de cada jugador: su foto y su marco, el Pokémon con el que acabó
+   * (evolucionado, shiny, skin), su nivel, sus ataques con su nivel y el daño que hizo cada uno, y sus
+   * objetos (net/ranking.js, buildOf: 1 lectura). Las marcas de antes no la llevan: se dice.
+   * Se cierra con Cerrar, Esc, el botón Atrás del móvil, B en el mando o tocando fuera (game.js).
+   */
+  let bTok = 0;
+  const N = v => Math.round(v || 0).toLocaleString(G.I18n.locale);
+  async function openBuild(r, b, dmg) {
+    const my = ++bTok, body = $('rkb-body');
+    // (Cada frase en su trozo: juntas, el parche del chino las leía como una sola.)
+    $('rkb-mark').innerHTML = dmg ? `<span>${esc(G.I18n.f('Daño a Arceus: {x}', N(r.d)))}</span>`
+      : `<span>${esc(G.I18n.f('Tiempo aguantado: {x}', fmt(r.t)))}</span> · <span>${esc(G.I18n.f('{x} derrotados', N(r.kills)))}</span>`;
+    body.innerHTML = '<p class="sub">Cargando…</p>';
+    $('scr-rkb').classList.remove('hidden');
+    $('scr-rkb').scrollTop = 0;
+    let builds = [];
+    try { builds = await G.Ranking.buildOf(b, r, dmg); } catch (e) {
+      if (my === bTok) body.innerHTML = '<p class="sub">' + esc(G.I18n.f('No se pudo cargar la build ({x}).', e.code || e.message)) + '</p>';
+      return;
+    }
+    if (my !== bTok) return;
+    body.innerHTML = '';
+    if (!builds.some(Boolean)) body.insertAdjacentHTML('beforeend', `<p class="sub rkb-none">${esc(G.T('Esta marca es de antes de que se guardara la build: no hay datos.'))}</p>`);
+    const phs = G.Ranking.phs(r);
+    r.uids.forEach((u, i) => body.appendChild(playerEl(r, i, builds[i], phs[i], !builds.some(Boolean))));
+  }
+  /** Un jugador de la marca: cabecera (foto, Pokémon, nombre) y, si la hay, su build. */
+  function playerEl(r, i, bd, ph, none) {
+    const el = document.createElement('div');
+    el.className = 'rkb-p';
+    const dex = bd && G.DEX_BY[bd.dex] ? bd.dex : r.dex[i], mon = G.DEX_BY[dex];
+    const head = document.createElement('div');
+    head.className = 'rkb-head';
+    if (ph) head.insertAdjacentHTML('beforeend', G.Photo.html(ph, 56));
+    if (mon) head.appendChild(G.UI.spriteCanvas(dex, 76, 64, { scale: 2, lively: true, shiny: bd ? bd.sh : !!r.shiny[i], skin: bd && bd.sk && G.Skins && G.Skins.get(bd.sk, dex) ? bd.sk : null }));
+    let total = 0;
+    const rows = (bd ? bd.mv : []).map(x => {
+      const def = G.Moves.BY_ID[x.id];
+      if (!def) return '';
+      // (Nunca por encima de los niveles que tiene: lo que llega de otros jugadores no se cree a ciegas.)
+      const m = G.Moves.instance(x.id, Math.min(x.lvl, (def.ups || []).length + 1));
+      if (x.evo) G.Moves.evolve(m);
+      if (m.cat) total += x.dmg;
+      return `<tr><td>${G.Icons.html('move:' + x.id, 18)} ${esc(G.T(m.name, 'move'))}</td><td class="num">${G.I18n.f('Nv. {x}', x.lvl)}</td><td class="num">${m.cat ? N(x.dmg) : '—'}</td></tr>`;
+    }).join('');
+    // (La línea del Pokémon, entera en cada idioma, como en el resumen de la partida: run-ui.js sumHtml. Sin
+    //  translate="no": no lleva apodos y así el parche del chino la traduce.)
+    const line = !mon ? '' : bd ? G.I18n.f('{x} · Nv. {x} · {x} de daño en total', G.T(mon.name), bd.lv, N(total)) : G.T(mon.name);
+    head.insertAdjacentHTML('beforeend', `<div class="rkb-who"><b translate="no">${esc(r.names[i] || '?')}</b>
+      <span>${bd && bd.sh ? G.Icons.html('shiny', 12) + ' ' : ''}${esc(line)}</span></div>`);
+    el.appendChild(head);
+    if (!bd) {
+      if (!none) el.insertAdjacentHTML('beforeend', `<p class="sub">${esc(G.T('No hay datos de la build de este jugador.'))}</p>`);
+      return el;
+    }
+    const its = bd.its.filter(id => G.Items.BY[id]);
+    el.insertAdjacentHTML('beforeend', `<table class="sum-moves"><tr><th>${esc(G.T('Ataques'))}</th><th class="num">${esc(G.T('Nivel'))}</th><th class="num">${esc(G.T('Daño'))}</th></tr>${rows}</table>
+      <p class="sub rkb-its">${its.length ? its.map(id => G.Icons.html(id, 16) + ' ' + esc(G.T(G.Items.BY[id].name))).join(' &nbsp; ') : esc(G.T('Sin objeto.'))}</p>`);
+    return el;
+  }
+  function closeBuild() { bTok++; $('scr-rkb').classList.add('hidden'); }
+  const buildOpen = () => !$('scr-rkb').classList.contains('hidden');
+
+  return { init, open, openBuild, closeBuild, buildOpen };
 })();

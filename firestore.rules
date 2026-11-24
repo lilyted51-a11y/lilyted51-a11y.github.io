@@ -128,7 +128,9 @@ service cloud.firestore {
       allow read: if signedIn();
       allow create, update: if signedIn()
         && me() == uid
-        && request.resource.data.keys().hasOnly(['name', 'lower', 'at', 'favs', 'title', 'best', 'medals', 'photo', 'frame'])
+        && request.resource.data.keys().hasOnly(['name', 'lower', 'at', 'favs', 'title', 'best', 'medals', 'photo', 'frame', 'play'])
+        // Minutos jugados (24-11-2026, «Horas jugadas» del perfil): un número.
+        && (!('play' in request.resource.data) || (request.resource.data.play is int && request.resource.data.play >= 0))
         && request.resource.data.name is string
         && request.resource.data.lower == request.resource.data.name.lower()
         && request.resource.data.at == request.time
@@ -229,7 +231,12 @@ service cloud.firestore {
     function validEntry(board, id) {
       let d = request.resource.data;
       let dmg = d.get('dmg', 0);
-      return d.keys().hasOnly(['t', 'uids', 'names', 'dex', 'shiny', 'lv', 'kills', 'dmg', 'at'])
+      return d.keys().hasOnly(['t', 'uids', 'names', 'dex', 'shiny', 'lv', 'kills', 'dmg', 'at', 'ph', 'b', 'bd'])
+        // Foto y marco de cada jugador (ph) y su build (b: la de la partida del tiempo, bd: la del daño),
+        // en texto corto (24-11-2026, net/ranking.js): sólo tipo y tamaño; el juego lo limpia al leerlo.
+        && (!('ph' in d) || (d.ph is string && d.ph.size() <= 400))
+        && (!('b' in d) || (d.b is string && d.b.size() <= 4000))
+        && (!('bd' in d) || (d.bd is string && d.bd.size() <= 4000))
         && d.t is int && d.t > 0 && d.t <= 86400
         && dmg is int && dmg >= 0
         && d.lv is int && d.lv >= 1 && d.lv <= 10 + d.t / 4
@@ -302,16 +309,19 @@ service cloud.firestore {
     // también nivel, derrotados y shiny (18-10-2026: sin esto se podía meter
     // texto con código en el "nivel" y se ejecutaba en quien abría el ranking).
     // shiny es opcional: si no hay ninguno, no se pone.
+    // ph (foto y marco de cada jugador, 24-11-2026) también es opcional y también copia de la marca.
     function rowOk(row, e) {
-      return row.keys().hasOnly(['t', 'uids', 'names', 'dex', 'shiny', 'lv', 'kills'])
+      return row.keys().hasOnly(['t', 'uids', 'names', 'dex', 'shiny', 'lv', 'kills', 'ph'])
         && row.t == e.t && row.uids == e.uids && row.names == e.names && row.dex == e.dex
         && row.lv == e.lv && row.kills == e.kills
-        && (!('shiny' in row) || row.shiny == e.shiny);
+        && (!('shiny' in row) || row.shiny == e.shiny)
+        && (!('ph' in row) || row.ph == e.get('ph', ''));
     }
     function drowOk(row, e) {
-      return row.keys().hasOnly(['d', 'uids', 'names', 'dex', 'shiny'])
+      return row.keys().hasOnly(['d', 'uids', 'names', 'dex', 'shiny', 'ph'])
         && row.d == e.get('dmg', 0) && row.d > 0 && row.uids == e.uids && row.names == e.names && row.dex == e.dex
-        && (!('shiny' in row) || row.shiny == e.shiny);
+        && (!('shiny' in row) || row.shiny == e.shiny)
+        && (!('ph' in row) || row.ph == e.get('ph', ''));
     }
     function removeMine(d, old, changed, dold, dnew, dev) {
       let dchanged = dnew.diff(dold).affectedKeys();

@@ -5,6 +5,19 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-11-24', title: ["Lo que faltaba de la Gran Actualización", "The rest of the Great Update"],
+    new: [
+    ["El ranking enseña la foto y el marco de cada jugador junto a su Pokémon (en grupo, los de todos, cada uno con el suyo).",
+     "The ranking shows each player's photo and frame next to their Pokémon (in a group, everyone's, each with their own)."],
+    ["Ranking: toca una marca para ver la build de cada jugador: su Pokémon, su nivel, sus ataques con su nivel y el daño que hizo cada uno, y sus objetos. Se cierra con Esc, el botón Atrás del móvil, B en el mando o tocando fuera.",
+     "Ranking: tap a record to see each player's build: their Pokémon, level, moves with their level and the damage each one did, and their items. Close it with Esc, the phone's Back button, B on a gamepad or by tapping outside."],
+    ["Tu perfil enseña las horas que llevas jugadas (se cuentan desde hoy, sumando todos tus aparatos), y tus amigos también las ven.",
+     "Your profile shows the hours you have played (counted from today, adding up all your devices), and your friends can see them too."]
+    ],
+    chg: [
+    ["En el ranking sales con el Pokémon con el que acabas la partida (el evolucionado, si ha evolucionado), no con el que empezaste. La maestría sigue siendo del que elegiste.",
+     "In the ranking you appear with the Pokémon you end the run with (the evolved one, if it evolved), not the one you started with. Mastery still goes to the one you picked."]
+    ] },
   { d: '2026-11-23', title: ["La Gran Actualización: Eternatus y sus poderes, dificultades, Vestidor y estelas, huevos, Maestría, desafío semanal, Casino Rocket, grietas y Sentencia nuevas", "The Great Update: Eternatus and its powers, difficulties, Dressing Room and trails, eggs, Mastery, weekly challenge, Rocket Casino, new rifts and Judgment"], new: [
     ["Vestidor, en el menú (y con un botón en la ficha de cada Pokémon): para cada Pokémon eliges su versión normal o shiny, su aspecto (las formas que sólo cambian el dibujo), su skin, un efecto (brillos, aura de su tipo, halo de luz o aura oscura) y su estela, y lo ves dando vueltas antes de jugar.",
      "Dressing Room, in the menu (and with a button on each Pokémon's page): for each Pokémon you choose its normal or shiny version, its look (forms that only change the sprite), its skin, an effect (sparkles, type aura, halo of light or dark aura) and its trail, and you can watch it walk around before playing."],

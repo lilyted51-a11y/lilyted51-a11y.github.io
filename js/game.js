@@ -100,7 +100,7 @@ G.Game = (() => {
   let trapped = false;
   function needsTrap() {
     if (state !== 'ui') return true;
-    return BACK_SCREENS.some(shown) || ['scr-settings', 'scr-news', 'scr-support', 'scr-profile', 'pull-fx', 'egg-fx'].some(shown);
+    return BACK_SCREENS.some(shown) || ['scr-settings', 'scr-news', 'scr-support', 'scr-profile', 'scr-rkb', 'pull-fx', 'egg-fx'].some(shown);
   }
   function ensureTrap() {
     if (trapped || !needsTrap() || !window.history || !history.pushState) return;
@@ -115,6 +115,7 @@ G.Game = (() => {
       return;
     }
     if (shown('pull-fx') || shown('egg-fx')) return;               // la tirada del gacha, un huevo abriéndose
+    if (shown('scr-rkb')) { G.RankingUI.closeBuild(); return; }      // la build de una marca del ranking (24-11-2026)
     if (shown('scr-profile')) { document.getElementById('scr-profile').classList.add('hidden'); return; }
     if (G.SettingsUI.isOpen) { G.SettingsUI.close(); return; }
     if (shown('scr-news')) { G.NewsUI.close(); return; }
@@ -317,8 +318,12 @@ G.Game = (() => {
   /** Tu resumen para el final de la partida (y para los compañeros, ver coop.js): ataques con su daño, objeto... */
   function mySum() {
     if (!pl) return null;
-    return { dex: pl.dex, sh: !!pl.shiny, lv: pl.level, t: Math.floor(time), it: pl.item || null, its: pl.items.slice(0, 4), sk: pl.anim.skin || '',
-             mv: pl.moves.slice(0, 8).map(m => [m.id, m.lvl, Math.round(m.dealt || 0), Math.round(m.since || 0), m.evolved ? 1 : 0]) };
+    // (Con la Megaevolución puesta, el Pokémon de verdad: la Mega dura 40 s. ph: tu foto y marco, para la marca del
+    //  ranking, 24-11-2026; en grupo el anfitrión la sube con la de todos.)
+    const me = pl.megaSave || pl;
+    return { dex: me.dex, sh: !!me.shiny, lv: pl.level, t: Math.floor(time), it: pl.item || null, its: pl.items.slice(0, 4), sk: (me.anim || pl.anim).skin || '',
+             mv: pl.moves.slice(0, 8).map(m => [m.id, m.lvl, Math.round(m.dealt || 0), Math.round(m.since || 0), m.evolved ? 1 : 0]),
+             ph: G.Photo && G.Ranking && G.DB.save ? G.Ranking.encPh(G.Photo.mine()) : '' };
   }
 
   /**
@@ -575,6 +580,7 @@ G.Game = (() => {
     G.Progress.checkAch();
     // Maestría del Pokémon que elegiste (sólo si la partida es limpia; ver clean()).
     const mastery = G.Mastery.runEnd(pl, time, clean());
+    if (playAcc >= 1) { G.DB.addPlay(playAcc); playAcc -= Math.floor(playAcc); }   // horas jugadas (ver frame)
     // A la nube al acabar la partida (como mucho cada 30 min); si la marca entra
     // en un top (hoy, semana o mes), enseguida (abajo, tras subirla al ranking).
     G.DB.commit('run');
@@ -585,9 +591,11 @@ G.Game = (() => {
     // Si la partida se ha tocado (ver clean()), no sube al ranking (sin avisar); lo demás, sí.
     const ok = clean();
     // (El desafío semanal sólo sube a su propia tabla, nunca a las normales.)
-    const sent = ok && ch ? G.Ranking.submitChallenge(Object.assign(mark, { dex: pl.dex, w: ch.w }))
-               : ok && !coop ? G.Ranking.submitSolo(Object.assign(mark, { dex: pl.dex, shiny: pl.shiny }))
-               : ok && wasHost ? G.Ranking.submitGroup(Object.assign(mark, { members: team })) : null;
+    // Con la build de cada uno (su resumen, sums) y el Pokémon con el que acaba (24-11-2026).
+    const mine = sums[meUid] || {}, myDex = G.DEX_BY[mine.dex] ? mine.dex : pl.dex;
+    const sent = ok && ch ? G.Ranking.submitChallenge(Object.assign(mark, { dex: myDex, w: ch.w, sum: sums[meUid] }))
+               : ok && !coop ? G.Ranking.submitSolo(Object.assign(mark, { dex: myDex, shiny: mine.dex ? !!mine.sh : pl.shiny, sum: sums[meUid] }))
+               : ok && wasHost ? G.Ranking.submitGroup(Object.assign(mark, { members: team.map(m => Object.assign({}, m, { sum: sums[m.uid] || null })) })) : null;
     if (sent) sent.catch(() => {});
 
     G.RunUI.showOver({
@@ -863,6 +871,8 @@ G.Game = (() => {
     if (state === 'ui') {
       // Esc en una subpantalla del menú vuelve al menú (el Vestidor, a donde se abrió).
       if (G.Input.tap('escape') && G.UI.isOpen('scr-wardrobe')) { G.WardrobeUI.back(); return; }
+      // La build de una marca del ranking (24-11-2026): Esc (y B en el mando) la cierra a ella, no el ranking.
+      if (G.Input.tap('escape') && G.UI.isOpen('scr-rkb')) { G.RankingUI.closeBuild(); return; }
       if (G.Input.tap('escape') && !G.UI.isOpen('scr-profile') && ['scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-friends', 'scr-rank', 'scr-goals', 'scr-mastery'].some(G.UI.isOpen)
           && document.getElementById('pull-fx').classList.contains('hidden') && document.getElementById('egg-fx').classList.contains('hidden')) G.MenuUI.open();
       return;
@@ -900,7 +910,7 @@ G.Game = (() => {
   /** Cambia a quién miras (al siguiente o al anterior). */
   function cycleWatch(dir) { specDir = dir; G.Audio.sfx('click'); }
 
-  let frameDt = 0, speedK = 1, trapT = 0;
+  let frameDt = 0, speedK = 1, trapT = 0, playAcc = 0;
   let fpsShown = 60, fpsAcc = 0, fpsN = 0;
   // El siguiente fotograma se pide ANTES de nada: si algo falla a mitad, el
   // juego sigue (antes se quedaba congelado para siempre y había que recargar;
@@ -937,6 +947,10 @@ G.Game = (() => {
     fpsAcc += real; fpsN++;
     if (fpsAcc >= 0.5) { fpsShown = Math.round(fpsN / fpsAcc); fpsAcc = 0; fpsN = 0; }
     frameDt = state === 'playing' ? dt : 0;
+    // Horas jugadas del perfil (24-11-2026, core/db.js addPlay): el tiempo real en partida, sin la pausa ni el
+    // resumen. Se apunta cada 10 s (un salto grande del reloj, la pestaña dormida, no cuenta).
+    if (pl && state !== 'ui' && state !== 'over' && state !== 'paused') playAcc += Math.min(real, 0.5);
+    if (playAcc >= 10) { G.DB.addPlay(playAcc); playAcc -= Math.floor(playAcc); }
 
     // Bot local (en/bot.js): sólo con el bot activo se publica el estado, y la
     // partida queda marcada (como con debugTime): no sube al ranking.

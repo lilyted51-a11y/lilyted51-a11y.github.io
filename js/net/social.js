@@ -799,7 +799,8 @@ G.Social = (() => {
       title: prof.title || '',
       best: { solo: st.bestTime | 0, group: st.bestGroupTime | 0, level: st.bestLevel | 0, bosses: st.bossesTotal | 0,
               legends: Object.keys(s.legends || {}).length, kills: st.totalKills | 0, medals: unlocked.length },
-      medals
+      medals,
+      play: Math.floor(G.DB.playSecs(s) / 60)      // minutos jugados (24-11-2026, core/db.js): «Horas jugadas»
     }, G.Photo.pub(s));       // foto y marco (core/photo.js): photo [dex, expresión], frame
   }
 
@@ -820,7 +821,8 @@ G.Social = (() => {
       if (!me || !fb) return;
       const d = profileData();
       // Para decidir si se sube (se recuerda entre sesiones): sin jefes ni derrotados.
-      const key = JSON.stringify(Object.assign({}, d, { best: Object.assign({}, d.best, { kills: 0, bosses: 0 }) }));
+      // (Las horas jugadas, por horas enteras: los minutos solos no hacen subir el perfil.)
+      const key = JSON.stringify(Object.assign({}, d, { best: Object.assign({}, d.best, { kills: 0, bosses: 0 }), play: Math.floor(d.play / 60) }));
       const lsKey = 'ps.pub.' + uid;
       if (!pubLast) { try { pubLast = localStorage.getItem(lsKey) || ''; } catch (e) { /* nada */ } }
       if (key === pubLast) return;
@@ -831,9 +833,15 @@ G.Social = (() => {
       }));
       // Foto y marco (23-11-2026): si el servidor aún tiene las reglas de antes (sin photo / frame),
       // se sube el perfil sin ellos para no dejarlo sin poner al día.
+      // (Lo mismo con las horas jugadas, 24-11-2026: primero sin ellas y, si aún no, sin foto ni marco.)
+      const denied = e => e && e.code === 'permission-denied';
+      const noPlay = Object.assign({}, d); delete noPlay.play;
       doc(Object.assign({}, d)).catch(e => {
-        if (e && e.code === 'permission-denied' && 'photo' in d) {
-          const old = Object.assign({}, d); delete old.photo; delete old.frame;
+        if (denied(e)) return doc(Object.assign({}, noPlay));
+        throw e;
+      }).catch(e => {
+        if (denied(e) && 'photo' in d) {
+          const old = Object.assign({}, noPlay); delete old.photo; delete old.frame;
           return doc(old);
         }
         throw e;
@@ -850,6 +858,7 @@ G.Social = (() => {
       best: { solo: U.int(b.solo, 86400), group: U.int(b.group, 86400), level: U.int(b.level, 999), bosses: U.int(b.bosses, 1e9),
               legends: U.int(b.legends, 999), kills: U.int(b.kills, 1e12), medals: U.int(b.medals, 999) },
       medals: U.list(d.medals, 8).map(x => U.str(x, 40)),
+      play: d.play == null ? null : U.int(d.play, 1e8),   // minutos jugados (null: perfil de antes)
       ph: G.Photo.fromPub(d)        // foto y marco, o null (perfiles de antes)
     };
   }
