@@ -874,6 +874,7 @@
       list.push(e);
       byId.set(e.id, e);
       if (G.DexLog) G.DexLog.see(e);       // Pokédex de vistos (systems/dexlog.js)
+      if (G.Cries) G.Cries.enemy(e);       // jefes, legendarios y shinies gritan al salir (core/cries.js)
       if (G.Coop.isHost) G.Coop.enemyAdded(e);
       return e;
     }
@@ -892,6 +893,7 @@
       if (o.beh === 'arceus') G.Judgment.dress(e);
       else if (o.beh === 'eternatus') G.Eternatus.dress(e);
       else if (o.beh === 'etcore' || o.beh === 'etcore2') G.Eternatus.dressCore(e);
+      if (G.Cries) G.Cries.enemy(e);       // (el invitado grita lo que le llega; una vez por enemigo)
       e.net = { x: o.x, y: o.y, vx: 0, vy: 0, age: 0, dir: 0, anim: 0, st: 0 };
       list.push(e);
       byId.set(e.id, e);

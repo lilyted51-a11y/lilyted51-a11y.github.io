@@ -154,6 +154,7 @@ G.EggsUI = (() => {
     const mon = G.DEX_BY[r.dex], out = $('egg-out');
     G.Audio.sfx('burst', { rarity: r.rarity });
     if (r.shiny) G.Audio.sfx('shinyGet');
+    G.Cries.play(r.dex, 'egg');                        // el que sale del huevo, con su grito (core/cries.js)
     $('egg-title').textContent = G.I18n.f(r.shiny ? '¡{x} shiny ha salido del huevo!' : '¡{x} ha salido del huevo!', mon.name);
     const c = document.createElement('div');
     c.className = 'pcard egg-card r' + r.rarity + (r.shiny ? ' shiny' : '');

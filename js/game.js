@@ -293,6 +293,7 @@ G.Game = (() => {
     // Hojas de sprites locales: el compañero y los primeros enemigos.
     G.Sprites.preload([pl.anim.dex], 8000, pl.anim.shiny, pl.anim.skin || '');
     G.Audio.music(G.BIOME_MUSIC[0]);
+    G.Cries.runStart(pl);                 // el grito de tu compañero (core/cries.js)
     // Ranking: sube las marcas del histórico que estaban esperando (ver DEFER en ranking.js).
     G.Ranking.newSeal();          // el sello del ranking de esta partida (también el invitado)
     if (!coop || G.Coop.isHost) G.Ranking.runStarted();

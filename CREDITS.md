@@ -323,6 +323,15 @@ Las caras de la foto del perfil (`assets/portraits/`) también vienen de
 | XxWindpawxX | <@!192118698859954178> | 789, 803 |
 | ◥θ┴θ◤ | DC:<@215638650434617345> | 505, 578, 656, 676, 707, 716, 723, 728, 730, 872, 898, 910, 911, 913, 922, 938, 963, 964, 997, 1017 |
 
+## Gritos de los Pokémon
+
+Los gritos (`assets/cries/<número>.mp3`, 25-11-2026) se han tomado del juego oficial,
+[PokéSurvivor](https://pokesurvivor.com/) (`tools/fetch_official_cries.cjs`), con permiso del dueño de esta copia.
+Allí son los de *Pokémon Edición Reloaded* (F3R, Jhony_Ryu y los dibujantes que han participado en él,
+<https://pokemon-reloaded.blogspot.com>), pasados a MP3 ligero; los que Reloaded no trae (Charizard, Pikachu,
+Eevee, Riolu y Lucario) son del repositorio de gritos de [PokeAPI](https://github.com/PokeAPI/cries).
+Las formas sin grito propio usan el de su especie (`js/core/cries.js`).
+
 ## Datos
 
 Stats base y nombres en español: [PokeAPI](https://pokeapi.co/),

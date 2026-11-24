@@ -228,6 +228,7 @@ G.LevelUp = (() => {
         G.FX.ring(p.x, p.y, 8, 150, '#ffd23f', 0.9, 6);
         G.FX.burst(p.x, p.y - p.bodyH * 0.5, '#fff3b0', 50, 260);
         G.Audio.sfx('legend');
+        if (G.Cries) G.Cries.play(m.dex, 'evolve');      // el grito de la evolución (core/cries.js)
         G.Spawner.say(G.I18n.f('¡{x} ha evolucionado a {x}!', G.T(from, 'mon'), G.T(m.name, 'mon')), 3.2, true);
       }
     }));

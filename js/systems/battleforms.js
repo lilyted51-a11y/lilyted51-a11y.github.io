@@ -165,6 +165,7 @@ G.BattleForms = (() => {
     G.FX.dmgText(p.x, p.y - p.bodyH - 18, G.T(r.name, 'mon'), col, big);
     if (big && !p.remote) {
       G.Audio.sfx('reveal');
+      if (G.Cries) G.Cries.play(dex, 'form');          // su grito (core/cries.js)
       G.Spawner.say(G.I18n.f('¡{x} cambia de forma!', G.T(G.DEX_BY[G.formBase(dex)] ? G.DEX_BY[G.formBase(dex)].name : r.name, 'mon')), 2.2, true);
     }
   }

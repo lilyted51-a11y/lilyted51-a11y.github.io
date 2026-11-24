@@ -162,7 +162,9 @@ G.SettingsUI = (() => {
     const box = $('set-body');
     box.scrollTop = 0;
     if (tab === 'sound') {
-      box.innerHTML = section('Sonido') + '<div id="set-sound" class="sound-inline"></div>';
+      box.innerHTML = section('Sonido') + '<div id="set-sound" class="sound-inline"></div>'
+        // Gritos (core/cries.js, 25-11-2026): con el volumen de los efectos.
+        + toggle('cries', 'Gritos de los Pokémon', 'Tu compañero y los Pokémon especiales sueltan su grito en momentos señalados: al empezar y al evolucionar, en el gacha y los huevos, y al salir jefes, legendarios y shinies.');
       G.UI.soundControls($('set-sound'));
     } else if (tab === 'gfx') {
       const auto = ['baja', 'media', 'alta'][G.Settings.autoLevel];
@@ -230,6 +232,7 @@ G.SettingsUI = (() => {
              <li><b>Sprites:</b> PMD SpriteCollab y sus artistas (CC BY-NC 4.0).</li>
              <li><b>Datos de los Pokémon:</b> PokéAPI.</li>
              <li><b>Música y sonidos:</b> originales, generados por el propio juego.</li>
+             <li><b>Gritos de los Pokémon:</b> Pokémon Edición Reloaded y PokéAPI, vía PokéSurvivor.</li>
              <li><b>Fuente:</b> Pixelify Sans (OFL).</li>
            </ul>`
         + `<div class="row wrap" style="justify-content:center;gap:8px">

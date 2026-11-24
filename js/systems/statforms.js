@@ -107,6 +107,7 @@ G.StatForms = (() => {
     if (dex === pl.dex || !G.DEX_BY[dex]) { G.Spawner.say(G.I18n.f('{x} se queda con su forma', G.T(was, 'mon')), 2.4, true); return; }
     apply(pl, dex);
     G.Audio.sfx('legend');
+    if (G.Cries) G.Cries.play(dex, 'form');            // su grito (core/cries.js)
     G.Game.flash(COLOR, 0.4);
     G.FX.ring(pl.x, pl.y, 8, 140, COLOR, 0.8, 6);
     G.FX.burst(pl.x, pl.y - pl.bodyH * 0.5, '#e8f6ff', 40, 240);

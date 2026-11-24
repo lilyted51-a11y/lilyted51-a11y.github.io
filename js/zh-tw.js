@@ -937,6 +937,15 @@
   "No connection: with your account, buying needs internet.": "沒有連線：使用帳號時，購買需要網路。",
   "Tu poder se adapta a {x}: {x}": "你的力量配合{x}改變了：{x}",
   "Your power adapts to {x}: {x}": "你的力量配合{x}改變了：{x}",
+  // 25-11-2026 (copia local): gritos (core/cries.js, ajustes → Sonido)
+  "Gritos de los Pokémon": "寶可夢的叫聲",
+  "Pokémon cries": "寶可夢的叫聲",
+  "Tu compañero y los Pokémon especiales sueltan su grito en momentos señalados: al empezar y al evolucionar, en el gacha y los huevos, y al salir jefes, legendarios y shinies.": "你的夥伴與特別的寶可夢會在重要時刻發出叫聲：開局與進化時、扭蛋與孵蛋時，以及首領、傳說寶可夢與異色寶可夢出現時。",
+  "Your partner and special Pokémon let out their cry at key moments: at the start and when evolving, in the gacha and eggs, and when bosses, legendaries and shinies appear.": "你的夥伴與特別的寶可夢會在重要時刻發出叫聲：開局與進化時、扭蛋與孵蛋時，以及首領、傳說寶可夢與異色寶可夢出現時。",
+  "Gritos de los Pokémon:": "寶可夢的叫聲：",
+  "Pokémon cries:": "寶可夢的叫聲：",
+  "Pokémon Edición Reloaded y PokéAPI, vía PokéSurvivor.": "Pokémon Edición Reloaded 與 PokéAPI，經由 PokéSurvivor 取得。",
+  "Pokémon Edición Reloaded and PokéAPI, via PokéSurvivor.": "Pokémon Edición Reloaded 與 PokéAPI，經由 PokéSurvivor 取得。",
   // 25-11-2026 (copia local): formas de combate (systems/battleforms.js)
   "¡{x} cambia de forma!": "{x}的形態改變了！",
   "{x} changes form!": "{x}的形態改變了！",

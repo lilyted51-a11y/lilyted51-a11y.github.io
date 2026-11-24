@@ -2261,5 +2261,10 @@ G.I18n.add({
   "Esa skin ya no está a la venta.": "That skin is no longer for sale.",
   // 25-11-2026 (copia local): auditoría de las novedades oficiales 13-16/11
   "Sin conexión: con tu cuenta, comprar necesita internet.": "No connection: with your account, buying needs internet.",
-  "Tu poder se adapta a {x}: {x}": "Your power adapts to {x}: {x}"
+  "Tu poder se adapta a {x}: {x}": "Your power adapts to {x}: {x}",
+  // 25-11-2026 (copia local): gritos (core/cries.js, ajustes → Sonido)
+  "Gritos de los Pokémon": "Pokémon cries",
+  "Tu compañero y los Pokémon especiales sueltan su grito en momentos señalados: al empezar y al evolucionar, en el gacha y los huevos, y al salir jefes, legendarios y shinies.": "Your partner and special Pokémon let out their cry at key moments: at the start and when evolving, in the gacha and eggs, and when bosses, legendaries and shinies appear.",
+  "Gritos de los Pokémon:": "Pokémon cries:",
+  "Pokémon Edición Reloaded y PokéAPI, vía PokéSurvivor.": "Pokémon Edición Reloaded and PokéAPI, via PokéSurvivor."
 });
