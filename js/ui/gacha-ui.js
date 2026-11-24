@@ -140,6 +140,9 @@ G.GachaUI = (() => {
     // Copia local: en las tiradas en masa (×100, ×1000) no hay tragaperras y las cartas se agrupan.
     const mass = n >= 100;
     const direct = mass || !!G.Settings.get('gachaSkip');   // (skip, el de arriba, es el botón Saltar de upstream)
+    // Gritos (core/cries.js): sólo uno por tirada, el mejor de los shiny o nuevos, al salir su carta.
+    let cryDex = (G.Cries.best(res) || {}).dex || 0;
+    if (cryDex) G.Cries.preload(cryDex);
     if (direct) slot.style.display = 'none';
     else await G.Slots.play(slot, res);
     G.Audio.sfx('burst', { rarity: best });
@@ -178,6 +181,7 @@ G.GachaUI = (() => {
       c.insertAdjacentHTML('beforeend', `<b>${r.shiny ? G.Icons.html('shiny', 12) + ' ' : ''}${mon.name}${r.n > 1 ? ' <small class="times">×' + r.n + '</small>' : ''}</b>${who}<div class="tag">${tag}</div>`);
       out.appendChild(c);
       G.Audio.sfx('reveal', { rarity: r.rarity });
+      if (r.dex === cryDex) { G.Cries.play(cryDex, 'gacha'); cryDex = 0; }
       if (!direct && !skip) await wait(n === 10 ? 150 : 0);
       else if (mass && cards.indexOf(r) % 12 === 11) await wait(0);   // deja respirar al navegador
     }

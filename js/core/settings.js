@@ -18,6 +18,7 @@
  *   dressFx     true/false                        efectos del Vestidor (brillos, auras, halo) en la partida
  *   keys        { acción: [tecla, tecla] }        teclas cambiadas (sólo las que no son de serie; core/keys.js)
  *   fpsCap      0 | 30 | 60 | 90 | 120 | 144      límite de FPS (0: sin límite; game.js loop)
+ *   cries       true/false                        gritos de los Pokémon (core/cries.js)
  *
  *   G.Settings.get('quality')  ·  G.Settings.set('fps', true)  ·  G.Settings.on(fn)
  *   G.Settings.fx   nivel efectivo 0 (bajo) .. 2 (alto), ya resuelto el 'auto'
@@ -27,7 +28,8 @@ G.Settings = (() => {
   const DEF = { quality: 'auto', dmgNumbers: true, calm: false, fps: false, stick: 1, stickMode: 'float', pad: null, gamepad: true, padRumble: true, aimManual: false,
                 gachaSkip: false, minimap: true,    // copia local: saltar animación del gacha · minimapa
                 trails: 'all', trailLite: false, dressFx: true,     // estelas y efectos (23-11-2026)
-                keys: {}, fpsCap: 0 };                              // teclas cambiadas y límite de FPS (24-11-2026)
+                keys: {}, fpsCap: 0,                                // teclas cambiadas y límite de FPS (24-11-2026)
+                cries: true };                                      // gritos de los Pokémon (core/cries.js, 25-11-2026)
   let s = Object.assign({}, DEF);
   try { Object.assign(s, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { /* nada */ }
   const fns = new Set();

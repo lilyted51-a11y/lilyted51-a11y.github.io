@@ -194,6 +194,8 @@ G.Powers = (() => {
     else if (pl.powerId === 'dyna') dynaOn(pl);
     else if (pl.powerId === 'z') { pl.zT = 0; }
     else if (pl.powerId === 'tera') teraOn(pl, pl.powerArg);
+    // Mega, fusión o Gigamax: su grito (el de la forma; si no lo tiene, el de la especie: core/cries.js).
+    if (G.Cries && (pl.powerId === 'mega' || pl.powerId === 'dyna')) G.Cries.play(pl.powerId === 'dyna' && pl.gmax || pl.dex, pl.powerId);
     G.Game.flash(d.color, 0.5);
     G.Camera.kick(0.7);
     G.Audio.sfx('legend');

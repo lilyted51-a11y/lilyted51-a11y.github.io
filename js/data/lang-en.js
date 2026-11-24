@@ -2202,5 +2202,10 @@ G.I18n.add({
   "Gigatrampa acero": "G-Max Steelsurge",
   "Gigadesgaste": "G-Max Depletion",
   "Gigagolpe brusco": "G-Max One Blow",
-  "Gigagolpe fluido": "G-Max Rapid Flow"
+  "Gigagolpe fluido": "G-Max Rapid Flow",
+  // 25-11-2026 (copia local): gritos (core/cries.js, ajustes → Sonido)
+  "Gritos de los Pokémon": "Pokémon cries",
+  "Tu compañero y los Pokémon especiales sueltan su grito en momentos señalados: al empezar y al evolucionar, en el gacha y los huevos, y al salir jefes, legendarios y shinies.": "Your partner and special Pokémon let out their cry at key moments: at the start and when evolving, in the gacha and eggs, and when bosses, legendaries and shinies appear.",
+  "Gritos de los Pokémon:": "Pokémon cries:",
+  "Pokémon Edición Reloaded y PokéAPI, vía PokéSurvivor.": "Pokémon Edición Reloaded and PokéAPI, via PokéSurvivor."
 });
