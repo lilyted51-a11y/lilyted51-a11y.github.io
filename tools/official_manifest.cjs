@@ -21,8 +21,8 @@ if (!src) { console.error('uso: node tools/official_manifest.cjs <app.min.js>');
 const s = fs.readFileSync(src, 'utf8');
 
 /** Literal que empieza en `start` (incluido su primer carácter de apertura) → datos. */
-function grab(start, open, close) {
-  let i = s.indexOf(start);
+function grab(start, open, close, from = 0) {
+  let i = s.indexOf(start, from);
   if (i < 0) throw new Error('no encuentro ' + start);
   i += start.length - 1;
   let dep = 0, j = i;
@@ -55,11 +55,15 @@ for (const m of s.matchAll(/\{id:\d{6,7},d:/g)) {
   }
   forms.push(toData(s.slice(m.index, j + 1)));
 }
-const out = { from: path.basename(src), at: new Date().toISOString(), meta, forms, mega, mega2, gmax, dex };
+// Skins (sus disfraces de la comunidad): la tabla y el orden de la rotación semanal de la Tienda Kecleon.
+const sk = s.indexOf("b['Skins']=((()=>{");
+const skins = grab(',j={', '{', '}', sk);
+const skinOrder = grab('const y=[', '[', ']', sk);
+const out = { from: path.basename(src), at: new Date().toISOString(), meta, forms, mega, mega2, gmax, dex, skins, skinOrder };
 const dir = path.join(__dirname, 'cache', 'official');
 fs.mkdirSync(dir, { recursive: true });
 fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify(out));
-const left = JSON.stringify({ forms, mega, mega2, gmax }).match(/"\?0x[0-9a-f]+"/g) || [];
+const left = JSON.stringify({ forms, mega, mega2, gmax, skins, skinOrder }).match(/"\?0x[0-9a-f]+"/g) || [];
 console.log('sprites', Object.keys(meta).length, '· formas', forms.length, '· megas', Object.keys(mega).length,
   '+', Object.values(mega2).flat().length, '· gmax', Object.keys(gmax).length, '· pokédex', dex.length,
-  '· cadenas cifradas sin rellenar', new Set(left).size);
+  '· skins', Object.keys(skins).length, '· cadenas cifradas sin rellenar', new Set(left).size);

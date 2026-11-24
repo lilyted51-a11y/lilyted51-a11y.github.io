@@ -670,7 +670,9 @@ G.Powers = (() => {
       'electric-surge': boost('electric'), 'fairy-aura': boost('fairy'),
       'primordial-sea': with2('drizzle', 'water'), 'desolate-land': with2('drought', 'fire'),
       'delta-stream': A['filter'], 'turboblaze': A['mold-breaker'], 'teravolt': A['mold-breaker'], 'stalwart': A['inner-focus'],
-      'berserk': A['anger-point'], 'aura-guard': A['shell-armor'],
+      'berserk': A['anger-point'], 'aura-guard': { d: 'Recibe un 20 % menos de daño.', inMul: () => 0.8 },
+      // (25-11-2026) las de las megas nuevas, con nombre oficial en PokeAPI: lo más parecido que ya hay
+      'piercing-drill': A['tough-claws'], 'mega-sol': boost('fire'), 'spicy-spray': A['flame-body'], 'eelevate': A['levitate'],
       'power-construct': A['moxie'], 'battle-bond': A['moxie'], 'as-one-glastrier': A['moxie'], 'as-one-spectrier': A['moxie'],
       'parental-bond': { d: '+20 % de daño con todos sus movimientos.', out: () => 1.2 },
       'intrepid-sword': { d: '+20 % de daño con todos sus movimientos.', out: () => 1.2 },
@@ -691,7 +693,14 @@ G.Powers = (() => {
       'aerilate': ['Piel Celeste', 'Aerilate', '', '', '飞行皮肤', '飛行皮膚'],
       'battle-bond': ['Fuerte Afecto', 'Battle Bond', '', '', '牵绊变身', '牽絆變身'],
       'as-one-glastrier': ['Unidad Ecuestre', 'As One', '', '', '人马一体', '人馬一體'],
-      'as-one-spectrier': ['Unidad Ecuestre', 'As One', '', '', '人马一体', '人馬一體']
+      'as-one-spectrier': ['Unidad Ecuestre', 'As One', '', '', '人马一体', '人馬一體'],
+      // (25-11-2026, PokeAPI)
+      'piercing-drill': ['Turbotaladro', 'Piercing Drill', 'Transperceuse', 'Punta Perforante', '贯穿钻', '貫穿鑽'],
+      'dragonize': ['Piel Dragontina', 'Dragonize', 'Peau Draconique', 'Pelledrago', '龙皮肤', '龍皮膚'],
+      'mega-sol': ['Megasolar', 'Mega Sol', 'Méga-Soleil', 'Megasolar', '超级日光', '超級日光'],
+      'spicy-spray': ['Salpicante', 'Spicy Spray', 'Habanéruption', 'Spargipiccante', '辣椒喷发', '辣椒噴發'],
+      'eelevate': ['Impulso Anguila', 'Eelevate', 'Lévitaboost', 'Rapidascesa', '鳗鳗高升', '鰻鰻高升'],
+      'aura-guard': ['Aura Protectora', 'Aura Guard', 'Aura Protectrice', 'Ondascudo', '波导防护', '波導防護']
     };
     for (const id in names) if (!N[id]) N[id] = names[id];
   })();
