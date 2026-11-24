@@ -1337,7 +1337,7 @@ html:lang(zh) .btn, html:lang(zh) .chip { letter-spacing: 0; }
   .mast-head .mast-face { align-self: center; }
 }
 
-/* ============ Menú principal sin scroll (24-11-2026, copia local; como la Gran Actualización del juego oficial) =====
+/* ============ Menú principal sin scroll (24-11-2026, copia local; como la Gran Actualización del juego oficial) ============
  * Todo el menú cabe en la pantalla sin desplazarse y con la dificultad y el desafío semanal a la vista:
  *   PC                 logo arriba a la izquierda, debajo el panel con los botones; a la derecha, la última
  *                      novedad y la ficha del compañero (con su Objeto inicial)
@@ -1575,7 +1575,7 @@ html:lang(zh) .btn, html:lang(zh) .chip { letter-spacing: 0; }
 .rkb-its { margin: 6px 0 0; }
 .prof-play { display: flex; align-items: center; gap: 6px; margin: -4px 0 12px; font-size: 15px; }
 .prof-play span { color: var(--muted); }
-=======
+
 /* ================= 24-11-2026: teclas cambiables, límite de FPS y Guías (Ajustes) =================
  * Editor de teclas (ui/settings-ui.js keysHtml / capture) y pantalla de Guías (ui/guide-ui.js). */
 .kb-list { display: flex; flex-direction: column; gap: 2px; margin: 6px 0 8px; }

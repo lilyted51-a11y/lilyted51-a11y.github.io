@@ -257,6 +257,30 @@ await A.ev(`(() => { const p = G.Game.player; G.RunUI.showLevelUp(20, G.LevelUp.
 await grab('cartas de evolución'); await A.ev(`G.RunUI.closeLevelUp(); G.UI.hide('scr-levelup'); 1`); await sleep(300);
 await A.ev(`(() => { const cards = G.LevelUp.STATS.map(s => ({ type: 'stat', key: 'stat:' + s.id, icon: s.icon, color: '#8fa3c4', tag: s.rare ? 'Carta rara' : 'Mejora', title: s.title, desc: s.desc, apply() {} })); G.RunUI.showLevelUp(21, cards, () => {}); return cards.length; })()`); await sleep(900);
 await grab('cartas de mejora (todas)'); await A.ev(`G.RunUI.closeLevelUp(); G.UI.hide('scr-levelup'); 1`); await sleep(300);
+// Formas de atacar nuevas (24-11-2026, systems/moves2.js): las cartas de aprender los 26 movimientos nuevos, las de
+// mejorarlos y evolucionarlos, y el aviso de Protección en el canvas.
+{
+  const NEW = ['extreme-speed', 'protect', 'double-team', 'explosion', 'judgment', 'fire-blast', 'sunny-day', 'fire-punch', 'surf', 'rain-dance',
+    'seed-flare', 'thunder', 'thunder-punch', 'plasma-fists', 'ice-punch', 'glaciate', 'drain-punch', 'earthquake', 'acrobatics', 'rest', 'reflect',
+    'light-screen', 'x-scissor', 'sandstorm', 'stone-axe', 'shadow-force'];
+  await A.ev(`(() => { const p = G.Game.player; window.__mv2 = [p.moves, p.slots, p.active, p.maxMoves, p.growDue, G.Moves.poolFor, p.banned];
+    p.growDue = () => false; p.banned = new Set(); return 1; })()`);
+  for (let i = 0; i < NEW.length; i += 6) {
+    await A.ev(`(() => { const p = G.Game.player, ids = ${JSON.stringify(NEW.slice(i, i + 6))}; p.moves = []; p.slots = []; p.active = 0; p.maxMoves = 99;
+      G.Moves.poolFor = () => ids; const cards = G.LevelUp.offer(p, 60).filter(c => c.type === 'new'); G.Moves.poolFor = window.__mv2[5];
+      G.RunUI.showLevelUp(22, cards, () => {}); return cards.length; })()`); await sleep(800);
+    await grab('cartas: movimientos nuevos ' + i); await A.ev(`G.RunUI.closeLevelUp(); G.UI.hide('scr-levelup'); 1`); await sleep(200);
+  }
+  for (let i = 0; i < NEW.length; i += 4) {
+    await A.ev(`(() => { const p = G.Game.player, ids = ${JSON.stringify(NEW.slice(i, i + 4))}; p.moves = []; p.slots = []; p.active = 0; p.maxMoves = 4;
+      ids.forEach((id, k) => { p.addMove(id); const m = p.moves[p.moves.length - 1]; for (let n = 1; n < (k % 2 ? 5 : 2 + k); n++) G.Moves.levelUp(m); const e = G.Moves.EVO[id]; if (e) p.statsTaken[e] = 1; });
+      const cards = G.LevelUp.offer(p, 60).filter(c => c.type === 'evo' || c.type === 'up'); G.RunUI.showLevelUp(23, cards, () => {}); return cards.length; })()`); await sleep(800);
+    await grab('cartas: mejorar y evolucionar los nuevos ' + i); await A.ev(`G.RunUI.closeLevelUp(); G.UI.hide('scr-levelup'); 1`); await sleep(200);
+  }
+  await A.ev(`(() => { const p = G.Game.player; G.Moves2.run(p, G.Moves.instance('protect', 1), false); p.invuln = 0; p.hurt(5, null, false, 'physical'); return 1; })()`); await sleep(600);
+  await canvas('Protección'); await misses('formas de atacar nuevas');
+  await A.ev(`(() => { const p = G.Game.player, k = window.__mv2; [p.moves, p.slots, p.active, p.maxMoves, p.growDue] = k; p.banned = k[6]; return 1; })()`);
+}
 for (const t of ['¡Eevee ha evolucionado a Vaporeon!', '¡Mewtwo se hace más fuerte!']) { await A.ev(`G.Spawner.say(${JSON.stringify(t)}, 2, true); 1`); await sleep(500); }
 // Avisos del cooperativo sin cortes, del gacha sin conexión y del ranking (12-11-2026): en una partida en solitario
 // no salen, así que se pintan aquí como los pinta el juego (aviso del centro y rótulo del HUD en el canvas, y toast).

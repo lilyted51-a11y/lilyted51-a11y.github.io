@@ -1,4 +1,5 @@
-/* ============ changelog.js — novedades del juego ===== * Lo que ve la gente en el botón "Novedades" de la barra de arriba: cambios
+/* ============ changelog.js — novedades del juego ============
+ * Lo que ve la gente en el botón "Novedades" de la barra de arriba: cambios
  * de juego y fallos arreglados (nada de servidores ni bases de datos).
  * La fecha más nueva, arriba. En cada fecha, por apartados:
  *   new  lo nuevo · chg  cambios y ajustes · fix  fallos arreglados
@@ -35,7 +36,13 @@ G.CHANGELOG = [
     ["Tres Megaevoluciones nuevas para el poder Megaevolución: Mega Sceptile, Mega Chimecho y Mega Hawlucha (también en el gacha de su región).",
      "Three new Mega Evolutions for the Mega Evolution power: Mega Sceptile, Mega Chimecho and Mega Hawlucha (also in their region's gacha)."],
     ["94 aspectos nuevos en el Vestidor, que sólo cambian el dibujo: las letras de Unown, los 19 dibujos de Vivillon, las flores de Flabébé, Floette y Florges, las estaciones de Deerling y Sawsbuck, los núcleos de Minior, las tarjetas de Genesect, Mimikyu desenmascarado, Magearna de hace 500 años y más.",
-     "94 new looks in the Dressing Room, which only change the sprite: Unown's letters, Vivillon's 19 patterns, the flowers of Flabébé, Floette and Florges, Deerling and Sawsbuck's seasons, Minior's cores, Genesect's drives, busted Mimikyu, Original Color Magearna and more."]
+     "94 new looks in the Dressing Room, which only change the sprite: Unown's letters, Vivillon's 19 patterns, the flowers of Flabébé, Floette and Florges, Deerling and Sawsbuck's seasons, Minior's cores, Genesect's drives, busted Mimikyu, Original Color Magearna and more."],
+    ["21 MT con formas de atacar nuevas: Velocidad Extrema (saltas de enemigo en enemigo), Explosión, Trueno (rayos del cielo), Llamarada (cruz de fuego), Puño Fuego, Puño Trueno, Puño Hielo y Puño Drenaje (tres directos), Surf (una ola que arrastra), Terremoto (un anillo que sale de ti), Acróbata y Golpe Umbrío (saltas y caes con una onda) y Tijera X (dos tajos en X). Están en los ataques de su tipo y en la Tienda Kecleon.",
+     "21 TMs with new ways to attack: Extreme Speed (you jump from enemy to enemy), Explosion, Thunder (bolts from the sky), Fire Blast (a cross of fire), Fire Punch, Thunder Punch, Ice Punch and Drain Punch (three jabs), Surf (a wave that drags), Earthquake (a ring spreading from you), Acrobatics and Shadow Force (you leap and land with a shockwave) and X-Scissor (two slashes in an X). They are among the moves of their type and in the Kecleon Shop."],
+    ["Y los que no pegan: Protección (1,5 s intocable), Doble Equipo (una copia tuya atrae a los enemigos), Día Soleado, Danza Lluvia y Tormenta Arena (el clima un rato, aunque cambies de ataque), Descanso (te cura mucho pero te duermes), Reflejo y Pantalla Luz (−35 % del daño físico o especial).",
+     "And the ones that don't hit: Protect (1.5 s untouchable), Double Team (a copy of you draws enemies in), Sunny Day, Rain Dance and Sandstorm (the weather for a while, even if you switch attacks), Rest (heals a lot but you fall asleep), Reflect and Light Screen (−35% physical or special damage)."],
+    ["Ataques exclusivos con forma nueva: Sentencia de Arceus (rayos de luz), Fulgor Semilla de Shaymin (cruz de semillas), Puños Plasma de Zeraora, Mundo Gélido de Kyurem (anillo de hielo) y Hachazo Pétreo de Kleavor.",
+     "Signature moves with a new shape: Arceus's Judgment (beams of light), Shaymin's Seed Flare (a cross of seeds), Zeraora's Plasma Fists, Kyurem's Glaciate (a ring of ice) and Kleavor's Stone Axe."]
   ], chg: [
     ["Los ataques exclusivos de los legendarios y singulares evolucionan con su «+» como los demás y, evolucionados, pegan como cualquier ataque evolucionado. Los de Pokémon que no son legendarios (Balón Ígneo, Truco Floral, Placaje Eléctrico…) no evolucionan, pero pegan más de base.",
      "Legendary and Mythical signature moves evolve with their «+» like the rest and, once evolved, hit like any evolved move. Those of non-legendary Pokémon (Pyro Ball, Flower Trick, Volt Tackle…) don't evolve, but hit harder from the start."],
@@ -44,7 +51,11 @@ G.CHANGELOG = [
     ["En el ranking sales con el Pokémon con el que acabas la partida (el evolucionado, si ha evolucionado), no con el que empezaste. La maestría sigue siendo del que elegiste.",
      "In the ranking you appear with the Pokémon you end the run with (the evolved one, if it evolved), not the one you started with. Mastery still goes to the one you picked."],
     ["Ajustes → Acerca de enseña la versión exacta del juego.",
-     "Settings → About shows the exact game version."]
+     "Settings → About shows the exact game version."],
+    ["Protección: por mucha reducción de recarga que lleves, su recarga nunca baja de 5 s. Y contra Arceus no vale.",
+     "Protect: however much cooldown reduction you have, its cooldown never goes below 5 s. And it doesn't work against Arceus."],
+    ["Surf: la ola llega a 360 y es estrecha; pega una vez a cada uno, como los demás ataques de zona.",
+     "Surf: the wave reaches 360 and is narrow; it hits each enemy once, like other area moves."]
   ], fix: [
     ["Con el editor de una tecla abierto, Esc, el botón Atrás del móvil o la B del mando lo cierran a él y no los Ajustes.",
      "With the key editor open, Esc, the mobile Back button or B on a gamepad close the editor and not Settings."],

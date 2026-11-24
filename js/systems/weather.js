@@ -16,6 +16,10 @@
  *
  * Desafío semanal (systems/challenge.js, 23-11-2026): lock(clima) lo deja puesto toda la
  * partida; si algo lo quita (la arena de una grieta, Eternatus), vuelve en cuanto se pueda.
+ *
+ * Movimientos de clima (24-11-2026, copia local: Día Soleado, Danza Lluvia, Tormenta Arena; ver
+ * systems/moves2.js): fromMove(clima, s) lo pone ya (o alarga el mismo) y, al acabar, vuelve el que
+ * hubiera (el de la arena de una grieta, por ejemplo) con lo que le quedaba. Lo decide el anfitrión.
  */
 G.Weather = (() => {
   const KINDS = {
@@ -96,7 +100,7 @@ G.Weather = (() => {
   function update(dt, time, pl) {
     if (cur) {
       cur.t += dt;
-      if (cur.t >= cur.dur) cur = null;
+      if (cur.t >= cur.dur) cur = cur.back || null;      // (el de un movimiento deja el que había)
     } else if (locked) {
       // Desafío semanal: el clima fijo vuelve (sin aviso) en cuanto no hay otro.
       cur = { kind: locked, t: 3, dur: 1e9 };
@@ -136,7 +140,23 @@ G.Weather = (() => {
   }
 
   /** Cooperativo: el anfitrión manda el clima. */
-  function onEvent(ev) { if (ev[1]) start(ev[1], ev[2]); else stop(); }
+  function onEvent(ev) { if (ev[1] && ev[3]) fromMove(ev[1], ev[2]); else if (ev[1]) start(ev[1], ev[2]); else stop(); }
+
+  /**
+   * Clima de un movimiento (24-11-2026): ya, sin esperar a que entre; si ya está ese, sólo dura más.
+   * El que hubiera de otra clase se guarda y vuelve al acabar. Con el clima fijo del desafío, nada.
+   * → true si se ha puesto o alargado.
+   */
+  function fromMove(kind, dur) {
+    if (locked || !KINDS[kind]) return false;
+    if (cur && cur.kind === kind) { cur.dur = Math.max(cur.dur, cur.t + dur); return true; }
+    const back = cur && cur.dur - cur.t > 4 ? Object.assign({}, cur, { t: 0, dur: cur.dur - cur.t }) : null;
+    if (back) back.back = null;
+    start(kind, dur + 1.5);
+    cur.t = 1.5;                                          // entra en 1,5 s, no en 3
+    cur.back = back;
+    return true;
+  }
 
   // ---------------- dibujo (en pantalla) ----------------
 
@@ -191,6 +211,7 @@ G.Weather = (() => {
       else if (cur && cur.dur > 1e8) stop();
     },
     get locked() { return locked; },
+    fromMove,
     // (Con el clima fijo del desafío, ni las habilidades ni la Mega lo cambian.)
     debugStart(kind = 'rain', dur = 60) { if (locked) return; start(kind, dur); if (G.Coop.isHost) G.Coop.broadcast(['wx', kind, dur]); }
   };
