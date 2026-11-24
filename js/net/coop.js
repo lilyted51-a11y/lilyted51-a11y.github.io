@@ -35,6 +35,9 @@ G.Coop = (() => {
   const RATE_FAST = 1 / 15, RATE_SLOW = 1 / 3;
   const rateFor = u => (G.Net.slow(u) ? RATE_SLOW : RATE_FAST);
   const NEAR = 950;                     // radio de enemigos que se mandan a cada uno
+  // (25-11-2026) ...o más, si su pantalla ve más (ventana muy ancha, cámara alejada en la grieta o con la
+  // Luminosfera): los del borde se quedaban quietos. Hasta VIEW_MAX, para que el mensaje no crezca sin fin.
+  const VIEW_MAX = 1900;
   const EV_MAX = 500;                   // eventos por envío como mucho (el resto, en el siguiente)
 
   let active = false, host = false, me = null, hostUid = null;
@@ -80,6 +83,7 @@ G.Coop = (() => {
    */
   function begin(cfg, pl, cb) {
     active = true;
+    hiddenAt = 0; awayFrom = null; lastTeam = null; gain = { co: 0, t1: 0, t10: 0 };   // (fuera de la partida, ver AWAY_MAX)
     me = G.Net.uid; hostUid = cfg.host;
     host = me === hostUid;
     local = pl;
@@ -169,7 +173,8 @@ G.Coop = (() => {
             // Vestidor (23-11-2026): estela, efecto y aspecto, para que los demás los vean.
             ...(G.Dress ? G.Dress.netCode(local) : ['', '', 0]),
             local.aura ? 1 : 0,                  // aura de maestro (systems/mastery.js)
-            G.BattleForms ? G.BattleForms.netCode(local) : 0];   // forma de combate puesta (systems/battleforms.js)
+            G.BattleForms ? G.BattleForms.netCode(local) : 0,    // forma de combate puesta (systems/battleforms.js)
+            Math.round(G.Camera && G.Camera.outerRadius ? G.Camera.outerRadius() : NEAR)];   // lo que ves (enemyList; 25-11-2026)
   }
 
   /** Número que llega por la red: si no es un número de verdad vale `def`, y si se pasa se queda en el tope. */
@@ -231,7 +236,8 @@ G.Coop = (() => {
              tr: typeof a[20] === 'string' ? a[20].slice(0, 24) : '', fx: typeof a[21] === 'string' ? a[21].slice(0, 12) : '',
              lk: Math.floor(num(a[22], 0, 0, 2e6)),
              au: a[23] === 1 ? 1 : 0,              // aura de maestro (systems/mastery.js)
-             bf: Math.floor(num(a[24], 0, 0, 2e6)) };   // forma de combate (G.BattleForms.applyNet sólo acepta las que existen)
+             bf: Math.floor(num(a[24], 0, 0, 2e6)),     // forma de combate (G.BattleForms.applyNet sólo acepta las que existen)
+             vr: num(a[25], NEAR, 0, VIEW_MAX) };       // radio de lo que ve en pantalla (enemyList)
   }
 
   /** Anfitrión: dónde mira un invitado (él mismo, o el compañero vivo que mira estando caído). */
@@ -265,9 +271,16 @@ G.Coop = (() => {
   // ---------------- envío ----------------
 
   /** Anfitrión: evento para todos los invitados (menos `except`). */
+  // Lo que sólo vale al momento (disparos enemigos, ataques de los demás, números de daño): a quien no
+  // está (pestaña escondida, móvil bloqueado) no se le guarda; al volver le salían de golpe (25-11-2026).
+  const BRIEF = new Set(['es', 'c', 'hn']);
   function emit(ev, except) {
     if (!host) return;
-    for (const m of mates.values()) if (m.connected && m.uid !== except) m.q.push(ev);
+    for (const m of mates.values()) {
+      if (!m.connected || m.uid === except) continue;
+      if (BRIEF.has(ev[0]) && (m.pl.silent || m.q.length > 600)) continue;
+      m.q.push(ev);
+    }
   }
 
   /** Anfitrión: evento sólo para los que están cerca (números de daño). */
@@ -281,9 +294,9 @@ G.Coop = (() => {
     }
   }
 
-  function enemyList(near) {
+  function enemyList(near, vr) {
     const out = [];
-    const r2n = NEAR * NEAR;
+    const R = Math.max(NEAR, Math.min(VIEW_MAX, (vr || 0) + 120)), r2n = R * R;
     for (const e of G.EnemyMgr.all()) {
       if (e.dead || G.U.dist2(e.x, e.y, near.x, near.y) > r2n) continue;
       const a = ANIMS.indexOf(e.anim.cur);
@@ -303,7 +316,10 @@ G.Coop = (() => {
     const ev = m.q.length > EV_MAX ? m.q.splice(0, EV_MAX) : m.q;
     if (ev === m.q) m.q = [];
     const f = { k: 'f', t: r2(st.time), lv: st.level, xp: r2(st.xp), xn: st.xpNext, ki: st.kills, bo: st.bosses, co: st.coins, tk: [st.t1, st.t10, st.cn || 0],
-                p, e: enemyList(viewOf(m)), ev };
+                p, e: enemyList(viewOf(m), m.pl.net && m.pl.net.vr), ev };
+    // El reloj de la arena de la grieta (en todos el mismo, ver Rift.netClock).
+    const ra = G.Rift && G.Rift.arena;
+    if (ra && ra.phase === 'fight') f.ra = r1(ra.t);
     const ja = G.Judgment.netState();       // Arceus en la Sentencia
     if (ja) f.ja = ja;
     // Siempre: quién está eligiendo y, si hay cartas de nivel, cuáles (ver arriba).
@@ -554,6 +570,29 @@ G.Coop = (() => {
     emit(['ha', document.hidden ? 1 : 0]);
     flushAll();
   });
+  /*
+   * Invitado fuera de la partida del grupo (25-11-2026): pestaña escondida, móvil bloqueado, otra app.
+   * - Lo que gana el grupo mientras tanto (monedas, tickets) no es tuyo: al volver se apunta en `gain` y se
+   *   descuenta de lo del equipo (onHostFrame). Los shiny, el anfitrión no te los manda (shinyCaught).
+   * - Si estás fuera más de AWAY_MAX, el grupo ya ha seguido sin ti: tu partida termina ahí, con lo que
+   *   llevabas, como al salir (aunque no haya conexión). Si vuelves antes, sigues con ellos.
+   * (El anfitrión que vuelve tarde ya tenía lo suyo: otro ha pasado a llevar la partida, ver 'host' más abajo.)
+   */
+  const AWAY_MAX = 60000;
+  let hiddenAt = 0, awayFrom = null, lastTeam = null, gain = { co: 0, t1: 0, t10: 0 };
+  document.addEventListener('visibilitychange', () => {
+    if (!active || host) { hiddenAt = 0; return; }
+    if (document.hidden) { hiddenAt = Date.now(); if (!awayFrom && lastTeam) awayFrom = Object.assign({}, lastTeam); return; }
+    const gone = hiddenAt ? Date.now() - hiddenAt : 0;
+    hiddenAt = 0;
+    if (gone <= AWAY_MAX) return;
+    const cb = api.lost;
+    leave();
+    if (cb) cb(G.I18n.f('Has estado fuera más de {x} s y el grupo ha seguido sin ti: tu partida termina aquí, con lo que llevabas.', AWAY_MAX / 1000));
+  });
+  // Al cerrar la pestaña (o irse a otra web) se despide como al salir (25-11-2026): los demás lo saben al
+  // momento y, si era el anfitrión, la partida pasa a otro sin esperar los 30 s.
+  if (typeof addEventListener === 'function') addEventListener('pagehide', e => { if (active && !e.persisted) { try { leave(); } catch (x) { /* se cierra igual */ } } });
 
   function onHostFrame(msg) {
     lastHostAt = performance.now();
@@ -570,6 +609,7 @@ G.Coop = (() => {
     }
     for (const ev of msg.ev || []) applyHostEvent(ev);
     if (msg.ja) G.Judgment.netApply(msg.ja);
+    if (G.Rift && G.Rift.netClock) G.Rift.netClock(msg.ra);
     // Quién elige y las cartas de nivel, aunque se haya perdido algún aviso.
     if (msg.ho) {
       const k = msg.ho.join('|');
@@ -582,8 +622,15 @@ G.Coop = (() => {
       if (msg.lu && msg.lu[0] > doneSeq && (msg.lu[0] > seenSeq || !showing)) { seenSeq = msg.lu[0]; api.levelStart(msg.lu[1]); }
       else if (!msg.lu && showing) api.resume();
     }
-    api.syncTeam({ time: msg.t, level: msg.lv, xp: msg.xp, xpNext: msg.xn, kills: msg.ki, bosses: msg.bo, coins: msg.co,
-                   t1: (msg.tk || [])[0], t10: (msg.tk || [])[1], cn: num((msg.tk || [])[2], 0, 0, 1e6) });
+    // Lo que el grupo ganó mientras no estabas no es tuyo (`gain`, ver AWAY_MAX; 25-11-2026).
+    const tk = msg.tk || [], co = num(msg.co, 0, 0, 1e12), t1 = num(tk[0], 0, 0, 1e6), t10 = num(tk[1], 0, 0, 1e6);
+    if (awayFrom && !document.hidden) {
+      gain.co += Math.max(0, co - awayFrom.co); gain.t1 += Math.max(0, t1 - awayFrom.t1); gain.t10 += Math.max(0, t10 - awayFrom.t10);
+      awayFrom = null;
+    }
+    lastTeam = { co, t1, t10 };
+    api.syncTeam({ time: msg.t, level: msg.lv, xp: msg.xp, xpNext: msg.xn, kills: msg.ki, bosses: msg.bo, coins: Math.max(0, co - gain.co),
+                   t1: Math.max(0, t1 - gain.t1), t10: Math.max(0, t10 - gain.t10), cn: num(tk[2], 0, 0, 1e6) });
     for (const u in msg.p || {}) {
       const m = mates.get(u);
       if (m) { const n = readState(msg.p[u]); syncDex(m, n); m.pl.net = n; G.Powers.applyNet(m.pl, n.pw); if (G.Dress) G.Dress.applyNet(m.pl, n); if (G.BattleForms) G.BattleForms.applyNet(m.pl, n.bf); }
@@ -594,9 +641,13 @@ G.Coop = (() => {
       if (!e || !e.remote || e.dead) continue;
       const n = e.net;
       const dts = (now - (n.last || now)) / 1000;
+      // (25-11-2026: las embestidas de los jefes van a más de 1.000 por segundo: con el tope de 600 se
+      //  quedaban atrás, luego se pasaban y saltaban de vuelta. Y al acabar la embestida, quietos.)
+      const cap = e.boss ? 1400 : 600;
       if (dts > 0.02 && dts < 1) {
-        n.vx = G.U.clamp((a[1] - n.x) / dts, -600, 600);
-        n.vy = G.U.clamp((a[2] - n.y) / dts, -600, 600);
+        n.vx = G.U.clamp((a[1] - n.x) / dts, -cap, cap);
+        n.vy = G.U.clamp((a[2] - n.y) / dts, -cap, cap);
+        if (e.boss && a[4] !== n.anim && n.anim === ANIMS.indexOf('Attack')) { n.vx = 0; n.vy = 0; }
       } else { n.vx = 0; n.vy = 0; }
       n.x = a[1]; n.y = a[2]; n.age = 0; n.last = now;
       e.hp = Math.min(e.maxHp, a[3]);
@@ -704,7 +755,11 @@ G.Coop = (() => {
     }
   }
 
-  function shinyCaught(e) { emit(['sh', e.dex]); }
+  // (Quien no está —pestaña escondida, móvil bloqueado— no se lo lleva; 25-11-2026.)
+  function shinyCaught(e) {
+    if (!host) return;
+    for (const m of mates.values()) if (m.connected && !m.pl.silent) m.q.push(['sh', e.dex]);
+  }
 
   /** Has usado una esfera: el anfitrión avisa a todos; un invitado se lo pide al anfitrión. */
   function orbUsed(id, x, y, z) {
@@ -859,8 +914,13 @@ G.Coop = (() => {
     }
     // Lo que llevaba el anfitrión anterior.
     const hadBoss = G.EnemyMgr.all().some(e => e.remote && e.boss && !e.dead);
+    // Los shiny del anterior (no los jefes, los duendes ni los de las peleas especiales) siguen con su vida (25-11-2026).
+    const shinies = !G.Spawner || !G.Spawner.adoptShiny || (G.Rift && G.Rift.inArena) || G.Judgment.active || (G.Eternatus && G.Eternatus.active) ? [] : G.EnemyMgr.all()
+      .filter(e => e.remote && e.shiny && !e.dead && !e.boss && !e.legend && e.behavior !== 'thief' && e.maxHp > 0)
+      .map(e => [e.dex, e.x, e.y, e.hp / e.maxHp]);
     G.EnemyMgr.clearRemote();
     if (api.takeOver) api.takeOver(hadBoss);
+    for (const s of shinies) G.Spawner.adoptShiny(s[0], s[1], s[2], s[3]);
     for (const o of G.Pickups.adopt()) emit(['pk', o.id, o.kind, r1(o.x), r1(o.y), o.value]);
     // Pausas del anterior: fuera. Si había cartas de nivel abiertas, la ronda sigue
     // con el mismo número: quien ya eligió lo dice en su siguiente envío.
@@ -913,7 +973,8 @@ G.Coop = (() => {
     const hadBoss = !wasHost && G.EnemyMgr.all().some(e => e.remote && e.boss && !e.dead);
     const cb = api.solo;
     end();                                          // (la partida sigue, ya sin red)
-    if (!wasHost) { G.EnemyMgr.clearRemote(); G.Pickups.adopt(); }
+    // (25-11-2026: lo del suelo del grupo no se queda: el grupo sigue con ello y se cogía dos veces.)
+    if (!wasHost) { G.EnemyMgr.clearRemote(); G.Pickups.clear(); }
     if (cb) cb(msg, wasHost, hadBoss, picked_);
     if (G.Social.room) G.Social.leaveRoom();
   }
@@ -926,8 +987,9 @@ G.Coop = (() => {
       if (r.isHost) { if (!host) promote(); }
       else if (host) solo('Otro jugador ha pasado a ser el anfitrión: continúas en solitario con todo lo que llevabas.');
       else if (r.host !== hostUid) follow(r.host);
-    } else if (what === 'room-closed' && !host) {
-      // La sala ha desaparecido en plena partida.
+    } else if (what === 'room-closed') {
+      // La sala ha desaparecido en plena partida (o, al anfitrión que vuelve tras irse la partida a otro,
+      // ya no le deja leerla: antes seguía de anfitrión de nadie con sus amigos «reconectando…»; 25-11-2026).
       solo('Se ha perdido el grupo: continúas en solitario con todo lo que llevabas.');
     }
   });

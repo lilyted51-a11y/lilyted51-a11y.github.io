@@ -115,7 +115,7 @@ G.HUD = (() => {
       const b = pl.buffs[k];
       if (b.n <= 0) continue;
       ctx.font = F(800, 9);
-      const txt = LBL[k] + ' ×' + b.n;
+      const txt = G.T(LBL[k]) + ' ×' + b.n;          // (25-11-2026: en tu idioma; antes salían en español)
       const tw = ctx.measureText(txt).width + 12;
       roundRect(ctx, bx, py + 34, tw, 15, 7);
       ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fill();

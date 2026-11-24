@@ -61,6 +61,17 @@ G.Halloween = (() => {
    */
   let srvAt = null, perfAt = 0;
   function realNow() { return srvAt == null ? null : srvAt + (performance.now() - perfAt); }
+  /*
+   * G.Clock (25-11-2026): la misma hora de la web para todo lo que va por días o semanas (la Tienda
+   * Kecleon, las misiones, el desafío semanal, los periodos del ranking). Con el reloj del aparato mal
+   * puesto salían los de otro día y lo que se compraba ahí se deshacía. Mientras no se sabe (al abrir
+   * o sin conexión), la del aparato.
+   */
+  G.Clock = {
+    now() { const r = realNow(); return r == null ? Date.now() : r; },
+    date() { return new Date(G.Clock.now()); },
+    get known() { return srvAt != null; }
+  };
   function syncClock() {
     if (typeof fetch !== 'function' || !/^https?:$/.test((typeof location !== 'undefined' && location.protocol) || '')) return;
     const t0 = performance.now();

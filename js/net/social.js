@@ -411,7 +411,7 @@ G.Social = (() => {
     try {
       const snap = await fb.rtdb.ref('lobby').get();
       const v = snap.val() || {};
-      const t = ts();
+      const t = now();        // (25-11-2026: era ts(), la marca del servidor, que no es un número: la lista salía siempre vacía)
       out = Object.keys(v).map(id => Object.assign({ id }, v[id]))
         .filter(r => r.open !== false && (r.n || 0) < (r.max || DEFAULT_MAX) && t - (r.at || 0) < 6 * 3600 * 1000)
         .sort((a, b) => (b.at || 0) - (a.at || 0));
@@ -745,10 +745,15 @@ G.Social = (() => {
     if (!f || f.status !== 'ok') return { ok: false, error: 'Sólo puedes invitar a tus amigos.' };
     if (room && room.members.length >= (room.max || DEFAULT_MAX)) return { ok: false, error: 'La sala está llena.' };
     if (room && !room.isHost) return { ok: false, error: 'Sólo el anfitrión de la sala puede invitar.' };
-    if (!room) await createRoom();
+    // (25-11-2026) Sin conexión, la base de datos se queda esperando para siempre y el botón no hacía nada:
+    // ahora se dice, y como mucho se espera 8 s.
+    const OFF = 'Sin conexión: no se ha podido invitar. Prueba otra vez en un momento.';
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return { ok: false, error: OFF };
+    const late = () => new Promise((_, no) => setTimeout(() => no({ code: 'timeout' }), 8000));
     try {
-      await fb.fs.collection('inv').doc(other + '_' + uid).set({ to: other, from: uid, room: room.id, name: me.name, at: fts() });
-    } catch (e) { return { ok: false, error: 'No se pudo invitar (' + (e.code || 'error') + ').' }; }
+      if (!room) await Promise.race([createRoom(), late()]);
+      await Promise.race([fb.fs.collection('inv').doc(other + '_' + uid).set({ to: other, from: uid, room: room.id, name: me.name, at: fts() }), late()]);
+    } catch (e) { return { ok: false, error: e && e.code === 'timeout' ? OFF : 'No se pudo invitar (' + ((e && e.code) || 'error') + ').' }; }
     sentInv.add(other);
     return { ok: true, msg: 'Invitación enviada a ' + f.name };
   }

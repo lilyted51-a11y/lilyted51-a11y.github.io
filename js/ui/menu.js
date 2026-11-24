@@ -8,6 +8,12 @@ G.MenuUI = (() => {
   const DEX0 = () => ({ status: 'all', rar: new Set(), shiny: false, fav: false, type: '', q: '', sort: 'num' });
   let dexF = DEX0();
   const SORTS = [['num', 'Nº'], ['name', 'Nombre'], ['rar', 'Rareza'], ['new', 'Recién conseguidos'], ['used', 'Más usados']];
+  /**
+   * Ataques por orden alfabético del nombre que ves (25-11-2026: antes, por el español en cualquier idioma).
+   * En chino el juego va en español por debajo: se ordena por lo que pone el parche (PSZH_T).
+   */
+  const moveShown = id => { const n = G.T(G.Moves.BY_ID[id].name, 'move'); return window.PSZH_T ? window.PSZH_T(n) : n; };
+  const byMoveName = (a, b) => moveShown(a).localeCompare(moveShown(b), window.PSZH_T ? 'zh-Hant' : G.I18n.locale);
   // Copia local: búsqueda que entiende también el nombre en chino (lo usa la pantalla de mejoras).
   function dexMatch(p, q) {
     if (!q) return true;
@@ -150,9 +156,10 @@ G.MenuUI = (() => {
   }
 
   function bagLine() {
-    const s = G.DB.save, sum = o => Object.values(o || {}).reduce((a, b) => a + (+b || 0), 0);
+    // (Sólo lo que este juego conoce: los de una versión más nueva se guardan sin enseñarse, core/db.js.)
+    const s = G.DB.save, sum = (o, known) => Object.entries(o || {}).reduce((a, [id, b]) => a + (known(id) ? +b || 0 : 0), 0);
     const candy = (s.bag && s.bag.candy) || 0;
-    const items = sum(s.bag) - candy, tms = sum(s.tms), iris = G.Gacha.BANNERS.filter(b => G.Gacha.hasIris(s, b.gen)).length;
+    const items = sum(s.bag, id => !!G.Shop.ITEMS[id]) - (G.Shop.ITEMS.candy ? candy : 0), tms = sum(s.tms, id => !!G.Moves.BY_ID[id]), iris = G.Gacha.BANNERS.filter(b => G.Gacha.hasIris(s, b.gen)).length;
     const parts = [];
     if (items || tms) parts.push(G.I18n.f('Objetos: {x} · MT: {x}', items, tms));
     if (candy) parts.push(G.I18n.f('Caramelos: {x}', candy));
@@ -768,7 +775,7 @@ G.MenuUI = (() => {
     const list = s.pbind[upgDex] || [null, null, null, null];
     const mon = G.DEX_BY[upgDex];
     const ids = G.Moves.poolFor(mon).concat([G.startMoveOf(upgDex)]).filter((v, i, a) => a.indexOf(v) === i)
-      .sort((a, b) => G.Moves.BY_ID[a].name.localeCompare(G.Moves.BY_ID[b].name, 'es'));
+      .sort(byMoveName);
     const el = document.createElement('div');
     el.className = 'panel bind-panel';
     el.innerHTML = `<b>Atajos de movimientos</b>
@@ -797,7 +804,7 @@ G.MenuUI = (() => {
   let startOpen = false;
   function startPicker() {
     const s = G.DB.save, cur = G.startMoveOf(upgDex), base = G.baseStartOf(upgDex);
-    const ids = G.startChoices(upgDex).sort((a, b) => G.Moves.BY_ID[a].name.localeCompare(G.Moves.BY_ID[b].name, 'es'));
+    const ids = G.startChoices(upgDex).sort(byMoveName);
     const el = document.createElement('div');
     el.className = 'panel ban-picker';
     el.innerHTML = `<p class="sub" style="margin:0 0 8px">Elige con qué ataque empieza. Lo puedes cambiar cuando quieras, gratis.</p>
@@ -829,7 +836,7 @@ G.MenuUI = (() => {
   function start2Picker() {
     const s = G.DB.save, cur = G.startMove2Of(upgDex), first = G.startMoveOf(upgDex);
     const ids = G.startChoices(upgDex).filter(id => id !== first)
-      .sort((a, b) => G.Moves.BY_ID[a].name.localeCompare(G.Moves.BY_ID[b].name, 'es'));
+      .sort(byMoveName);
     const el = document.createElement('div');
     el.className = 'panel ban-picker';
     el.innerHTML = `<p class="sub" style="margin:0 0 8px">Elige el segundo ataque con el que empieza. Lo puedes cambiar cuando quieras, gratis.</p>
@@ -869,7 +876,7 @@ G.MenuUI = (() => {
     const start = G.startMoveOf(upgDex), start2 = G.startMove2Of(upgDex);
     // (24-11-2026: sus ataques exclusivos también se pueden vetar: así no sale su carta especial.)
     const ids = G.Moves.poolFor(mon).concat(G.Moves.sigFor(mon)).filter(id => id !== start && id !== start2)
-      .sort((a, b) => G.Moves.BY_ID[a].name.localeCompare(G.Moves.BY_ID[b].name, 'es'));
+      .sort(byMoveName);
     const list = banList();
     const el = document.createElement('div');
     el.className = 'panel ban-picker';

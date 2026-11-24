@@ -106,16 +106,41 @@ G.UI = (() => {
    * fondo (arrastrar desde dentro no cierra). Sin cursor de mano en el fondo:
    * el mando lo tomaría por un botón (con el mando, B ya pulsa Volver). Durante
    * una tirada del gacha no pasa nada: #pull-fx tapa toda la pantalla. */
-  const BACKDROP = ['scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-goals', 'scr-friends', 'scr-rank', 'scr-settings', 'scr-news', 'scr-support', 'scr-wardrobe'];
+  // (25-11-2026: también Maestría, el Desafío semanal y el Aviso legal.)
+  const BACKDROP = ['scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-goals', 'scr-friends', 'scr-rank', 'scr-settings', 'scr-news', 'scr-support', 'scr-wardrobe',
+                    'scr-mastery', 'scr-chal', 'scr-legal'];
   function wireBackdrops() {
     let down = null;
     document.addEventListener('pointerdown', e => { down = e.target; });
     document.addEventListener('click', e => {
       const sc = e.target;
       if (sc !== down || !BACKDROP.includes(sc.id)) return;
-      const back = [...sc.querySelectorAll('[data-back], [id$="-close"]')].find(b => b.getBoundingClientRect().width > 0);
+      const back = [...sc.querySelectorAll('[data-back], [id$="-close"], #mast-back')].find(b => b.getBoundingClientRect().width > 0);
       if (back) back.click();
     });
+    // Pestañas que no son botones (entrar / crear cuenta, misiones / logros / perfil): con el teclado,
+    // el tabulador llega a ellas (tabindex en dev.html) e Intro o Espacio las eligen (25-11-2026).
+    document.addEventListener('keydown', e => {
+      const t = e.target;
+      if ((e.key === 'Enter' || e.key === ' ') && t && t.matches && t.matches('.tab[tabindex]')) { e.preventDefault(); t.click(); }
+    });
+  }
+
+  /*
+   * Ventanas de encima (25-11-2026): las de sí/no (ask, borrar la cuenta) y el Aviso legal.
+   * «Atrás» del móvil, Esc y la B del mando cierran la de más arriba y no lo de debajo (los Ajustes, el
+   * menú...): game.js pregunta aquí primero (backTop). Tocar fuera de una de sí/no también la cancela.
+   */
+  const dialogs = [];
+  function pushDialog(el, cancel) {
+    dialogs.push(cancel);
+    el.addEventListener('click', e => { if (e.target === el) cancel(); });
+  }
+  const dropDialog = cancel => { const i = dialogs.indexOf(cancel); if (i >= 0) dialogs.splice(i, 1); };
+  function backTop() {
+    if (dialogs.length) { dialogs[dialogs.length - 1](); return true; }
+    if (isOpen('scr-legal')) { closeLegal(); return true; }
+    return false;
   }
 
   /** Controles de volumen (se usan en la barra superior y en la pausa). */
@@ -203,7 +228,8 @@ G.UI = (() => {
       el.innerHTML = `<div class="box center" style="max-width:380px"><p style="margin:6px 0 14px">${text}</p>
         <div class="row" style="justify-content:center;gap:8px"><button class="btn gold" data-ok>${okLabel}</button><button class="btn ghost" data-no>Cancelar</button></div></div>`;
       document.body.appendChild(el);
-      const end = v => { el.remove(); done(v); };
+      const end = v => { if (!el.isConnected) return; el.remove(); dropDialog(cancel); done(v); }, cancel = () => end(false);
+      pushDialog(el, cancel);
       el.querySelector('[data-ok]').onclick = () => end(true);
       el.querySelector('[data-no]').onclick = () => end(false);
     });
@@ -225,12 +251,22 @@ G.UI = (() => {
         </div></div>`;
       document.body.appendChild(el);
       const inp = el.querySelector('input');
-      const end = v => { el.remove(); done(v); };
+      const end = v => { if (!el.isConnected) return; el.remove(); dropDialog(cancel); done(v); }, cancel = () => end(null);
+      pushDialog(el, cancel);
       el.querySelector('[data-a=no]').onclick = () => end(null);
       el.querySelector('[data-a=yes]').onclick = () => { if (inp.value) end({ pass: inp.value }); else inp.focus(); };
       inp.onkeydown = e => { if (e.key === 'Enter' && inp.value) end({ pass: inp.value }); if (e.key === 'Escape') end(null); };
-      setTimeout(() => inp.focus(), 50);
+      autoFocus(inp);
     });
+  }
+
+  /**
+   * Pone el cursor en un campo, salvo en pantallas táctiles (25-11-2026): en el móvil eso abría el teclado
+   * solo y tapaba media pantalla; allí se toca el campo cuando se quiere escribir.
+   */
+  function autoFocus(inp, ms = 50) {
+    const touch = (G.Touch && G.Touch.active) || (window.matchMedia && matchMedia('(pointer: coarse)').matches);
+    if (inp && !touch) setTimeout(() => inp.focus(), ms);
   }
 
   function closeLegal() { $('scr-legal').classList.add('hidden'); }
@@ -401,5 +437,5 @@ G.UI = (() => {
   }
 
   return { $, show, hide, hideAll, isOpen, chrome, refreshCoins, toast, typeChips, stars, confirmDelete, ask, showGifts,
-           sprite, spriteCanvas, tick, initChrome, soundControls, hueSwap };
+           sprite, spriteCanvas, tick, initChrome, soundControls, hueSwap, backTop, autoFocus };
 })();

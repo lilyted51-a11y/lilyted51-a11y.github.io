@@ -29,6 +29,7 @@ G.Game = (() => {
   function init() {
     cv = document.getElementById('game');
     ctx = cv.getContext('2d');
+    watchContext();
     resize();
     addEventListener('resize', resizeSoon);
     // iPhone: al girarlo o al abrirlo desde la pantalla de inicio avisa del
@@ -100,7 +101,8 @@ G.Game = (() => {
   let trapped = false;
   function needsTrap() {
     if (state !== 'ui') return true;
-    return BACK_SCREENS.some(shown) || ['scr-settings', 'scr-news', 'scr-support', 'scr-profile', 'scr-rkb', 'pull-fx', 'egg-fx', 'scr-sitem'].some(shown);
+    // (25-11-2026: también el Vestidor y el Aviso legal; antes «atrás» en ellos te sacaba de la web.)
+    return BACK_SCREENS.some(shown) || ['scr-settings', 'scr-news', 'scr-support', 'scr-profile', 'scr-rkb', 'pull-fx', 'egg-fx', 'scr-sitem', 'scr-wardrobe', 'scr-legal'].some(shown);
   }
   function ensureTrap() {
     if (trapped || !needsTrap() || !window.history || !history.pushState) return;
@@ -108,6 +110,8 @@ G.Game = (() => {
   }
   addEventListener('popstate', () => {
     trapped = false;                          // (en cuanto haga falta, el bucle vuelve a poner otra)
+    // Una ventana de sí/no o el Aviso legal, encima de todo: se cierra ella (ui.js, backTop; 25-11-2026).
+    if (G.UI.backTop()) return;
     // Ajustes abiertos (también desde la pausa): «atrás» cierra lo de más arriba, como Esc y la B del
     // mando: el editor de teclas, luego las Guías y luego los Ajustes (24-11-2026).
     if (G.SettingsUI.isOpen) { G.SettingsUI.back(); return; }
@@ -123,6 +127,7 @@ G.Game = (() => {
     if (G.StartItem.open) { G.StartItem.close(); return; }       // la ventana del Objeto inicial (24-11-2026)
     if (shown('scr-news')) { G.NewsUI.close(); return; }
     if (shown('scr-support')) { G.SupportUI.close(); return; }
+    if (shown('scr-wardrobe')) { G.WardrobeUI.back(); return; }   // (a donde se abrió, como Esc; 25-11-2026)
     if (BACK_SCREENS.some(shown) && G.DB.save && G.DB.save.partner) G.MenuUI.open();
   });
 
@@ -134,6 +139,34 @@ G.Game = (() => {
     if (portrait && !document.getElementById('rotate-ico').innerHTML) document.getElementById('rotate-ico').innerHTML = G.Icons.html('phone', 48);
     el.classList.toggle('hidden', !portrait);
     if (portrait) autoPause();
+  }
+
+  /*
+   * La pantalla deja de dibujarse (25-11-2026): algunos móviles, con poca memoria (al entrar en una grieta,
+   * sobre todo), le quitan al juego el lienzo y se quedaba morado o negro con la música sonando. El
+   * navegador avisa (contextlost): se pausa y, cuando lo devuelve (contextrestored), se repinta el suelo
+   * y se sigue. Si a los 8 s de estar a la vista no lo ha devuelto, la partida se acaba como al salir:
+   * con lo ganado. (Con la pestaña escondida no se cuenta: al volver, el navegador suele devolverlo.)
+   */
+  let lostT = 0, ctxLost = false;
+  function armLost() {
+    clearTimeout(lostT); lostT = 0;
+    if (!ctxLost || document.hidden) return;
+    lostT = setTimeout(() => { if (ctxLost && state !== 'ui' && state !== 'over') quitRun(); }, 8000);
+  }
+  function watchContext() {
+    cv.addEventListener('contextlost', e => {
+      e.preventDefault();                       // (así el navegador lo puede devolver)
+      ctxLost = true;
+      autoPause();
+      armLost();
+    });
+    document.addEventListener('visibilitychange', armLost);
+    cv.addEventListener('contextrestored', () => {
+      ctxLost = false; clearTimeout(lostT); lostT = 0;
+      G.World.repaint();
+      resize();
+    });
   }
 
   /** Pausa sola (sólo en solitario: en grupo los demás siguen). */
@@ -244,7 +277,7 @@ G.Game = (() => {
     G.World.setBiome(G.Tiles.runBiome(0), true);
     biome = 0;
     time = 0; pendingLevels = 0;
-    runReal = performance.now(); tampered = false;
+    runReal = performance.now(); runWall = Date.now(); tampered = false;
 
     // Fuerza al empezar (G.Mons.ladderFor): los ya evolucionados y los que no evolucionan empiezan más flojos.
     const ladder = G.Mons.ladderFor(mon);
@@ -481,7 +514,8 @@ G.Game = (() => {
    */
   function takeOver(hadBoss) {
     pendingLevels = 0; deathT = 0;
-    const special = G.Rift.inArena || G.Judgment.active;
+    // (25-11-2026: con Eternatus también: él es el «jefe vivo» y no hay que repetir el último del mapa.)
+    const special = G.Rift.inArena || G.Judgment.active || G.Eternatus.active;
     G.Spawner.catchUp(time, hadBoss && !special);
     G.Events.adopt();
     G.Rift.adopt();
@@ -625,10 +659,12 @@ G.Game = (() => {
    *   - se han usado las funciones de pruebas (saltar el reloj...)
    * Si algo salta, esa partida no sube al ranking (sin avisar) y nada más.
    */
-  let runReal = 0, tampered = false;
+  // (25-11-2026: runWall, la hora del reloj: con el móvil bloqueado performance.now() puede quedarse parado
+  //  mientras el grupo sigue; al volver a tiempo, la partida no se daba por buena y no sumaba maestría.)
+  let runReal = 0, runWall = 0, tampered = false;
   function clean() {
     if (tampered || (pl && pl.boost)) return false;   // con ventajas (G.Boost) no se sube al ranking
-    if (time > (performance.now() - runReal) / 1000 + 10) return false;
+    if (time > Math.max(performance.now() - runReal, G.Coop.active ? Date.now() - runWall : 0) / 1000 + 10) return false;
     for (const k of ['hurt', 'update', 'heal', 'gainXp']) if (Object.prototype.hasOwnProperty.call(pl, k)) return false;
     if (!isFinite(pl.hp) || !isFinite(pl.maxHp) || pl.hp > pl.maxHp + 1 || pl.maxHp > 50000) return false;
     if (pl.atkMul > 2000 || pl.spdMul > 25 || pl.cdMul < 0.03 || pl.level > 20 + time / 3) return false;
@@ -839,6 +875,8 @@ G.Game = (() => {
   // ---------------- teclado ----------------
 
   function handleKeys() {
+    // Una ventana de sí/no o el Aviso legal: Esc (y la B del mando) la cierran a ella (ui.js, 25-11-2026).
+    if (G.Input.tap('escape') && G.UI.backTop()) return;
     // (Esc cierra lo de más arriba: el editor de teclas, las Guías y, si no hay nada, los Ajustes.)
     if (G.SettingsUI.isOpen) { if (G.Input.tap('escape')) G.SettingsUI.back(); return; }
     // La Sentencia de Arceus: Espacio, Intro o Esc saltan la animación (si se puede).
@@ -882,7 +920,7 @@ G.Game = (() => {
       if (G.Input.tap('escape') && G.UI.isOpen('scr-wardrobe')) { G.WardrobeUI.back(); return; }
       // La build de una marca del ranking (24-11-2026): Esc (y B en el mando) la cierra a ella, no el ranking.
       if (G.Input.tap('escape') && G.UI.isOpen('scr-rkb')) { G.RankingUI.closeBuild(); return; }
-      if (G.Input.tap('escape') && !G.UI.isOpen('scr-profile') && ['scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-friends', 'scr-rank', 'scr-goals', 'scr-mastery'].some(G.UI.isOpen)
+      if (G.Input.tap('escape') && !G.UI.isOpen('scr-profile') && ['scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-friends', 'scr-rank', 'scr-goals', 'scr-mastery', 'scr-chal'].some(G.UI.isOpen)
           && document.getElementById('pull-fx').classList.contains('hidden') && document.getElementById('egg-fx').classList.contains('hidden')) G.MenuUI.open();
       return;
     }
@@ -1364,6 +1402,8 @@ G.Game = (() => {
       G.World.reset(G.World.MENU_SEED);
       G.World.setBiome(G.Tiles.runBiome(bi), true);
       G.FX.clear(); G.Projectiles.clear(); G.Combat.clearFields(); G.EnemyMgr.clear(); G.Pickups.clear();
+      // (25-11-2026: y los avisos de ataque y la grieta que quedaban al acabar: se veían en el fondo del menú.)
+      G.Hazards.clear(); G.Rift.reset();
       wanderers = cast().map(dex => spawn(dex, true));
     }
 

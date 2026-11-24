@@ -212,6 +212,7 @@ G.Judgment = (() => {
     GOLD = BOSS.col; PALE = BOSS.pale; GLOW = BOSS.glow;
     cfg = c;
     phase = 'cine'; ct = 0;
+    G.Rift.hidePortal();            // (la grieta del mapa se va: entrar ahora abría la arena en plena Sentencia; 25-11-2026)
     const s = G.DB.save;
     // La primera vez se ve entera; en grupo la salta el anfitrión.
     canSkip = !!(s && s.stats && s.stats.judged > 0) && authority();
@@ -240,7 +241,9 @@ G.Judgment = (() => {
     ported = true;
     const pl = G.Game.player, ts = TS();
     G.Rift.reset();
-    if (authority()) G.EnemyMgr.stash(); else G.EnemyMgr.clearRemote();
+    // (25-11-2026: en quien no manda, sin quitar el blanco de Arceus si ya ha llegado: con el móvil lento o la
+    //  pestaña escondida, la animación iba por detrás, se borraba al llegar aquí y sus golpes no contaban.)
+    if (authority()) G.EnemyMgr.stash(); else G.EnemyMgr.clearRemote(e => e.arceus);
     G.Projectiles.clear();
     G.Combat.clearFields();
     G.Hazards.clear();
@@ -1690,6 +1693,8 @@ G.Judgment = (() => {
     return [Math.round(A.x), Math.round(A.y), a < 0 ? 0 : a, A.anim.dir, Math.round(dealt), Math.round(arenaT * 10)];
   }
   function netApply(a) {
+    // El anfitrión ya está peleando y aquí sigue la animación (va por detrás): se salta hasta la pelea.
+    if (phase === 'cine') { doSkip(); return; }
     if (!A || phase !== 'fight') return;
     A.net = { x: a[0], y: a[1], anim: a[2], dir: a[3] };
     if (Number.isFinite(a[4]) && a[4] >= 0) dealt = a[4];      // el daño a Arceus lo cuenta el anfitrión

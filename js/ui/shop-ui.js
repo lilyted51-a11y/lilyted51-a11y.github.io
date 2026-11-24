@@ -35,7 +35,8 @@ G.ShopUI = (() => {
     let L = {}, ks = [], parts = [], clouds = [], trees = [], pebbles = [], slots = [], timers = [];
     let intro = false, shutter = 0, shutterV = 0, shake = 0, lit = [false, false], shown = 0;
     const calm = () => !!G.Settings.get('calm');
-    const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+    // (25-11-2026: si sales mientras se abre el puesto, lo que quedaba ya no suena en el menú.)
+    const at = (ms, fn) => timers.push(setTimeout(() => { if (G.UI.isOpen('scr-shop')) fn(); else stop(); }, ms));
     const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
     const SHELF = ['mint', 'berry', 'tm', 'capsule', 'ball', 'capsuleh', 'tm', 'mint', 'berry', 'capsule', 'tm', 'ball', 'mint', 'capsuleh'];
 
@@ -221,7 +222,7 @@ G.ShopUI = (() => {
 
     function frame(now) {
       raf = 0;
-      if (!G.UI.isOpen('scr-shop') || !cv) return;
+      if (!G.UI.isOpen('scr-shop') || !cv) { stop(); return; }
       const dt = Math.min(0.2, (now - last) / 1000); last = now; T += dt;   // (con el aparato lento, a saltos pero a su ritmo)
       resize();
       if (shutterV) { shutter = G.U.clamp(shutter + shutterV * dt, 0, 1); if (shutter === 0 && shutterV < 0) { shutterV = 0; dust(L.x0 + 3, L.x1 - 4, L.openTop + 1); } }

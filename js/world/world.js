@@ -721,6 +721,8 @@ G.World = (() => {
       }
     },
     get arena() { return arena; }, drawGround, drawLiquid, visibleProps, drawProp, drawVignette,
-    get biome() { return biome; }
+    get biome() { return biome; },
+    /** Vuelve a pintar el suelo desde cero (la pantalla del móvil ha perdido lo dibujado, game.js; 25-11-2026). */
+    repaint() { images = new Map(); fade = null; }
   };
 })();

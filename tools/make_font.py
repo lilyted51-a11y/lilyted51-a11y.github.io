@@ -37,6 +37,36 @@ DIGITS = {
 }
 
 
+def fix_j(glyf, hmtx):
+    """La «j» minúscula (25-11-2026): en Pixelify era una «J» pequeña, sin punto y sin bajar de la
+    línea, y se leía «meJora» o «RefleJos». Ahora baja como la «g» (su gancho, a la misma
+    profundidad) y lleva el punto de la «i» encima de su palo."""
+    j, g, i = glyf['j'], glyf['g'], glyf['i']
+    jc, jends, _ = j.getCoordinates(glyf)
+    gc = g.getCoordinates(glyf)[0]
+    ic, iends, _ = i.getCoordinates(glyf)
+    if len(jends) != 1 or len(iends) != 2:
+        print('  (j: la fuente ya no es como se esperaba; se deja igual)')
+        return
+    drop = min(y for _, y in jc) - min(y for _, y in gc)          # cuánto más baja la «g»
+    xh = max(y for _, y in jc)                                     # altura de la x (arriba del palo)
+    pts = [(x, y - drop if y < xh / 2 else y) for x, y in jc]     # el gancho baja; el palo llega hasta él
+    # El punto de la «i» (su contorno de arriba), sobre el palo de la «j» (su borde derecho).
+    s0 = iends[0] + 1
+    dot = list(ic[s0:iends[1] + 1]) if min(y for _, y in ic[s0:]) > xh else list(ic[:iends[0] + 1])
+    dx = max(x for x, _ in pts) - max(x for x, _ in dot)
+    pen = TTGlyphPen(glyf)
+    for contour in (pts, [(x + dx, y) for x, y in dot]):
+        pen.moveTo(contour[0])
+        for p in contour[1:]:
+            pen.lineTo(p)
+        pen.closePath()
+    ng = pen.glyph()
+    ng.recalcBounds(glyf)
+    glyf['j'] = ng
+    hmtx['j'] = (hmtx['j'][0], ng.xMin)
+
+
 def build(weight):
     font = instancer.instantiateVariableFont(TTFont(SRC), {'wght': weight})
     glyf, hmtx = font['glyf'], font['hmtx']
@@ -73,6 +103,7 @@ def build(weight):
         g.recalcBounds(glyf)
         glyf[name] = g
         hmtx[name] = (hmtx[name][0], g.xMin)
+    fix_j(glyf, hmtx)
     # Nombre nuevo (OFL: una versión modificada no debe llamarse igual).
     style = 'Regular' if weight == 400 else 'Bold'
     for rec in font['name'].names:

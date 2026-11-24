@@ -53,7 +53,10 @@ G.Shop = (() => {
   /** Fecha de hoy en España (todos ven la misma tienda el mismo día). */
   function today() {
     const p = {};
-    for (const x of new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date())) p[x.type] = x.value;
+    // (25-11-2026: con la hora de la web, G.Clock, y la cuenta de España de G.Ranking si el navegador no sabe de zonas.)
+    const now = G.Clock ? G.Clock.date() : new Date();
+    if (G.Ranking && G.Ranking.madridDate) { const m = G.Ranking.madridDate(now); return m.y + String(m.m).padStart(2, '0') + String(m.d).padStart(2, '0'); }
+    for (const x of new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now)) p[x.type] = x.value;
     return p.year + p.month + p.day;
   }
   function rng(seed) {
