@@ -2102,5 +2102,12 @@ G.I18n.add({
   "×1,8 daño, ola más ancha y arrastra más": "×1.8 damage, wider wave and drags further",
   "×1,8 daño y onda más grande": "×1.8 damage and bigger shockwave",
   "×1,8 daño y tajos más largos": "×1.8 damage and longer slashes",
-  "¡Protegido!": "Protected!"
+  "¡Protegido!": "Protected!",
+  // 25-11-2026 (copia local): formas que cambian tipos y stats (systems/statforms.js)
+  "¡Elige la forma de {x}!": "Choose {x}'s form!",
+  "Sólo una vez: se queda hasta el final de la partida": "Only once: it stays until the end of the run",
+  "La de ahora": "Current",
+  "Stats": "Stats",
+  "{x} se queda con su forma": "{x} keeps its form",
+  "¡{x} cambia a {x}!": "{x} changes into {x}!"
 });

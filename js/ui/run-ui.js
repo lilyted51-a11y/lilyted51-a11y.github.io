@@ -362,6 +362,7 @@ G.RunUI = (() => {
     const box = $('power-cards');
     box.innerHTML = '';
     box.classList.toggle('many', list.length > 5);
+    box.classList.toggle('cols3', list.length > 12);      // (los 18 tipos de Arceus: systems/statforms.js)
     list.forEach((c, i) => {
       const el = document.createElement('div');
       el.className = 'card' + (c.color === '#ffd23f' ? ' evo' : '');

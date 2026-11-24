@@ -784,6 +784,9 @@ a.plink:hover { color: var(--gold); }
 .cards.many .card .nm { font-size: 16px; }
 .cards.many .card .ds { font-size: 12px; }
 @media (max-width: 700px) { .cards.many { grid-template-columns: 1fr; } .cards.many .card .ds { display: none; } }
+/* Más de 12 (los 18 tipos de Arceus y Silvally, systems/statforms.js): tres columnas; en el móvil, dos. */
+.cards.many.cols3 { grid-template-columns: repeat(3, 1fr); width: min(1020px, 94vw); }
+@media (max-width: 700px) { .cards.many.cols3 { grid-template-columns: 1fr 1fr; } }
 .card.evo .nm { color: var(--gold); }
 /* Vínculo (premio de los legendarios): rosa */
 .bond-title { color: #ff8ad8; }

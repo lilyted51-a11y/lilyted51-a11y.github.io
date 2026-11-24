@@ -162,7 +162,7 @@ G.Ranking = (() => {
     if (typeof str !== 'string' || !str || str.length > B_MAX) return null;
     const [head, mvs = '', its = ''] = str.split(';');
     const h = head.split('.'), dex = +h[0];
-    if (!Number.isInteger(dex) || dex < 1 || dex > 99999) return null;
+    if (!Number.isInteger(dex) || dex < 1 || dex > 2e6) return null;     // (formas del oficial: 500493...)
     const mv = mvs.split(',').filter(Boolean).slice(0, 8).map(x => {
       const p = x.split(':');
       const dmg = Number(p[2]);
@@ -334,7 +334,7 @@ G.Ranking = (() => {
     const U = G.U; v = v || {};
     // (Hasta 10 por equipo: nuestras salas son de 4 a 10; el juego oficial, de 4.)
     return { id: U.str(String(id), 400), t: U.int(v.t, 86400), d: U.int(v.d != null ? v.d : v.dmg, 1e15), uids: U.list(v.uids, 10).map(x => U.str(x, 128)),
-             names: U.list(v.names, 10).map(x => U.str(x, 24)), dex: U.list(v.dex, 10).map(x => U.int(x, 20000)),
+             names: U.list(v.names, 10).map(x => U.str(x, 24)), dex: U.list(v.dex, 10).map(x => U.int(x, 2e6)),
              shiny: U.list(v.shiny, 10).map(x => x === true), lv: U.int(v.lv, 999) || 1, kills: U.int(v.kills, 1e9),
              // Foto y marco de cada uno (texto; se lee con phs) y la tabla de donde sale la fila (su build está allí).
              ph: U.str(v.ph, PH_MAX), src: U.str(v._b, 80) };
@@ -599,6 +599,8 @@ G.Ranking = (() => {
     return { t, lv: Math.max(1, Math.min(r.lv | 0, 10 + Math.floor(t / 4))), kills: Math.max(0, Math.min(r.kills | 0, 100 + t * 12)), dmg };
   }
 
+  /** La tabla de cada Pokémon: las formas que se eligen en la partida (Deoxys Ataque...) cuentan como su especie. */
+  const monBoard = d => (G.StatForms ? G.StatForms.boardDex(d) : d);
   function submitSolo(r) { return submitSoloNow(r); }
   async function submitSoloNow(r) {
     const fb = fbx();
@@ -608,7 +610,8 @@ G.Ranking = (() => {
     const ids = boardIds();
     const entry = extras(Object.assign({ uids: [fb.uid], names: [G.Social.me.name], dex: [r.dex], shiny: [!!r.shiny] }, fit(r)), [r]);
     const boards = PERIODS.map(([p]) => ['s_' + ids[p], p]);
-    if (r.t >= MIN_T_MON) boards.push(['s_' + ALL + '_p' + r.dex, 'p']);
+    // (Con la forma elegida tras la 3.ª grieta, a la tabla de su especie: systems/statforms.js.)
+    if (r.t >= MIN_T_MON) boards.push(['s_' + ALL + '_p' + monBoard(r.dex), 'p']);
     return send(fb.uid, entry, boards);
   }
 
@@ -649,7 +652,7 @@ G.Ranking = (() => {
                     shiny: ms.map(m => (fin(m) ? !!fin(m).sh : !!m.shiny)) }, fit(r)), ms);
     const ids = boardIds();
     const boards = PERIODS.map(([p]) => ['g_' + ids[p], p]);
-    if (r.t >= MIN_T_MON) for (const d of new Set(entry.dex)) boards.push(['g_' + ALL + '_p' + d, 'p']);
+    if (r.t >= MIN_T_MON) for (const d of new Set(entry.dex.map(monBoard))) boards.push(['g_' + ALL + '_p' + d, 'p']);
     return send(id, entry, boards);
   }
 

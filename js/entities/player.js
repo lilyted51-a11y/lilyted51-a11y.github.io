@@ -121,7 +121,11 @@ G.Player = class Player {
   /** Su Pokémon sin el poder puesto (Mega o Tera): para los ataques que le pueden salir (levelup.js). */
   get ownMon() { return this.megaSave ? this.megaSave.mon : this.teraSave ? Object.assign({}, this.mon, { types: this.teraSave }) : this.mon; }
   /** A qué puede evolucionar ahora: entradas de G.DEX (data/evolutions.js). */
-  evoOptions() { return ((G.EVOS || {})[this.dex] || []).map(d => G.DEX_BY[d]).filter(m => m && G.SPRITE_META[m.dex]); }
+  // (Con una forma elegida tras la 3.ª grieta, systems/statforms.js, las de su especie: Pumpkaboo Súper → Gourgeist.)
+  evoOptions() {
+    const E = G.EVOS || {}, f = G.FORMS && G.FORMS[this.dex];
+    return (E[this.dex] || (f && f.k === 'stat' && E[f.d]) || []).map(d => G.DEX_BY[d]).filter(m => m && G.SPRITE_META[m.dex]);
+  }
   /**
    * Evoluciona a `dex`. Lo ganado en la partida se queda (vida de cartas y mejoras,
    * ataques, objetos, habilidad); cambian la especie, sus tipos y sus stats base.
@@ -145,6 +149,7 @@ G.Player = class Player {
     }
     this.mon = to;
     this.ladder = null;                  // (evolucionado: ya tiene la fuerza de su nueva forma)
+    const fromDex = this.dex;
     this.dex = to.dex;
     this.shiny = this.shiny && G.Sprites.hasShiny(to.dex);
     this.scale = G.Sprites.playerScale(to.dex);
@@ -154,6 +159,7 @@ G.Player = class Player {
     this.r = G.Sprites.playerRadius(to.dex);
     this.bodyH = G.Sprites.bodyHeight(to.dex, this.scale);
     G.Sprites.preload([to.dex], 8000, this.shiny);
+    if (G.StatForms) G.StatForms.evolved(this, fromDex);     // su forma elegida, si la nueva especie la tiene
     return true;
   }
   /**
