@@ -129,7 +129,9 @@ G.Weather = (() => {
       }
       if (authority() && cur && def().safe && level() > 0.5) {
         for (const e of G.EnemyMgr.all()) {
-          if (e.dead || e.remote || e.boss) continue;
+          // (25-11-2026: ni Arceus ni Eternatus ni sus núcleos: el blanco invisible de Arceus tiene
+          //  1e9 de vida y con un 2 % cada 2 s «caía» a los pocos minutos; desde ahí no se le podía pegar.)
+          if (e.dead || e.remote || e.boss || e.arceus || e.judge || e.eternatus || e.etCore || e.legend) continue;
           if (!hurts(e.types || [])) continue;
           e.hp -= e.maxHp * 0.02 + 1;
           e.flash = 0.05;

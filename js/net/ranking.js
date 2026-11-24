@@ -214,8 +214,18 @@ G.Ranking = (() => {
 
   function madridDate(date) {
     const p = {};
-    for (const x of new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(date)) p[x.type] = x.value;
-    return { y: +p.year, m: +p.month, d: +p.day };
+    try {
+      for (const x of new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(date)) p[x.type] = x.value;
+      if (p.year && p.month && p.day) return { y: +p.year, m: +p.month, d: +p.day };
+    } catch (e) { /* sin zonas horarias: abajo */ }
+    // (25-11-2026) Navegadores sin zonas horarias (algunos móviles y visores de apps): Intl fallaba y
+    // las marcas no contaban. La hora de España a mano: UTC+1, y UTC+2 del último domingo de marzo
+    // al último de octubre (a la 1:00 UTC).
+    const yy = date.getUTCFullYear();
+    const lastSun = mo => { const t = new Date(Date.UTC(yy, mo + 1, 0, 1)); t.setUTCDate(t.getUTCDate() - t.getUTCDay()); return t.getTime(); };
+    const ms = date.getTime(), off = ms >= lastSun(2) && ms < lastSun(9) ? 2 : 1;
+    const t = new Date(ms + off * 3600e3);
+    return { y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate() };
   }
 
   /** Semana ISO (lunes a domingo) de una fecha y-m-d. */
@@ -228,7 +238,7 @@ G.Ranking = (() => {
   }
 
   const ALL = 'all4';                     // histórico (ver arriba)
-  function periodIds(date = new Date()) {
+  function periodIds(date = G.Clock ? G.Clock.date() : new Date()) {      // (la hora de la web, 25-11-2026)
     const { y, m, d } = madridDate(date);
     const w = isoWeek(y, m, d);
     const p2 = n => String(n).padStart(2, '0');
@@ -535,7 +545,13 @@ G.Ranking = (() => {
   const STORE_MAX = 15000, RETRY_MAX = 6, RETRY_AGE = 48 * 3600e3, RQ = 'ps.rk.retry';
   const rqKey = () => RQ + '.' + (fbx() ? fbx().uid : '');
   function retryList() { try { const q = JSON.parse(localStorage.getItem(rqKey()) || '[]'); return Array.isArray(q) ? q : []; } catch (e) { return []; } }
-  function saveRetries(q) { try { if (q.length) localStorage.setItem(rqKey(), JSON.stringify(q.slice(-8))); else localStorage.removeItem(rqKey()); } catch (e) { /* lleno */ } }
+  // (25-11-2026: hasta 24 y, si hay más, las mejores (por tiempo aguantado), no las últimas: con muchas
+  //  partidas sin conexión se perdían las primeras aunque fueran las buenas.)
+  const RQ_MAX = 24;
+  function saveRetries(q) {
+    if (q.length > RQ_MAX) q = q.slice().sort((a, b) => ((b.entry && +b.entry.t) || 0) - ((a.entry && +a.entry.t) || 0)).slice(0, RQ_MAX);
+    try { if (q.length) localStorage.setItem(rqKey(), JSON.stringify(q)); else localStorage.removeItem(rqKey()); } catch (e) { /* lleno */ }
+  }
   const offline = () => typeof navigator !== 'undefined' && navigator.onLine === false;
   // Fallo de conexión (se reintenta) o rechazo del servidor (no).
   const transient = f => offline() || !f.code || /unavailable|deadline-exceeded|cancelled|aborted|internal|unknown|resource-exhausted|failed-precondition/.test(f.code);
@@ -1002,7 +1018,7 @@ G.Ranking = (() => {
       t1: (v.tickets || {}).t1 || 0, t10: (v.tickets || {}).t10 || 0, owned: Object.keys(v.owned || {}).length }; });
   }
 
-  return { PERIODS, periodIds, board, runStarted, newSeal, mySeal, submitSolo, submitChallenge, submitGroup, retry, top, topDmg, myRank, removeMine,
+  return { PERIODS, periodIds, madridDate, board, runStarted, newSeal, mySeal, submitSolo, submitChallenge, submitGroup, retry, top, topDmg, myRank, removeMine,
            buildOf, phs, encBuild, decBuild, encTeam, decTeam, encPh, decPh, short3,
            report, reported, isAdmin, reports, entryInfo, removeEntry, purgeAbove, removeEverywhere, setMarked, dismiss, markedAccounts };
 })();

@@ -133,7 +133,7 @@ G.LoginUI = (() => {
     if (!G.DB.storageOk) $('login-err').textContent = 'Este navegador no deja guardar datos: juega como invitado.';
     $('btn-google').classList.toggle('hidden', G.DB.mode !== 'cloud');
     $('login-mode').textContent = modeNote();
-    setTimeout(() => $('f-user').focus(), 50);
+    G.UI.autoFocus($('f-user'));        // (en el móvil no abre el teclado solo, 25-11-2026)
   }
 
   return { init, open, offerRecovery, updateNotices };

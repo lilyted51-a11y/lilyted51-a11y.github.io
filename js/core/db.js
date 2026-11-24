@@ -256,11 +256,14 @@ G.DB = (() => {
       if (typeof v !== 'string' || (v && G.Items && !G.Items.BY[v]) || (G.DEX_BY && !G.DEX_BY[d])) delete s.psitem[d];
     }
     // Mochila y MT: cuántas de cada cosa que exista (tope 999).
+    // (25-11-2026) Las que esta versión no conoce pero tienen buena forma (las de una versión más nueva) se
+    // quedan, sin enseñarse: si se quitaban, al guardar desaparecían también en el aparato que las tiene.
+    const FORM = { bag: /^[a-z0-9]{1,12}$/, tms: /^[a-z0-9-]{1,40}$/, held: /^[a-z0-9]{1,20}$/ };
     for (const [k, ok] of [['bag', id => !G.Shop || G.Shop.ITEMS[id]], ['tms', id => !G.Moves || G.Moves.BY_ID[id]], ['held', id => !G.Items || G.Items.BY[id]]]) {
       if (!isObj(s[k])) s[k] = {};
       for (const id of Object.keys(s[k])) {
         s[k][id] = Math.min(999, num(s[k][id]));
-        if (!s[k][id] || !ok(id)) delete s[k][id];
+        if (!s[k][id] || !(ok(id) || FORM[k].test(id))) delete s[k][id];
       }
     }
     // Huevos: los que tienen forma de huevo (clase, progreso y Pokémon), sin los ya abiertos.
@@ -363,6 +366,17 @@ G.DB = (() => {
   // (24-11-2026) Y los objetos de la partida comprados para el Objeto inicial: 'h:<objeto>' (save.held).
   const isCurKey = k => !!CUR[k] || /^b:[a-z0-9]{1,12}$/.test(k) || /^m:[a-z0-9-]{1,40}$/.test(k) || /^h:[a-z0-9]{1,20}$/.test(k);
   const SUB = { b: 'bag', m: 'tms', h: 'held' };
+  /*
+   * ¿Conoce esta versión del juego esa cosa? (25-11-2026) Una pestaña o un aparato con una versión
+   * anterior no tiene los objetos y MT nuevos: si no estaban en su Mochila, la libreta lo apuntaba como
+   * gastado en ese aparato (y al juntar, desaparecían en todos). Ahora sanitize los deja (sin enseñarlos)
+   * y, por si acaso, lo que no conoce no se apunta aquí.
+   */
+  function knownCur(k) {
+    if (CUR[k]) return true;
+    const id = k.slice(2);
+    return k[0] === 'b' ? !G.Shop || !!G.Shop.ITEMS[id] : k[0] === 'm' ? !G.Moves || !!G.Moves.BY_ID[id] : !G.Items || !!G.Items.BY[id];
+  }
   function curGet(s, k) {
     if (CUR[k]) return CUR[k][0](s);
     const o = s[SUB[k[0]]];
@@ -409,7 +423,7 @@ G.DB = (() => {
     }
     const led = JSON.parse(JSON.stringify(s.led)), b = balOf(s, led);
     // Un saldo en negativo (lo mismo gastado en dos aparatos sin conexión) se ve como 0.
-    for (const k in b) addTo(led, dev, k, b[k] - Math.max(0, ledSum(led, k)));
+    for (const k in b) if (knownCur(k)) addTo(led, dev, k, b[k] - Math.max(0, ledSum(led, k)));
     return led;
   }
   /** Apunta en la libreta de ESTE aparato lo que ha cambiado desde la última vez. */
@@ -787,7 +801,29 @@ G.DB = (() => {
     // Y al volver tampoco se lee la nube desde el 20-10-2026: lo del otro aparato
     // se trae al recargar la página.)
     if (window.addEventListener) window.addEventListener('storage', fromOtherTab);
+    if (window.addEventListener) window.addEventListener('storage', otherAccount);
     return true;
+  }
+
+  /*
+   * Otra pestaña de este navegador ha entrado con OTRA cuenta (o ha salido) (25-11-2026). La sesión de
+   * Firebase es la misma para todas las pestañas: ésta seguiría guardando la partida de la cuenta de antes
+   * con la sesión de la nueva (y no se mezclan). Se recarga: lo pendiente ya está en la copia local de su
+   * cuenta y se sube la próxima vez que se entre con ella. En plena partida, al acabarla.
+   */
+  const K_WHO = 'ps.who';
+  function otherAccount(e) {
+    if (mode !== 'cloud' || guest || !uid || e.key !== K_WHO) return;
+    let who = '';
+    try { who = JSON.parse(e.newValue || '""') || ''; } catch (x) { return; }
+    if (who === uid) return;
+    const go = () => {
+      if (!uid) return;                                // (ya ha salido por su cuenta)
+      if (inRun()) { setTimeout(go, 2000); return; }
+      if (save) write(K_CLOUD + uid, save);
+      location.reload();
+    };
+    go();
   }
 
   /*
@@ -832,6 +868,8 @@ G.DB = (() => {
   /** Abre la partida de la nube de un usuario recién autenticado. */
   async function openCloud(u, opts = {}) {
     uid = u.uid; sentCanon = '';
+    write(K_WHO, uid);                       // (las demás pestañas lo ven: otherAccount)
+    fails = 0; lastCheck = 0; readTries = 0; // (tras salir y volver a entrar, como recién abierto)
     const cached = read(K_CLOUD + uid);
     let remote = null, online = true;
     try {
@@ -1189,6 +1227,7 @@ G.DB = (() => {
     }
     clearTimeout(pushT); clearTimeout(retryT); clearTimeout(readT);
     sentCanon = '';
+    if (mode === 'cloud' && uid) write(K_WHO, '');
     user = key = save = uid = null; guest = false; pending = false;
     setSync(mode === 'cloud' ? 'ok' : 'local');
   }

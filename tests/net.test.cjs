@@ -156,8 +156,8 @@ test('real Coop.tick frames pass through the codec without changing gameplay fie
     assert.equal(sent.length, 1);
     assert.deepEqual(C.decode(C.encode(sent[0])), sent[0]);
     if (host) { assert.deepEqual(sent[0].e, [[123, 50, -10, 126, 1, 3, 1]]); assert.ok('ho' in sent[0]); }
-    // Copia local: el estado lleva más cosas (su Pokémon, shiny, a quién mira, zoom, poder, Vestidor, aura, forma, velocidad).
-    else { assert.equal(sent[0].p.length, 26); assert.equal(sent[0].p[15], 25); assert.equal(sent[0].p[17], ''); assert.equal(sent[0].p[18], 1); }
+    // Copia local: el estado lleva más cosas (su Pokémon, shiny, a quién mira, zoom, poder, Vestidor, aura, forma, velocidad, lo que ve).
+    else { assert.equal(sent[0].p.length, 27); assert.equal(sent[0].p[15], 25); assert.equal(sent[0].p[17], ''); assert.equal(sent[0].p[18], 1); }
   }
 });
 

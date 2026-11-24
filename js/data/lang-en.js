@@ -2266,5 +2266,10 @@ G.I18n.add({
   "Gritos de los Pokémon": "Pokémon cries",
   "Tu compañero y los Pokémon especiales sueltan su grito en momentos señalados: al empezar y al evolucionar, en el gacha y los huevos, y al salir jefes, legendarios y shinies.": "Your partner and special Pokémon let out their cry at key moments: at the start and when evolving, in the gacha and eggs, and when bosses, legendaries and shinies appear.",
   "Gritos de los Pokémon:": "Pokémon cries:",
-  "Pokémon Edición Reloaded y PokéAPI, vía PokéSurvivor.": "Pokémon Edición Reloaded and PokéAPI, via PokéSurvivor."
+  "Pokémon Edición Reloaded y PokéAPI, vía PokéSurvivor.": "Pokémon Edición Reloaded and PokéAPI, via PokéSurvivor.",
+  // 25-11-2026 (copia local): repaso de las novedades oficiales, 2.ª parte
+  "AT.E": "SPA",
+  "VEL": "SPE",
+  "Sin conexión: no se ha podido invitar. Prueba otra vez en un momento.": "No connection: the invite could not be sent. Try again in a moment.",
+  "Has estado fuera más de {x} s y el grupo ha seguido sin ti: tu partida termina aquí, con lo que llevabas.": "You were away for more than {x} s and the group carried on without you: your run ends here, with what you had."
 });

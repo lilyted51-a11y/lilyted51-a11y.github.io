@@ -44,7 +44,7 @@ G.Invite = (() => {
     const scr = $('scr-invite'), inp = $('invite-code'), msg = $('invite-msg');
     scr.classList.remove('hidden');
     inp.value = ''; msg.textContent = '';
-    setTimeout(() => inp.focus(), 50);
+    if (G.UI && G.UI.autoFocus) G.UI.autoFocus(inp); else setTimeout(() => inp.focus(), 50);   // (móvil: sin teclado solo)
     $('invite-form').onsubmit = async e => {
       e.preventDefault();
       const code = inp.value.trim();

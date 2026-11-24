@@ -127,6 +127,21 @@ G.Spawner = (() => {
     return e;
   }
 
+  /**
+   * Cambio de anfitrión (coop.js promote, 25-11-2026): un Pokémon shiny del anterior sigue en su sitio y
+   * con la vida que le quedaba (`frac`). Antes desaparecía con las demás copias.
+   */
+  function adoptShiny(dex, x, y, frac) {
+    const t = G.Game.st.time, def = G.Enemies.defOf(dex, t);
+    if (!def) return null;
+    const e = new G.Enemy(def, x, y, scaled(G.Enemies.scale(t), G.Coop.scaleHp(Math.max(1, players.length)) * hpK(t)));
+    e.dmg *= DMG_K; e.xp = Math.round(e.xp * XP_K);
+    e.makeShiny();
+    e.hp = Math.max(1, Math.round(e.maxHp * G.U.clamp(frac, 0.01, 1)));
+    G.EnemyMgr.add(e);
+    return e;
+  }
+
   function spawnBoss(pl, t, b) {
     const [x, y] = ringPoint(pl, Math.random() * 6.2832);
     const e = new G.Enemy(b, x, y, scaled(G.Enemies.bossScale(t), G.Coop.scaleHp(players.length) * (players.length > 1 ? 1.4 : 1)), true);
@@ -225,6 +240,6 @@ G.Spawner = (() => {
   /** Invitado en cooperativo: sólo corre el reloj del aviso. */
   function tickBanner(dt) { if (announceT > 0) announceT -= dt; }
 
-  return { reset, update, catchUp, ahead, burst, outR, tickBanner, banner, say, rate, SHINY_RATE, CAP,
+  return { reset, update, catchUp, ahead, burst, outR, adoptShiny, tickBanner, banner, say, rate, SHINY_RATE, CAP,
            debugForceShiny(n = 1) { forceShiny = n; } };
 })();

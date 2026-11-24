@@ -43,7 +43,7 @@ G.Challenge = (() => {
     return () => { h += 0x6D2B79F5; let t = h; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   }
   /** Semana ISO en España, 'w2026-48' (la misma que usan las misiones y el ranking semanal). */
-  const weekId = (date = new Date()) => G.Ranking.periodIds(date).w;
+  const weekId = (date = G.Clock ? G.Clock.date() : new Date()) => G.Ranking.periodIds(date).w;   // (la hora de la web, 25-11-2026)
   const weekNum = w => { const m = /^w(\d+)-(\d+)$/.exec(w || ''); return m ? +m[1] * 53 + +m[2] : 0; };
 
   // Especies que llegaron el 24-11-2026 (tools/add_species.py): no cuentan en el sorteo hasta la semana
@@ -93,7 +93,7 @@ G.Challenge = (() => {
   /** Cuánto falta para el siguiente desafío (el lunes a las 0:00 de España). → ms */
   let endOf = { w: '', at: 0 };
   function msLeft() {
-    const now = Date.now(), w = weekId();
+    const now = G.Clock ? G.Clock.now() : Date.now(), w = weekId();
     if (endOf.w !== w) {
       // (Se busca hacia delante, de hora en hora y luego de minuto en minuto: sin cuentas de horarios de verano.)
       let t = now;

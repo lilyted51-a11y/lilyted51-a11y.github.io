@@ -56,6 +56,10 @@ G.Updater = (() => {
     // Que lo guardado suba a la nube antes de recargar (como mucho 6 s).
     const dirty = G.DB.syncState && G.DB.syncState !== 'ok' && G.DB.syncState !== 'local';
     if (dirty) { try { await Promise.race([G.DB.flush(), new Promise(r => setTimeout(r, 6000))]); } catch (e) { /* queda en este navegador */ } }
+    // (25-11-2026) flush vuelve enseguida si se acaba de subir algo (las reglas piden unos segundos entre
+    // subidas): se espera a que de verdad quede guardado, como mucho 30 s y sólo con conexión.
+    const t0 = Date.now();
+    while (dirty && Date.now() - t0 < 30000 && navigator.onLine !== false && !['ok', 'local'].includes(G.DB.syncState)) await new Promise(r => setTimeout(r, 500));
     location.reload();
   }
 

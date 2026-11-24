@@ -946,6 +946,16 @@
   "Pokémon cries:": "寶可夢的叫聲：",
   "Pokémon Edición Reloaded y PokéAPI, vía PokéSurvivor.": "Pokémon Edición Reloaded 與 PokéAPI，經由 PokéSurvivor 取得。",
   "Pokémon Edición Reloaded and PokéAPI, via PokéSurvivor.": "Pokémon Edición Reloaded 與 PokéAPI，經由 PokéSurvivor 取得。",
+  // 25-11-2026 (copia local): repaso de las novedades oficiales, 2.ª parte (inglés de las mejoras activas, invitar sin conexión, fuera de la partida del grupo)
+  "SPA ×{x}": "特攻 ×{x}",
+  "SPE ×{x}": "速度 ×{x}",
+  "SPA": "特攻",
+  "SPE": "速度",
+  "AT.E": "特攻",
+  "Sin conexión: no se ha podido invitar. Prueba otra vez en un momento.": "離線：無法送出邀請。請稍後再試。",
+  "No connection: the invite could not be sent. Try again in a moment.": "離線：無法送出邀請。請稍後再試。",
+  "Has estado fuera más de {x} s y el grupo ha seguido sin ti: tu partida termina aquí, con lo que llevabas.": "你離開超過 {x} 秒，隊伍已經繼續前進：你的這局到此結束，保留目前所得。",
+  "You were away for more than {x} s and the group carried on without you: your run ends here, with what you had.": "你離開超過 {x} 秒，隊伍已經繼續前進：你的這局到此結束，保留目前所得。",
   // 25-11-2026 (copia local): formas de combate (systems/battleforms.js)
   "¡{x} cambia de forma!": "{x}的形態改變了！",
   "{x} changes form!": "{x}的形態改變了！",

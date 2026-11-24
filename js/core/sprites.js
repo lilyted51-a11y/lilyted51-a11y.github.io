@@ -69,7 +69,7 @@ G.Sprites = (() => {
   // Hojas en memoria como mucho. Antes no se soltaba ninguna: en partidas de
   // más de una hora pasaban cientos de especies, se llenaba la memoria gráfica
   // y la pantalla se quedaba en negro hasta que el navegador recargaba la página.
-  const MAX_SHEETS = 200, IDLE_MS = 20000;   // ~0,66 MB cada una ya dibujada: ~130 MB
+  const MAX_SHEETS = 200, IDLE_MS = 20000, STALL_MS = 15000;   // ~0,66 MB cada una ya dibujada: ~130 MB
   function evict(now) {
     const old = [...sheets].filter(([, s]) => now - s.at > IDLE_MS).sort((a, b) => a[1].at - b[1].at);
     const drop = old.slice(0, Math.max(sheets.size - Math.floor(MAX_SHEETS * 0.75), 0));
@@ -92,11 +92,13 @@ G.Sprites = (() => {
     if (s) {
       s.at = now;
       // Si la descarga se cortó (red mala, servidor saturado), reintenta más tarde.
-      if (s.failed && performance.now() > s.retryAt) { s.failed = false; s.img.src = s.src + '?r=' + s.tries; }
+      if (s.failed && performance.now() > s.retryAt) { s.failed = false; s.t0 = performance.now(); s.img.src = s.src + '?r=' + s.tries; }
+      // (25-11-2026) Y si se queda colgada (ni llega ni falla), se vuelve a pedir.
+      else if (!s.ready && !s.failed && performance.now() - s.t0 > STALL_MS) { s.t0 = performance.now(); s.img.src = s.src + '?r=' + (++s.tries); }
       return s;
     }
     if (sheets.size >= MAX_SHEETS) evict(now);
-    s = { ready: false, failed: false, img: new Image(), tries: 0, retryAt: 0, at: now,
+    s = { ready: false, failed: false, img: new Image(), tries: 0, retryAt: 0, at: now, t0: performance.now(),
           src: `assets/pokemon/${dex}/${skin ? 'k-' + skin + '/' : ''}${shiny ? 's/' : ''}${name}.png` };
     s.img.onload = () => { s.ready = true; };
     s.img.onerror = () => { s.failed = true; s.retryAt = performance.now() + 1000 * Math.min(8, 2 ** s.tries++); };
@@ -280,6 +282,17 @@ G.Sprites = (() => {
         // Mientras carga esta animación, enseña Idle si ya está.
         const idle = sheet(this.dex, 'Idle', this.shiny);
         if (idle && idle.ready) { s = idle; m = animMeta(this.dex, 'Idle', this.shiny); own = false; }
+      }
+      // (25-11-2026) Una forma, Mega o Gigamax cuyo dibujo aún no ha llegado: su forma normal mientras
+      // tanto, no la bola gris (Giratina Origen, Articuno de Galar en una grieta...).
+      if (!(s && s.ready) && G.formBase) {
+        const b = G.formBase(this.dex);
+        if (b && b !== this.dex && meta(b)) {
+          for (const a of [this.cur, 'Idle']) {
+            const bs = sheet(b, a, false), bm = animMeta(b, a, false);
+            if (bs && bs.ready && bm) { s = bs; m = bm; own = false; break; }
+          }
+        }
       }
       const frame = own ? this.frame : 0;
       if (!m || !s || !s.ready) {

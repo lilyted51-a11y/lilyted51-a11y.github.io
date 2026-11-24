@@ -19,7 +19,8 @@ G.Input = (() => {
     if (!down.has(c)) pressed.add(c);
     down.add(c);
     // Evita que el navegador haga scroll con flechas/espacio durante el juego.
-    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'space', 'tab'].includes(c)) e.preventDefault();
+    // (25-11-2026: el tabulador sólo en la partida: en los menús vuelve a pasar de botón en botón y de pestaña en pestaña.)
+    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'space'].includes(c) || (c === 'tab' && !(G.Game && G.Game.state === 'ui'))) e.preventDefault();
     // Teclas cambiadas (core/keys.js): en la partida, una tecla puesta a una acción no hace lo del navegador (/ busca, ' ...).
     else if (G.Keys && G.Game && G.Game.state !== 'ui' && G.Keys.isBound(c) && !e.ctrlKey && !e.metaKey && !e.altKey) e.preventDefault();
   });

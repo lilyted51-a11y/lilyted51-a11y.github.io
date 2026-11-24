@@ -12,6 +12,8 @@
  */
 (() => {
   let nextId = 1;
+  /** La Z de los dormidos, de 5×5 píxeles (una fila por número, de izquierda a derecha). */
+  const ZPIX = [0b11111, 0b00010, 0b00100, 0b01000, 0b11111];
   /** Los jefes se agrandan hasta ~110 de alto, según lo grande que ya sea su sprite. */
   function bossScale(dex) {
     const m = G.Sprites.animMeta(dex, 'Idle');
@@ -160,7 +162,9 @@
       // quien decide si cae. Aquí sólo se ve (número, destello y animación).
       if (this.remote) {
         G.Coop.hit(this, d, color, dirX, dirY, knock);
-        this.hp = Math.max(1, this.hp - d);
+        // (25-11-2026: a los jefes no se les resta aquí: el anfitrión recorta el golpe (10 %, fases,
+        //  núcleos) y su barra bajaba de más y volvía a subir con cada golpe. Su vida llega del anfitrión.)
+        if (!this.boss && !this.legend && !this.eternatus && !this.etCore) this.hp = Math.max(1, this.hp - d);
         this.showHurt(d, color, dirX, dirY, eff);
         return;
       }
@@ -811,14 +815,19 @@
       if (this.sleepT > 0 || (this.net && this.net.st & 16)) {
         const now = performance.now() / 1000;
         ctx.save();
-        ctx.textAlign = 'center';
+        // (25-11-2026: de píxeles, como el resto del juego: una Z de 5×5 con borde oscuro que crece al subir.)
         for (let i = 0; i < 2; i++) {
-          const k = (now * 0.7 + i * 0.5) % 1;
+          const k = (now * 0.7 + i * 0.5) % 1, p = k < 0.5 ? 1.5 : 2;
           ctx.globalAlpha = 1 - k;
-          ctx.font = '700 ' + (7 + k * 5).toFixed(1) + 'px Pixelify,"Segoe UI",sans-serif';
-          ctx.fillStyle = '#c9b8ff'; ctx.strokeStyle = '#1b1528'; ctx.lineWidth = 2;
-          const zx = this.x + 6 + k * 8, zy = this.y - lift - this.bodyH - 4 - k * 14;
-          ctx.strokeText('Z', zx, zy); ctx.fillText('Z', zx, zy);
+          const zx = Math.round(this.x + 4 + k * 8), zy = Math.round(this.y - lift - this.bodyH - 10 - k * 14);
+          for (const [col, o] of [['#1b1528', 1], ['#c9b8ff', 0]]) {
+            ctx.fillStyle = col;
+            for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
+              if (!((ZPIX[r] >> (4 - c)) & 1)) continue;
+              if (o) ctx.fillRect(zx + c * p - 1, zy + r * p - 1, p + 2, p + 2);
+              else ctx.fillRect(zx + c * p, zy + r * p, p, p);
+            }
+          }
         }
         ctx.restore();
       }
@@ -893,6 +902,7 @@
       if (o.beh === 'arceus') G.Judgment.dress(e);
       else if (o.beh === 'eternatus') G.Eternatus.dress(e);
       else if (o.beh === 'etcore' || o.beh === 'etcore2') G.Eternatus.dressCore(e);
+      else if (o.beh === 'thief' && G.Events.noteThief) G.Events.noteThief();   // (cuenta para no sacar de más al cambiar de anfitrión)
       if (G.Cries) G.Cries.enemy(e);       // (el invitado grita lo que le llega; una vez por enemigo)
       e.net = { x: o.x, y: o.y, vx: 0, vy: 0, age: 0, dir: 0, anim: 0, st: 0 };
       list.push(e);
@@ -919,9 +929,11 @@
     }
 
     /** Invitado: borra las copias (llegarán otra vez del anfitrión). */
-    function clearRemote() {
-      for (const e of list) if (e.remote) byId.delete(e.id);
-      list = list.filter(e => !e.remote);
+    /** @param keep  (opcional) las copias que se quedan (el blanco de Arceus en la Sentencia, judgment.js port). */
+    function clearRemote(keep) {
+      const gone = e => e.remote && !(keep && keep(e));
+      for (const e of list) if (gone(e)) byId.delete(e.id);
+      list = list.filter(e => !gone(e));
       corpses = corpses.filter(e => !e.remote);
     }
 

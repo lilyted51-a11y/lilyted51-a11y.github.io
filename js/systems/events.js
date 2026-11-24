@@ -594,6 +594,11 @@ G.Events = (() => {
 
   return {
     reset, update, bag, onNet, adopt, drawables, drawHud,
+    /**
+     * Cooperativo (25-11-2026): a quien no manda le llega un duende del anfitrión (EnemyMgr.addRemote).
+     * Se apunta como si lo hubiera sacado él: si luego pasa a llevar la partida, no saca de más.
+     */
+    noteThief() { if (!authority()) { thieves++; thiefT = G.U.rand(THIEF_NEXT[0], THIEF_NEXT[1]); } },
     get golden() { return !!cur && cur.id === 'gold'; },
     get current() { return cur ? cur.id : null; },
     /** Para pruebas. */

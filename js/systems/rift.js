@@ -31,6 +31,7 @@ G.Rift = (() => {
   let arena = null;         // { tx, ty, r, dex, shiny, x, y, back, biome, t, phase, endT, bossId }
   let zone = null;          // dónde estaba la última arena { x, y, r } (ver leftBehind)
   let checkT = 0, asked = false, downT = 0;
+  let raMiss = 0;           // invitado: desde cuándo el anfitrión no manda el reloj de la arena (netClock)
   // Grietas con hora fija (16-11-2026, como el juego oficial): minutos 4, 8, 12, 16 y 25.
   // La última sólo da vínculo si te has dejado alguna de las anteriores (wins).
   const RIFT_AT = [240, 480, 720, 960, 1500];
@@ -41,7 +42,7 @@ G.Rift = (() => {
   const authority = () => !G.Coop.active || G.Coop.isHost;
   const TS = () => G.Tiles.T * G.Sprites.PX;
 
-  function reset() { rift = null; arena = null; zone = null; checkT = 0; asked = false; downT = 0; riftIdx = 0; wins = 0; egg = false; over = 0; G.Legend.reset(); }
+  function reset() { rift = null; arena = null; zone = null; checkT = 0; asked = false; downT = 0; raMiss = 0; riftIdx = 0; wins = 0; egg = false; over = 0; G.Legend.reset(); }
 
   /**
    * ¿Sigue este jugador en la arena aunque aquí ya se haya vuelto al mapa?
@@ -60,8 +61,8 @@ G.Rift = (() => {
       rift.t += dt;
       rift.ttl -= dt;
       if (rift.ttl <= 0) { rift = null; over++; return; }
-      // (No se entra con Eternatus en marcha, ni durante su aviso.)
-      if (!arena && !pl.dead && !G.Eternatus.active && G.U.dist2(pl.x, pl.y, rift.x, rift.y - 10) < 30 * 30) enter();
+      // (No se entra con Eternatus en marcha, ni durante su aviso; ni con la Sentencia empezando, 25-11-2026.)
+      if (!arena && !pl.dead && !G.Eternatus.active && !G.Judgment.active && G.U.dist2(pl.x, pl.y, rift.x, rift.y - 10) < 30 * 30) enter();
     } else if (!arena && authority() && !G.Judgment.active && !G.Eternatus.active && riftIdx < RIFT_AT.length && time >= RIFT_AT[riftIdx]) {
       // Le toca una grieta. Con un jefe vivo se espera a que caiga (se mira cada 5 s).
       checkT -= dt;
@@ -216,6 +217,9 @@ G.Rift = (() => {
     };
     const e = new G.Enemy(def, arena.x, arena.y - ts * 3.5, { hp: 1, spd: 1, dmg: 1 }, true);
     e.legend = true;
+    // (25-11-2026) Si vuelve a salir porque ha cambiado el anfitrión, con la vida que le quedaba
+    // (arena.frac, la apunta cada uno en arenaTick): antes volvía entero.
+    if (arena.frac > 0 && arena.frac < 1) e.hp = Math.max(1, Math.round(e.maxHp * arena.frac));
     // Choca con las paredes y columnas como tú: si volara por encima de las
     // rocas, tus disparos no podrían alcanzarle (bug de Celebi).
     e.flying = false;
@@ -242,7 +246,15 @@ G.Rift = (() => {
     arena.t += dt;
     G.Legend.update(dt, pl);
     if (arena.phase === 'fight') {
-      if (!authority()) return;
+      // Cuánta vida le queda al legendario (en todos: si cambia el anfitrión, sigue con ella; ver spawnLegend).
+      const lb = G.EnemyMgr.all().find(e => (e.legend || e.boss) && !e.dead && !e.arceus);
+      if (lb && lb.maxHp > 0) arena.frac = lb.hp / lb.maxHp;
+      if (!authority()) {
+        // (25-11-2026) Por si se pierde el aviso de que ha acabado (cambio de anfitrión en grupos de 3 o
+        // 4: el nuevo ya había salido): nadie se queda dentro para siempre.
+        if (arena.t > ARENA_TIME + 10 || (raMiss && performance.now() - raMiss > 4000)) lost();
+        return;
+      }
       keepInside();
       const boss = G.EnemyMgr.get(arena.bossId);
       if (!boss || boss.dead) { G.Coop.isHost && G.Coop.broadcast(['aw']); won(); return; }
@@ -335,7 +347,7 @@ G.Rift = (() => {
    * en la arena, el legendario del anfitrión anterior ya no está y vuelve a salir.
    */
   function adopt() {
-    asked = false; downT = 0; checkT = 0;
+    asked = false; downT = 0; checkT = 0; raMiss = 0;
     // (Las grietas que ya tocaron no vuelven a salir.)
     const t = G.Game.st ? G.Game.st.time : 0;
     riftIdx = RIFT_AT.filter(x => x <= t).length;
@@ -355,7 +367,19 @@ G.Rift = (() => {
   }
 
   return {
-    reset, update, drawable, onEvent, adopt, leftBehind, enterRequest() { if (!arena) start(); },
+    reset, update, drawable, onEvent, adopt, leftBehind,
+    // (Un invitado ha entrado: el anfitrión abre la arena, salvo si empieza la Sentencia o Eternatus, 25-11-2026.)
+    enterRequest() { if (!arena && !G.Judgment.active && !G.Eternatus.active) start(); },
+    /**
+     * Cooperativo (25-11-2026): el reloj de la arena es el del anfitrión (cada uno llevaba el suyo y la cuenta
+     * atrás no cuadraba). `t` llega en cada mensaje suyo mientras está en la arena; si deja de llegar
+     * (`undefined`) y tú sigues peleando, es que él ya no está dentro (ver arenaTick).
+     */
+    netClock(t) {
+      if (typeof t === 'number' && Number.isFinite(t)) { raMiss = 0; if (arena && arena.phase === 'fight' && Math.abs(arena.t - t) > 0.4) arena.t = t; }
+      else if (arena && arena.phase === 'fight' && arena.t > 3) { if (!raMiss) raMiss = performance.now(); }
+      else raMiss = 0;
+    },
     /** Quita la grieta del mapa si la hay (al ir a la pelea de Eternatus), sin tocar el calendario. */
     hidePortal() { rift = null; asked = false; },
     get rift() { return rift; }, get arena() { return arena; },

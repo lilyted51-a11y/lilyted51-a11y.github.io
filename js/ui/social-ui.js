@@ -38,7 +38,7 @@
       G.UI.show('scr-nick');
       $('nick-err').textContent = '';
       $('nick-in').value = '';
-      setTimeout(() => $('nick-in').focus(), 50);
+      G.UI.autoFocus($('nick-in'));     // (en el móvil no abre el teclado solo, 25-11-2026)
     }
 
     return { init, open, get skipped() { return skipped; } };
@@ -80,7 +80,7 @@
           <div class="row" style="justify-content:center;gap:8px"><button class="btn gold" data-ok>${opts.ok || 'Aceptar'}</button><button class="btn ghost" data-no>Cancelar</button></div></div>`;
         document.body.appendChild(el);
         const inp = el.querySelector('#ask-in');
-        setTimeout(() => inp.focus(), 50);
+        G.UI.autoFocus(inp);
         const end = v => { el.remove(); done(v); };
         el.querySelector('[data-ok]').onclick = () => end(inp.value);
         el.querySelector('[data-no]').onclick = () => end(null);

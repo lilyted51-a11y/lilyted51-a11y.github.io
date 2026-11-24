@@ -23,7 +23,7 @@ const ref = {
   }
 };
 const TABS = new Map();   // navegador (su localStorage) -> eventos 'storage' de cada pestaña
-function tab(store) {
+function tab(store, more = {}) {
   if (!TABS.has(store)) TABS.set(store, []);
   const mine = [], timers = [], vis = [];
   const localStorage = {
@@ -33,7 +33,7 @@ function tab(store) {
   };
   const auth = { setPersistence: async () => {}, useEmulator() {}, onAuthStateChanged: cb => { Promise.resolve().then(() => cb({ uid: 'U1', displayName: 'Ash' })); return () => {}; } };
   const db = { useEmulator() {}, settings() {}, collection: () => ({ doc: () => ref }) };
-  const G = { FIREBASE_CONFIG: { apiKey: 'x', projectId: 'p', emulator: true } };
+  const G = Object.assign({ FIREBASE_CONFIG: { apiKey: 'x', projectId: 'p', emulator: true } }, more);
   const ctx = {
     G, localStorage, console: { warn() {}, log: console.log }, TextEncoder, setTimeout: fn => timers.push(fn), clearTimeout() {},
     firebase: { initializeApp() {}, auth: Object.assign(() => auth, { Auth: { Persistence: { LOCAL: 1 } } }),
@@ -49,7 +49,7 @@ function tab(store) {
   return { DB: G.DB, timers, hide, close() { const l = TABS.get(store); for (const fn of mine) l.splice(l.indexOf(fn), 1); } };
 }
 const settle = async () => { for (let i = 0; i < 6; i++) await new Promise(r => setImmediate(r)); };
-async function open(store) { const t = tab(store); await t.DB.ready(); await settle(); return t; }
+async function open(store, more) { const t = tab(store, more); await t.DB.ready(); await settle(); return t; }
 async function act(t, op) {
   NOW += 100000;
   if (op === 'save') await t.DB.saveNow();
@@ -172,4 +172,23 @@ test('Guardar dos veces seguidas y salir del juego: la segunda se sube al salir'
   assert.equal(cloud.save.tickets.t1, 3);
   NOW += 17000; A.hide(); await settle();            // a los 22 s sales del juego
   assert.equal(cloud.save.tickets.t1, 5, 'se ha subido al salir');
+});
+
+// (25-11-2026) Una pestaña o un aparato con la versión anterior no conoce los objetos y MT nuevos: los
+// quita de su Mochila, pero la libreta no lo apunta como gastado y al juntar siguen ahí.
+test('una versión anterior no se come los objetos que no conoce', async () => {
+  reset();
+  const NEW = { Shop: { ITEMS: { mint: {}, newx: {} } } }, OLD = { Shop: { ITEMS: { mint: {} } } };
+  const pc = new Map(), mob = new Map();
+  let A = await open(pc, NEW);
+  NOW += 100000; A.DB.save.bag = { mint: 1, newx: 2 }; A.DB.commit(); await settle();
+  await act(A, 'save');
+  assert.equal(cloud.save.bag.newx, 2);
+  const B = await open(mob, OLD);
+  assert.equal(B.DB.save.bag.newx, 2);             // la versión vieja lo guarda sin enseñarlo...
+  await act(B, 1); await act(B, 'save');           // ...y guarda después
+  A.close(); A = await open(pc, NEW);
+  assert.equal(A.DB.save.bag.newx, 2);
+  assert.equal(A.DB.save.bag.mint, 1);
+  assert.equal((await open(new Map(), NEW)).DB.save.bag.newx, 2);
 });
