@@ -12,7 +12,7 @@ import { tab, sleep } from './cdp.lib.mjs';
 const port = +(process.argv[2] || 9337);
 const A = await tab(port);
 // Lo que puede quedar en latín: teclas, marcas, nombres propios de jugadores de prueba
-const OK = /^(WASD|Esc|Enter|Tab|Shift|Ctrl|Alt|AltGr|Del|Home|End|PgUp|PgDn|Insert|dev|Space|Start|Select|HP|XP|PC|OK|LB|RB|FPS|USB|Wi-?Fi|App|IP|NFT|OFL|Inc\.?|Sans|MiNG|tester1|Folagor|Sekiam|PokeAlex|lindaolin|Minecraft|YouTube|Google|Gmail|GitHub|Chrome|Safari|iPhone|Android|PlayStation|Switch|Xbox|Firebase|PokéSurvivor|Pok[eé]mon|Pok[eé]API|SpriteCollab|PMD|Nintendo|Creatures|GAME|FREAK|Company|The|HUD|TheAdro7?|JPTER78|CC|BY-NC|PolyForm|Noncommercial|Pixelify|Survivor\.io|CREDITS\.md|Kecleon|Kyogre|Mewtwo|Gengar|Pikachu|Umbreon|Arceus|Mega|Lv|Nv|AI|Bot|BENCH|Español|English|Français|Italiano|Português|Brasil|ms|fps|px|s|x|v\d+)$/i;
+const OK = /^(WASD|Esc|Enter|Tab|Shift|Ctrl|Alt|AltGr|Del|Home|End|PgUp|PgDn|Insert|dev|Space|Start|Select|HP|XP|PC|OK|LB|RB|FPS|USB|Wi-?Fi|App|IP|NFT|OFL|Inc\.?|Sans|MiNG|tester1|Folagor|Sekiam|PokeAlex|lindaolin|Frisma|SrYena|Minecraft|YouTube|Google|Gmail|GitHub|Chrome|Safari|iPhone|Android|PlayStation|Switch|Xbox|Firebase|PokéSurvivor|Pok[eé]mon|Pok[eé]API|SpriteCollab|PMD|Nintendo|Creatures|GAME|FREAK|Company|The|HUD|TheAdro7?|JPTER78|CC|BY-NC|PolyForm|Noncommercial|Pixelify|Survivor\.io|CREDITS\.md|Kecleon|Kyogre|Mewtwo|Gengar|Pikachu|Umbreon|Arceus|Mega|Lv|Nv|AI|Bot|BENCH|Español|English|Français|Italiano|Português|Brasil|ms|fps|px|s|x|v\d+)$/i;
 const latinBits = s => [...new Set((String(s).match(/[A-Za-zÀ-ž][A-Za-zÀ-ž'’.\-]{2,}/g) || []).map(w => w.replace(/[.'’\-]+$/, '')))].filter(w => !OK.test(w) && !/^(pokesurvivor\.com|pokeapi\.co|MIT|Noncommercial|Anchored|Floating)$/i.test(w));
 const found = new Map();   // texto -> dónde
 const note = (where, texts) => { for (const t of texts) if (t && latinBits(t).length) found.set(t.trim().slice(0, 160), (found.get(t.trim().slice(0, 160)) || where)); };
@@ -174,6 +174,13 @@ await A.ev(`(() => { const q = document.getElementById('wd-q'); q.value = 'zzzz'
 await A.ev(`G.WardrobeUI.back(); 1`); await sleep(1000); await grab('ficha (botón del Vestidor)');
 await A.ev(`G.ShopUI.open('trails'); 1`); await sleep(1500); await grab('tienda: estelas (compradas)');
 await A.ev(`(() => { G.DB.save.trails = {}; G.ShopUI.render(); return 1; })()`); await sleep(800); await grab('tienda: estelas (a la venta)');
+// Skins de la semana (25-11-2026, core/skins.js): la pestaña con el pack de Groudon, Kyogre abisal (primigenio) y una con shiny,
+// sin comprar y compradas, el aviso de ya no está a la venta, y el Vestidor de Groudon con los 7 estilos y el de Kyogre.
+await A.ev(`(() => { window.__wk0 = G.Skins.weekly; G.Skins.weekly = () => ['abisal-groudon', 'abisal-kyogre', 'cartero-dragonite']; G.ShopUI.open('skins'); return 1; })()`); await sleep(1500); await grab('tienda: skins de la semana');
+await A.ev(`(() => { const s = G.DB.save; for (const d of [383, 382, 149, 1382]) s.owned[d] = { at: 1 }; s.coins = 999999; for (const id of ['abisal-groudon', 'abisal-kyogre']) G.Shop.buyWeekSkin(id); G.ShopUI.render(); return 1; })()`); await sleep(1200); await grab('tienda: skins de la semana (compradas)');
+await A.ev(`(() => { G.Skins.weekly = window.__wk0; G.UI.toast(G.T(G.Shop.buyWeekSkin('pastel-magearna').error || 'Esa skin ya no está a la venta.'), 900); return 1; })()`); await sleep(350); await grab('toast (skin fuera de la semana)');
+for (const d of [383, 382, 1382]) { await A.ev(`G.WardrobeUI.open(${d}, 'shop:skins'); 1`); await sleep(1000); await grab('Vestidor (skins) ' + d); await clickAll('#wd-opts .wd-skins .wd-look'); }
+await A.ev(`G.WardrobeUI.back(); 1`); await sleep(1000); await grab('tienda: skins (vuelta del Vestidor)');
 await A.ev(`G.ShopUI.open('items'); 1`); await sleep(500);
 await misses('Vestidor y estelas');
 

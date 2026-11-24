@@ -449,7 +449,7 @@ G.ShopUI = (() => {
   // Pestañas (23-11-2026): Objetos y MT · Estelas.
   let shopTab = 'items';
   function open(tab) {
-    if (tab === 'items' || tab === 'trails' || tab === 'held') shopTab = tab;
+    if (tab === 'items' || tab === 'trails' || tab === 'held' || tab === 'skins') shopTab = tab;
     G.UI.show('scr-shop', true);
     const sg = $('shop-sign');
     sg.classList.remove('lit', 'show', 'shown');
@@ -533,10 +533,12 @@ G.ShopUI = (() => {
   function render() {
     const box = $('shop-body');
     const tabs = $('shop-tabs');
-    tabs.innerHTML = [['items', 'Objetos y MT', 'Mentas, Cápsulas y MT'], ['held', 'Objetos de partida', 'Para el Objeto inicial'], ['trails', 'Estelas', G.I18n.f('{x} esta semana', G.Shop.weeklyTrails().length)]]
+    tabs.innerHTML = [['items', 'Objetos y MT', 'Mentas, Cápsulas y MT'], ['held', 'Objetos de partida', 'Para el Objeto inicial'], ['trails', 'Estelas', G.I18n.f('{x} esta semana', G.Shop.weeklyTrails().length)],
+      ['skins', 'Skins', G.I18n.f('{x} esta semana', G.Skins.weekly().length)]]
       .map(([k, t, sub]) => `<button class="gen-tab${shopTab === k ? ' on' : ''}" data-tab="${k}"><b>${G.T(t)}</b><small>${sub}</small></button>`).join('');
     tabs.querySelectorAll('[data-tab]').forEach(b => { b.onclick = () => { shopTab = b.dataset.tab; render(); }; });
     if (shopTab === 'trails') { renderTrails(box); return; }
+    if (shopTab === 'skins') { renderSkins(box); return; }
     if (shopTab === 'held') { renderHeld(box); return; }
     box.innerHTML = buyHtml();
     // Fotos del día y marcos de la semana (ui/mastery-ui.js).
@@ -634,6 +636,59 @@ G.ShopUI = (() => {
     });
     const go = box.querySelector('[data-go-wardrobe]');
     if (go) go.onclick = () => G.WardrobeUI.open(null, 'shop');
+    box.querySelectorAll('.upg-item').forEach(it => {
+      it.addEventListener('pointerenter', () => { const r = it.getBoundingClientRect(); Scene.point(r.left + r.width / 2); });
+    });
+  }
+
+  // ---------------- skins de la semana (25-11-2026, core/skins.js) ----------------
+
+  /** Las 3 de la semana: su dibujo, quién la hizo, si tiene shiny o forma Mega / primigenia, los estilos de un pack y el precio. */
+  function renderSkins(box) {
+    const s = G.DB.save, wk = G.Shop.week(), S = G.Skins;
+    let h = `<h3 style="margin:10px 0 6px">${G.T('Skins de la semana')}</h3>
+      <p class="sub" style="margin:0 0 8px"><span>${G.T('Hechas por la comunidad. Cada semana hay 3, las mismas para todos. Se compran una vez y son para siempre: se ponen en el Vestidor.')}</span>
+      <span>${G.I18n.f('Cambian cada lunes (faltan {x} días).', wk.left)}</span>
+      <button class="btn small" data-go-wardrobe>${G.Icons.html('shirt', 14)} ${G.T('Ir al Vestidor')}</button></p><div class="upg trail-grid">`;
+    for (const id of S.weekly()) {
+      const sk = S.SKINS[id], got = S.owns(s, id), P = S.price(id), name = G.T(G.DEX_BY[sk.dex].name, 'mon'), st = S.styles(id);
+      const notes = [G.I18n.f('Hecha por {x}', G.T(S.author(id)))];
+      if (st.length > 1) notes.push(G.I18n.f('{x}: una compra, {x} estilos para elegir en el Vestidor.', G.T(sk.pack), st.length));
+      if (sk.sh) notes.push(G.T('También en shiny.'));
+      if (sk.mega) notes.push(G.T(sk.mega.some(d => G.FORMS[d] && G.FORMS[d].primal) ? 'También en su forma primigenia.' : 'También al megaevolucionar.'));
+      notes.push(!got ? '' : G.DB.owns(sk.dex) ? G.T('Ya es tuya: póntela en el Vestidor.') : G.I18n.f('Comprada. Se pone cuando tengas a {x}.', name));
+      // Dibujos pequeños: los estilos del pack, su shiny y sus formas.
+      const minis = (st.length > 1 ? st.slice(1).map(k => [sk.dex, k, 0, G.T(S.SKINS[k].name)]) : [])
+        .concat(sk.sh ? [[sk.dex, id, 1, G.T('Shiny')]] : [], (sk.mega || []).filter(d => G.DEX_BY[d]).map(d => [d, id, 0, G.T(G.DEX_BY[d].name, 'mon')]));
+      const btn = got ? `<b class="gold">${G.T('Comprada')}</b>`
+        : `<button class="btn small gold" data-wskin="${id}" data-sfx="none" ${s.coins < P ? 'disabled' : ''}>${coin(P)}</button>`;
+      h += `<div class="panel upg-item trail-item skin-item"><canvas data-wskin-pv="${id}" width="132" height="96"></canvas>
+        <div><b>${G.T(sk.name)}</b><div class="sub" style="font-size:13px">${notes.filter(Boolean).map(n => `<span>${n}</span>`).join(' ')}</div>
+        ${minis.length ? `<div class="skin-minis">${minis.map(([d, k, sh, t]) => `<canvas width="44" height="44" data-mini="${d}|${k}|${sh}" title="${t}"></canvas>`).join('')}</div>` : ''}</div>
+        <div class="upg-btns">${btn}</div></div>`;
+    }
+    box.innerHTML = h + '</div>';
+    box.querySelectorAll('canvas[data-wskin-pv]').forEach(cv => {
+      const id = cv.dataset.wskinPv;
+      G.UI.sprite(cv, S.SKINS[id].dex, { skin: id, scale: 2, hero: true, lively: true });
+    });
+    box.querySelectorAll('canvas[data-mini]').forEach(cv => {
+      const [d, k, sh] = cv.dataset.mini.split('|');
+      G.UI.sprite(cv, +d, { skin: k, scale: 1, hero: true, shiny: sh === '1', twinkle: false });
+    });
+    box.querySelectorAll('[data-wskin]').forEach(b => {
+      b.onclick = () => {
+        const r = G.Shop.buyWeekSkin(b.dataset.wskin);
+        if (!r.ok) { if (r.error) G.UI.toast(G.T(r.error)); G.Audio.sfx('error'); return; }
+        G.Audio.sfx('buy');
+        G.UI.refreshCoins();
+        Scene.cheer();
+        say(G.T('¡Gracias! Póntela en el Vestidor.'));
+        render();
+      };
+    });
+    const go = box.querySelector('[data-go-wardrobe]');
+    if (go) go.onclick = () => G.WardrobeUI.open(null, 'shop:skins');
     box.querySelectorAll('.upg-item').forEach(it => {
       it.addEventListener('pointerenter', () => { const r = it.getBoundingClientRect(); Scene.point(r.left + r.width / 2); });
     });

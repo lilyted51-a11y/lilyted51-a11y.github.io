@@ -5,7 +5,8 @@
  *   Aspecto   sus formas que sólo cambian el dibujo (core/dress.js, looks), gratis: una rejilla con su
  *             dibujo y su nombre que se desplaza (25-11-2026: Unown tiene 28, Alcremie 63, filtradas por
  *             crema); el puesto, marcado y a la vista; en shiny si eliges el shiny y ese aspecto lo tiene
- *   Skin      las compradas de ese Pokémon (core/skins.js); un aspecto y una skin no van juntos
+ *   Skin      las compradas de ese Pokémon (core/skins.js); un aspecto y una skin no van juntos (25-11-2026: en
+ *             rejilla con su dibujo; los estilos de un pack, todos; debajo, quién la hizo)
  *   Efectos   brillos, aura de su tipo, halo de luz o aura oscura (entities/trails.js, FX)
  *   Estela    una de las compradas en la Tienda Kecleon (valen para todos tus Pokémon)
  * Arriba, la vista previa: tu Pokémon da vueltas con su estela y su efecto.
@@ -41,7 +42,7 @@ G.WardrobeUI = (() => {
   }
   function back() {
     if (from === 'dex') G.MenuUI.openDex();
-    else if (from === 'shop') G.ShopUI.open('trails');
+    else if (from.startsWith('shop')) G.ShopUI.open(from.split(':')[1] || 'trails');   // ('shop:skins': la de skins)
     else G.MenuUI.open();
   }
 
@@ -108,8 +109,13 @@ G.WardrobeUI = (() => {
     const noSh = sh && lk && !G.Sprites.hasShiny(lk);
     h += `<div class="wd-sec"><h4>${G.T('Aspecto')}</h4>${looks.length ? '<div class="wd-lgroups"></div><div class="wd-looks"></div>' : ''}
       <p class="sub wd-note">${looks.length ? `<span>${G.T('Sólo cambia el dibujo.')}</span>` + (noSh ? `<span>${G.T('Este aspecto no tiene versión shiny: se ve normal.')}</span>` : '') : G.T('Sólo tiene un aspecto.')}</p></div>`;
-    h += sec('Skin', chip('sk', '', G.T('Sin skin'), !sk) + skins.map(id => chip('sk', id, `${G.Icons.html('witch', 12)} ${G.T(G.Skins.SKINS[id].name)}`, sk === id)).join(''),
-      skins.length ? (lk ? G.T('Las skins van con su aspecto normal.') : '') : G.T('No tienes skins de este Pokémon.'));
+    // Skin (25-11-2026): rejilla con su dibujo, como los aspectos (los estilos de un pack, juntos); debajo, quién la hizo.
+    const packs = [...new Set(skins.map(id => G.Skins.SKINS[id].in || (G.Skins.SKINS[id].pack ? id : '')).filter(Boolean))];
+    const by = sk && G.Skins.author(sk);
+    h += `<div class="wd-sec"><h4>${G.T('Skin')}</h4>${skins.length ? '<div class="wd-looks wd-skins"></div>' : ''}
+      <p class="sub wd-note">${skins.length ? (lk ? `<span>${G.T('Las skins van con su aspecto normal.')}</span>` : '')
+        + packs.map(p => `<span>${G.I18n.f('{x}: {x} estilos', G.T(G.Skins.SKINS[p].pack), G.Skins.styles(p).length)}</span>`).join('')
+        + (by ? `<span>${G.I18n.f('Hecha por {x}', G.T(by))}</span>` : '') : G.T('No tienes skins de este Pokémon.')}</p></div>`;
     h += sec('Efecto', chip('fx', '', G.T('Ninguno'), !fx) + G.Trails.FX_ORDER.map(id => chip('fx', id, G.T(G.Trails.FX[id].name), fx === id, `title="${G.T(G.Trails.FX[id].desc)}"`)).join(''),
       fx ? G.T(G.Trails.FX[fx].desc) : '');
     h += sec('Estela', chip('tr', '', G.T('Ninguna'), !tr) + owned.map(t => chip('tr', t.id, `<i class="rar-dot" style="background:${G.Trails.RAR_COLOR[t.rar]}"></i>${G.T(t.name)}`, tr === t.id, `title="${G.T(G.Trails.RAR_NAME[t.rar])}"`)).join(''),
@@ -122,6 +128,7 @@ G.WardrobeUI = (() => {
     box.innerHTML = h;
     box.querySelectorAll('.chip[data-k]').forEach(b => { b.onclick = () => choose(b.dataset.k, b.dataset.v); });
     if (looks.length) renderLooks(box, looks, lk, sh);
+    if (skins.length) renderSkins(box.querySelector('.wd-skins'), skins, sk, sh);
     const shop = box.querySelector('[data-go-shop]');
     if (shop) shop.onclick = () => G.ShopUI.open('trails');
     const pick = box.querySelector('[data-pick]');
@@ -166,6 +173,25 @@ G.WardrobeUI = (() => {
     // El puesto, a la vista (sin mover la página).
     const on = grid.querySelector('.wd-look.on');
     if (on) grid.scrollTop = Math.max(0, on.offsetTop - grid.clientHeight / 2 + on.offsetHeight / 2);
+  }
+
+  /** La rejilla de skins (25-11-2026): «Sin skin» y cada una de las suyas con su dibujo; la puesta, marcada. */
+  function renderSkins(grid, skins, sk, sh) {
+    for (const id of [''].concat(skins)) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'wd-look' + (id === sk ? ' on' : ''); b.dataset.sk = id;
+      const name = id ? G.T(G.Skins.SKINS[id].name) : G.T('Sin skin');
+      b.title = name;
+      const cv = document.createElement('canvas');
+      cv.width = 56; cv.height = 46;
+      b.appendChild(cv);
+      const sm = document.createElement('small');
+      sm.textContent = name;
+      b.appendChild(sm);
+      b.onclick = () => choose('sk', id);
+      grid.appendChild(b);
+      G.UI.sprite(cv, dex, { scale: 1, shiny: sh, skin: id, twinkle: false });
+    }
   }
 
   function choose(k, v) {

@@ -256,7 +256,10 @@ G.Coop = (() => {
     p.remote = true; p.uid = old.uid; p.tag = old.tag; p.tagColor = old.tagColor; p.revLabel = old.revLabel;
     p.x = old.x; p.y = old.y; p.net = old.net; p.hp = old.hp; p.maxHp = old.maxHp; p.dead = old.dead;
     G.Projectiles.clearOrbs(old);
-    G.Sprites.preload([mon.dex], 8000, sh);
+    // Su skin sigue si la otra forma también la tiene (Mega o primigenia con skin: core/skins.js, mega).
+    const sk = old.anim && old.anim.skin;
+    if (sk && G.Skins && G.Skins.get(sk, mon.dex)) p.anim.skin = sk;
+    G.Sprites.preload([mon.dex], 8000, sh, p.anim.skin || '');
     m.pl = p;
     const mem = members.find(x => x.uid === m.uid);
     if (mem) { mem.dex = n.dx; mem.shiny = sh; }

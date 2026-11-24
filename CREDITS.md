@@ -139,6 +139,63 @@ los que el oficial marca como convertidos, de *Pokémon Edición Reloaded* (F3R,
 | YoukaiMinori | <@91001329228464128> | 252, 253 |
 | ◥θ┴θ◤ | DC:<@215638650434617345> | 157, 445, 501, 504, 505, 566, 577, 595, 627, 650, 651, 658, 661, 676, 684, 707, 724, 726, 728, 729, 730, 761, 763, 790, 823, 872, 907, 991, 1172, 1676, 10666 |
 
+## Skins de la comunidad
+
+Las skins de la Tienda Kecleon (`js/core/skins.js`) son dibujos hechos por jugadores del juego oficial
+(pokesurvivor.com), sobre los sprites de SpriteCollab (misma licencia
+[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)). Sus hojas están en `assets/pokemon/<n.º>/k-<id>/`
+(y `s/` las shiny). Cuando no se sabe quién la hizo, pone «comunidad de PokéSurvivor». Las de bruja y el sombrero
+de Kecleon (Halloween) son de la casa.
+
+| Skin | Autor | N.º (y formas con ella) | Hojas |
+| --- | --- | --- | --- |
+| Mewtwo Obsidiana | comunidad de PokéSurvivor | 150 | `assets/pokemon/150/k-obsidiana-mewtwo/` |
+| Dragonite cartero | comunidad de PokéSurvivor | 149 | `assets/pokemon/149/k-cartero-dragonite/` |
+| Rayquaza cósmico | comunidad de PokéSurvivor | 384 | `assets/pokemon/384/k-cosmico-rayquaza/` |
+| Squirtle con gafas de sol | comunidad de PokéSurvivor | 7 | `assets/pokemon/7/k-gafas-squirtle/` |
+| Zygarde neón vivo | SrYena | 718 | `assets/pokemon/718/k-neon-zygarde/` |
+| Gengar blanco fucsia | comunidad de PokéSurvivor | 94 | `assets/pokemon/94/k-fucsia-gengar/` |
+| Lickilicky pastelero | comunidad de PokéSurvivor | 463 | `assets/pokemon/463/k-pastelero-lickilicky/` |
+| Baxcalibur Godzilla | comunidad de PokéSurvivor | 998 (y 100998) | `assets/pokemon/998/k-godzilla-baxcalibur/` |
+| Espeon circense | comunidad de PokéSurvivor | 196 | `assets/pokemon/196/k-circense-espeon/` |
+| Scyther sombrío | comunidad de PokéSurvivor | 123 | `assets/pokemon/123/k-sombrio-scyther/` |
+| Yveltal acuático | Frisma32 | 717 | `assets/pokemon/717/k-acuatico-yveltal/` |
+| Braixen épico | comunidad de PokéSurvivor | 654 | `assets/pokemon/654/k-epico-braixen/` |
+| Snorlax viajero | comunidad de PokéSurvivor | 143 | `assets/pokemon/143/k-viajero-snorlax/` |
+| Lunala de hielo | comunidad de PokéSurvivor | 792 | `assets/pokemon/792/k-hielo-lunala/` |
+| Toxtricity infernal | comunidad de PokéSurvivor | 849 | `assets/pokemon/849/k-infernal-toxtricity/` |
+| Abra saiyan | comunidad de PokéSurvivor | 63 | `assets/pokemon/63/k-saiyan-abra/` |
+| Centiskorch fuego azul | Frisma32 | 851 | `assets/pokemon/851/k-azul-centiskorch/` |
+| Gholdengo de plata | comunidad de PokéSurvivor | 1000 | `assets/pokemon/1000/k-plata-gholdengo/` |
+| Woobat algodón de azúcar | comunidad de PokéSurvivor | 527 | `assets/pokemon/527/k-algodon-woobat/` |
+| Tapu Fini lunar | comunidad de PokéSurvivor | 788 | `assets/pokemon/788/k-lunar-tapu-fini/` |
+| Pangoro nocturno | Frisma32 | 675 | `assets/pokemon/675/k-nocturno-pangoro/` |
+| Magearna pastel | comunidad de PokéSurvivor | 801 | `assets/pokemon/801/k-pastel-magearna/` |
+| Huntail abisal | Frisma32 | 367 | `assets/pokemon/367/k-abisal-huntail/` |
+| Gliscor sombrío | comunidad de PokéSurvivor | 472 | `assets/pokemon/472/k-sombrio-gliscor/` |
+| Minccino explorador | comunidad de PokéSurvivor | 572 | `assets/pokemon/572/k-explorador-minccino/` |
+| Reuniclus de fresa | comunidad de PokéSurvivor | 579 | `assets/pokemon/579/k-fresa-reuniclus/` |
+| Excadrill albino | comunidad de PokéSurvivor | 530 | `assets/pokemon/530/k-albino-excadrill/` |
+| Simisage de la selva | comunidad de PokéSurvivor | 512 | `assets/pokemon/512/k-selva-simisage/` |
+| Rayquaza nebuloso | comunidad de PokéSurvivor | 384 | `assets/pokemon/384/k-nebuloso-rayquaza/` |
+| Charizard llama sombría | comunidad de PokéSurvivor | 6 | `assets/pokemon/6/k-sombrio-charizard/` |
+| Deoxys Xenomorfo | comunidad de PokéSurvivor | 386 | `assets/pokemon/386/k-xenomorfo-deoxys/` |
+| Eternatus abismal | comunidad de PokéSurvivor | 890 | `assets/pokemon/890/k-abismal-eternatus/` |
+| Greninja Esmeralda | comunidad de PokéSurvivor | 658 (y 100658, 300658) | `assets/pokemon/658/k-esmeralda-greninja/` |
+| Kyogre abisal | comunidad de PokéSurvivor | 382 (y 1382) | `assets/pokemon/382/k-abisal-kyogre/` |
+| Reshiram oscuro | comunidad de PokéSurvivor | 643 | `assets/pokemon/643/k-oscuro-reshiram/` |
+| Luxray cibernético | comunidad de PokéSurvivor | 405 | `assets/pokemon/405/k-cibernetico-luxray/` |
+| Scizor rey Unown | comunidad de PokéSurvivor | 212 | `assets/pokemon/212/k-unown-scizor/` |
+| Tentacruel muerto | comunidad de PokéSurvivor | 73 | `assets/pokemon/73/k-muerto-tentacruel/` |
+| Koffing tóxico | comunidad de PokéSurvivor | 109 | `assets/pokemon/109/k-toxico-koffing/` |
+| Groudon abisal | Frisma32 | 383 | `assets/pokemon/383/k-abisal-groudon/` |
+| Groudon desértico | Frisma32 | 383 | `assets/pokemon/383/k-desertico-groudon/` |
+| Groudon diamante | Frisma32 | 383 | `assets/pokemon/383/k-diamante-groudon/` |
+| Groudon esmeralda | Frisma32 | 383 | `assets/pokemon/383/k-esmeralda-groudon/` |
+| Groudon espacial | Frisma32 | 383 | `assets/pokemon/383/k-espacial-groudon/` |
+| Groudon playero | Frisma32 | 383 | `assets/pokemon/383/k-playero-groudon/` |
+| Groudon selvático | Frisma32 | 383 | `assets/pokemon/383/k-selvatico-groudon/` |
+
 ## Caras (retratos)
 
 Las caras de la foto del perfil (`assets/portraits/`) también vienen de

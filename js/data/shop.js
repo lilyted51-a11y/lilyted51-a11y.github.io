@@ -96,7 +96,7 @@ G.Shop = (() => {
   /** Halloween: una skin de bruja por caramelos (sólo esos días; luego se queda para siempre). → { ok, error? } */
   function buySkin(id) {
     const s = save(), sk = G.Skins.SKINS[id], price = G.Halloween.SKIN_PRICE;
-    if (!s || !sk || sk.shop === false) return { ok: false };
+    if (!s || !sk || !G.Skins.LIST.includes(id)) return { ok: false };
     if (!G.Halloween.on) return { ok: false, error: 'Las skins de bruja sólo se venden en Halloween.' };
     if (G.Skins.owns(s, id)) return { ok: false, error: 'Ya tienes esta skin.' };
     if (count('candy') < price) return { ok: false, error: 'No tienes caramelos suficientes.' };
@@ -149,6 +149,27 @@ G.Shop = (() => {
     return { ok: true };
   }
 
+  // ---------------- skins de la semana (25-11-2026, copia local: core/skins.js) ----------------
+  /*
+   * 3 cada semana, las mismas para todos (G.Skins.weekly), con Pokémonedas: el precio va por su rareza.
+   * Un pack se compra una vez y da todos sus estilos. Si tienes ese Pokémon, se le pone (sin su aspecto
+   * del Vestidor: un aspecto y una skin no van juntos).
+   */
+  function buyWeekSkin(id) {
+    const s = save(), sk = G.Skins.SKINS[id];
+    if (!s || !sk) return { ok: false };
+    if (G.Skins.owns(s, id)) return { ok: false, error: 'Ya tienes esta skin.' };
+    if (!G.Skins.weekly().includes(id)) return { ok: false, error: 'Esa skin ya no está a la venta.' };
+    const price = G.Skins.price(id);
+    if (s.coins < price) return { ok: false, error: 'No tienes Pokémonedas suficientes.' };
+    s.coins -= price;
+    s.skins = s.skins || {};
+    s.skins[id] = Date.now();
+    if (G.DB.owns(sk.dex)) { G.Skins.wear(s, sk.dex, id); G.Dress.set(s, sk.dex, { lk: 0 }); }
+    G.DB.commit(true);
+    return { ok: true };
+  }
+
   // ---------------- objetos de la partida (24-11-2026, copia local: systems/startitem.js) ----------------
   /*
    * Los objetos equipables de la partida (data/items.js), a 500 cada uno, para la Mejora Objeto inicial.
@@ -180,5 +201,5 @@ G.Shop = (() => {
   }
 
   return { ITEMS, ORDER, count, take, tmCount, takeTm, dailyTms, tmPrice, buy, buySkin, today, week, weeklyTrails, buyTrail,
-           HELD_PRICE, heldForSale, heldCount, takeHeld, buyHeld };
+           HELD_PRICE, heldForSale, heldCount, takeHeld, buyHeld, buyWeekSkin };
 })();
