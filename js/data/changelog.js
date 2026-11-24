@@ -6,6 +6,42 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-11-24', title: ["Skins de la comunidad, gritos de los Pokémon y un repaso a fondo", "Community skins, Pokémon cries and a thorough once-over"], new: [
+    ["Skins de la comunidad en la Tienda Kecleon: 3 cada semana, las mismas para todos (Dragonite cartero, Rayquaza cósmico, Kyogre abisal…), con su autor; algunas también en shiny o en su forma Mega o primigenia.",
+     "Community skins in the Kecleon Shop: 3 each week, the same for everyone (Mail Carrier Dragonite, Cosmic Rayquaza, Abyssal Kyogre…), with their author; some also in shiny or in their Mega or Primal form."],
+    ["Pack Groudon multiescamas, de Frisma32: una compra, 7 estilos para elegir en el Vestidor, que ahora enseña las skins con su dibujo. Y Mewtwo Obsidiana, el premio del Casino Rocket, con su dibujo de verdad.",
+     "Multiscale Groudon pack by Frisma32: one purchase, 7 styles to pick from in the Wardrobe, which now shows skins with their drawing. And Obsidian Mewtwo, the Rocket Casino prize, with its real drawing."],
+    ["Gritos de los Pokémon: tu compañero suelta el suyo al empezar, al evolucionar y con la Mega o el Gigamax; también suenan en el gacha, al abrir un huevo y al salir jefes, legendarios y shinies. Se quitan en Ajustes → Sonido.",
+     "Pokémon cries: your partner cries at the start, when evolving and with Mega or Gigantamax; they also play in the gacha, when an egg hatches and when bosses, legendaries and shinies appear. Turn them off in Settings → Sound."],
+    ["El juego entero en francés, italiano, portugués y chino (simplificado y tradicional): todo lo de las últimas actualizaciones, que sólo estaba en español e inglés, traducido.",
+     "The whole game in French, Italian, Portuguese and Chinese (Simplified and Traditional): everything from the latest updates, which was only in Spanish and English, is now translated."],
+    ["Dinamax también rompe los muros que pisa y deja escombros, y Munchlax: ahora se ve la baya de cada arbusto.",
+     "Dynamax now also smashes the walls it steps on and leaves rubble, and Munchlax: you can now see each bush's berry."]
+  ], chg: [
+    ["Los jefes del mapa ya no caen de un golpe ni se saltan su furia: ningún golpe les quita más del 10 % de la vida.",
+     "Map bosses no longer fall to one hit or skip their rage: no hit takes more than 10% of their health."],
+    ["Las grietas sólo se abren donde se llega andando; los Pokémon que empiezan ya evolucionados pegan por su lado desde el principio; tu poder se adapta si evolucionas después (Kirlia con Mega Gardevoir pasa a Mega Gallade); los rayos tienen la punta redonda.",
+     "Rifts only open where you can walk to; Pokémon that start already evolved hit on their own side from the start; your power adapts if you evolve later (Kirlia with Mega Gardevoir becomes Mega Gallade); beams have rounded tips."],
+    ["Con cuenta, comprar (Tienda Kecleon, mejoras, fotos, marcos y skins) necesita conexión, como el gacha.",
+     "With an account, buying (Kecleon Shop, upgrades, photos, frames and skins) needs a connection, like the gacha."],
+    ["En grupo: lo que gana el grupo mientras tienes el juego escondido o sin conexión no es tuyo y, si estás fuera más de un minuto, tu partida termina con lo que llevabas.",
+     "In a group: what the group earns while your game is hidden or offline isn't yours and, if you're away for more than a minute, your run ends with what you had."],
+    ["Las megas nuevas tienen su habilidad con nombre: Turbotaladro, Piel Dragontina, Megasolar, Salpicante, Impulso Anguila y Aura Protectora. Y en chino, los nombres oficiales de las cremas de Alcremie y de varias formas.",
+     "The new Megas' abilities have their names: Piercing Drill, Dragonize, Mega Sol, Spicy Spray, Eelevate and Aura Guard. And in Chinese, the official names of Alcremie's creams and of several forms."],
+    ["El juego ya no guarda una copia de cada versión en el navegador: ocupa menos y los sprites cambiados se ven al momento. La «j» de la letra del juego tiene punto y rabo, y los Pokémon dormidos, zetas de píxeles.",
+     "The game no longer keeps a copy of every version in the browser: it takes less space and changed sprites show up at once. The game font's «j» has a dot and a tail, and sleeping Pokémon have pixel Zs."]
+  ], fix: [
+    ["Sentencia de Arceus: con Tormenta Arena (o nieve), a los pocos minutos ya no se le podía hacer daño; pegarle ya no cura; en grupo persigue a cada compañero a su velocidad, un compañero con el móvil lento ya puede pegarle y el tiempo «Ante Arceus» va con el reloj de la partida.",
+     "Arceus's Judgment: with Sandstorm (or snow) it could no longer be damaged after a few minutes; hitting it no longer heals; in a group it chases each teammate at their real speed, a teammate with a slow phone can now hit it and the «vs Arceus» time uses the run clock."],
+    ["Cooperativo: el reloj de la grieta es el del anfitrión, la barra de los jefes ya no baja de más, sus embestidas van sin saltos y con la cámara alejada los enemigos del borde ya no se quedan quietos. Si cambia el anfitrión, el legendario de la grieta y los shiny siguen con la vida que les quedaba; lo del suelo ya no se coge dos veces. La lista de salas abiertas vuelve a enseñarlas e «Invitar» sin conexión lo dice.",
+     "Co-op: the rift clock is the host's, boss health bars no longer drop too far, their charges are smooth and with the camera zoomed out enemies at the edge no longer freeze. When the host changes, the rift legendary and shinies keep the health they had; floor items can no longer be picked up twice. The open rooms list shows them again and «Invite» says so when offline."],
+    ["Guardado: los objetos y MT nuevos ya no desaparecen si tenías abierta una pestaña con una versión anterior; entrar con otra cuenta en otra pestaña recarga ésta; y al juntar con la nube ya no se guarda de más. La Tienda, las misiones y el desafío semanal van con la hora real aunque el reloj del aparato esté mal.",
+     "Saving: new items and TMs no longer disappear if you had a tab open with an older version; logging into another account in another tab reloads this one; and merging with the cloud no longer saves more than needed. The Shop, missions and the weekly challenge use the real time even if the device clock is wrong."],
+    ["Móvil y mando: el botón Atrás ya no te saca del juego en el Vestidor ni en el Aviso legal y cierra las ventanas de sí/no; entrar y elegir apodo ya no abren el teclado solos; un mando con deriva ya no mueve solo las listas; el radar gasta menos; y si el navegador reinicia la gráfica, todo se vuelve a pintar.",
+     "Mobile and gamepad: the Back button no longer takes you out of the game in the Wardrobe or the Legal notice and closes yes/no windows; logging in and choosing a nickname no longer open the keyboard by themselves; a drifting gamepad no longer scrolls lists by itself; the radar costs less; and if the browser resets the graphics, everything is redrawn."],
+    ["Una forma o Mega que tarda en cargar se ve con su forma normal en vez de una bola gris; los avisos de ataque y la grieta ya no se quedan en el fondo del menú; los sonidos de la Tienda Kecleon ya no siguen al salir.",
+     "A form or Mega that is slow to load shows its normal form instead of a grey ball; attack warnings and the rift no longer stay in the menu background; the Kecleon Shop sounds no longer carry on after leaving."]
+  ] },
   { d: '2026-11-24', title: ["Las formas del juego oficial", "The official game's forms"], new: [
     ["Formas que cambian tipos y stats: tras la 3.ª grieta (minuto 12), Deoxys, Rotom, Arceus, Silvally, Shaymin, Hoopa, Oricorio, Lycanroc, Ogerpon y otros eligen su forma una vez para el resto de la partida. Cada carta enseña sus tipos, cómo cambia cada stat (±0 lo que no) y su habilidad si es otra; Arceus y Silvally eligen entre los 18 tipos. Si después evoluciona, conserva la forma cuando la nueva especie la tiene (Pumpkaboo Súper → Gourgeist Súper).",
      "Forms that change types and stats: after the 3rd rift (minute 12), Deoxys, Rotom, Arceus, Silvally, Shaymin, Hoopa, Oricorio, Lycanroc, Ogerpon and others choose their form once for the rest of the run. Each card shows its types, how each stat changes (±0 when it doesn't) and its ability if it is different; Arceus and Silvally choose among the 18 types. If it evolves later, it keeps the form when the new species has it (Super Pumpkaboo → Super Gourgeist)."],
