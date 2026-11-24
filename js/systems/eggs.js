@@ -39,7 +39,6 @@ G.Eggs = (() => {
   const FROM = { rift: 'c', mission: 'r', gacha: 'm' };
   const FROM_NAME = { rift: 'De una grieta', mission: 'De una misión semanal', gacha: 'Del gacha' };
   const PER_EGG = 10;                       // tiradas ×10 por huevo del gacha
-  const REGIONAL = /^(Alolan|Galarian|Hisuian|Paldean) /;
   const ID_OK = /^[a-z0-9-]{1,40}$/;
 
   let pend = 0;          // huevo de grieta ganado en esta partida (llega al acabarla)
@@ -53,7 +52,7 @@ G.Eggs = (() => {
 
   /** ¿Puede salir de un huevo? (con dibujo, de la gacha, no legendario; formas: sólo las regionales) */
   function hatchable(p) {
-    return !!(p && G.SPRITE_META[p.dex] && !p.excl && !p.leg && (p.dex <= 1025 || REGIONAL.test(p.name)));
+    return !!(p && G.SPRITE_META[p.dex] && !p.excl && !p.leg && (p.dex <= 1025 || p.form === 'regional'));   // (25-11-2026: la clase del oficial, no el nombre)
   }
   let pools = null;
   function pool(r) {

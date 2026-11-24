@@ -2,7 +2,9 @@
  * Como la Gran Actualización del juego oficial (hecho aquí a partir de su descripción): una
  * pantalla del menú (y un botón en la ficha de cada Pokémon) para elegir, Pokémon a Pokémon:
  *   Versión   normal o shiny (si tienes su shiny)
- *   Aspecto   sus formas que sólo cambian el dibujo (core/dress.js, looks)
+ *   Aspecto   sus formas que sólo cambian el dibujo (core/dress.js, looks), gratis: una rejilla con su
+ *             dibujo y su nombre que se desplaza (25-11-2026: Unown tiene 28, Alcremie 63, filtradas por
+ *             crema); el puesto, marcado y a la vista; en shiny si eliges el shiny y ese aspecto lo tiene
  *   Skin      las compradas de ese Pokémon (core/skins.js); un aspecto y una skin no van juntos
  *   Efectos   brillos, aura de su tipo, halo de luz o aura oscura (entities/trails.js, FX)
  *   Estela    una de las compradas en la Tienda Kecleon (valen para todos tus Pokémon)
@@ -13,6 +15,11 @@ G.WardrobeUI = (() => {
   const $ = id => document.getElementById(id);
   const MAX_LIST = 60;
   let dex = null, from = 'menu', q = '', wired = false;
+  let lgDex = 0, lgSel = null;   // grupo de aspectos que se ve (las Alcremie por crema; null = el del puesto)
+  // Las cremas de Alcremie (core/dress.js, lookGroup), en el orden del juego.
+  const CREAMS = { 'vanilla-cream': 'Crema vainilla', 'ruby-cream': 'Crema rubí', 'matcha-cream': 'Crema matcha',
+    'mint-cream': 'Crema menta', 'lemon-cream': 'Crema limón', 'salted-cream': 'Crema salada', 'ruby-swirl': 'Mezcla rubí',
+    'caramel-swirl': 'Mezcla caramelo', 'rainbow-swirl': 'Mezcla tricolor' };
 
   function wire() {
     if (wired) return;
@@ -49,7 +56,8 @@ G.WardrobeUI = (() => {
   }
   function mine() {
     const s = G.DB.save, used = s.pused || {};
-    return Object.keys(s.owned).map(Number).filter(d => G.DEX_BY[d] && !G.DEX_BY[d].excl)
+    // (25-11-2026: también las formas que ya no salen en el gacha (excl), para quien las tiene.)
+    return Object.keys(s.owned).map(Number).filter(d => G.DEX_BY[d])
       .sort((a, b) => (b === s.partner) - (a === s.partner) || (+used[b] || 0) - (+used[a] || 0) || a - b);
   }
   function cellSprite(cv, d) {
@@ -86,7 +94,7 @@ G.WardrobeUI = (() => {
     const hasSh = G.DB.ownsShiny(dex), sh = G.Dress.shinyOf(s, dex), lk = G.Dress.lookOf(s, dex);
     const sk = G.Skins.worn(s, dex), fx = G.Dress.fxOf(s, dex), tr = G.Dress.trailOf(s, dex);
     const partner = dex === s.partner;
-    $('wd-name').innerHTML = `<b>${p.name}</b>${sh ? ' ' + G.Icons.html('shiny', 16) : ''}${partner ? ` <span class="tag-chip">${G.T('Tu compañero')}</span>` : ''}`;
+    $('wd-name').innerHTML = `<b>${lk && G.DEX_BY[lk] ? G.T(G.DEX_BY[lk].name, 'mon') : p.name}</b>${sh ? ' ' + G.Icons.html('shiny', 16) : ''}${partner ? ` <span class="tag-chip">${G.T('Tu compañero')}</span>` : ''}`;
 
     // Vista previa: da vueltas con su estela y su efecto.
     G.Trails.preview($('wd-stage'), { dex, look: lk, shiny: sh, skin: lk ? '' : sk, trail: tr, fx, zoom: 1.5 });
@@ -96,8 +104,10 @@ G.WardrobeUI = (() => {
     const owned = G.Dress.ownedTrails(s);
     let h = sec('Versión', chip('sh', 0, G.T('Normal'), !sh) + chip('sh', 1, `${G.Icons.html('shiny', 12)} ${G.T('Shiny')}`, sh, hasSh ? '' : 'disabled'),
       hasSh ? '' : G.T('Aún no tienes su versión shiny.'));
-    h += sec('Aspecto', chip('lk', 0, G.T('Normal'), !lk) + looks.map(f => chip('lk', f.dex, G.T(f.name, 'mon'), lk === f.dex)).join(''),
-      looks.length ? G.T('Sólo cambia el dibujo.') : G.T('Sólo tiene un aspecto.'));
+    // Aspecto: rejilla con su dibujo (renderLooks, abajo).
+    const noSh = sh && lk && !G.Sprites.hasShiny(lk);
+    h += `<div class="wd-sec"><h4>${G.T('Aspecto')}</h4>${looks.length ? '<div class="wd-lgroups"></div><div class="wd-looks"></div>' : ''}
+      <p class="sub wd-note">${looks.length ? `<span>${G.T('Sólo cambia el dibujo.')}</span>` + (noSh ? `<span>${G.T('Este aspecto no tiene versión shiny: se ve normal.')}</span>` : '') : G.T('Sólo tiene un aspecto.')}</p></div>`;
     h += sec('Skin', chip('sk', '', G.T('Sin skin'), !sk) + skins.map(id => chip('sk', id, `${G.Icons.html('witch', 12)} ${G.T(G.Skins.SKINS[id].name)}`, sk === id)).join(''),
       skins.length ? (lk ? G.T('Las skins van con su aspecto normal.') : '') : G.T('No tienes skins de este Pokémon.'));
     h += sec('Efecto', chip('fx', '', G.T('Ninguno'), !fx) + G.Trails.FX_ORDER.map(id => chip('fx', id, G.T(G.Trails.FX[id].name), fx === id, `title="${G.T(G.Trails.FX[id].desc)}"`)).join(''),
@@ -111,6 +121,7 @@ G.WardrobeUI = (() => {
     const box = $('wd-opts');
     box.innerHTML = h;
     box.querySelectorAll('.chip[data-k]').forEach(b => { b.onclick = () => choose(b.dataset.k, b.dataset.v); });
+    if (looks.length) renderLooks(box, looks, lk, sh);
     const shop = box.querySelector('[data-go-shop]');
     if (shop) shop.onclick = () => G.ShopUI.open('trails');
     const pick = box.querySelector('[data-pick]');
@@ -122,6 +133,39 @@ G.WardrobeUI = (() => {
       G.UI.toast(G.I18n.f('{x} es ahora tu compañero', p.name));
       renderList(); render();
     };
+  }
+
+  /** La rejilla de aspectos: «Normal» y cada forma con su dibujo y su nombre; el puesto, marcado y a la vista. */
+  function renderLooks(box, looks, lk, sh) {
+    const gbox = box.querySelector('.wd-lgroups'), grid = box.querySelector('.wd-looks');
+    const groups = [...new Set(looks.map(f => G.Dress.lookGroup(f.dex)).filter(Boolean))];
+    if (lgDex !== dex) { lgDex = dex; lgSel = null; }
+    // Sin elegir grupo: el del aspecto puesto (o todos).
+    const cur = lgSel != null ? lgSel : (lk && G.Dress.lookGroup(lk)) || '';
+    gbox.innerHTML = groups.length > 1 ? chip('lg', '', G.T('Todas'), !cur) + groups.map(g => chip('lg', g, G.T(CREAMS[g] || g), cur === g)).join('') : '';
+    gbox.querySelectorAll('.chip').forEach(b => { b.onclick = () => { lgSel = b.dataset.v; G.Audio.sfx('select'); renderLooks(box, looks, lk, sh); }; });
+    if (!gbox.innerHTML) gbox.remove();
+    grid.innerHTML = '';
+    const list = [{ dex: 0, name: 'Normal' }].concat(looks.filter(f => !cur || G.Dress.lookGroup(f.dex) === cur));
+    for (const f of list) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'wd-look' + ((f.dex || 0) === lk ? ' on' : ''); b.dataset.lk = f.dex;
+      const name = f.dex ? G.T(f.name, 'mon') : G.T('Normal');
+      b.title = name;
+      const cv = document.createElement('canvas');
+      cv.width = 56; cv.height = 46;
+      b.appendChild(cv);
+      const sm = document.createElement('small');
+      sm.textContent = name;
+      b.appendChild(sm);
+      b.onclick = () => choose('lk', String(f.dex));
+      grid.appendChild(b);
+      const d = f.dex || dex;
+      G.UI.sprite(cv, d, { scale: 1, shiny: sh && G.Sprites.hasShiny(d), skin: f.dex ? '' : G.Skins.worn(G.DB.save, dex), twinkle: false });
+    }
+    // El puesto, a la vista (sin mover la página).
+    const on = grid.querySelector('.wd-look.on');
+    if (on) grid.scrollTop = Math.max(0, on.offsetTop - grid.clientHeight / 2 + on.offsetHeight / 2);
   }
 
   function choose(k, v) {

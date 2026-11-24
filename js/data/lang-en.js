@@ -2019,6 +2019,7 @@ G.I18n.add({
   // 24-11-2026 (copia local): especies y formas nuevas (tools/add_species.py, tools/add_forms.py)
   "Ferrodada": "Iron Treads",
   "Electrofuria": "Raging Bolt",
+  "Flamariete": "Gouging Fire",
   "Furioseta": "Brute Bonnet",
   "Ferrocuello": "Iron Jugulis",
   "Ferromole": "Iron Boulder",
@@ -2116,5 +2117,16 @@ G.I18n.add({
   "Cada 10 s cambia entre Forma Saciada y Forma Voraz.": "Every 10 s it switches between Full Belly Mode and Hangry Mode.",
   "Al volver de una grieta pasa a Forma Heroica para el resto de la partida (mucho más fuerte).": "After coming back from a rift it turns into Hero Form for the rest of the run (much stronger).",
   "Sus ataques de Agua pescan una presa; al recibir un golpe la escupe contra los de alrededor (frena o paraliza).": "Its Water attacks catch prey; when hit, it spits it at the enemies around it (slows or paralyzes).",
-  "Pasa a Forma Teracristal al empezar; con el poder Teracristal, a Forma Astral.": "Switches to Terastal Form at the start; with the Terastal power, to Stellar Form."
+  "Pasa a Forma Teracristal al empezar; con el poder Teracristal, a Forma Astral.": "Switches to Terastal Form at the start; with the Terastal power, to Stellar Form.",
+  // 25-11-2026 (copia local): colección (aspectos del Vestidor en rejilla, cremas de Alcremie)
+  "Este aspecto no tiene versión shiny: se ve normal.": "This look has no shiny version: it shows as normal.",
+  "Crema vainilla": "Vanilla Cream",
+  "Crema rubí": "Ruby Cream",
+  "Crema matcha": "Matcha Cream",
+  "Crema menta": "Mint Cream",
+  "Crema limón": "Lemon Cream",
+  "Crema salada": "Salted Cream",
+  "Mezcla rubí": "Ruby Swirl",
+  "Mezcla caramelo": "Caramel Swirl",
+  "Mezcla tricolor": "Rainbow Swirl"
 });

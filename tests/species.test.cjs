@@ -71,7 +71,7 @@ test('los aspectos (forma «look» del juego oficial) llevan los tipos de su esp
   const looks = G.DEX.filter(p => p.form === 'look');
   assert.ok(looks.length >= 220);
   for (const p of looks) {
-    const b = G.DEX_BY[G.FORMS[p.dex].d];
+    const b = G.DEX_BY[G.formBase(p.dex)];   // (25-11-2026: también Xerneas Neutral y Dialga Primigenio, nuestros)
     assert.ok(b, p.name + ': su especie');
     assert.deepEqual(plain(p.types), plain(b.types), p.name);
   }

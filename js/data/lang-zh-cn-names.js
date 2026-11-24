@@ -1019,6 +1019,7 @@ G.I18n.add({
   "Ogerpon": "厄诡椪",
   "Archaludon": "铝钢桥龙",
   "Hydrapple": "蜜集大蛇",
+  "Flamariete": "破空焰",
   "Electrofuria": "猛雷鼓",
   "Ferromole": "铁磐岩",
   "Ferrotesta": "铁头壳",

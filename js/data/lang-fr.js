@@ -2063,6 +2063,7 @@ G.I18n.add({
   "Fezandipiti": "Favianos",
   "Archaludon": "Pondralugon",
   "Hydrapple": "Pomdorochi",
+  "Flamariete": "Feu-Perçant",
   "Electrofuria": "Ire-Foudre",
   "Ferromole": "Roc-de-Fer",
   "Ferrotesta": "Chef-de-Fer",
