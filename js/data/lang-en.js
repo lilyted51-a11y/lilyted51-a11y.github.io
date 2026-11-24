@@ -1791,5 +1791,21 @@ G.I18n.add({
   "La ficha de cada Pokémon en la Colección enseña su ataque exclusivo; el Veto y el Quitamovimientos también los tienen en cuenta.": "Each Pokémon's sheet in the Collection shows its signature move; Veto and the Move Remover take them into account too.",
   "Los ataques exclusivos de los legendarios y singulares evolucionan con su «+» como los demás y, evolucionados, pegan como cualquier ataque evolucionado. Los de Pokémon que no son legendarios (Balón Ígneo, Truco Floral, Placaje Eléctrico…) no evolucionan, pero pegan más de base.": "Legendary and Mythical signature moves evolve with their «+» like the rest and, once evolved, hit like any evolved move. Those of non-legendary Pokémon (Pyro Ball, Flower Trick, Volt Tackle…) don't evolve, but hit harder from the start.",
   "Los ataques que persiguen giran con la mitad de fuerza, empiezan a buscar más cerca y sólo van a por lo que tienen delante (ya no dan la vuelta). Los psíquicos (Confusión, Psíquico, Bola Neblina y Onda Mental) persiguen algo menos todavía.": "Homing moves turn with half the strength, start seeking from closer and only go after what is in front of them (no more U-turns). The psychic ones (Confusion, Psychic, Mist Ball and Psystrike) chase a little less still.",
-  "Lo que faltaba de la Gran Actualización": "The rest of the Great Update"
+  "Lo que faltaba de la Gran Actualización": "The rest of the Great Update",
+  // 24-11-2026 (copia local): ranking con foto, marco y build; horas jugadas
+  "Build de la marca": "Record build",
+  "Daño a Arceus: {x}": "Damage to Arceus: {x}",
+  "Tiempo aguantado: {x}": "Time survived: {x}",
+  "{x} derrotados": "{x} defeated",
+  "No se pudo cargar la build ({x}).": "Couldn't load the build ({x}).",
+  "Esta marca es de antes de que se guardara la build: no hay datos.": "This record is from before builds were saved: no data.",
+  "No hay datos de la build de este jugador.": "No build data for this player.",
+  "Nv. {x}": "Lv. {x}",
+  "Horas jugadas": "Hours played",
+  "{x} h": "{x} h",
+  "Lo que faltaba de la Gran Actualización": "The rest of the Great Update",
+  "El ranking enseña la foto y el marco de cada jugador junto a su Pokémon (en grupo, los de todos, cada uno con el suyo).": "The ranking shows each player's photo and frame next to their Pokémon (in a group, everyone's, each with their own).",
+  "Ranking: toca una marca para ver la build de cada jugador: su Pokémon, su nivel, sus ataques con su nivel y el daño que hizo cada uno, y sus objetos. Se cierra con Esc, el botón Atrás del móvil, B en el mando o tocando fuera.": "Ranking: tap a record to see each player's build: their Pokémon, level, moves with their level and the damage each one did, and their items. Close it with Esc, the phone's Back button, B on a gamepad or by tapping outside.",
+  "Tu perfil enseña las horas que llevas jugadas (se cuentan desde hoy, sumando todos tus aparatos), y tus amigos también las ven.": "Your profile shows the hours you have played (counted from today, adding up all your devices), and your friends can see them too.",
+  "En el ranking sales con el Pokémon con el que acabas la partida (el evolucionado, si ha evolucionado), no con el que empezaste. La maestría sigue siendo del que elegiste.": "In the ranking you appear with the Pokémon you end the run with (the evolved one, if it evolved), not the one you started with. Mastery still goes to the one you picked."
 });

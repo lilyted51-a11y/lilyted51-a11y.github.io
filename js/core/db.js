@@ -131,6 +131,7 @@ G.DB = (() => {
       mstat: {},              // dex -> { r, t, k, a, bt, b, rf, e }: sus números con ese Pokémon
       photos: {},             // 'especie/expresión' -> fecha: fotos compradas en la Tienda Kecleon
       frames: {},             // id -> fecha: marcos comprados
+      play: {},               // aparato -> segundos jugados en partida (24-11-2026: horas del perfil; ver playSecs)
       stats: { runs: 0, bestTime: 0, bestLevel: 0, totalKills: 0, pulls: 0, coinsEarned: 0, shinies: 0,
                bossesTotal: 0, riftWins: 0, evolutions: 0, missionsDone: 0, groupRuns: 0, bestGroupTime: 0 }
     };
@@ -232,6 +233,9 @@ G.DB = (() => {
       }
     }
     if (!isObj(s.unlocks)) s.unlocks = {};
+    // Horas jugadas (24-11-2026): segundos de cada aparato.
+    if (!isObj(s.play)) s.play = {};
+    for (const k of Object.keys(s.play)) { if (!PLAY_KEY.test(k)) delete s.play[k]; else s.play[k] = Math.min(PLAY_MAX, num(s.play[k])); }
     // Maestría, fotos y marcos (23-11-2026).
     if (G.Mastery) G.Mastery.sanitize(s);
     if (G.Photo) G.Photo.sanitize(s);
@@ -389,6 +393,26 @@ G.DB = (() => {
     return { w: x.w, at: at.length ? Math.min(...at) : 0, t: Math.max(+x.t || 0, +y.t || 0), tk: Math.max(+x.tk || 0, +y.tk || 0) };
   }
 
+  /*
+   * Horas jugadas (24-11-2026): cada aparato suma SÓLO en su apunte (save.play[aparato], segundos, sólo
+   * crece) y el total es la suma de todos. Al juntar dos versiones se toma el mayor de cada apunte: dos
+   * aparatos jugando a la vez no se pisan (cada uno lo suyo) y nada se cuenta dos veces.
+   */
+  const PLAY_KEY = /^[a-z0-9]{1,16}$/, PLAY_MAX = 1e9;
+  function mergePlay(x, y) {
+    const r = {};
+    for (const o of [x, y]) if (isObj(o)) for (const k in o) if (PLAY_KEY.test(k)) r[k] = Math.max(r[k] || 0, Math.min(PLAY_MAX, num(o[k])));
+    return r;
+  }
+  /** Segundos jugados en total (todos los aparatos). */
+  function playSecs(s = save) { let t = 0; if (s && isObj(s.play)) for (const k in s.play) t += num(s.play[k]); return t; }
+  /** Suma segundos jugados en el apunte de este aparato (no guarda: va con el siguiente guardado). */
+  function addPlay(secs) {
+    if (!save || !(secs > 0)) return;
+    if (!isObj(save.play)) save.play = {};
+    save.play[DEV] = Math.min(PLAY_MAX, num(save.play[DEV]) + Math.floor(secs));
+  }
+
   function merge(a, b) {
     if (!a) return b;
     if (!b) return a;
@@ -494,6 +518,7 @@ G.DB = (() => {
     // Desafío semanal: el de la semana más reciente; la misma semana, el intento gastado en cualquiera
     // de los dos aparatos (nunca vuelve), lo más aguantado y el ticket ya cobrado.
     r.chal = mergeChal(a.chal, b.chal);
+    r.play = mergePlay(a.play, b.play);
     for (const k in older.stats || {}) r.stats[k] = Math.max(r.stats[k] || 0, older.stats[k] || 0);
     // Maestría: el mayor de cada número de cada Pokémon (systems/mastery.js).
     r.mast = r.mast || {};
@@ -1206,7 +1231,7 @@ G.DB = (() => {
 
   return {
     ready, register, login, loginWithGoogle, playAsGuest, logout, commit, deleteAccount, flush: pushNow, saveNow, pull: pullCloud, touchPick,
-    owns, grant, ownsShiny, grantShiny, merge, setName, upgradesOf, isFav, setFav,
+    owns, grant, ownsShiny, grantShiny, merge, setName, upgradesOf, isFav, setFav, addPlay, playSecs, mergePlay,
     onSync(fn) { listeners.add(fn); },
     /** Se ha traído de la nube lo guardado en otro aparato (al volver al juego). */
     onPull(fn) { pulled.add(fn); },

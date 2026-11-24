@@ -36,6 +36,12 @@
  *                   cada jugador escribe una marca (firestore.rules: en las s_c..., sólo crear).
  *                   (El periodo 'c' no está en PERIODS: no sale en las pestañas de periodo.)
  *
+ * Foto, marco y build (24-11-2026, como la Gran Actualización del juego oficial):
+ *   cada marca lleva ph (la foto y el marco de cada jugador, también en las filas del resumen)
+ *   y b (la build de cada uno en la partida del tiempo) / bd (la de la partida del daño a Arceus).
+ *   La build sólo está en la marca (lb/{tabla}/e/{id}): se lee al tocar la fila (1 lectura).
+ *   Si el servidor aún tiene las reglas de antes (sin ph / b / bd), la marca se sube sin ellos.
+ *
  * Ahorros:
  *   - Lo leído se guarda 5 min en el navegador (cambiar de pestaña y volver: 0).
  *     (2 h hasta el 07-11-2026: las marcas, también las de tus amigos, tardaban
@@ -122,6 +128,88 @@ G.Ranking = (() => {
   }
   const okSeal = x => !!x && Number.isSafeInteger(x.s) && typeof x.g === 'string' && /^[0-9a-f]{64}$/.test(x.g);
 
+  // ---------------- foto, marco y build de cada jugador (24-11-2026) ----------------
+  /*
+   * En texto corto: Firestore no admite listas dentro de listas, y así las reglas sólo miran
+   * el tipo y el tamaño (firestore.rules, validEntry).
+   *   ph   "dex.expresión.marco" de cada jugador, separados por espacios ("-": sin foto)
+   *   b    la build de cada jugador, separadas por "|":
+   *          dex.shiny.nivel.skin;ataque:nivel:daño[:e],...;objeto,...
+   *        (el Pokémon con el que ACABÓ la partida: evolucionado, shiny y skin; e = evolucionado)
+   *   daño redondeado a 3 cifras: 1234567 -> "123e4" (Number() lo lee tal cual)
+   * Lo que llega de otros jugadores se lee con dec* y sólo sale lo que tiene forma de ser del juego.
+   */
+  const BID = /^[a-z0-9_-]{1,40}$/, B_MAX = 4000, PH_MAX = 400;
+  /** Un número en corto (3 cifras significativas). */
+  function short3(n) {
+    n = Math.max(0, Math.round(+n || 0));
+    if (!isFinite(n)) return '0';
+    if (n < 1000) return String(n);
+    const e = Math.floor(Math.log10(n)) - 2;
+    return Math.round(n / Math.pow(10, e)) + 'e' + e;
+  }
+  /** La build de un jugador (el resumen de la partida, Game.mySum / coop.js cleanSum) en texto. */
+  function encBuild(s) {
+    if (!s || !(s.dex > 0)) return '';
+    const lv = Math.max(1, Math.min(9999, s.lv | 0)), sk = typeof s.sk === 'string' && BID.test(s.sk) ? s.sk : '';
+    const mv = (Array.isArray(s.mv) ? s.mv : []).slice(0, 8).filter(m => Array.isArray(m) && BID.test(m[0]))
+      .map(m => m[0] + ':' + Math.max(1, Math.min(99, m[1] | 0)) + ':' + short3(m[2]) + (m[4] ? ':e' : ''));
+    const its = (Array.isArray(s.its) && s.its.length ? s.its : s.it ? [s.it] : []).slice(0, 4).filter(x => typeof x === 'string' && BID.test(x));
+    return (s.dex | 0) + '.' + (s.sh ? 1 : 0) + '.' + lv + '.' + sk + ';' + mv.join(',') + ';' + its.join(',');
+  }
+  /** → { dex, sh, lv, sk, mv: [{ id, lvl, dmg, evo }], its } o null. */
+  function decBuild(str) {
+    if (typeof str !== 'string' || !str || str.length > B_MAX) return null;
+    const [head, mvs = '', its = ''] = str.split(';');
+    const h = head.split('.'), dex = +h[0];
+    if (!Number.isInteger(dex) || dex < 1 || dex > 99999) return null;
+    const mv = mvs.split(',').filter(Boolean).slice(0, 8).map(x => {
+      const p = x.split(':');
+      const dmg = Number(p[2]);
+      return BID.test(p[0]) ? { id: p[0], lvl: Math.max(1, Math.min(99, parseInt(p[1], 10) || 1)), dmg: isFinite(dmg) && dmg > 0 ? Math.min(1e15, Math.round(dmg)) : 0, evo: p[3] === 'e' } : null;
+    }).filter(Boolean);
+    return { dex, sh: h[1] === '1', lv: Math.max(1, Math.min(9999, parseInt(h[2], 10) || 1)), sk: BID.test(h[3] || '') ? h[3] : '',
+             mv, its: its.split(',').filter(x => BID.test(x)).slice(0, 4) };
+  }
+  /** Las de un equipo (en el orden de uids). Si no cabe, sin build. */
+  function encTeam(sums) { const s = sums.map(encBuild).join('|'); return s.length <= B_MAX && /[^|]/.test(s) ? s : ''; }
+  function decTeam(str) { return typeof str === 'string' && str ? str.split('|').slice(0, 10).map(decBuild) : []; }
+  /** Foto y marco ({ d, e, f }, core/photo.js) en texto, y al revés (sólo lo que el juego sabe pintar). */
+  function encPh(sp) {
+    const P = G.Photo;
+    if (!sp || !P) return '-';
+    const i = P.EX.indexOf(sp.e), f = typeof sp.f === 'string' && /^[a-z0-9:]{1,16}$/.test(sp.f) ? sp.f : 'basic';
+    return (sp.d | 0) + '.' + Math.max(0, i) + '.' + f;
+  }
+  function decPh(str) {
+    const P = G.Photo;
+    if (!P || typeof str !== 'string' || !/^\d{1,5}\.\d{1,2}\.[a-z0-9:]{1,16}$/.test(str)) return null;
+    const [d, e, f] = str.split('.');
+    return P.fromPub({ photo: [+d, +e], frame: f });
+  }
+  const phList = str => (typeof str === 'string' ? str.split(' ').slice(0, 10).map(decPh) : []);
+  /** Tus fotos de un equipo ya montadas en una línea (ph). */
+  const phJoin = list => { const s = list.map(x => (typeof x === 'string' && x ? x : '-')).join(' '); return s.length <= PH_MAX ? s : ''; };
+
+  // Reglas de antes en el servidor (sin ph / b / bd): se recuerda unas horas y se sube sin ellos.
+  const EXTRA = ['ph', 'b', 'bd'], LITE = 'ps.rk.lite', LITE_FOR = 6 * 3600e3;
+  const lite = () => { try { return Date.now() - (+localStorage.getItem(LITE) || 0) < LITE_FOR; } catch (e) { return false; } };
+  const setLite = () => { try { localStorage.setItem(LITE, String(Date.now())); } catch (e) { /* nada */ } };
+  const hasExtra = e => EXTRA.some(k => k in e);
+  const strip = e => { const o = Object.assign({}, e); for (const k of EXTRA) delete o[k]; return o; };
+  const put = (e, k, v) => { if (typeof v === 'string' && v) e[k] = v; else delete e[k]; };
+  /**
+   * La marca que se escribe: lo mejor de cada cosa. Si el tiempo no mejora, se quedan el tiempo,
+   * nivel, derrotados y build de antes; si el daño no mejora, la build del daño de antes.
+   */
+  function keepOld(e, o, bt, bd) {
+    if (!o) return e;
+    const full = 'ph' in e;
+    if (!bt) { e.t = o.t; e.lv = o.lv; e.kills = o.kills; if (full) put(e, 'b', o.b); }
+    if (!bd && full) put(e, 'bd', o.bd);
+    return e;
+  }
+
   // ---------------- periodos ----------------
 
   function madridDate(date) {
@@ -186,6 +274,7 @@ G.Ranking = (() => {
     mem.set(k, c);
     try { localStorage.setItem('ps.rk.c.' + k, JSON.stringify(c)); } catch (e) { /* lleno */ }
   }
+  function forget(k) { mem.delete(k); try { localStorage.removeItem('ps.rk.c.' + k); } catch (e) { /* nada */ } }
   /** Borra lo caducado (la caché del navegador no crece sin límite). */
   function cachePrune() {
     try {
@@ -246,13 +335,16 @@ G.Ranking = (() => {
     // (Hasta 10 por equipo: nuestras salas son de 4 a 10; el juego oficial, de 4.)
     return { id: U.str(String(id), 400), t: U.int(v.t, 86400), d: U.int(v.d != null ? v.d : v.dmg, 1e15), uids: U.list(v.uids, 10).map(x => U.str(x, 128)),
              names: U.list(v.names, 10).map(x => U.str(x, 24)), dex: U.list(v.dex, 10).map(x => U.int(x, 20000)),
-             shiny: U.list(v.shiny, 10).map(x => x === true), lv: U.int(v.lv, 999) || 1, kills: U.int(v.kills, 1e9) };
+             shiny: U.list(v.shiny, 10).map(x => x === true), lv: U.int(v.lv, 999) || 1, kills: U.int(v.kills, 1e9),
+             // Foto y marco de cada uno (texto; se lee con phs) y la tabla de donde sale la fila (su build está allí).
+             ph: U.str(v.ph, PH_MAX), src: U.str(v._b, 80) };
   };
   const sorted = top => Object.entries(top || {}).map(([id, v]) => rowOf(id, v)).sort((a, b) => b.t - a.t);
   const sortedD = dtop => Object.entries(dtop || {}).map(([id, v]) => rowOf(id, v)).sort((a, b) => b.d - a.d);
   // Filas del resumen: copia exacta de la marca (lo comprueba firestore.rules).
   // (Sin "shiny" si no hay ninguno: el resumen pesa menos.)
-  const shinyOf = (e, row) => { if (e.shiny.some(Boolean)) row.shiny = e.shiny; return row; };
+  // (Con ph si la marca lo lleva: foto y marco de cada jugador, 24-11-2026.)
+  const shinyOf = (e, row) => { if (e.shiny.some(Boolean)) row.shiny = e.shiny; if (e.ph) row.ph = e.ph; return row; };
   const rowT = e => shinyOf(e, { t: e.t, uids: e.uids, names: e.names, dex: e.dex, lv: e.lv, kills: e.kills });
   const rowD = e => shinyOf(e, { d: e.dmg, uids: e.uids, names: e.names, dex: e.dex });
   /** El resumen tal cual se vuelve a escribir (sin perder la otra mitad). */
@@ -304,7 +396,7 @@ G.Ranking = (() => {
       const i = k.indexOf(':'), b = k.slice(0, i), id = k.slice(i + 1);
       d[k] = { up: Date.now() }; changed = true;
       // (Si ya hay una mejor en la nube, las reglas la rechazan: no pasa nada.)
-      col(b).doc(id).set(Object.assign({}, v.e, { at: now() })).catch(() => {});
+      col(b).doc(id).set(Object.assign({}, lite() ? strip(v.e) : v.e, { at: now() })).catch(() => {});
       mem.delete('r:' + b); try { localStorage.removeItem('ps.rk.c.r:' + b); } catch (e) { /* nada */ }
     }
     if (changed) saveDeferred(d);
@@ -326,7 +418,7 @@ G.Ranking = (() => {
       // Sin red, Firestore deja la escritura esperando sin fallar: tope de STORE_MAX
       // (cuenta como fallo de conexión y la marca se reenvía, ver send).
       let late = 0;
-      const one = async () => {
+      const one = async entry => {
         const topOnly = TOP_ONLY.has(period);
         // Daño a Arceus: sólo en las tablas de periodo (no en las de cada Pokémon).
         const dmg = period === 'p' ? 0 : entry.dmg || 0;
@@ -355,7 +447,7 @@ G.Ranking = (() => {
           // derrotados de la marca que tenías (así lo piden las reglas).
           const old = await col(b).doc(id).get(), o = old.exists ? old.data() : null;
           if (o && (o.dmg || 0) >= dmg) { known[dkey] = o.dmg; return; }
-          await col(b).doc(id).set(stamp(Object.assign({}, entry, o && o.t > entry.t ? { t: o.t, lv: o.lv, kills: o.kills } : {})));
+          await col(b).doc(id).set(stamp(keepOld(Object.assign({}, entry), o, !(o && o.t > entry.t), true)));
           wrote = true;
           // La marca de tiempo que espera para subir (DEFER) lleva ya este daño: si no, las reglas la rechazarían.
           const dd = deferred(), dk = b + ':' + id;
@@ -364,7 +456,10 @@ G.Ranking = (() => {
           // Histórico fuera de los dos top 50: tu puesto exacto por tiempo, como
           // mucho cada DEFER (ver arriba).
           const e = Object.assign({}, entry, { dmg: Math.max(dmg, known[dkey] || 0) });
-          if (dueOrDefer(b, id, e)) { await col(b).doc(id).set(stamp(e)); wrote = true; } else waiting = true;
+          // (Si el daño de antes era mejor, su build de daño se queda: sin bd y juntando con lo que hay.)
+          const keepBd = (known[dkey] || 0) > dmg;
+          if (keepBd) delete e.bd;
+          if (dueOrDefer(b, id, e)) { await (keepBd ? col(b).doc(id).set(stamp(e), { merge: true }) : col(b).doc(id).set(stamp(e))); wrote = true; } else waiting = true;
         } else {
           let newSum = null;
           await fb.fs.runTransaction(async tx => {
@@ -378,7 +473,7 @@ G.Ranking = (() => {
             // Ya tenías algo mejor (otro ordenador): nada que escribir.
             if (!bt && !bd) return;
             // La marca: lo mejor de cada cosa (nivel y derrotados, los del mejor tiempo).
-            const e = Object.assign({}, entry, { dmg: Math.max(dmg, od) }, bt ? {} : { t: ot, lv: o.lv, kills: o.kills });
+            const e = keepOld(Object.assign({}, entry, { dmg: Math.max(dmg, od) }), o, bt, bd);
             let ev = '', dev = '', inT = false, inD = false;
             if (bt) {
               if (id in top || Object.keys(top).length < TOP) inT = true;
@@ -406,11 +501,20 @@ G.Ranking = (() => {
         if (b.startsWith('g_')) known[b + ':*'] = Math.max(known[b + ':*'] || 0, entry.t);
         // (Si la marca espera para subir, tu puesto en la nube aún no ha cambiado:
         // myRank enseña la que espera sin volver a leer nada.)
-        if (!waiting) { mem.delete('r:' + b); try { localStorage.removeItem('ps.rk.c.r:' + b); } catch (e) { /* nada */ } }
+        if (!waiting) { forget('r:' + b); forget('B:' + b + ':' + id); }
         if (period && period !== 'p' && !better.includes(period)) better.push(period);
       };
+      // Con foto y build; si el servidor tiene las reglas de antes y la rechaza, otra vez sin ellos.
+      const both = async () => {
+        const full = lite() ? strip(entry) : entry;
+        try { await one(full); } catch (e) {
+          if (!e || e.code !== 'permission-denied' || !hasExtra(full)) throw e;
+          await one(strip(entry));
+          setLite();              // (sólo si sin ellos sí entra: era eso)
+        }
+      };
       try {
-        await Promise.race([one(), new Promise((_, rej) => { late = setTimeout(() => rej({ code: 'deadline-exceeded' }), STORE_MAX); })]);
+        await Promise.race([both(), new Promise((_, rej) => { late = setTimeout(() => rej({ code: 'deadline-exceeded' }), STORE_MAX); })]);
       } catch (e) {
         console.warn('[Ranking] no se pudo guardar en', b, e.code || e.message);
         failed.push({ b, period, code: String(e.code || '') });
@@ -502,7 +606,7 @@ G.Ranking = (() => {
     if (!fb || !G.Social.me || r.t < MIN_T) return [];
     flushDeferred();
     const ids = boardIds();
-    const entry = Object.assign({ uids: [fb.uid], names: [G.Social.me.name], dex: [r.dex], shiny: [!!r.shiny] }, fit(r));
+    const entry = extras(Object.assign({ uids: [fb.uid], names: [G.Social.me.name], dex: [r.dex], shiny: [!!r.shiny] }, fit(r)), [r]);
     const boards = PERIODS.map(([p]) => ['s_' + ids[p], p]);
     if (r.t >= MIN_T_MON) boards.push(['s_' + ALL + '_p' + r.dex, 'p']);
     return send(fb.uid, entry, boards);
@@ -515,8 +619,20 @@ G.Ranking = (() => {
   async function submitChallenge(r) {
     const fb = fbx();
     if (!fb || !G.Social.me || !(r.t >= 1) || !/^w\d{4}-\d{2}$/.test(r.w || '')) return [];
-    const entry = Object.assign({ uids: [fb.uid], names: [G.Social.me.name], dex: [r.dex], shiny: [false] }, fit(Object.assign({}, r, { dmg: 0 })));
+    const entry = extras(Object.assign({ uids: [fb.uid], names: [G.Social.me.name], dex: [r.dex], shiny: [false] }, fit(Object.assign({}, r, { dmg: 0 }))), [r]);
     return send(fb.uid, entry, [['s_c' + r.w, 'c']]);
+  }
+
+  /**
+   * Foto y build de cada jugador (24-11-2026) en la marca. ms: los jugadores en el orden de uids,
+   * cada uno con sum (su resumen de la partida: Game.mySum, o el de un compañero ya limpio) y ph
+   * (su foto en texto; en solitario, la tuya).
+   */
+  function extras(entry, ms) {
+    entry.ph = phJoin(ms.map(m => m.ph || (m.sum && m.sum.ph) || ''));
+    entry.b = encTeam(ms.map(m => m.sum || null));
+    if (entry.dmg > 0 && entry.b) entry.bd = entry.b;
+    return entry;
   }
 
   /** La sube el anfitrión, con todo el equipo. */
@@ -527,8 +643,10 @@ G.Ranking = (() => {
     const ms = r.members.slice().sort((a, b) => (a.uid < b.uid ? -1 : 1));
     const id = ms.map(m => m.uid).join('_');
     // Copia local: sin sellos (no hay servidor del cooperativo).
-    const entry = Object.assign({ uids: ms.map(m => m.uid), names: ms.map(m => m.name), dex: ms.map(m => m.dex),
-                    shiny: ms.map(m => !!m.shiny) }, fit(r));
+    // (El Pokémon con el que acaba cada uno, de su resumen: el evolucionado, si ha evolucionado.)
+    const fin = m => (m.sum && G.DEX_BY && G.DEX_BY[m.sum.dex] ? m.sum : null);
+    const entry = extras(Object.assign({ uids: ms.map(m => m.uid), names: ms.map(m => m.name), dex: ms.map(m => (fin(m) ? fin(m).dex : m.dex)),
+                    shiny: ms.map(m => (fin(m) ? !!fin(m).sh : !!m.shiny)) }, fit(r)), ms);
     const ids = boardIds();
     const boards = PERIODS.map(([p]) => ['g_' + ids[p], p]);
     if (r.t >= MIN_T_MON) for (const d of new Set(entry.dex)) boards.push(['g_' + ALL + '_p' + d, 'p']);
@@ -567,10 +685,11 @@ G.Ranking = (() => {
     if (dex) return sum;
     const top = Object.assign({}, sum.top), dtop = Object.assign({}, sum.dtop);
     for (const p of WITHIN[period] || []) {
-      const c = cacheGet('S:' + board(mode, p));
+      const pb = board(mode, p), c = cacheGet('S:' + pb);
       if (!c) continue;
-      for (const [id, v] of Object.entries(c.top || {})) if (!top[id] || v.t > top[id].t) top[id] = v;
-      for (const [id, v] of Object.entries(c.dtop || {})) if (!dtop[id] || v.d > dtop[id].d) dtop[id] = v;
+      // (_b: la tabla de donde sale; su build está en la marca de esa tabla.)
+      for (const [id, v] of Object.entries(c.top || {})) if (!top[id] || v.t > top[id].t) top[id] = Object.assign({}, v, { _b: pb });
+      for (const [id, v] of Object.entries(c.dtop || {})) if (!dtop[id] || v.d > dtop[id].d) dtop[id] = Object.assign({}, v, { _b: pb });
     }
     return { top, dtop };
   }
@@ -644,6 +763,27 @@ G.Ranking = (() => {
     for (const r of [...inTop, ...extra]) all.set(r.id, r);
     return [...all.values()].sort((a, c) => c.t - a.t).slice(0, TOP);
   }
+
+  /**
+   * La build de una marca (24-11-2026): la de cada jugador, en el orden de row.uids (null el que no
+   * tenga). Sale de la marca de la tabla (1 lectura; se guarda 5 min). dmg: la de la partida del
+   * daño a Arceus. → [] si la marca es de antes y no la lleva.
+   */
+  async function buildOf(b, row, dmg) {
+    const fb = fbx();
+    if (!fb || !row || !row.id) return [];
+    const src = row.src || b, k = 'B:' + src + ':' + row.id;
+    let v = cacheGet(k);
+    if (v === undefined) {
+      const d = await col(src).doc(row.id).get();
+      const x = d.exists ? d.data() : {};
+      v = { b: G.U.str(x.b, B_MAX), bd: G.U.str(x.bd, B_MAX) };
+      cacheSet(k, v);
+    }
+    return decTeam(dmg ? v.bd : v.b);
+  }
+  /** Fotos y marcos de una fila (en el orden de row.uids; null el que no tenga). */
+  const phs = row => phList(row && row.ph);
 
   /** Tu puesto en la tabla (aunque no salgas en el top). → { pos, t, row } | null */
   async function myRank(mode, period, dex) {
@@ -860,5 +1000,6 @@ G.Ranking = (() => {
   }
 
   return { PERIODS, periodIds, board, runStarted, newSeal, mySeal, submitSolo, submitChallenge, submitGroup, retry, top, topDmg, myRank, removeMine,
+           buildOf, phs, encBuild, decBuild, encTeam, decTeam, encPh, decPh, short3,
            report, reported, isAdmin, reports, entryInfo, removeEntry, purgeAbove, removeEverywhere, setMarked, dismiss, markedAccounts };
 })();

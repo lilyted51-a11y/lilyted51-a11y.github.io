@@ -178,6 +178,32 @@ for (const t of ['¡Tu marca ya está en el ranking del desafío semanal!', 'El 
                  'Ya has usado tu intento de esta semana. ¡El lunes hay otro!']) { await A.ev(`G.UI.toast(${JSON.stringify(t)}, 900); 1`); await sleep(350); await grab('toast (desafío)'); }
 await misses('desafío: avisos');
 
+// ---------- Ranking con foto y marco, y la build de una marca (24-11-2026): solitario, grupo, daño y una marca de antes ----------
+// (Marcas de mentira, como las del desafío: el invitado no tiene nube.)
+await A.ev(`(() => { const R = G.Ranking; window.__rk2 = [G.SocialUI.needOnline, G.Social.start, R.top, R.topDmg, R.myRank, R.buildOf];
+  G.SocialUI.needOnline = () => true; G.Social.start = async () => {};
+  const S = (dex, sh) => ({ dex, sh, lv: 61, t: 1500, its: ['leftovers', 'band'], sk: '',
+    mv: [['thunder-shock', 5, 2345678, 10, 1], ['quick-attack', 4, 456789, 30, 0], ['swords-dance', 3, 0, 0, 0]] });
+  const ph = (d, e, f) => R.encPh({ d, e, f });
+  const solo = { id: 'a', t: 1712, d: 3456789, uids: ['a'], names: ['Sekiam'], dex: [26], shiny: [true], lv: 61, kills: 4321, ph: ph(25, 'Happy', 'ember') };
+  const old = { id: 'o', t: 1200, d: 0, uids: ['o'], names: ['Folagor'], dex: [6], shiny: [false], lv: 40, kills: 2000, ph: '' };
+  const grp = { id: 'a_b', t: 1400, d: 2000000, uids: ['a', 'b'], names: ['Sekiam', 'PokeAlex'], dex: [26, 6], shiny: [true, false], lv: 50, kills: 3000,
+    ph: ph(25, 'Happy', 'ember') + ' ' + ph(6, 'Normal', 'm:6') };
+  const builds = { a: R.encTeam([S(26, true)]), a_b: R.encTeam([S(26, true), null]) };
+  R.top = async m => (m === 'g' ? [grp] : [solo, old]);
+  R.topDmg = async m => ({ rows: m === 'g' ? [grp] : [solo], me: null });
+  R.myRank = async () => null;
+  R.buildOf = async (b, r) => R.decTeam(builds[r.id] || '');
+  G.UI.hideAll(); G.MenuUI.open(); G.RankingUI.open('s'); return 1; })()`); await sleep(1500);
+await grab('ranking con fotos');
+await click('#rk-list .rk-row'); await sleep(800); await grab('build: solitario'); await click('#rkb-close');
+await A.ev(`document.querySelectorAll('#rk-list .rk-row')[1].click(); 1`); await sleep(1000); await grab('build: marca de antes'); await click('#rkb-close');
+await click('#rk-mode button:nth-child(2)'); await sleep(800); await grab('ranking en grupo con fotos');
+await click('#rk-dlist .rk-row'); await sleep(800); await grab('build: grupo (daño, un jugador sin datos)'); await click('#rkb-close');
+await A.ev(`(() => { G.UI.toast(G.I18n.f('No se pudo cargar la build ({x}).', '503'), 900); return 1; })()`); await sleep(350); await grab('toast (build)');
+await misses('ranking: build');
+await A.ev(`(() => { const R = G.Ranking; [G.SocialUI.needOnline, G.Social.start, R.top, R.topDmg, R.myRank, R.buildOf] = window.__rk2; G.UI.hideAll(); G.MenuUI.open(); return 1; })()`); await sleep(500);
+
 // Aviso de una actualización (login.js, NOTES): sólo sale con cuenta en la nube; aquí se enseña el de guardado automático tal cual.
 await A.ev(`(() => { G.UI.hideAll(); G.MenuUI.open();
   document.getElementById('savenote-title').textContent = 'Guardado automático';

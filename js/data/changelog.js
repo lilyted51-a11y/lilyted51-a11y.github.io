@@ -17,12 +17,20 @@ G.CHANGELOG = [
     ["Ataques exclusivos: 33 ataques que sólo puede aprender su Pokémon (con sus formas y evoluciones), como Aerochorro de Lugia, Fuego Sagrado de Ho-Oh, Ascenso Draco de Rayquaza, Onda Mental de Mewtwo, Distorsión de Dialga o Placaje Eléctrico de la familia de Pikachu. No salen en las cartas de siempre: desde el nivel 10 aparecen en una carta especial, morada y dorada; con los cuatro huecos llenos, eliges cuál cambias por él.",
      "Signature moves: 33 moves only their Pokémon can learn (with its forms and evolutions), like Lugia's Aeroblast, Ho-Oh's Sacred Fire, Rayquaza's Dragon Ascent, Mewtwo's Psystrike, Dialga's Roar of Time or the Pikachu family's Volt Tackle. They don't show up on the usual cards: from level 10 they appear on a special purple-and-gold card; with all four slots full, you choose which move to swap for it."],
     ["La ficha de cada Pokémon en la Colección enseña su ataque exclusivo; el Veto y el Quitamovimientos también los tienen en cuenta.",
-     "Each Pokémon's sheet in the Collection shows its signature move; Veto and the Move Remover take them into account too."]
+     "Each Pokémon's sheet in the Collection shows its signature move; Veto and the Move Remover take them into account too."],
+    ["El ranking enseña la foto y el marco de cada jugador junto a su Pokémon (en grupo, los de todos, cada uno con el suyo).",
+     "The ranking shows each player's photo and frame next to their Pokémon (in a group, everyone's, each with their own)."],
+    ["Ranking: toca una marca para ver la build de cada jugador: su Pokémon, su nivel, sus ataques con su nivel y el daño que hizo cada uno, y sus objetos. Se cierra con Esc, el botón Atrás del móvil, B en el mando o tocando fuera.",
+     "Ranking: tap a record to see each player's build: their Pokémon, level, moves with their level and the damage each one did, and their items. Close it with Esc, the phone's Back button, B on a gamepad or by tapping outside."],
+    ["Tu perfil enseña las horas que llevas jugadas (se cuentan desde hoy, sumando todos tus aparatos), y tus amigos también las ven.",
+     "Your profile shows the hours you have played (counted from today, adding up all your devices), and your friends can see them too."]
   ], chg: [
     ["Los ataques exclusivos de los legendarios y singulares evolucionan con su «+» como los demás y, evolucionados, pegan como cualquier ataque evolucionado. Los de Pokémon que no son legendarios (Balón Ígneo, Truco Floral, Placaje Eléctrico…) no evolucionan, pero pegan más de base.",
      "Legendary and Mythical signature moves evolve with their «+» like the rest and, once evolved, hit like any evolved move. Those of non-legendary Pokémon (Pyro Ball, Flower Trick, Volt Tackle…) don't evolve, but hit harder from the start."],
     ["Los ataques que persiguen giran con la mitad de fuerza, empiezan a buscar más cerca y sólo van a por lo que tienen delante (ya no dan la vuelta). Los psíquicos (Confusión, Psíquico, Bola Neblina y Onda Mental) persiguen algo menos todavía.",
-     "Homing moves turn with half the strength, start seeking from closer and only go after what is in front of them (no more U-turns). The psychic ones (Confusion, Psychic, Mist Ball and Psystrike) chase a little less still."]
+     "Homing moves turn with half the strength, start seeking from closer and only go after what is in front of them (no more U-turns). The psychic ones (Confusion, Psychic, Mist Ball and Psystrike) chase a little less still."],
+    ["En el ranking sales con el Pokémon con el que acabas la partida (el evolucionado, si ha evolucionado), no con el que empezaste. La maestría sigue siendo del que elegiste.",
+     "In the ranking you appear with the Pokémon you end the run with (the evolved one, if it evolved), not the one you started with. Mastery still goes to the one you picked."]
   ]},
   { d: '2026-11-23', title: ["La Gran Actualización: Eternatus y sus poderes, dificultades, Vestidor y estelas, huevos, Maestría, desafío semanal, Casino Rocket, grietas y Sentencia nuevas", "The Great Update: Eternatus and its powers, difficulties, Dressing Room and trails, eggs, Mastery, weekly challenge, Rocket Casino, new rifts and Judgment"], new: [
     ["Vestidor, en el menú (y con un botón en la ficha de cada Pokémon): para cada Pokémon eliges su versión normal o shiny, su aspecto (las formas que sólo cambian el dibujo), su skin, un efecto (brillos, aura de su tipo, halo de luz o aura oscura) y su estela, y lo ves dando vueltas antes de jugar.",

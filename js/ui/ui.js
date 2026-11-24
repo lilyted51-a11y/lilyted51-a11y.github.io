@@ -10,7 +10,8 @@ G.UI = (() => {
   const SCREENS = ['scr-login', 'scr-test', 'scr-result', 'scr-starters', 'scr-menu',
                    'scr-dex', 'scr-upgrades', 'scr-shop', 'scr-bag', 'scr-gacha', 'scr-levelup', 'scr-pause', 'scr-over',
                    'scr-nick', 'scr-friends', 'scr-lobby', 'scr-rank', 'scr-item', 'scr-goals', 'scr-bond', 'scr-mod',
-                   'scr-chal', 'scr-wardrobe', 'scr-mastery'];
+                   'scr-chal', 'scr-wardrobe', 'scr-mastery',
+                   'scr-rkb'];          // (la build de una marca del ranking: al ir a otra pantalla se cierra)
 
   function show(id, keepMenu = false) {
     for (const s of SCREENS) if (s !== id && !(keepMenu && s === 'scr-menu')) $(s).classList.add('hidden');
