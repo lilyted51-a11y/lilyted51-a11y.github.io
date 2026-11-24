@@ -33,6 +33,10 @@
  */
 (() => {
   'use strict';
+  // Copia local (25-11-2026): con el juego en francés, italiano, portugués o chino simplificado (elegido en Ajustes o
+  // por el idioma del navegador: core/locales.js) el parche no entra: esos idiomas ya lo tienen todo (lang-local-*.js)
+  // y el parche cambiaba a chino tradicional lo que se escribe igual que en español o inglés («Skins», «Pikachu»).
+  if (['fr', 'it', 'pt-BR', 'zh-Hans'].includes(document.documentElement.lang)) return;
   const guideHost = ['pokesurvivor.org', 'www.pokesurvivor.org'].includes(location.hostname);
   const gameHost = !guideHost; // 內建版：任何網域／本機都啟用
   if (!gameHost &&

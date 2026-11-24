@@ -77,8 +77,8 @@
   ]
 }
 </script>
-<link rel="stylesheet" href="css/style.css?v=d79946db7a">
-<script src="js/core/locales.js?v=47948c962e"></script>
+<link rel="stylesheet" href="css/style.css?v=489083bb72">
+<script src="js/core/locales.js?v=fc2b698731"></script>
 <script src="js/noframe.js"></script>
 </head>
 <body>
@@ -122,8 +122,8 @@
     <p class="login-tag">Sobrevive a las hordas con tu compañero Pokémon · gratis, en PC y móvil</p>
     <p class="login-official">Web oficial: pokesurvivor.com · si alguien te pide pagar, no somos nosotros</p>
     <div class="tabs">
-      <div class="tab on" data-tab="login">Entrar</div>
-      <div class="tab" data-tab="register">Crear cuenta</div>
+      <div class="tab on" data-tab="login" tabindex="0" role="tab">Entrar</div>
+      <div class="tab" data-tab="register" tabindex="0" role="tab">Crear cuenta</div>
     </div>
     <form id="login-form" autocomplete="off">
       <label for="f-user">Nombre</label>
@@ -502,8 +502,8 @@
   <div class="box wide">
     <div class="row between"><h2>Moderación</h2><span class="row" style="gap:6px"><button class="btn small danger" id="mod-purge">Quitar marcas de más de 1 hora</button><button class="btn small ghost" id="mod-back">Volver</button></span></div>
     <div class="tabs" id="mod-tabs">
-      <div class="tab on" data-tab="rep">Reportes</div>
-      <div class="tab" data-tab="sus">Baneados</div>
+      <div class="tab on" data-tab="rep" tabindex="0" role="tab">Reportes</div>
+      <div class="tab" data-tab="sus" tabindex="0" role="tab">Baneados</div>
     </div>
     <div id="mod-list" class="rk-list" style="max-height:60vh"></div>
   </div>
@@ -514,9 +514,9 @@
   <div class="box wide">
     <div class="row between"><h2>Misiones</h2><button class="btn small ghost" data-back>Volver</button></div>
     <div class="tabs" id="goals-tabs">
-      <div class="tab on" data-tab="missions">Misiones</div>
-      <div class="tab" data-tab="ach">Logros</div>
-      <div class="tab" data-tab="profile">Perfil</div>
+      <div class="tab on" data-tab="missions" tabindex="0" role="tab">Misiones</div>
+      <div class="tab" data-tab="ach" tabindex="0" role="tab">Logros</div>
+      <div class="tab" data-tab="profile" tabindex="0" role="tab">Perfil</div>
     </div>
     <div id="goals-body" class="goals-body"></div>
   </div>
@@ -764,9 +764,9 @@
 </section>
 
 <!-- datos generados -->
-<script defer src="js/app.min.js?v=efe863b2de"></script>
+<script defer src="js/app.min.js?v=0a9e5b8d57"></script>
 <!-- interfaz en chino tradicional (fuera del bloque: no se empaqueta en app.min.js; va antes que los defer para traducir también el canvas) -->
-<script src="js/zh-tw.js?v=f5eee3935a"></script>
+<script src="js/zh-tw.js?v=63ee152836"></script>
 <!-- bot local de juego automático (la partida con el bot activo no sube al ranking) -->
 <script src="en/bot.js?v=2aad165d9f"></script>
 </body>
