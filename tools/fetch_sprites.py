@@ -27,6 +27,7 @@ import io
 import json
 import os
 import re
+import shutil
 import sys
 import urllib.error
 import urllib.request
@@ -174,6 +175,18 @@ def download_set(url_base, out_dir, anims, geometry_from=None):
     return meta
 
 
+def same_as_normal(out_dir, shiny):
+    """¿Las hojas shiny son idénticas, píxel a píxel, a las normales?"""
+    for k in shiny:
+        a, b = os.path.join(out_dir, k + '.png'), os.path.join(out_dir, 's', k + '.png')
+        if not (os.path.exists(a) and os.path.exists(b)):
+            return False
+        ia, ib = Image.open(a).convert('RGBA'), Image.open(b).convert('RGBA')
+        if ia.size != ib.size or ia.tobytes() != ib.tobytes():
+            return False
+    return True
+
+
 def do_dex(job):
     dex, want_shiny = job
     cache_file = os.path.join(CACHE, f'{dex}.json')
@@ -197,6 +210,11 @@ def do_dex(job):
         sxml = fetch(f'{BASE}/{tag}/0000/0001/AnimData.xml')
         sanims = parse_animdata(sxml.decode('utf-8', 'replace'))[0] if sxml else anims
         shiny = download_set(f'{BASE}/{tag}/0000/0001', os.path.join(out_dir, 's'), sanims, normal)
+        if shiny and same_as_normal(out_dir, shiny):
+            # Algunas carpetas shiny de SpriteCollab son una copia del normal (1025 Pecharunt,
+            # 24-11-2026): eso no es un shiny, así que se descarta.
+            shutil.rmtree(os.path.join(out_dir, 's'), ignore_errors=True)
+            shiny = {}
         if REQUIRED <= set(shiny) or ('Idle' in shiny and 'Walk' in shiny):
             meta['sh'] = 1
             # Sólo se guarda la geometría shiny si difiere de la normal.

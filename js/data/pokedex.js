@@ -589,6 +589,7 @@ G.DEX = [
   {"dex":588,"name":"Karrablast","types":["bug"],"hp":92,"spd":103,"atk":1.11,"pa":1.11,"sa":0.92,"df":45,"sd":45,"rarity":1,"bst":315,"starter":false,"gen":5},
   {"dex":589,"name":"Escavalier","types":["bug","steel"],"hp":102,"spd":86,"atk":1.44,"pa":1.44,"sa":1.03,"df":105,"sd":105,"rarity":4,"bst":495,"starter":false,"gen":5},
   {"dex":590,"name":"Foongus","types":["grass","poison"],"hp":101,"spd":84,"atk":1.0,"pa":1.0,"sa":1.0,"df":45,"sd":55,"rarity":1,"bst":294,"starter":false,"gen":5},
+  {"dex":593,"name":"Jellicent","types":["water","ghost"],"hp":115,"spd":103,"atk":1.17,"pa":1.03,"sa":1.17,"df":70,"sd":105,"rarity":3,"bst":480,"starter":false,"gen":5},
   {"dex":594,"name":"Alomomola","types":["water"],"hp":144,"spd":105,"atk":1.11,"pa":1.11,"sa":0.92,"df":80,"sd":45,"rarity":3,"bst":470,"starter":false,"gen":5},
   {"dex":595,"name":"Joltik","types":["bug","electric"],"hp":92,"spd":105,"atk":1.01,"pa":0.96,"sa":1.01,"df":50,"sd":50,"rarity":1,"bst":319,"starter":false,"gen":5},
   {"dex":596,"name":"Galvantula","types":["bug","electric"],"hp":102,"spd":123,"atk":1.23,"pa":1.12,"sa":1.23,"df":60,"sd":60,"rarity":3,"bst":472,"starter":false,"gen":5},
@@ -612,6 +613,7 @@ G.DEX = [
   {"dex":614,"name":"Beartic","types":["ice"],"hp":113,"spd":99,"atk":1.42,"pa":1.42,"sa":1.08,"df":80,"sd":80,"rarity":4,"bst":505,"starter":false,"gen":5},
   {"dex":615,"name":"Cryogonal","types":["ice"],"hp":106,"spd":122,"atk":1.22,"pa":0.97,"sa":1.22,"df":50,"sd":135,"rarity":4,"bst":515,"starter":false,"gen":5},
   {"dex":617,"name":"Accelgor","types":["bug"],"hp":106,"spd":139,"atk":1.25,"pa":1.08,"sa":1.25,"df":40,"sd":60,"rarity":4,"bst":495,"starter":false,"gen":5},
+  {"dex":618,"name":"Stunfisk","types":["ground","electric"],"hp":119,"spd":91,"atk":1.15,"pa":1.06,"sa":1.15,"df":84,"sd":99,"rarity":3,"bst":471,"starter":false,"gen":5},
   {"dex":619,"name":"Mienfoo","types":["fighting"],"hp":90,"spd":105,"atk":1.17,"pa":1.17,"sa":1.0,"df":50,"sd":50,"rarity":2,"bst":350,"starter":false,"gen":5},
   {"dex":620,"name":"Mienshao","types":["fighting"],"hp":99,"spd":122,"atk":1.39,"pa":1.39,"sa":1.22,"df":60,"sd":60,"rarity":4,"bst":510,"starter":false,"gen":5},
   {"dex":621,"name":"Druddigon","types":["dragon"],"hp":105,"spd":98,"atk":1.36,"pa":1.36,"sa":1.03,"df":90,"sd":90,"rarity":3,"bst":485,"starter":false,"gen":5},
@@ -674,6 +676,7 @@ G.DEX = [
   {"dex":680,"name":"Doublade","types":["steel","ghost"],"hp":97,"spd":93,"atk":1.31,"pa":1.31,"sa":0.95,"df":150,"sd":49,"rarity":3,"bst":448,"starter":false,"gen":6},
   {"dex":681,"name":"Aegislash","types":["steel","ghost"],"hp":97,"spd":103,"atk":0.97,"pa":0.97,"sa":0.97,"df":140,"sd":140,"rarity":4,"bst":500,"starter":false,"gen":6},
   {"dex":682,"name":"Spritzee","types":["fairy"],"hp":105,"spd":88,"atk":1.05,"pa":0.99,"sa":1.05,"df":60,"sd":65,"rarity":2,"bst":341,"starter":false,"gen":6},
+  {"dex":683,"name":"Aromatisse","types":["fairy"],"hp":115,"spd":90,"atk":1.24,"pa":1.1,"sa":1.24,"df":72,"sd":89,"rarity":3,"bst":462,"starter":false,"gen":6},
   {"dex":684,"name":"Swirlix","types":["fairy"],"hp":98,"spd":99,"atk":1.02,"pa":0.96,"sa":1.02,"df":66,"sd":57,"rarity":2,"bst":341,"starter":false,"gen":6},
   {"dex":685,"name":"Slurpuff","types":["fairy"],"hp":107,"spd":108,"atk":1.17,"pa":1.14,"sa":1.17,"df":86,"sd":75,"rarity":3,"bst":480,"starter":false,"gen":6},
   {"dex":686,"name":"Inkay","types":["dark","psychic"],"hp":94,"spd":97,"atk":1.0,"pa":1.0,"sa":0.9,"df":53,"sd":46,"rarity":1,"bst":288,"starter":false,"gen":6},
@@ -722,6 +725,7 @@ G.DEX = [
   {"dex":729,"name":"Brionne","types":["water"],"hp":97,"spd":99,"atk":1.2,"pa":1.08,"sa":1.2,"df":69,"sd":81,"rarity":3,"bst":420,"starter":false,"gen":7},
   {"dex":730,"name":"Primarina","types":["water","fairy"],"hp":106,"spd":103,"atk":1.39,"pa":1.11,"sa":1.39,"df":74,"sd":116,"rarity":4,"bst":530,"starter":false,"gen":7},
   {"dex":731,"name":"Pikipek","types":["normal","flying"],"hp":86,"spd":105,"atk":1.11,"pa":1.11,"sa":0.86,"df":30,"sd":30,"rarity":1,"bst":265,"starter":false,"gen":7},
+  {"dex":733,"name":"Toucannon","types":["normal","flying"],"hp":106,"spd":103,"atk":1.36,"pa":1.36,"sa":1.11,"df":75,"sd":75,"rarity":3,"bst":485,"starter":false,"gen":7},
   {"dex":734,"name":"Yungoos","types":["normal"],"hp":92,"spd":97,"atk":1.08,"pa":1.08,"sa":0.86,"df":30,"sd":30,"rarity":1,"bst":253,"starter":false,"gen":7},
   {"dex":736,"name":"Grubbin","types":["bug"],"hp":91,"spd":97,"atk":1.04,"pa":1.04,"sa":1.0,"df":45,"sd":45,"rarity":1,"bst":300,"starter":false,"gen":7},
   {"dex":737,"name":"Charjabug","types":["bug","electric"],"hp":96,"spd":93,"atk":1.15,"pa":1.15,"sa":1.0,"df":95,"sd":75,"rarity":2,"bst":400,"starter":false,"gen":7},
@@ -822,6 +826,7 @@ G.DEX = [
   {"dex":834,"name":"Drednaw","types":["water","rock"],"hp":110,"spd":109,"atk":1.33,"pa":1.33,"sa":0.96,"df":90,"sd":68,"rarity":3,"bst":485,"starter":false,"gen":8},
   {"dex":835,"name":"Yamper","types":["electric"],"hp":97,"spd":89,"atk":0.95,"pa":0.95,"sa":0.92,"df":50,"sd":50,"rarity":1,"bst":270,"starter":false,"gen":8},
   {"dex":836,"name":"Boltund","types":["electric"],"hp":101,"spd":129,"atk":1.2,"pa":1.2,"sa":1.2,"df":60,"sd":60,"rarity":3,"bst":490,"starter":false,"gen":8},
+  {"dex":837,"name":"Rolycoly","types":["rock"],"hp":84,"spd":91,"atk":0.92,"pa":0.92,"sa":0.92,"df":50,"sd":50,"rarity":1,"bst":240,"starter":false,"gen":8},
   {"dex":840,"name":"Applin","types":["grass","dragon"],"hp":88,"spd":86,"atk":0.92,"pa":0.92,"sa":0.92,"df":80,"sd":40,"rarity":1,"bst":260,"starter":false,"gen":8},
   {"dex":841,"name":"Flapple","types":["grass","dragon"],"hp":102,"spd":107,"atk":1.31,"pa":1.31,"sa":1.22,"df":80,"sd":60,"rarity":3,"bst":485,"starter":false,"gen":8},
   {"dex":842,"name":"Appletun","types":["grass","dragon"],"hp":120,"spd":91,"atk":1.25,"pa":1.17,"sa":1.25,"df":80,"sd":80,"rarity":3,"bst":485,"starter":false,"gen":8},
@@ -847,6 +852,7 @@ G.DEX = [
   {"dex":862,"name":"Obstagoon","types":["dark","normal"],"hp":112,"spd":118,"atk":1.2,"pa":1.2,"sa":1.03,"df":101,"sd":81,"rarity":4,"bst":520,"starter":false,"gen":8},
   {"dex":863,"name":"Perrserker","types":["steel"],"hp":102,"spd":99,"atk":1.31,"pa":1.31,"sa":0.97,"df":100,"sd":60,"rarity":3,"bst":440,"starter":false,"gen":8},
   {"dex":864,"name":"Cursola","types":["ghost"],"hp":97,"spd":91,"atk":1.5,"pa":1.22,"sa":1.5,"df":50,"sd":130,"rarity":4,"bst":510,"starter":false,"gen":8},
+  {"dex":865,"name":"Sirfetch’d","types":["fighting"],"hp":98,"spd":105,"atk":1.44,"pa":1.44,"sa":1.07,"df":95,"sd":82,"rarity":4,"bst":507,"starter":false,"gen":8},
   {"dex":867,"name":"Runerigus","types":["ground","ghost"],"hp":96,"spd":91,"atk":1.22,"pa":1.22,"sa":0.97,"df":145,"sd":105,"rarity":3,"bst":483,"starter":false,"gen":8},
   {"dex":868,"name":"Milcery","types":["fairy"],"hp":90,"spd":92,"atk":0.97,"pa":0.92,"sa":0.97,"df":40,"sd":61,"rarity":1,"bst":270,"starter":false,"gen":8},
   {"dex":869,"name":"Alcremie","types":["fairy"],"hp":99,"spd":105,"atk":1.31,"pa":1.03,"sa":1.31,"df":75,"sd":121,"rarity":4,"bst":495,"starter":false,"gen":8},
@@ -857,6 +863,8 @@ G.DEX = [
   {"dex":875,"name":"Eiscue","types":["ice"],"hp":104,"spd":99,"atk":1.14,"pa":1.14,"sa":1.06,"df":110,"sd":90,"rarity":3,"bst":470,"starter":false,"gen":8},
   {"dex":876,"name":"Indeedee","types":["psychic","normal"],"hp":97,"spd":118,"atk":1.28,"pa":1.06,"sa":1.28,"df":55,"sd":95,"rarity":3,"bst":475,"starter":false,"gen":8},
   {"dex":877,"name":"Morpeko","types":["electric","dark"],"hp":96,"spd":119,"atk":1.22,"pa":1.22,"sa":1.08,"df":58,"sd":58,"rarity":3,"bst":436,"starter":false,"gen":8},
+  {"dex":878,"name":"Cufant","types":["steel"],"hp":102,"spd":95,"atk":1.14,"pa":1.14,"sa":0.92,"df":49,"sd":49,"rarity":2,"bst":330,"starter":false,"gen":8},
+  {"dex":879,"name":"Copperajah","types":["steel"],"hp":125,"spd":91,"atk":1.42,"pa":1.42,"sa":1.14,"df":69,"sd":69,"rarity":4,"bst":500,"starter":false,"gen":8},
   {"dex":880,"name":"Dracozolt","types":["electric","dragon"],"hp":110,"spd":110,"atk":1.25,"pa":1.25,"sa":1.14,"df":90,"sd":70,"rarity":4,"bst":505,"starter":false,"gen":8},
   {"dex":881,"name":"Arctozolt","types":["electric","ice"],"hp":110,"spd":101,"atk":1.25,"pa":1.25,"sa":1.2,"df":90,"sd":80,"rarity":4,"bst":505,"starter":false,"gen":8},
   {"dex":882,"name":"Dracovish","types":["water","dragon"],"hp":110,"spd":110,"atk":1.2,"pa":1.2,"sa":1.08,"df":100,"sd":80,"rarity":4,"bst":505,"starter":false,"gen":8},
@@ -905,6 +913,7 @@ G.DEX = [
   {"dex":926,"name":"Fidough","types":["fairy"],"hp":87,"spd":105,"atk":1.0,"pa":1.0,"sa":0.86,"df":70,"sd":55,"rarity":1,"bst":312,"starter":false,"gen":9},
   {"dex":927,"name":"Dachsbun","types":["fairy"],"hp":96,"spd":118,"atk":1.14,"pa":1.14,"sa":0.97,"df":115,"sd":80,"rarity":3,"bst":477,"starter":false,"gen":9},
   {"dex":928,"name":"Smoliv","types":["grass","normal"],"hp":88,"spd":91,"atk":1.02,"pa":0.89,"sa":1.02,"df":45,"sd":51,"rarity":1,"bst":260,"starter":false,"gen":9},
+  {"dex":929,"name":"Dolliv","types":["grass","normal"],"hp":93,"spd":92,"atk":1.13,"pa":0.99,"sa":1.13,"df":60,"sd":78,"rarity":2,"bst":354,"starter":false,"gen":9},
   {"dex":930,"name":"Arboliva","types":["grass","normal"],"hp":105,"spd":94,"atk":1.39,"pa":1.08,"sa":1.39,"df":90,"sd":109,"rarity":4,"bst":510,"starter":false,"gen":9},
   {"dex":932,"name":"Nacli","types":["rock"],"hp":95,"spd":88,"atk":1.0,"pa":1.0,"sa":0.89,"df":75,"sd":35,"rarity":1,"bst":280,"starter":false,"gen":9},
   {"dex":933,"name":"Naclstack","types":["rock"],"hp":97,"spd":93,"atk":1.03,"pa":1.03,"sa":0.89,"df":100,"sd":65,"rarity":2,"bst":355,"starter":false,"gen":9},
@@ -916,7 +925,9 @@ G.DEX = [
   {"dex":939,"name":"Bellibolt","types":["electric"],"hp":119,"spd":97,"atk":1.27,"pa":1.05,"sa":1.27,"df":91,"sd":83,"rarity":4,"bst":495,"starter":false,"gen":9},
   {"dex":940,"name":"Wattrel","types":["electric","flying"],"hp":88,"spd":107,"atk":1.0,"pa":0.92,"sa":1.0,"df":35,"sd":40,"rarity":1,"bst":280,"starter":false,"gen":9},
   {"dex":941,"name":"Kilowattrel","types":["electric","flying"],"hp":102,"spd":130,"atk":1.28,"pa":1.08,"sa":1.28,"df":60,"sd":60,"rarity":3,"bst":490,"starter":false,"gen":9},
+  {"dex":945,"name":"Grafaiai","types":["poison","normal"],"hp":98,"spd":124,"atk":1.22,"pa":1.22,"sa":1.14,"df":65,"sd":72,"rarity":3,"bst":485,"starter":false,"gen":9},
   {"dex":946,"name":"Bramblin","types":["grass","ghost"],"hp":88,"spd":103,"atk":1.06,"pa":1.06,"sa":0.95,"df":30,"sd":35,"rarity":1,"bst":275,"starter":false,"gen":9},
+  {"dex":948,"name":"Toedscool","types":["ground","grass"],"hp":88,"spd":107,"atk":0.97,"pa":0.92,"sa":0.97,"df":35,"sd":100,"rarity":2,"bst":335,"starter":false,"gen":9},
   {"dex":951,"name":"Capsakid","types":["grass"],"hp":92,"spd":99,"atk":1.04,"pa":1.04,"sa":1.04,"df":40,"sd":40,"rarity":1,"bst":304,"starter":false,"gen":9},
   {"dex":952,"name":"Scovillain","types":["grass","fire"],"hp":99,"spd":110,"atk":1.29,"pa":1.29,"sa":1.29,"df":65,"sd":65,"rarity":3,"bst":486,"starter":false,"gen":9},
   {"dex":953,"name":"Rellor","types":["bug"],"hp":88,"spd":91,"atk":0.97,"pa":0.97,"sa":0.87,"df":60,"sd":58,"rarity":1,"bst":270,"starter":false,"gen":9},
@@ -926,6 +937,7 @@ G.DEX = [
   {"dex":959,"name":"Tinkaton","types":["fairy","steel"],"hp":108,"spd":117,"atk":1.11,"pa":1.11,"sa":1.08,"df":77,"sd":105,"rarity":4,"bst":506,"starter":false,"gen":9},
   {"dex":960,"name":"Wiglett","types":["water"],"hp":74,"spd":118,"atk":1.0,"pa":1.0,"sa":0.89,"df":25,"sd":25,"rarity":1,"bst":245,"starter":false,"gen":9},
   {"dex":961,"name":"Wugtrio","types":["water"],"hp":86,"spd":128,"atk":1.25,"pa":1.25,"sa":0.97,"df":50,"sd":70,"rarity":3,"bst":425,"starter":false,"gen":9},
+  {"dex":962,"name":"Bombirdier","types":["flying","dark"],"hp":102,"spd":112,"atk":1.27,"pa":1.27,"sa":1.03,"df":85,"sd":85,"rarity":3,"bst":485,"starter":false,"gen":9},
   {"dex":963,"name":"Finizen","types":["water"],"hp":102,"spd":110,"atk":0.95,"pa":0.95,"sa":0.95,"df":40,"sd":40,"rarity":1,"bst":315,"starter":false,"gen":9},
   {"dex":964,"name":"Palafin","types":["water"],"hp":115,"spd":120,"atk":1.08,"pa":1.08,"sa":0.99,"df":72,"sd":62,"rarity":3,"bst":457,"starter":false,"gen":9},
   {"dex":965,"name":"Varoom","types":["steel","poison"],"hp":90,"spd":98,"atk":1.08,"pa":1.08,"sa":0.86,"df":63,"sd":45,"rarity":1,"bst":300,"starter":false,"gen":9},
@@ -951,6 +963,7 @@ G.DEX = [
   {"dex":987,"name":"Melenaleteo","types":["ghost","fairy"],"hp":95,"spd":135,"atk":1.44,"pa":1.0,"sa":1.44,"df":55,"sd":135,"rarity":4,"bst":570,"starter":false,"gen":9},
   {"dex":988,"name":"Reptalada","types":["bug","fighting"],"hp":108,"spd":112,"atk":1.44,"pa":1.44,"sa":1.17,"df":79,"sd":105,"rarity":4,"bst":570,"starter":false,"gen":9},
   {"dex":989,"name":"Pelarena","types":["electric","ground"],"hp":108,"spd":120,"atk":1.37,"pa":1.15,"sa":1.37,"df":97,"sd":85,"rarity":4,"bst":570,"starter":false,"gen":9},
+  {"dex":990,"name":"Ferrodada","types":["ground","steel"],"hp":110,"spd":123,"atk":1.32,"pa":1.32,"sa":1.1,"df":120,"sd":70,"rarity":4,"bst":570,"starter":false,"gen":9},
   {"dex":991,"name":"Ferrosaco","types":["ice","water"],"hp":95,"spd":135,"atk":1.38,"pa":1.14,"sa":1.38,"df":114,"sd":60,"rarity":4,"bst":570,"starter":false,"gen":9},
   {"dex":992,"name":"Ferropalmas","types":["fighting","electric"],"hp":139,"spd":99,"atk":1.47,"pa":1.47,"sa":0.97,"df":108,"sd":68,"rarity":4,"bst":570,"starter":false,"gen":9},
   {"dex":994,"name":"Ferropolilla","types":["fire","poison"],"hp":106,"spd":124,"atk":1.47,"pa":1.08,"sa":1.47,"df":60,"sd":110,"rarity":4,"bst":570,"starter":false,"gen":9},
@@ -959,6 +972,7 @@ G.DEX = [
   {"dex":997,"name":"Arctibax","types":["dragon","ice"],"hp":110,"spd":104,"atk":1.22,"pa":1.22,"sa":0.95,"df":66,"sd":65,"rarity":3,"bst":423,"starter":false,"gen":9},
   {"dex":998,"name":"Baxcalibur","types":["dragon","ice"],"hp":122,"spd":115,"atk":1.5,"pa":1.5,"sa":1.11,"df":92,"sd":86,"rarity":5,"bst":600,"starter":false,"gen":9},
   {"dex":1000,"name":"Gholdengo","types":["steel","ghost"],"hp":109,"spd":113,"atk":1.43,"pa":1.03,"sa":1.43,"df":95,"sd":91,"rarity":4,"bst":550,"starter":false,"gen":9},
+  {"dex":1003,"name":"Ting-Lu","types":["dark","ground"],"hp":140,"spd":97,"atk":1.31,"pa":1.31,"sa":1.0,"df":125,"sd":80,"rarity":5,"bst":570,"starter":false,"gen":9,"leg":true},
   {"dex":1004,"name":"Chi-Yu","types":["dark","fire"],"hp":95,"spd":120,"atk":1.44,"pa":1.14,"sa":1.44,"df":80,"sd":120,"rarity":5,"bst":570,"starter":false,"gen":9,"leg":true},
   {"dex":1005,"name":"Bramaluna","types":["dragon","dark"],"hp":117,"spd":128,"atk":1.46,"pa":1.46,"sa":1.0,"df":71,"sd":101,"rarity":5,"bst":590,"starter":false,"gen":9},
   {"dex":1006,"name":"Ferropaladín","types":["fairy","fighting"],"hp":103,"spd":127,"atk":1.42,"pa":1.42,"sa":1.36,"df":90,"sd":60,"rarity":5,"bst":590,"starter":false,"gen":9},
@@ -973,7 +987,9 @@ G.DEX = [
   {"dex":1017,"name":"Ogerpon","types":["grass"],"hp":106,"spd":124,"atk":1.36,"pa":1.36,"sa":1.03,"df":84,"sd":96,"rarity":5,"bst":550,"starter":false,"gen":9,"leg":true},
   {"dex":1018,"name":"Archaludon","types":["steel","dragon"],"hp":110,"spd":114,"atk":1.39,"pa":1.28,"sa":1.39,"df":130,"sd":65,"rarity":5,"bst":600,"starter":false,"gen":9},
   {"dex":1019,"name":"Hydrapple","types":["grass","dragon"],"hp":118,"spd":96,"atk":1.36,"pa":1.14,"sa":1.36,"df":110,"sd":80,"rarity":4,"bst":540,"starter":false,"gen":9},
+  {"dex":1021,"name":"Electrofuria","types":["electric","dragon"],"hp":126,"spd":110,"atk":1.45,"pa":1.1,"sa":1.45,"df":91,"sd":89,"rarity":5,"bst":590,"starter":false,"gen":9},
   {"dex":1024,"name":"Terapagos","types":["normal"],"hp":110,"spd":103,"atk":1.06,"pa":1.06,"sa":1.06,"df":85,"sd":85,"rarity":5,"bst":450,"starter":false,"gen":9,"leg":true},
+  {"dex":1025,"name":"Pecharunt","types":["poison","ghost"],"hp":110,"spd":115,"atk":1.18,"pa":1.18,"sa":1.18,"df":160,"sd":88,"rarity":5,"bst":600,"starter":false,"gen":9,"leg":true},
   /* ---- copia local: formas alternativas (tools/fetch_forms_all.py, tools/merge_forms_stats.py) ---- */
   {"dex":1094,"name":"Mega Gengar","types":["ghost","poison"],"hp":97,"spd":133,"atk":1.64,"pa":1.06,"sa":1.64,"df":80,"sd":95,"rarity":5,"bst":600,"starter":false,"gen":1},   /* copia local: exclusivo (SpriteCollab 0094/0001) */
   {"dex":1382,"name":"Primal Kyogre","types":["water"],"hp":115,"spd":116,"atk":1.69,"pa":1.52,"sa":1.69,"df":90,"sd":160,"rarity":5,"bst":770,"starter":false,"gen":3},   /* copia local: exclusivo (SpriteCollab 0382/0001) */
@@ -1119,7 +1135,105 @@ G.DEX = [
   {"dex":2017,"name":"Ogerpon Wellspring","types":["grass","water"],"hp":106,"spd":124,"atk":1.36,"pa":1.36,"sa":1.03,"df":84,"sd":96,"rarity":4,"bst":550,"starter":false,"gen":9},   /* forma Wellspring_Mask de 1017 (SpriteCollab 1017/0005) */
   {"dex":3017,"name":"Ogerpon Hearthflame","types":["grass","fire"],"hp":106,"spd":124,"atk":1.36,"pa":1.36,"sa":1.03,"df":84,"sd":96,"rarity":4,"bst":550,"starter":false,"gen":9},   /* forma Hearthflame_Mask de 1017 (SpriteCollab 1017/0006) */
   {"dex":4017,"name":"Ogerpon Cornerstone","types":["grass","rock"],"hp":106,"spd":124,"atk":1.36,"pa":1.36,"sa":1.03,"df":84,"sd":96,"rarity":4,"bst":550,"starter":false,"gen":9},   /* forma Cornerstone_Mask de 1017 (SpriteCollab 1017/0007) */
-  {"dex":2024,"name":"Terastal Terapagos","types":["normal"],"hp":113,"spd":114,"atk":1.28,"pa":1.22,"sa":1.28,"df":110,"sd":110,"rarity":5,"bst":600,"starter":false,"gen":9}   /* forma Terastal de 1024 (SpriteCollab 1024/0001) */
+  {"dex":2024,"name":"Terastal Terapagos","types":["normal"],"hp":113,"spd":114,"atk":1.28,"pa":1.22,"sa":1.28,"df":110,"sd":110,"rarity":5,"bst":600,"starter":false,"gen":9},   /* forma Terastal de 1024 (SpriteCollab 1024/0001) */
+  /* ---- copia local, 24-11-2026: formas nuevas de SpriteCollab (tools/add_forms.py) ---- */
+  {"dex":1254,"name":"Mega Sceptile","types":["grass","dragon"],"hp":102,"spd":139,"atk":1.5,"pa":1.31,"sa":1.5,"df":75,"sd":85,"rarity":5,"bst":630,"starter":false,"gen":3},   /* forma Mega de 254 (SpriteCollab 0254/0001) */
+  {"dex":1358,"name":"Mega Chimecho","types":["psychic","steel"],"hp":104,"spd":105,"atk":1.44,"pa":0.97,"sa":1.44,"df":110,"sd":120,"rarity":4,"bst":555,"starter":false,"gen":3},   /* forma Mega de 358 (SpriteCollab 0358/0001) */
+  {"dex":1701,"name":"Mega Hawlucha","types":["fighting","flying"],"hp":105,"spd":128,"atk":1.45,"pa":1.45,"sa":1.11,"df":100,"sd":93,"rarity":5,"bst":600,"starter":false,"gen":6},   /* forma Mega de 701 (SpriteCollab 0701/0001) */
+  {"dex":1172,"name":"Pichu Spiky-eared","types":["electric"],"hp":79,"spd":103,"atk":0.92,"pa":0.92,"sa":0.89,"df":15,"sd":35,"rarity":1,"bst":205,"starter":false,"gen":2,"excl":true},   /* forma Spiky de 172 (SpriteCollab 0172/0001), aspecto */
+  {"dex":1201,"name":"Unown B","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma B de 201 (SpriteCollab 0201/0001), aspecto */
+  {"dex":2201,"name":"Unown C","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma C de 201 (SpriteCollab 0201/0002), aspecto */
+  {"dex":3201,"name":"Unown D","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma D de 201 (SpriteCollab 0201/0003), aspecto */
+  {"dex":4201,"name":"Unown E","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma E de 201 (SpriteCollab 0201/0004), aspecto */
+  {"dex":5201,"name":"Unown F","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma F de 201 (SpriteCollab 0201/0005), aspecto */
+  {"dex":6201,"name":"Unown G","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma G de 201 (SpriteCollab 0201/0006), aspecto */
+  {"dex":7201,"name":"Unown H","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma H de 201 (SpriteCollab 0201/0007), aspecto */
+  {"dex":8201,"name":"Unown I","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma I de 201 (SpriteCollab 0201/0008), aspecto */
+  {"dex":9201,"name":"Unown J","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma J de 201 (SpriteCollab 0201/0009), aspecto */
+  {"dex":10201,"name":"Unown K","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma K de 201 (SpriteCollab 0201/0010), aspecto */
+  {"dex":11201,"name":"Unown L","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma L de 201 (SpriteCollab 0201/0011), aspecto */
+  {"dex":12201,"name":"Unown M","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma M de 201 (SpriteCollab 0201/0012), aspecto */
+  {"dex":13201,"name":"Unown N","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma N de 201 (SpriteCollab 0201/0013), aspecto */
+  {"dex":14201,"name":"Unown O","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma O de 201 (SpriteCollab 0201/0014), aspecto */
+  {"dex":15201,"name":"Unown P","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma P de 201 (SpriteCollab 0201/0015), aspecto */
+  {"dex":16201,"name":"Unown Q","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma Q de 201 (SpriteCollab 0201/0016), aspecto */
+  {"dex":17201,"name":"Unown R","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma R de 201 (SpriteCollab 0201/0017), aspecto */
+  {"dex":18201,"name":"Unown S","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma S de 201 (SpriteCollab 0201/0018), aspecto */
+  {"dex":19201,"name":"Unown T","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma T de 201 (SpriteCollab 0201/0019), aspecto */
+  {"dex":20201,"name":"Unown U","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma U de 201 (SpriteCollab 0201/0020), aspecto */
+  {"dex":21201,"name":"Unown V","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma V de 201 (SpriteCollab 0201/0021), aspecto */
+  {"dex":22201,"name":"Unown W","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma W de 201 (SpriteCollab 0201/0022), aspecto */
+  {"dex":23201,"name":"Unown X","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma X de 201 (SpriteCollab 0201/0023), aspecto */
+  {"dex":24201,"name":"Unown Y","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma Y de 201 (SpriteCollab 0201/0024), aspecto */
+  {"dex":25201,"name":"Unown Z","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma Z de 201 (SpriteCollab 0201/0025), aspecto */
+  {"dex":26201,"name":"Unown !","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma Exclamation de 201 (SpriteCollab 0201/0026), aspecto */
+  {"dex":27201,"name":"Unown ?","types":["psychic"],"hp":92,"spd":98,"atk":1.1,"pa":1.1,"sa":1.1,"df":48,"sd":48,"rarity":2,"bst":336,"starter":false,"gen":2,"excl":true},   /* forma Question de 201 (SpriteCollab 0201/0027), aspecto */
+  {"dex":1421,"name":"Cherrim Sunshine","types":["grass"],"hp":102,"spd":114,"atk":1.18,"pa":1.03,"sa":1.18,"df":70,"sd":78,"rarity":3,"bst":450,"starter":false,"gen":4,"excl":true},   /* forma Sunshine de 421 (SpriteCollab 0421/0001), aspecto */
+  {"dex":1422,"name":"Shellos East","types":["water"],"hp":104,"spd":92,"atk":1.01,"pa":0.96,"sa":1.01,"df":48,"sd":62,"rarity":2,"bst":325,"starter":false,"gen":4,"excl":true},   /* forma East de 422 (SpriteCollab 0422/0001), aspecto */
+  {"dex":1423,"name":"Gastrodon East","types":["water","ground"],"hp":120,"spd":94,"atk":1.21,"pa":1.16,"sa":1.21,"df":68,"sd":82,"rarity":3,"bst":475,"starter":false,"gen":4,"excl":true},   /* forma East de 423 (SpriteCollab 0423/0001), aspecto */
+  {"dex":1550,"name":"Basculin Blue-Striped","types":["water"],"hp":102,"spd":119,"atk":1.21,"pa":1.21,"sa":1.14,"df":65,"sd":55,"rarity":3,"bst":460,"starter":false,"gen":5,"excl":true},   /* forma Blue de 550 (SpriteCollab 0550/0001), aspecto */
+  {"dex":2550,"name":"Basculin White-Striped","types":["water"],"hp":102,"spd":119,"atk":1.21,"pa":1.21,"sa":1.14,"df":65,"sd":55,"rarity":3,"bst":460,"starter":false,"gen":5,"excl":true},   /* forma White de 550 (SpriteCollab 0550/0002), aspecto */
+  {"dex":1585,"name":"Deerling Summer","types":["normal","grass"],"hp":97,"spd":110,"atk":1.03,"pa":1.03,"sa":0.92,"df":50,"sd":50,"rarity":2,"bst":335,"starter":false,"gen":5,"excl":true},   /* forma Summer de 585 (SpriteCollab 0585/0001), aspecto */
+  {"dex":2585,"name":"Deerling Autumn","types":["normal","grass"],"hp":97,"spd":110,"atk":1.03,"pa":1.03,"sa":0.92,"df":50,"sd":50,"rarity":2,"bst":335,"starter":false,"gen":5,"excl":true},   /* forma Autumn de 585 (SpriteCollab 0585/0002), aspecto */
+  {"dex":3585,"name":"Deerling Winter","types":["normal","grass"],"hp":97,"spd":110,"atk":1.03,"pa":1.03,"sa":0.92,"df":50,"sd":50,"rarity":2,"bst":335,"starter":false,"gen":5,"excl":true},   /* forma Winter de 585 (SpriteCollab 0585/0003), aspecto */
+  {"dex":1586,"name":"Sawsbuck Summer","types":["normal","grass"],"hp":106,"spd":118,"atk":1.25,"pa":1.25,"sa":1.03,"df":70,"sd":70,"rarity":3,"bst":475,"starter":false,"gen":5,"excl":true},   /* forma Summer de 586 (SpriteCollab 0586/0001), aspecto */
+  {"dex":2586,"name":"Sawsbuck Autumn","types":["normal","grass"],"hp":106,"spd":118,"atk":1.25,"pa":1.25,"sa":1.03,"df":70,"sd":70,"rarity":3,"bst":475,"starter":false,"gen":5,"excl":true},   /* forma Autumn de 586 (SpriteCollab 0586/0002), aspecto */
+  {"dex":3586,"name":"Sawsbuck Winter","types":["normal","grass"],"hp":106,"spd":118,"atk":1.25,"pa":1.25,"sa":1.03,"df":70,"sd":70,"rarity":3,"bst":475,"starter":false,"gen":5,"excl":true},   /* forma Winter de 586 (SpriteCollab 0586/0003), aspecto */
+  {"dex":1649,"name":"Genesect Douse","types":["bug","steel"],"hp":102,"spd":120,"atk":1.36,"pa":1.36,"sa":1.36,"df":95,"sd":95,"rarity":5,"bst":600,"starter":false,"gen":5,"excl":true},   /* forma Douse de 649 (SpriteCollab 0649/0001), aspecto */
+  {"dex":2649,"name":"Genesect Shock","types":["bug","steel"],"hp":102,"spd":120,"atk":1.36,"pa":1.36,"sa":1.36,"df":95,"sd":95,"rarity":5,"bst":600,"starter":false,"gen":5,"excl":true},   /* forma Shock de 649 (SpriteCollab 0649/0002), aspecto */
+  {"dex":3649,"name":"Genesect Burn","types":["bug","steel"],"hp":102,"spd":120,"atk":1.36,"pa":1.36,"sa":1.36,"df":95,"sd":95,"rarity":5,"bst":600,"starter":false,"gen":5,"excl":true},   /* forma Burn de 649 (SpriteCollab 0649/0003), aspecto */
+  {"dex":4649,"name":"Genesect Chill","types":["bug","steel"],"hp":102,"spd":120,"atk":1.36,"pa":1.36,"sa":1.36,"df":95,"sd":95,"rarity":5,"bst":600,"starter":false,"gen":5,"excl":true},   /* forma Chill de 649 (SpriteCollab 0649/0004), aspecto */
+  {"dex":1666,"name":"Vivillon Icy Snow","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Icy_Snow de 666 (SpriteCollab 0666/0001), aspecto */
+  {"dex":2666,"name":"Vivillon Polar","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Polar de 666 (SpriteCollab 0666/0002), aspecto */
+  {"dex":3666,"name":"Vivillon Tundra","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Tundra de 666 (SpriteCollab 0666/0003), aspecto */
+  {"dex":4666,"name":"Vivillon Continental","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Continental de 666 (SpriteCollab 0666/0004), aspecto */
+  {"dex":5666,"name":"Vivillon Garden","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Garden de 666 (SpriteCollab 0666/0005), aspecto */
+  {"dex":6666,"name":"Vivillon Elegant","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Elegant de 666 (SpriteCollab 0666/0006), aspecto */
+  {"dex":7666,"name":"Vivillon Modern","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Modern de 666 (SpriteCollab 0666/0007), aspecto */
+  {"dex":8666,"name":"Vivillon Marine","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Marine de 666 (SpriteCollab 0666/0008), aspecto */
+  {"dex":9666,"name":"Vivillon Archipelago","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Archipelago de 666 (SpriteCollab 0666/0009), aspecto */
+  {"dex":10666,"name":"Vivillon High Plains","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma High_Plains de 666 (SpriteCollab 0666/0010), aspecto */
+  {"dex":11666,"name":"Vivillon Sandstorm","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Sandstorm de 666 (SpriteCollab 0666/0011), aspecto */
+  {"dex":12666,"name":"Vivillon River","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma River de 666 (SpriteCollab 0666/0012), aspecto */
+  {"dex":13666,"name":"Vivillon Monsoon","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Monsoon de 666 (SpriteCollab 0666/0013), aspecto */
+  {"dex":14666,"name":"Vivillon Savanna","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Savannah de 666 (SpriteCollab 0666/0014), aspecto */
+  {"dex":15666,"name":"Vivillon Sun","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Sun de 666 (SpriteCollab 0666/0015), aspecto */
+  {"dex":16666,"name":"Vivillon Ocean","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Ocean de 666 (SpriteCollab 0666/0016), aspecto */
+  {"dex":17666,"name":"Vivillon Jungle","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Jungle de 666 (SpriteCollab 0666/0017), aspecto */
+  {"dex":18666,"name":"Vivillon Fancy","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Fancy de 666 (SpriteCollab 0666/0018), aspecto */
+  {"dex":19666,"name":"Vivillon Poké Ball","types":["bug","flying"],"hp":106,"spd":115,"atk":1.2,"pa":0.99,"sa":1.2,"df":50,"sd":50,"rarity":3,"bst":411,"starter":false,"gen":6,"excl":true},   /* forma Pokeball de 666 (SpriteCollab 0666/0019), aspecto */
+  {"dex":1669,"name":"Flabébé Yellow","types":["fairy"],"hp":90,"spd":96,"atk":1.04,"pa":0.91,"sa":1.04,"df":39,"sd":79,"rarity":1,"bst":303,"starter":false,"gen":6,"excl":true},   /* forma Yellow de 669 (SpriteCollab 0669/0001), aspecto */
+  {"dex":2669,"name":"Flabébé Orange","types":["fairy"],"hp":90,"spd":96,"atk":1.04,"pa":0.91,"sa":1.04,"df":39,"sd":79,"rarity":1,"bst":303,"starter":false,"gen":6,"excl":true},   /* forma Orange de 669 (SpriteCollab 0669/0002), aspecto */
+  {"dex":3669,"name":"Flabébé Blue","types":["fairy"],"hp":90,"spd":96,"atk":1.04,"pa":0.91,"sa":1.04,"df":39,"sd":79,"rarity":1,"bst":303,"starter":false,"gen":6,"excl":true},   /* forma Blue de 669 (SpriteCollab 0669/0003), aspecto */
+  {"dex":4669,"name":"Flabébé White","types":["fairy"],"hp":90,"spd":96,"atk":1.04,"pa":0.91,"sa":1.04,"df":39,"sd":79,"rarity":1,"bst":303,"starter":false,"gen":6,"excl":true},   /* forma White de 669 (SpriteCollab 0669/0004), aspecto */
+  {"dex":2670,"name":"Floette Yellow","types":["fairy"],"hp":94,"spd":100,"atk":1.11,"pa":0.95,"sa":1.11,"df":47,"sd":98,"rarity":2,"bst":371,"starter":false,"gen":6,"excl":true},   /* forma Yellow de 670 (SpriteCollab 0670/0001), aspecto */
+  {"dex":3670,"name":"Floette Orange","types":["fairy"],"hp":94,"spd":100,"atk":1.11,"pa":0.95,"sa":1.11,"df":47,"sd":98,"rarity":2,"bst":371,"starter":false,"gen":6,"excl":true},   /* forma Orange de 670 (SpriteCollab 0670/0002), aspecto */
+  {"dex":4670,"name":"Floette Blue","types":["fairy"],"hp":94,"spd":100,"atk":1.11,"pa":0.95,"sa":1.11,"df":47,"sd":98,"rarity":2,"bst":371,"starter":false,"gen":6,"excl":true},   /* forma Blue de 670 (SpriteCollab 0670/0003), aspecto */
+  {"dex":5670,"name":"Floette White","types":["fairy"],"hp":94,"spd":100,"atk":1.11,"pa":0.95,"sa":1.11,"df":47,"sd":98,"rarity":2,"bst":371,"starter":false,"gen":6,"excl":true},   /* forma White de 670 (SpriteCollab 0670/0004), aspecto */
+  {"dex":1671,"name":"Florges Yellow","types":["fairy"],"hp":105,"spd":110,"atk":1.32,"pa":1.06,"sa":1.32,"df":68,"sd":154,"rarity":4,"bst":552,"starter":false,"gen":6,"excl":true},   /* forma Yellow de 671 (SpriteCollab 0671/0001), aspecto */
+  {"dex":2671,"name":"Florges Orange","types":["fairy"],"hp":105,"spd":110,"atk":1.32,"pa":1.06,"sa":1.32,"df":68,"sd":154,"rarity":4,"bst":552,"starter":false,"gen":6,"excl":true},   /* forma Orange de 671 (SpriteCollab 0671/0002), aspecto */
+  {"dex":3671,"name":"Florges Blue","types":["fairy"],"hp":105,"spd":110,"atk":1.32,"pa":1.06,"sa":1.32,"df":68,"sd":154,"rarity":4,"bst":552,"starter":false,"gen":6,"excl":true},   /* forma Blue de 671 (SpriteCollab 0671/0003), aspecto */
+  {"dex":4671,"name":"Florges White","types":["fairy"],"hp":105,"spd":110,"atk":1.32,"pa":1.06,"sa":1.32,"df":68,"sd":154,"rarity":4,"bst":552,"starter":false,"gen":6,"excl":true},   /* forma White de 671 (SpriteCollab 0671/0004), aspecto */
+  {"dex":6670,"name":"Floette Eternal","types":["fairy"],"hp":94,"spd":100,"atk":1.11,"pa":0.95,"sa":1.11,"df":47,"sd":98,"rarity":2,"bst":371,"starter":false,"gen":6,"excl":true},   /* forma Eternal de 670 (SpriteCollab 0670/0005), aspecto */
+  {"dex":1676,"name":"Furfrou Kabuki","types":["normal"],"hp":104,"spd":121,"atk":1.14,"pa":1.14,"sa":1.06,"df":60,"sd":90,"rarity":3,"bst":472,"starter":false,"gen":6,"excl":true},   /* forma Kabuki de 676 (SpriteCollab 0676/0008), aspecto */
+  {"dex":1710,"name":"Pumpkaboo Small","types":["ghost","grass"],"hp":92,"spd":99,"atk":1.06,"pa":1.06,"sa":0.94,"df":70,"sd":55,"rarity":2,"bst":335,"starter":false,"gen":6,"excl":true},   /* forma Small de 710 (SpriteCollab 0710/0001), aspecto */
+  {"dex":2710,"name":"Pumpkaboo Large","types":["ghost","grass"],"hp":92,"spd":99,"atk":1.06,"pa":1.06,"sa":0.94,"df":70,"sd":55,"rarity":2,"bst":335,"starter":false,"gen":6,"excl":true},   /* forma Large de 710 (SpriteCollab 0710/0002), aspecto */
+  {"dex":3710,"name":"Pumpkaboo Super","types":["ghost","grass"],"hp":92,"spd":99,"atk":1.06,"pa":1.06,"sa":0.94,"df":70,"sd":55,"rarity":2,"bst":335,"starter":false,"gen":6,"excl":true},   /* forma Super de 710 (SpriteCollab 0710/0003), aspecto */
+  {"dex":1711,"name":"Gourgeist Super","types":["ghost","grass"],"hp":99,"spd":113,"atk":1.2,"pa":1.2,"sa":1.02,"df":122,"sd":75,"rarity":3,"bst":494,"starter":false,"gen":6,"excl":true},   /* forma Super de 711 (SpriteCollab 0711/0003), aspecto */
+  {"dex":1716,"name":"Xerneas Neutral","types":["fairy"],"hp":127,"spd":120,"atk":1.42,"pa":1.42,"sa":1.42,"df":95,"sd":98,"rarity":5,"bst":680,"starter":false,"gen":6,"excl":true},   /* forma Neutral de 716 (SpriteCollab 0716/0001), aspecto */
+  {"dex":1774,"name":"Minior Red","types":["rock","flying"],"hp":97,"spd":103,"atk":1.03,"pa":1.03,"sa":1.03,"df":100,"sd":100,"rarity":3,"bst":440,"starter":false,"gen":7,"excl":true},   /* forma Red de 774 (SpriteCollab 0774/0001), aspecto */
+  {"dex":2774,"name":"Minior Orange","types":["rock","flying"],"hp":97,"spd":103,"atk":1.03,"pa":1.03,"sa":1.03,"df":100,"sd":100,"rarity":3,"bst":440,"starter":false,"gen":7,"excl":true},   /* forma Orange de 774 (SpriteCollab 0774/0002), aspecto */
+  {"dex":3774,"name":"Minior Yellow","types":["rock","flying"],"hp":97,"spd":103,"atk":1.03,"pa":1.03,"sa":1.03,"df":100,"sd":100,"rarity":3,"bst":440,"starter":false,"gen":7,"excl":true},   /* forma Yellow de 774 (SpriteCollab 0774/0003), aspecto */
+  {"dex":4774,"name":"Minior Green","types":["rock","flying"],"hp":97,"spd":103,"atk":1.03,"pa":1.03,"sa":1.03,"df":100,"sd":100,"rarity":3,"bst":440,"starter":false,"gen":7,"excl":true},   /* forma Green de 774 (SpriteCollab 0774/0004), aspecto */
+  {"dex":5774,"name":"Minior Blue","types":["rock","flying"],"hp":97,"spd":103,"atk":1.03,"pa":1.03,"sa":1.03,"df":100,"sd":100,"rarity":3,"bst":440,"starter":false,"gen":7,"excl":true},   /* forma Blue de 774 (SpriteCollab 0774/0005), aspecto */
+  {"dex":6774,"name":"Minior Indigo","types":["rock","flying"],"hp":97,"spd":103,"atk":1.03,"pa":1.03,"sa":1.03,"df":100,"sd":100,"rarity":3,"bst":440,"starter":false,"gen":7,"excl":true},   /* forma Indigo de 774 (SpriteCollab 0774/0006), aspecto */
+  {"dex":7774,"name":"Minior Violet","types":["rock","flying"],"hp":97,"spd":103,"atk":1.03,"pa":1.03,"sa":1.03,"df":100,"sd":100,"rarity":3,"bst":440,"starter":false,"gen":7,"excl":true},   /* forma Violet de 774 (SpriteCollab 0774/0007), aspecto */
+  {"dex":1778,"name":"Mimikyu Busted","types":["ghost","fairy"],"hp":95,"spd":118,"atk":1.2,"pa":1.2,"sa":0.97,"df":80,"sd":105,"rarity":3,"bst":476,"starter":false,"gen":7,"excl":true},   /* forma Busted de 778 (SpriteCollab 0778/0001), aspecto */
+  {"dex":1801,"name":"Magearna Original","types":["steel","fairy"],"hp":106,"spd":105,"atk":1.42,"pa":1.22,"sa":1.42,"df":115,"sd":115,"rarity":5,"bst":600,"starter":false,"gen":7,"excl":true},   /* forma Original de 801 (SpriteCollab 0801/0001), aspecto */
+  {"dex":1875,"name":"Eiscue Noice","types":["ice"],"hp":104,"spd":99,"atk":1.14,"pa":1.14,"sa":1.06,"df":110,"sd":90,"rarity":3,"bst":470,"starter":false,"gen":8,"excl":true},   /* forma Noice de 875 (SpriteCollab 0875/0001), aspecto */
+  {"dex":1925,"name":"Maushold Family of Three","types":["normal"],"hp":103,"spd":125,"atk":1.11,"pa":1.11,"sa":1.06,"df":70,"sd":75,"rarity":3,"bst":470,"starter":false,"gen":9,"excl":true},   /* forma Three de 925 (SpriteCollab 0925/0001), aspecto */
+  {"dex":2978,"name":"Tatsugiri Stretchy","types":["dragon","water"],"hp":101,"spd":112,"atk":1.36,"pa":0.97,"sa":1.36,"df":60,"sd":95,"rarity":3,"bst":475,"starter":false,"gen":9,"excl":true},   /* forma Stretchy de 978 (SpriteCollab 0978/0001), aspecto */
+  {"dex":3978,"name":"Tatsugiri Droopy","types":["dragon","water"],"hp":101,"spd":112,"atk":1.36,"pa":0.97,"sa":1.36,"df":60,"sd":95,"rarity":3,"bst":475,"starter":false,"gen":9,"excl":true}   /* forma Droopy de 978 (SpriteCollab 0978/0002), aspecto */
 ];
 
 G.DEX_BY = {};

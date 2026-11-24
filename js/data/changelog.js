@@ -5,6 +5,14 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-11-24', title: ["Lo que faltaba de la Gran Actualización", "The rest of the Great Update"], new: [
+    ["Llegan 16 Pokémon que faltaban: Jellicent, Stunfisk, Aromatisse, Toucannon, Rolycoly, Sirfetch’d, Cufant, Copperajah, Dolliv, Grafaiai, Toedscool, Bombirdier, Ferrodada, Ting-Lu, Electrofuria y Pecharunt. Salen en el gacha de su región, en los huevos, como enemigos y en la Colección; Ting-Lu y Pecharunt, también en las grietas.",
+     "16 missing Pokémon arrive: Jellicent, Stunfisk, Aromatisse, Toucannon, Rolycoly, Sirfetch’d, Cufant, Copperajah, Dolliv, Grafaiai, Toedscool, Bombirdier, Iron Treads, Ting-Lu, Raging Bolt and Pecharunt. They show up in their region's gacha, in eggs, as enemies and in the Collection; Ting-Lu and Pecharunt, in rifts too."],
+    ["Tres Megaevoluciones nuevas para el poder Megaevolución: Mega Sceptile, Mega Chimecho y Mega Hawlucha (también en el gacha de su región).",
+     "Three new Mega Evolutions for the Mega Evolution power: Mega Sceptile, Mega Chimecho and Mega Hawlucha (also in their region's gacha)."],
+    ["94 aspectos nuevos en el Vestidor, que sólo cambian el dibujo: las letras de Unown, los 19 dibujos de Vivillon, las flores de Flabébé, Floette y Florges, las estaciones de Deerling y Sawsbuck, los núcleos de Minior, las tarjetas de Genesect, Mimikyu desenmascarado, Magearna de hace 500 años y más.",
+     "94 new looks in the Dressing Room, which only change the sprite: Unown's letters, Vivillon's 19 patterns, the flowers of Flabébé, Floette and Florges, Deerling and Sawsbuck's seasons, Minior's cores, Genesect's drives, busted Mimikyu, Original Color Magearna and more."]
+  ] },
   { d: '2026-11-23', title: ["La Gran Actualización: Eternatus y sus poderes, dificultades, Vestidor y estelas, huevos, Maestría, desafío semanal, Casino Rocket, grietas y Sentencia nuevas", "The Great Update: Eternatus and its powers, difficulties, Dressing Room and trails, eggs, Mastery, weekly challenge, Rocket Casino, new rifts and Judgment"], new: [
     ["Vestidor, en el menú (y con un botón en la ficha de cada Pokémon): para cada Pokémon eliges su versión normal o shiny, su aspecto (las formas que sólo cambian el dibujo), su skin, un efecto (brillos, aura de su tipo, halo de luz o aura oscura) y su estela, y lo ves dando vueltas antes de jugar.",
      "Dressing Room, in the menu (and with a button on each Pokémon's page): for each Pokémon you choose its normal or shiny version, its look (forms that only change the sprite), its skin, an effect (sparkles, type aura, halo of light or dark aura) and its trail, and you can watch it walk around before playing."],
