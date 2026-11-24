@@ -449,7 +449,7 @@ G.ShopUI = (() => {
   // Pestañas (23-11-2026): Objetos y MT · Estelas.
   let shopTab = 'items';
   function open(tab) {
-    if (tab === 'items' || tab === 'trails') shopTab = tab;
+    if (tab === 'items' || tab === 'trails' || tab === 'held') shopTab = tab;
     G.UI.show('scr-shop', true);
     const sg = $('shop-sign');
     sg.classList.remove('lit', 'show', 'shown');
@@ -494,8 +494,8 @@ G.ShopUI = (() => {
 
   /** El objeto comprado sale de la estantería (from) y vuela hasta su fila de la lista
    *  (key, donde pone cuántos tienes), que bota al recibirlo. */
-  function flyToBag(iconHtml, from, key) {
-    const target = $('shop-body').querySelector(`[data-buy="${key}"]`)?.closest('.upg-item').querySelector('.ic');
+  function flyToBag(iconHtml, from, key, attr = 'data-buy') {
+    const target = $('shop-body').querySelector(`[${attr}="${key}"]`)?.closest('.upg-item').querySelector('.ic');
     if (!target) return;
     const to = target.getBoundingClientRect();
     if (!from) { const r = $('shop-stall').getBoundingClientRect(); from = { x: r.left + r.width / 2, y: r.bottom - 50 }; }
@@ -533,10 +533,11 @@ G.ShopUI = (() => {
   function render() {
     const box = $('shop-body');
     const tabs = $('shop-tabs');
-    tabs.innerHTML = [['items', 'Objetos y MT', 'Mentas, Cápsulas y MT'], ['trails', 'Estelas', G.I18n.f('{x} esta semana', G.Shop.weeklyTrails().length)]]
+    tabs.innerHTML = [['items', 'Objetos y MT', 'Mentas, Cápsulas y MT'], ['held', 'Objetos de partida', 'Para el Objeto inicial'], ['trails', 'Estelas', G.I18n.f('{x} esta semana', G.Shop.weeklyTrails().length)]]
       .map(([k, t, sub]) => `<button class="gen-tab${shopTab === k ? ' on' : ''}" data-tab="${k}"><b>${G.T(t)}</b><small>${sub}</small></button>`).join('');
     tabs.querySelectorAll('[data-tab]').forEach(b => { b.onclick = () => { shopTab = b.dataset.tab; render(); }; });
     if (shopTab === 'trails') { renderTrails(box); return; }
+    if (shopTab === 'held') { renderHeld(box); return; }
     box.innerHTML = buyHtml();
     // Fotos del día y marcos de la semana (ui/mastery-ui.js).
     G.PhotoUI.shopSection(box, () => { Scene.cheer(); say(G.U.pick(['¡Muchas gracias!', '¡Gracias, vuelve pronto!'])); render(); });
@@ -638,6 +639,43 @@ G.ShopUI = (() => {
     });
   }
 
+  // ---------------- objetos de partida (24-11-2026, systems/startitem.js) ----------------
+
+  /** Los objetos equipables de la partida, para empezar con ellos (Mejora Objeto inicial). */
+  function renderHeld(box) {
+    const s = G.DB.save, dex = s.partner, P = G.Shop.HELD_PRICE;
+    const mine = n => (n ? ` <small class="gold">· ${G.I18n.f('tienes {x}', n)}</small>` : '');
+    const has = G.StartItem.has(dex), cur = G.StartItem.of(dex);
+    let h = `<h3 style="margin:10px 0 6px">${G.T('Objetos de partida')}</h3>
+      <p class="sub" style="margin:0 0 8px"><span>${G.T('Los objetos que encuentras en la partida, para empezar con uno: hace falta la Mejora Objeto inicial de ese Pokémon, y se gasta uno al empezar. Los que dan experiencia no se venden.')}</span>
+      <b class="gold">${has ? G.I18n.f('{x} empieza con: {x}', G.T(G.DEX_BY[dex].name), cur ? G.T(G.Items.BY[cur].name) : G.T('ninguno')) : G.I18n.f('{x} aún no tiene la Mejora Objeto inicial', G.T(G.DEX_BY[dex].name))}</b>
+      <button class="btn small" data-sitem-pick>${G.Icons.html(has ? 'bag' : 'up', 14)} ${G.T(has ? 'Elegir objeto inicial' : 'Ir a Mejoras')}</button></p><div class="upg">`;
+    for (const id of G.Shop.heldForSale()) {
+      const it = G.Items.BY[id];
+      h += row(G.Icons.html(id, 32), G.T(it.name) + mine(G.Shop.heldCount(id)) + (id === cur && has ? ` ${G.Icons.html('star', 12)}` : ''), G.T(it.desc),
+        `<button class="btn small gold" data-held="${id}" data-sfx="none" ${s.coins < P ? 'disabled' : ''}>${coin(P)}</button>`);
+    }
+    box.innerHTML = h + '</div>';
+    box.querySelectorAll('[data-held]').forEach(b => {
+      b.onclick = () => {
+        const id = b.dataset.held, r = G.Shop.buyHeld(id);
+        if (!r.ok) { if (r.error) G.UI.toast(G.T(r.error)); G.Audio.sfx('error'); return; }
+        G.Audio.sfx('buy');
+        G.UI.refreshCoins();
+        const icon = b.closest('.upg-item').querySelector('.ic').innerHTML;
+        const from = Scene.cheer();
+        say(G.U.pick(['¡Muchas gracias!', '¡Gracias, vuelve pronto!']));
+        render();
+        flyToBag(icon, from, id, 'data-held');
+      };
+    });
+    const pk = box.querySelector('[data-sitem-pick]');
+    if (pk) pk.onclick = () => { if (has) G.StartItem.pick(dex, () => render()); else G.MenuUI.openUpgrades(); };
+    box.querySelectorAll('.upg-item').forEach(it => {
+      it.addEventListener('pointerenter', () => { const r = it.getBoundingClientRect(); Scene.point(r.left + r.width / 2); });
+    });
+  }
+
   /** Halloween: las skins de bruja, por caramelos. */
   function skinsHtml() {
     const s = G.DB.save, have = (s.bag && s.bag.candy) || 0, P = G.Halloween.SKIN_PRICE;
@@ -660,7 +698,8 @@ G.ShopUI = (() => {
     const items = G.Shop.ORDER.filter(id => G.Shop.count(id) > 0);
     if (G.Shop.count('candy') > 0) items.push('candy');
     const tms = Object.keys(s.tms || {}).filter(id => G.Moves.BY_ID[id] && s.tms[id] > 0).sort((a, b) => moveName(a).localeCompare(moveName(b)));
-    if (!items.length && !tms.length) {
+    const held = G.StartItem.owned();          // objetos de partida (24-11-2026)
+    if (!items.length && !tms.length && !held.length) {
       return `<p class="sub center" style="margin:24px 0">${G.T(G.Eggs.count() ? 'No tienes objetos ni MT.' : 'Tu Mochila está vacía.')}<br><br>
             <button class="btn gold" data-go-shop>${G.Icons.html('shop', 16)} ${G.T('Ir a la Tienda Kecleon')}</button></p>` + irisHtml();
     }
@@ -676,7 +715,14 @@ G.ShopUI = (() => {
       h += row(G.Icons.html('move:' + id, 32), `${G.T('MT')} ${moveName(id)}`,
         n ? G.I18n.f('La pueden aprender {x} de tus Pokémon', n) : G.T('Ninguno de tus Pokémon la puede aprender'), `<b class="gold">×${s.tms[id]}</b>`);
     }
-    return h + '</div>' + irisHtml();
+    h += '</div>';
+    if (held.length) {
+      h += `<h3 style="margin:14px 0 6px">${G.T('Objetos de partida')}</h3>
+        <p class="sub" style="margin:0 0 8px">${G.T('Para empezar la partida con uno (Mejora Objeto inicial): se gasta uno cada vez.')}</p><div class="upg">`;
+      for (const id of held) h += row(G.Icons.html(id, 32), G.T(G.Items.BY[id].name), G.T(G.Items.BY[id].desc), `<b class="gold">×${G.Shop.heldCount(id)}</b>`);
+      h += '</div>';
+    }
+    return h + irisHtml();
   }
 
   /** Amuletos Iris: los 9, los que tienes y cuánto te falta para los demás. */

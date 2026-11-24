@@ -5,6 +5,14 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-11-24', title: ["Lo que faltaba de la Gran Actualización", "The rest of the Great Update"], new: [
+    ["Menú principal nuevo, sin scroll: todo cabe en la pantalla en el PC y en el móvil (en vertical y en horizontal), con Jugar en grande, la dificultad y el desafío semanal a la vista, la última novedad y la ficha de tu compañero.",
+     "New main menu with no scrolling: everything fits on screen on PC and on mobile (portrait and landscape), with a big Play button, the difficulty and the weekly challenge in plain sight, the latest news and your partner's card."],
+    ["Mejora nueva, Objeto inicial (400 Pokémonedas, para cada Pokémon): empiezas la partida con el objeto que elijas de los que tienes, y se gasta uno. Se elige en la ficha de tu compañero del menú o en Mejoras. En grupo, cada uno lleva el suyo; en el desafío semanal no cuenta.",
+     "New upgrade, Starting item (400 Pokécoins, for each Pokémon): you start the run with the item you choose from the ones you own, and one is used up. Pick it on your partner's card in the menu or in Upgrades. In a group, everyone brings their own; it doesn't count in the weekly challenge."],
+    ["Tienda Kecleon, pestaña nueva Objetos de partida: los objetos que se encuentran en la partida, a 500 Pokémonedas cada uno, para empezar con ellos (los que dan experiencia, como el Huevo Suerte o el Amuleto Exp., no se venden). Los que tienes salen en la Mochila.",
+     "Kecleon Shop, new Run items tab: the items you find during a run, 500 Pokécoins each, to start with them (the ones that give experience, like the Lucky Egg or the Exp. Charm, aren't sold). The ones you own show up in your Bag."]
+  ] },
   { d: '2026-11-23', title: ["La Gran Actualización: Eternatus y sus poderes, dificultades, Vestidor y estelas, huevos, Maestría, desafío semanal, Casino Rocket, grietas y Sentencia nuevas", "The Great Update: Eternatus and its powers, difficulties, Dressing Room and trails, eggs, Mastery, weekly challenge, Rocket Casino, new rifts and Judgment"], new: [
     ["Vestidor, en el menú (y con un botón en la ficha de cada Pokémon): para cada Pokémon eliges su versión normal o shiny, su aspecto (las formas que sólo cambian el dibujo), su skin, un efecto (brillos, aura de su tipo, halo de luz o aura oscura) y su estela, y lo ves dando vueltas antes de jugar.",
      "Dressing Room, in the menu (and with a button on each Pokémon's page): for each Pokémon you choose its normal or shiny version, its look (forms that only change the sprite), its skin, an effect (sparkles, type aura, halo of light or dark aura) and its trail, and you can watch it walk around before playing."],

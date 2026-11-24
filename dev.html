@@ -193,47 +193,59 @@
   </div>
 </section>
 
-<!-- ====== Menú principal ====== -->
-<section id="scr-menu" class="scr hidden">
-  <div class="menu-left">
-    <div class="logo">
-      <div class="t1">PokéSurvivor<span class="splash">Folagor, Sekiam, PokeAlex: ¿un hueco?</span></div>
-      <div class="t2">Mundo Misterioso</div>
-      <div id="menu-hw" class="hw-count hidden"></div>
-    </div>
-    <div class="partner-card">
-      <canvas id="menu-partner" class="stage" width="260" height="200"></canvas>
-      <div class="nm" id="menu-partner-name"></div>
-      <div class="lv" id="menu-partner-info"></div>
-      <div id="menu-mast"></div>
-      <div class="seg hidden" id="menu-shiny"><button data-v="0">Normal</button><button data-v="1"></button></div>
-    </div>
-    <!-- Desafío semanal (js/ui/challenge-ui.js): el Pokémon y la condición de esta semana -->
-    <button class="box ch-card" id="menu-ch" type="button">
-      <canvas id="ch-card-mon" width="64" height="56"></canvas>
-      <span class="ch-txt"><b class="gold">Desafío semanal</b><span id="ch-card-cond"></span><small id="ch-card-sub"></small></span>
-    </button>
+<!-- ====== Menú principal ======
+     Sin scroll (24-11-2026, como la Gran Actualización del juego oficial): todo cabe en la pantalla, en el PC y
+     en el móvil en vertical y en horizontal, con la dificultad y el desafío semanal a la vista. La rejilla está
+     en css/style.css («menú principal sin scroll», al final). Cada botón con data-go lo abre js/ui/menu.js. -->
+<section id="scr-menu" class="scr hidden m2">
+  <div class="m2-logo logo">
+    <div class="t1">PokéSurvivor<span class="splash">Folagor, Sekiam, PokeAlex: ¿un hueco?</span></div>
+    <div class="t2">Mundo Misterioso</div>
+    <div id="menu-hw" class="hw-count hidden"></div>
   </div>
-  <div class="menu-right">
-    <div class="box">
-      <!-- Dificultad (systems/modes.js) -->
-      <div class="mode-pick"><div class="seg" id="menu-mode"></div><div id="menu-mode-sub" class="mode-sub"></div></div>
-      <div class="menu-list">
-        <button class="menu-item play" data-go="play">Jugar<small>Entra en la mazmorra</small></button>
-        <button class="menu-item" data-go="dex">Pokémon<small id="menu-dex-count">Tu colección</small></button>
-        <button class="menu-item" data-go="wardrobe">Vestidor<small>Shiny, aspecto, skin, efectos y estela</small></button>
-        <button class="menu-item" data-go="upgrades">Mejoras<small>Haz más fuerte cada run</small></button>
-        <button class="menu-item" data-go="shop">Tienda Kecleon<small>Mentas, Cápsulas, MT y estelas</small></button>
-        <button class="menu-item" data-go="bag">Mochila<small id="menu-bag-sub">Vacía</small></button>
-        <button class="menu-item" data-go="gacha">Gacha<small>9 regiones · Pokémon y shinies</small></button>
-        <button class="menu-item" data-go="goals">Misiones<small id="menu-goals-sub">Misiones, logros y perfil</small></button>
-        <button class="menu-item" data-go="friends" style="position:relative">Amigos<small id="menu-friends-sub">Juega en grupo, hasta 10</small><span id="menu-dm-badge" class="dm-badge hidden" title="Mensajes nuevos"></span></button>
-        <button class="menu-item" data-go="rank">Ranking<small>Quién aguanta más</small></button>
-        <button class="menu-item" data-go="mastery">Maestría<small id="menu-mast-sub">Tus Pokémon y sus premios</small></button>
-      </div>
+  <div class="box m2-panel">
+    <div class="m2-top">
+      <button class="menu-item m2-tile play" data-go="play">Jugar<small>Entra en la mazmorra</small></button>
+      <button class="menu-item m2-tile" data-go="gacha">Gacha<small>9 regiones · Pokémon y shinies</small></button>
+      <button class="menu-item m2-tile" data-go="wardrobe">Vestidor<small>Shiny, aspecto, skin, efectos y estela</small></button>
+      <button class="menu-item m2-tile" data-go="friends">Amigos<small id="menu-friends-sub">Juega en grupo, hasta 10</small><span id="menu-dm-badge" class="dm-badge hidden" title="Mensajes nuevos"></span></button>
+      <button class="menu-item m2-tile" data-go="shop">Tienda Kecleon<small>Mentas, Cápsulas, MT y estelas</small></button>
     </div>
-    <div class="box" style="padding:14px 18px">
-      <div id="menu-stats" style="font-size:14px;color:var(--muted)"></div>
+    <div class="m2-mid">
+      <!-- Desafío semanal (js/ui/challenge-ui.js): el Pokémon y la condición de esta semana -->
+      <button class="ch-card m2-ch" id="menu-ch" type="button">
+        <canvas id="ch-card-mon" width="64" height="56"></canvas>
+        <span class="ch-txt"><b class="gold">Desafío semanal</b><span id="ch-card-cond"></span><small id="ch-card-sub"></small></span>
+      </button>
+      <!-- Dificultad (systems/modes.js) -->
+      <div class="mode-pick m2-mode"><div class="seg" id="menu-mode"></div><div id="menu-mode-sub" class="mode-sub"></div></div>
+    </div>
+    <div class="m2-row">
+      <button class="menu-item m2-tile sm" data-go="dex">Pokémon<small id="menu-dex-count">Tu colección</small></button>
+      <button class="menu-item m2-tile sm" data-go="upgrades">Mejoras<small>Haz más fuerte cada run</small></button>
+      <button class="menu-item m2-tile sm" data-go="bag">Mochila<small id="menu-bag-sub">Vacía</small></button>
+      <button class="menu-item m2-tile sm" data-go="goals">Misiones<small id="menu-goals-sub">Misiones, logros y perfil</small></button>
+      <button class="menu-item m2-tile sm" data-go="rank">Ranking<small>Quién aguanta más</small></button>
+    </div>
+    <div class="m2-foot">
+      <button class="menu-item m2-tile line" data-go="mastery">Maestría<small id="menu-mast-sub">Tus Pokémon y sus premios</small></button>
+      <div id="menu-stats" class="m2-stats"></div>
+    </div>
+  </div>
+  <div class="m2-side">
+    <!-- Novedades: la última (js/ui/news-ui.js, card); la lista entera, como el botón de la barra de arriba -->
+    <button class="box m2-news" id="menu-news" type="button"></button>
+    <div class="box partner-card m2-partner">
+      <div class="m2-ph"><span>Tu compañero</span><button class="btn small ghost" id="menu-partner-go" type="button">Cambiar</button></div>
+      <canvas id="menu-partner" class="stage" width="260" height="200"></canvas>
+      <div class="m2-pinfo">
+        <div class="nm" id="menu-partner-name"></div>
+        <div class="lv" id="menu-partner-info"></div>
+        <div id="menu-mast"></div>
+        <div class="seg hidden" id="menu-shiny"><button data-v="0">Normal</button><button data-v="1"></button></div>
+        <!-- Mejora Objeto inicial (systems/startitem.js): con qué objeto empieza -->
+        <button class="m2-sitem hidden" id="menu-sitem" type="button"></button>
+      </div>
     </div>
   </div>
 </section>
@@ -826,6 +838,7 @@
 <script defer src="js/systems/dexlog.js"></script>
 <script defer src="js/systems/hazards.js"></script>
 <script defer src="js/systems/orbs.js"></script>
+<script defer src="js/systems/startitem.js"></script>
 <!-- red: amigos, salas, cooperativo y ranking -->
 <script defer src="js/net/social.js"></script>
 <script defer src="js/net/codec.js"></script>

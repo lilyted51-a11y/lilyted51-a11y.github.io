@@ -52,6 +52,23 @@ await A.go(`http://localhost:8765/dev.html?dev&halloween=1`, 8000);
 await A.ev(`document.getElementById('tap-start').click(); 1`); await sleep(1200);
 await A.ev(`document.getElementById('scr-invite').classList.add('hidden'); G.DB.playAsGuest(); const s = G.DB.save; s.partner = 352; for (const d of [352, 94, 25, 1382, 150]) s.owned[d] = { at: 1 }; s.coins = 99999; s.tickets = { t1: 500, t10: 50 }; s.bag = { candy: 900, mint: 2, cap: 1, caph: 1, tmx: 1 }; s.ptm = { 352: [G.Mons.learnable(352)[0]] }; s.pseen = { 352: 1234, 19: 56, 25: 3 }; s.pdef = { 352: 1200, 19: 50 }; s.skins = { hat: Date.now(), 'bruja-gengar': Date.now() }; G.Skins.wear(s, 352, 'hat'); const u = G.DB.upgradesOf(352); for (const x of G.Upgrades.LIST) u[x.id] = x.max; s.mast = { 352: 60000, 94: 12000, 25: 300 }; s.mstat = { 352: { r: 40, t: 70000, k: 200000, a: 3, bt: 1900, b: 120, rf: 90, e: 2 } }; const ph = G.Photo.dailyPhotos()[0]; s.photos = { [ph.key]: Date.now() }; s.frames = { [G.Photo.weeklyFrames()[0]]: Date.now() }; G.UI.hideAll(); G.MenuUI.open(); 1`); await sleep(1500);
 await grab('menú'); await misses('menú');
+// Menú sin scroll (24-11-2026): el menú a cada tamaño (PC, móvil en vertical y en horizontal), con el Objeto inicial
+// elegido en la ficha del compañero, la ventana para elegirlo (con y sin objetos) y la pestaña Objetos de partida.
+await A.ev(`(() => { const s = G.DB.save; s.held = { leftovers: 2, metronome: 1 }; s.psitem = { 352: 'leftovers' }; G.UI.hideAll(); G.MenuUI.open(); return 1; })()`); await sleep(600);
+for (const [w, h, m] of [[1280, 720, false], [1920, 1080, false], [390, 844, true], [844, 390, true], [760, 430, false]]) {
+  await A.send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: m }); await sleep(700);
+  await grab(`menú ${w}x${h}`); await misses(`menú ${w}x${h}`);
+}
+await click('#menu-sitem'); await grab('Objeto inicial: elegir'); await misses('Objeto inicial: elegir');
+await click('#scr-sitem [data-id="metronome"]'); await sleep(300); await grab('Objeto inicial: elegido (aviso)');
+await A.ev(`(() => { const s = G.DB.save; s.held = {}; G.StartItem.pick(352); return 1; })()`); await sleep(500); await grab('Objeto inicial: sin objetos');
+await click('#sitem-close');
+await A.ev(`(() => { const s = G.DB.save; s.held = { metronome: 0 }; G.UI.hideAll(); G.MenuUI.open(); return 1; })()`); await sleep(500); await grab('menú: objeto inicial agotado');
+await A.ev(`(() => { const s = G.DB.save; s.held = { leftovers: 2, metronome: 1 }; G.ShopUI.open('held'); return 1; })()`); await sleep(1500); await grab('tienda: objetos de partida');
+await A.ev(`(() => { const u = G.DB.upgradesOf(352); delete u.sitem; G.ShopUI.render(); return 1; })()`); await sleep(500); await grab('tienda: objetos de partida (sin la Mejora)');
+await A.ev(`(() => { G.DB.upgradesOf(352).sitem = 1; G.ShopUI.openBag(); return 1; })()`); await sleep(800); await grab('Mochila: objetos de partida');
+for (const t of ['Ese objeto no se vende.']) { await A.ev(`G.UI.toast(G.T(${JSON.stringify(t)}), 900); 1`); await sleep(350); await grab('toast (objeto inicial)'); }
+await misses('Objeto inicial y Objetos de partida');
 for (const go of ['dex', 'wardrobe', 'upgrades', 'shop', 'bag', 'gacha', 'goals', 'friends', 'rank', 'mastery', 'settings']) {
   await A.ev(`G.UI.hideAll(); G.MenuUI.open(); 1`); await sleep(300);
   const ok = await A.ev(`(() => { const b = document.querySelector('#scr-menu [data-go=${go}]') || (${JSON.stringify(go)} === 'settings' && document.getElementById('btn-settings')); if (b) b.click(); return !!b; })()`); await sleep(1800);
@@ -66,7 +83,7 @@ for (const go of ['dex', 'wardrobe', 'upgrades', 'shop', 'bag', 'gacha', 'goals'
     await A.ev(`(() => { G.UI.hideAll(); G.MenuUI.openDex(); const c = [...document.querySelectorAll('#dex-grid .cell')].find(c => (c.querySelector('.no') || {}).textContent === '019'); if (c) c.click(); return !!c; })()`); await sleep(800);
     await grab('Pokédex: visto sin tenerlo');
   }
-  if (go === 'upgrades') await clickAll('#scr-upgrades button.btn:not([data-back])');
+  if (go === 'upgrades') { await clickAll('#scr-upgrades button.btn:not([data-back])'); await A.ev(`G.StartItem.close(); 1`); }
   if (go === 'shop') { await clickAll('#scr-shop .gen-tab'); }
   if (go === 'gacha') {
     await clickAll('#gacha-gens .gen-tab:not(.hidden)');
@@ -169,6 +186,8 @@ await A.ev(`document.getElementById('scr-savenote').classList.add('hidden'); 1`)
 // ---------- partida ----------
 // (con estela y efecto del Vestidor, 23-11-2026)
 await A.ev(`(() => { const s = G.DB.save; s.trails.corazonesiris = Date.now(); G.Dress.set(s, 1382, { tr: 'corazonesiris', fx: 'halo' }); return 1; })()`);
+// (y con el Objeto inicial: «Empiezas con …» al empezar, 24-11-2026)
+await A.ev(`(() => { const s = G.DB.save; G.DB.upgradesOf(1382).sitem = 1; s.psitem[1382] = 'leftovers'; s.held.leftovers = 3; return 1; })()`);
 await A.ev(`G.UI.hideAll(); G.DB.save.partner = 1382; G.Boost.paused = false; G.Boost.debugAs('BENCH', null, true); G.Game.startRun(); G.Game.debugSpeed(2); window.__POKE_BOT_ON__ = true; window.__canvasTexts.clear(); 1`);
 let lvSeen = false, itemSeen = false;
 for (let i = 0; i < 30; i++) {

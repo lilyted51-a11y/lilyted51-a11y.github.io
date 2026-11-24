@@ -24,7 +24,10 @@ G.Upgrades = (() => {
     // 16-11-2026 (como la Gran Actualización del juego oficial): más daño de los críticos y más objetos a la vez.
     { id: 'critd',  icon: 'up', name: 'Crítico Potente', unit: '+5% de daño de los críticos', max: 10, base: 90, grow: 1.4 },
     { id: 'item2',  icon: 'bag', name: 'Segundo objeto', unit: 'Puedes llevar 2 objetos a la vez en la partida', max: 1, base: 10000, grow: 1 },
-    { id: 'item3',  icon: 'bag', name: 'Tercer objeto',  unit: 'Mejora legendaria: puedes llevar 3 objetos a la vez (necesita Segundo objeto)', max: 1, base: 30000, grow: 1, needs: 'item2' }
+    { id: 'item3',  icon: 'bag', name: 'Tercer objeto',  unit: 'Mejora legendaria: puedes llevar 3 objetos a la vez (necesita Segundo objeto)', max: 1, base: 30000, grow: 1, needs: 'item2' },
+    // 24-11-2026 (como la Gran Actualización del juego oficial): empiezas con el objeto que elijas de los
+    // que tienes (se compran en la Tienda Kecleon y se gasta uno por partida; ver systems/startitem.js).
+    { id: 'sitem',  icon: 'bag', name: 'Objeto inicial', unit: 'Empiezas con el objeto que elijas (se gasta uno)', max: 1, base: 400, grow: 1 }
   ];
   const BY = {};
   for (const u of LIST) BY[u.id] = u;
@@ -54,7 +57,8 @@ G.Upgrades = (() => {
       bans: L('ban'),
       critBonus: L('critd') * 0.05,
       item2: L('item2'),
-      item3: L('item3')
+      item3: L('item3'),
+      sitem: L('sitem')
     };
   }
 

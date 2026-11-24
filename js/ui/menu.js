@@ -38,6 +38,8 @@ G.MenuUI = (() => {
         else if (go === 'mastery') G.MasteryUI.open();
       };
     });
+    // Menú sin scroll (24-11-2026): «Cambiar» en la ficha del compañero abre la colección.
+    $('menu-partner-go').onclick = openDex;
     document.querySelectorAll('[data-back]').forEach(b => { b.onclick = open; });
     G.Social.on(() => { if (G.UI.isOpen('scr-menu')) socialLine(); });
     $('btn-logout').onclick = () => {
@@ -89,11 +91,13 @@ G.MenuUI = (() => {
     const shinies = Object.keys(s.shiny || {}).filter(d => G.DEX_BY[d] && !G.DEX_BY[d].excl).length;
     $('menu-dex-count').textContent = `${owned} / ${G.DEX.filter(p => !p.excl).length}` + (shinies ? ` · ${shinies} shiny` : '');
 
-    const st = s.stats;
-    $('menu-stats').innerHTML =
-      `Runs <b style="color:#fff">${st.runs}</b> · Mejor tiempo <b style="color:#fff">${G.U.mmss(st.bestTime)}</b><br>` +
-      `Mejor nivel <b style="color:#fff">${st.bestLevel}</b> · Derrotados <b style="color:#fff">${st.totalKills.toLocaleString(G.I18n.locale)}</b>` +
-      (G.DB.guest ? '<br><span style="color:#ffb0b8">Modo invitado: no se guarda</span>' : '');
+    // Menú sin scroll (24-11-2026): los números, cada uno en su casilla.
+    const st = s.stats, num = (k, v) => `<span><small>${k}</small><b>${v}</b></span>`;
+    $('menu-stats').innerHTML = num('Runs', st.runs) + num('Mejor tiempo', G.U.mmss(st.bestTime)) +
+      num('Mejor nivel', st.bestLevel) + num('Derrotados', st.totalKills.toLocaleString(G.I18n.locale)) +
+      (G.DB.guest ? '<em class="m2-guest">Modo invitado: no se guarda</em>' : '');
+    sitemLine(mon.dex);
+    if (G.NewsUI && G.NewsUI.card) G.NewsUI.card();
 
     socialLine();
     G.ChallengeUI.card();          // desafío semanal (ui/challenge-ui.js)
@@ -128,6 +132,21 @@ G.MenuUI = (() => {
     el.classList.toggle('hidden', !txt);
     if (txt) el.innerHTML = `${G.Icons.html('pumpkin', 18)} <span>${txt}</span>`;
     if (!hwT && txt) hwT = setInterval(() => { if (G.UI.isOpen('scr-menu')) hwLine(); }, 1000);
+  }
+
+  /** Hueco «Objeto inicial» de la ficha del compañero (24-11-2026, systems/startitem.js): sólo con la Mejora. */
+  function sitemLine(dex) {
+    const b = $('menu-sitem');
+    if (!b) return;
+    const on = G.StartItem.has(dex);
+    b.classList.toggle('hidden', !on);
+    if (!on) return;
+    const id = G.StartItem.of(dex), n = id ? G.Shop.heldCount(id) : 0;
+    b.classList.toggle('empty', !id || !n);
+    b.innerHTML = `<span class="ic">${G.Icons.html(id || 'bag', 22)}</span><span class="tx"><small>${G.T('Objeto inicial')}</small>` +
+      `<b>${id ? G.T(G.Items.BY[id].name) : G.T('Ninguno')}</b></span>` + (id ? `<span class="n">×${n}</span>` : '');
+    b.title = G.T(id && !n ? 'No te queda: cómpralo en la Tienda Kecleon' : 'Elige con qué objeto empiezas');
+    b.onclick = () => G.StartItem.pick(dex, open);
   }
 
   function bagLine() {
@@ -693,12 +712,14 @@ G.MenuUI = (() => {
           ${u.id === 'ban' && lvl > 0 ? `<button class="btn small" data-ban>Elegir (${banList().length}/${lvl})</button>` : ''}
           ${u.id === 'start' && lvl > 0 ? `<button class="btn small" data-start>Elegir: ${G.Moves.BY_ID[G.startMoveOf(upgDex)].name}</button>` : ''}
           ${u.id === 'start2' && lvl > 0 ? `<button class="btn small" data-start2>Elegir: ${pick2 ? G.Moves.BY_ID[pick2].name : G.T('Al azar')}</button>` : ''}
+          ${u.id === 'sitem' && lvl > 0 ? `<button class="btn small" data-sitem>${G.Icons.html(G.StartItem.of(upgDex) || 'ban', 16)} ${G.I18n.f('Elegir: {x}', G.StartItem.of(upgDex) ? G.T(G.Items.BY[G.StartItem.of(upgDex)].name) : G.T('Ninguno'))}</button>` : ''}
           <button class="btn small ${maxed ? '' : 'gold'}" data-buy data-sfx="none" ${maxed || locked || s.coins < cost ? 'disabled' : ''}
             ${locked ? `title="${G.T('Primero compra Repertorio')}"` : ''}>
           ${maxed ? 'Máx.' : locked ? G.T('Necesita Repertorio') : `<span class="coin"></span> ${cost}`}</button></div>`;
       if (u.id === 'ban' && lvl > 0) el.querySelector('[data-ban]').onclick = () => { banOpen = !banOpen; renderUpgrades(); };
       if (u.id === 'start' && lvl > 0) el.querySelector('[data-start]').onclick = () => { startOpen = !startOpen; renderUpgrades(); };
       if (u.id === 'start2' && lvl > 0) el.querySelector('[data-start2]').onclick = () => { start2Open = !start2Open; renderUpgrades(); };
+      if (u.id === 'sitem' && lvl > 0) el.querySelector('[data-sitem]').onclick = () => G.StartItem.pick(upgDex, renderUpgrades);   // (systems/startitem.js)
       el.querySelector('[data-buy]').onclick = () => {
         // Se vuelve a leer todo al pulsar (la partida puede haber cambiado desde que se dibujó).
         const sv = G.DB.save, lv = G.DB.upgradesOf(upgDex), now = lv[u.id] || 0;
@@ -851,5 +872,5 @@ G.MenuUI = (() => {
     return el;
   }
 
-  return { init, open, openDex, openDexGift, GEN_NAMES };
+  return { init, open, openDex, openDexGift, openUpgrades, GEN_NAMES };
 })();
