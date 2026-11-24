@@ -176,14 +176,17 @@ G.GuideUI = (() => {
 
   function powers() {
     const D = G.Powers.DEF;
+    // Especies con alguna forma de esa clase (data/forms.js).
+    const nForms = k => new Set(Object.values(G.FORMS || {}).filter(f => f.k === k).map(f => f.d)).size;
     const TXT = {
-      mega: 'Pasa a su forma Mega (o a su forma de poder, como las fusiones): tipos, aspecto y stats de esa forma. Sólo sale si tu Pokémon la tiene.',
-      dyna: 'Se hace gigante: doble de vida, +40 % de daño, cada golpe salpica alrededor y aplasta a los Pokémon normales que pisa.',
+      // (25-11-2026: los números salen de data/forms.js: 85 con Mega y 32 con Gigamax.)
+      mega: G.I18n.f('Pasa a su forma Mega: tipos, aspecto, stats y habilidad de esa forma (la vida no cambia). {x} Pokémon tienen Mega; los que tienen dos (Charizard X o Y, Mewtwo X o Y…) eligen una al coger el poder. Kyogre y Groudon hacen la regresión primigenia (con lluvia o sol) y Mega Charizard Y pone sol. En la misma carta, las fusiones y formas de poder: Necrozma, Kyurem, Calyrex, Zacian, Zamazenta, Zygarde Completo y Greninja Ash; Solgaleo, Lunala, Reshiram, Zekrom, Glastrier y Spectrier también se fusionan desde su mitad.', nForms('mega')),
+      dyna: G.I18n.f('Se hace gigante: doble de vida, +40 % de daño, cada golpe salpica alrededor y aplasta a los Pokémon normales que pisa. Los {x} que tienen forma Gigamax la usan y, cada 3 s, sueltan una onda G-Max con efecto: curar, quemar, aturdir, frenar, envenenar, rayo en cadena, escudo… En la Sentencia de Arceus no cura.', nForms('gmax')),
       z: 'Cada poco lanza una gran Z de un tipo que atraviesa todo y, al terminar, un movimiento Z golpea a todos los de la pantalla.',
       tera: 'Pasa a ser sólo del tipo que elijas y sus ataques de ese tipo pegan mucho más. Astral conserva sus tipos y lo sube todo un poco.'
     };
     return P(G.I18n.f('Al vencer a Eternatus (minuto 20) eliges un poder para el resto de la partida. Se usa con {x} (B en el mando, o su botón redondo en el móvil) y se recarga solo. La carta Poder rápido acorta la recarga.', G.T(G.Keys.label('power'))))
-      + `<div class="gd-list">${Object.keys(D).map(id => card(D[id].icon, D[id].name, G.I18n.f('{x} s · recarga {x} s', D[id].dur, D[id].cd), TXT[id] || '')).join('')}</div>`
+      + `<div class="gd-list">${Object.keys(D).map(id => card(D[id].icon, id === 'dyna' ? 'Dinamax / Gigamax' : D[id].name, G.I18n.f('{x} s · recarga {x} s', D[id].dur, D[id].cd), TXT[id] || '')).join('')}</div>`
       + P('En grupo, cada uno elige el suyo. La barra del poder va debajo de tu vida y parpadea cuando está listo.');
   }
 

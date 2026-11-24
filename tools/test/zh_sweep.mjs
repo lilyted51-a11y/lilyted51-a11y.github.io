@@ -415,6 +415,17 @@ await pwTap('?'); await A.ev(`(() => { G.Game.player.dex = window.__dex0; return
 await pwAgain(0); await pwOpen(); await pwTap('power:tera'); await grab('Teracristal: tipo'); await misses('Teracristal: tipo');
 await pwTap('?'); await pwUse('Teracristal');
 await pwAgain(0); await pwOpen(); await pwTap('power:dyna'); await pwUse('Dinamax');
+// (25-11-2026) Con data/forms.js: Gigamax con su onda G-Max (Charizard), la regresión primigenia (Kyogre), una fusión
+// desde su mitad (Solgaleo) y Mega o forma de poder (Greninja).
+const pwBack = () => A.ev(`(() => { G.Game.player.dex = window.__dex0; return 1; })()`);
+await pwAgain(6); await pwOpen(); await grab('elige poder (Gigamax)'); await misses('elige poder (Gigamax)');
+await pwTap('power:dyna'); await pwBack(); await pwUse('Gigamax');
+await pwAgain(382); await pwOpen(); await grab('elige poder (primigenia)'); await misses('elige poder (primigenia)');
+await pwTap('power:mega'); await pwBack(); await pwUse('Regresión primigenia');
+await pwAgain(791); await pwOpen(); await grab('elige poder (fusión desde su mitad)'); await misses('elige poder (fusión desde su mitad)');
+await pwTap('power:mega'); await pwBack(); await pwUse('Fusión');
+await pwAgain(658); await pwOpen(); await pwTap('power:mega'); await grab('Mega o forma de poder: forma'); await misses('Mega o forma de poder: forma');
+await pwTap('?'); await pwBack(); await pwUse('Greninja');
 console.log('poderes: pantallas abiertas', pwSeen.filter(Boolean).length + '/' + pwSeen.length, JSON.stringify(pwSeen));
 // ---------- Formas de combate (25-11-2026, systems/battleforms.js): el nombre de la forma, el aviso y Disfraz ----------
 for (const d of [1778, 501024, 1681]) { await A.ev(`(() => { G.BattleForms.debugAnnounce(G.Game.player, ${d}); return 1; })()`); await sleep(500); await canvas('forma de combate ' + d); }

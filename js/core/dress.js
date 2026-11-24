@@ -91,7 +91,7 @@ G.Dress = (() => {
     pl.dfx = n.fx && G.Trails.FX[n.fx] ? n.fx : '';
     const lk = n.lk && looks(pl.dex).some(p => p.dex === n.lk) ? n.lk : 0;
     // (Con un poder puesto el dibujo lo lleva el poder; al acabar se vuelve a mirar.)
-    if (pl.megaSave || pl.dynaSave || pl.netPw === 1) return;
+    if (pl.megaSave || pl.dynaSave || pl.netPw === 1 || pl.netPw === 3) return;   // (3: Gigamax, systems/powers.js)
     if ((pl.lookDex || 0) !== lk) {
       pl.lookDex = lk;
       if (lk) setLook(pl, lk);
