@@ -420,10 +420,14 @@ document.querySelectorAll('#chart td').forEach(td => {
 # ================= movimientos =================
 KIND = {'es': {'projectile': 'Proyectil', 'melee': 'Cuerpo a cuerpo', 'beam': 'Rayo', 'orbit': 'Órbita', 'nova': 'Ráfaga', 'aura': 'Aura', 'buff': 'Mejora',
                'boomerang': 'Bumerán', 'chain': 'Cadena', 'mine': 'Minas', 'meteor': 'Meteoros', 'turret': 'Torreta', 'dash': 'Embestida',
-               'trail': 'Rastro', 'cone': 'Abanico'},
+               'trail': 'Rastro', 'cone': 'Abanico', 'homing': 'Teledirigido', 'bounce': 'Rebote', 'charge': 'Carga', 'spin': 'Giro',
+               'quake': 'Terremoto', 'vortex': 'Remolino', 'shove': 'Empujón', 'stun': 'Aturdir', 'rush': 'Saltos en cadena', 'explode': 'Explosión',
+               'storm': 'Tormenta', 'cross': 'Cruz', 'punch': 'Puñetazo', 'wave': 'Onda', 'tremor': 'Temblor', 'leap': 'Salto', 'scissor': 'Tijera'},
         'en': {'projectile': 'Projectile', 'melee': 'Melee', 'beam': 'Beam', 'orbit': 'Orbit', 'nova': 'Burst', 'aura': 'Aura', 'buff': 'Buff',
                'boomerang': 'Boomerang', 'chain': 'Chain', 'mine': 'Mines', 'meteor': 'Meteors', 'turret': 'Turret', 'dash': 'Dash',
-               'trail': 'Trail', 'cone': 'Spray'}}
+               'trail': 'Trail', 'cone': 'Spray', 'homing': 'Homing', 'bounce': 'Bounce', 'charge': 'Charge', 'spin': 'Spin',
+               'quake': 'Quake', 'vortex': 'Vortex', 'shove': 'Shove', 'stun': 'Stun', 'rush': 'Chain jumps', 'explode': 'Explosion',
+               'storm': 'Storm', 'cross': 'Cross', 'punch': 'Punch', 'wave': 'Wave', 'tremor': 'Tremor', 'leap': 'Leap', 'scissor': 'Scissor'}}
 def moves_page(lang):
     pid = 'moves'
     rows = []

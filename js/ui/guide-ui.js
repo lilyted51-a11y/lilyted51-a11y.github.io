@@ -38,7 +38,10 @@ G.GuideUI = (() => {
     projectile: 'Disparo', melee: 'Cuerpo a cuerpo', beam: 'Rayo recto', orbit: 'Órbita', nova: 'Ráfaga circular',
     aura: 'Aura de daño', buff: 'Potenciador', boomerang: 'Bumerán', chain: 'Cadena', mine: 'Minas', meteor: 'Meteoros',
     turret: 'Torreta', dash: 'Embestida', trail: 'Rastro', cone: 'Abanico', homing: 'Teledirigido', bounce: 'Rebote',
-    charge: 'Rayo cargado', spin: 'Giro', quake: 'Onda sísmica', vortex: 'Torbellino de daño', shove: 'Empujón', stun: 'Aturdidor'
+    charge: 'Rayo cargado', spin: 'Giro', quake: 'Onda sísmica', vortex: 'Torbellino de daño', shove: 'Empujón', stun: 'Aturdidor',
+    // las de systems/moves2.js (24-11-2026)
+    rush: 'Saltos en cadena', explode: 'Estallido', storm: 'Rayos del cielo', cross: 'Golpe en cruz', punch: 'Puñetazos',
+    wave: 'Ola', tremor: 'Temblor', leap: 'Salto', scissor: 'Tijeretazo'
   };
 
   // ---------------- piezas ----------------
