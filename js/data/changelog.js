@@ -6,6 +6,31 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-11-24', title: ["Las formas del juego oficial", "The official game's forms"], new: [
+    ["Formas que cambian tipos y stats: tras la 3.ª grieta (minuto 12), Deoxys, Rotom, Arceus, Silvally, Shaymin, Hoopa, Oricorio, Lycanroc, Ogerpon y otros eligen su forma una vez para el resto de la partida. Cada carta enseña sus tipos, cómo cambia cada stat (±0 lo que no) y su habilidad si es otra; Arceus y Silvally eligen entre los 18 tipos. Si después evoluciona, conserva la forma cuando la nueva especie la tiene (Pumpkaboo Súper → Gourgeist Súper).",
+     "Forms that change types and stats: after the 3rd rift (minute 12), Deoxys, Rotom, Arceus, Silvally, Shaymin, Hoopa, Oricorio, Lycanroc, Ogerpon and others choose their form once for the rest of the run. Each card shows its types, how each stat changes (±0 when it doesn't) and its ability if it is different; Arceus and Silvally choose among the 18 types. If it evolves later, it keeps the form when the new species has it (Super Pumpkaboo → Super Gourgeist)."],
+    ["Formas de combate: Castform, Cherrim, Darmanitan (con Modo Daruma), Meloetta, Aegislash, Wishiwashi, Minior, Mimikyu, Cramorant, Eiscue, Morpeko, Palafin y Terapagos cambian solos de forma según el clima, su vida, los golpes, su ataque activo o la grieta. El disfraz de Mimikyu y la cara de hielo de Eiscue paran un golpe.",
+     "Battle forms: Castform, Cherrim, Darmanitan (with Zen Mode), Meloetta, Aegislash, Wishiwashi, Minior, Mimikyu, Cramorant, Eiscue, Morpeko, Palafin and Terapagos change form on their own with the weather, their HP, hits, their active move or the rift. Mimikyu's disguise and Eiscue's ice face stop one hit."],
+    ["Megaevolución con las 91 megas del juego oficial (85 Pokémon): tipos, stats, aspecto y habilidad de su Mega. Los que tienen dos (Charizard X o Y, Raichu X o Y, Lucario Z…) eligen una al coger el poder, y Kyogre y Groudon hacen la regresión primigenia con su orbe y su clima.",
+     "Mega Evolution with the official game's 91 Megas (85 Pokémon): their Mega's types, stats, look and ability. Those with two (Charizard X or Y, Raichu X or Y, Lucario Z…) pick one when they take the power, and Kyogre and Groudon undergo Primal Reversion with their orb and weather."],
+    ["Gigamax: los 32 Pokémon que lo tienen se hacen gigantes con su forma Gigamax y cada 3 s sueltan su onda G-Max (curar, quemar, aturdir, rayo en cadena, monedas, escudo…), también en grupo.",
+     "Gigantamax: the 32 Pokémon that have it turn giant in their Gigantamax form and release their G-Max wave every 3 s (heal, burn, stun, chain lightning, coins, shield…), in groups too."],
+    ["Fusiones y formas de poder también desde su mitad: Solgaleo, Lunala, Reshiram, Zekrom, Glastrier y Spectrier se unen a Necrozma, Kyurem o Calyrex con el poder de forma; y llegan Necrozma Alas del Alba y Melena Crepuscular, Calyrex Jinete Glacial y Espectral y Greninja Ash.",
+     "Fusions and power forms also from either half: Solgaleo, Lunala, Reshiram, Zekrom, Glastrier and Spectrier join Necrozma, Kyurem or Calyrex with the form power; and Dawn Wings and Dusk Mane Necrozma, Ice Rider and Shadow Rider Calyrex and Ash-Greninja arrive."],
+    ["Vestidor: 227 aspectos gratis en una rejilla con su dibujo: las letras de Unown, los motivos de Vivillon, las 63 Alcremie (por crema), los disfraces de Pikachu, las hembras de 70 Pokémon, Furfrou, Squawkabilly y más; en shiny si lo tienen.",
+     "Wardrobe: 227 free looks in a grid with their sprite: Unown's letters, Vivillon's patterns, all 63 Alcremie (by cream), Pikachu's costumes, the females of 70 Pokémon, Furfrou, Squawkabilly and more; in shiny when they have one."],
+    ["Llega Gouging Fire (Nº 1020, con su shiny) y Stunfisk de Galar; el Raticate de Alola pasa a su número del juego oficial y lo que tenías de él se queda (mejoras, maestría, shiny, Vestidor…).",
+     "Gouging Fire (No. 1020, with its shiny) and Galarian Stunfisk arrive; Alolan Raticate moves to its official number and everything you had with it stays (upgrades, mastery, shiny, Wardrobe…)."]
+  ], chg: [
+    ["Como en el juego oficial, las megas, las formas de poder y las que cambian en la partida ya no salen en el gacha ni cuentan en la Pokédex: se consiguen con los poderes, la carta de forma o solas. Las que ya tenías siguen en tu Colección y puedes jugar con ellas.",
+     "As in the official game, Megas, power forms and forms that change during a run no longer come from the gacha nor count in the Pokédex: you get them with the powers, the form card or on their own. The ones you already had stay in your Collection and you can play with them."],
+    ["Colección: cada forma regional va detrás de su especie y con su número; Dialga Primigenio y Xerneas Neutral pasan a ser aspectos del Vestidor.",
+     "Collection: each regional form sits right after its species with its number; Primal Dialga and Neutral Xerneas become Wardrobe looks."],
+    ["Sprites del juego oficial para las formas nuevas, shiny de verdad para muchas formas y megas que lo tenían con el color cambiado, y shiny para Karrablast, Pecharunt y otras especies que no tenían.",
+     "Sprites from the official game for the new forms, real shinies for many forms and Megas that only had a recoloured one, and shinies for Karrablast, Pecharunt and other species that had none."],
+    ["En grupo se ve la forma de cada compañero: la elegida, la de combate, su Mega y su Gigamax.",
+     "In co-op you see each teammate's form: the chosen one, the battle form, their Mega and their Gigantamax."]
+  ] },
   { d: '2026-11-24', title: ["Lo que faltaba de la Gran Actualización", "The rest of the Great Update"], new: [
     ["Menú principal nuevo, sin scroll: todo cabe en la pantalla en el PC y en el móvil (en vertical y en horizontal), con Jugar en grande, la dificultad y el desafío semanal a la vista, la última novedad y la ficha de tu compañero.",
      "New main menu with no scrolling: everything fits on screen on PC and on mobile (portrait and landscape), with a big Play button, the difficulty and the weekly challenge in plain sight, the latest news and your partner's card."],
