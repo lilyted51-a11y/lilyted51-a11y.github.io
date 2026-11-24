@@ -2102,5 +2102,19 @@ G.I18n.add({
   "×1,8 daño, ola más ancha y arrastra más": "×1.8 damage, wider wave and drags further",
   "×1,8 daño y onda más grande": "×1.8 damage and bigger shockwave",
   "×1,8 daño y tajos más largos": "×1.8 damage and longer slashes",
-  "¡Protegido!": "Protected!"
+  "¡Protegido!": "Protected!",
+  // 25-11-2026 (copia local): formas de combate (systems/battleforms.js)
+  "¡{x} cambia de forma!": "{x} changes form!",
+  "Desde el nivel 20, con al menos 1/4 de vida, forma un banco: muchísimo más fuerte y resistente.": "From level 20, with at least 1/4 HP, it forms a school: far stronger and tougher.",
+  "Con menos de la mitad de vida entra en Modo Daruma: cambia de forma, de tipos y de stats.": "Below half HP it enters Zen Mode: its form, types and stats change.",
+  "Forma Filo mientras pelea (mucho más daño, menos defensa); 2 s sin enemigos cerca, Forma Escudo (mucha defensa).": "Blade Forme while fighting (much more damage, less defense); after 2 s with no enemies nearby, Shield Forme (lots of defense).",
+  "Su disfraz para el primer golpe que recibe en la partida; después queda descubierto.": "Its disguise stops the first hit it takes in the run; after that it is busted.",
+  "Su cara de hielo para un golpe físico y se derrite (más rápido, menos defensa); la nieve se la devuelve.": "Its ice face stops one physical hit and melts (faster, less defense); snow brings it back.",
+  "Cambia de forma y de tipo con el clima: Fuego con sol, Agua con lluvia y Hielo con nieve.": "Changes form and type with the weather: Fire in sun, Water in rain and Ice in snow.",
+  "Con sol abre sus pétalos (Forma Soleada) y hace un 20 % más de daño.": "In sun it opens its petals (Sunshine Form) and deals 20% more damage.",
+  "Con más de la mitad de vida, coraza de meteoro (más defensa); con menos, queda su núcleo (más daño y velocidad).": "Above half HP, a meteor shell (more defense); below that, only its core is left (more damage and speed).",
+  "Cada 10 s cambia entre Forma Saciada y Forma Voraz.": "Every 10 s it switches between Full Belly Mode and Hangry Mode.",
+  "Al volver de una grieta pasa a Forma Heroica para el resto de la partida (mucho más fuerte).": "After coming back from a rift it turns into Hero Form for the rest of the run (much stronger).",
+  "Sus ataques de Agua pescan una presa; al recibir un golpe la escupe contra los de alrededor (frena o paraliza).": "Its Water attacks catch prey; when hit, it spits it at the enemies around it (slows or paralyzes).",
+  "Pasa a Forma Teracristal al empezar; con el poder Teracristal, a Forma Astral.": "Switches to Terastal Form at the start; with the Terastal power, to Stellar Form."
 });

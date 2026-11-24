@@ -86,6 +86,11 @@ for (const go of ['dex', 'wardrobe', 'upgrades', 'shop', 'bag', 'gacha', 'goals'
     await A.ev(`(() => { G.UI.hideAll(); G.MenuUI.openDex(); const c = [...document.querySelectorAll('#dex-grid .cell')].find(c => (c.querySelector('.no') || {}).textContent === '150'); if (c) c.click(); return !!c; })()`); await sleep(800);
     await A.ev(`(() => { const s = document.querySelector('#dex-sig [data-move]'); if (s) s.dispatchEvent(new PointerEvent('pointerover', { bubbles: true, pointerType: 'mouse' })); return !!s; })()`); await sleep(400);
     await grab('ficha con ataque exclusivo');
+    // Formas de combate (25-11-2026, systems/battleforms.js): la ficha de cada uno con su habilidad (Darmanitan, con Modo Daruma)
+    for (const d of [351, 421, 555, 681, 746, 774, 778, 845, 875, 877, 964, 1024]) {
+      await A.ev(`(() => { const s = G.DB.save; s.owned[${d}] = s.owned[${d}] || { at: 1 }; if (${d} === 555) { s.pabil = s.pabil || {}; s.pabil[555] = [2, Date.now()]; } G.UI.hideAll(); G.MenuUI.openDex(); const c = [...document.querySelectorAll('#dex-grid .cell')].find(c => (c.querySelector('.no') || {}).textContent === String(${d}).padStart(3, '0')); if (c) c.click(); return !!c; })()`); await sleep(600);
+      await grab('ficha (forma de combate) ' + d);
+    }
   }
   if (go === 'upgrades') { await clickAll('#scr-upgrades button.btn:not([data-back])'); await A.ev(`G.StartItem.close(); 1`); }
   if (go === 'shop') { await clickAll('#scr-shop .gen-tab'); }
@@ -410,6 +415,9 @@ await pwAgain(0); await pwOpen(); await pwTap('power:tera'); await grab('Teracri
 await pwTap('?'); await pwUse('Teracristal');
 await pwAgain(0); await pwOpen(); await pwTap('power:dyna'); await pwUse('Dinamax');
 console.log('poderes: pantallas abiertas', pwSeen.filter(Boolean).length + '/' + pwSeen.length, JSON.stringify(pwSeen));
+// ---------- Formas de combate (25-11-2026, systems/battleforms.js): el nombre de la forma, el aviso y Disfraz ----------
+for (const d of [1778, 501024, 1681]) { await A.ev(`(() => { G.BattleForms.debugAnnounce(G.Game.player, ${d}); return 1; })()`); await sleep(500); await canvas('forma de combate ' + d); }
+await misses('formas de combate');
 
 // ---------- El Team Rocket y su Casino Rocket (23-11-2026): el secuestro, la entrada y los 4 juegos, con lo que puede salir ----------
 const cas = async where => { await grab('casino: ' + where); await misses('casino: ' + where); await canvas('casino: ' + where); };

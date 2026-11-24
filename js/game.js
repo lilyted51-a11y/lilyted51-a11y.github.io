@@ -326,7 +326,8 @@ G.Game = (() => {
     if (!pl) return null;
     // (Con la Megaevolución puesta, el Pokémon de verdad: la Mega dura 40 s. ph: tu foto y marco, para la marca del
     //  ranking, 24-11-2026; en grupo el anfitrión la sube con la de todos.)
-    const me = pl.megaSave || pl;
+    // (Con una forma de combate puesta, igual: la de antes de cambiar, systems/battleforms.js.)
+    const me = pl.megaSave || (G.BattleForms && G.BattleForms.saved(pl)) || pl;
     return { dex: me.dex, sh: !!me.shiny, lv: pl.level, t: Math.floor(time), it: pl.item || null, its: pl.items.slice(0, 4), sk: (me.anim || pl.anim).skin || '',
              mv: pl.moves.slice(0, 8).map(m => [m.id, m.lvl, Math.round(m.dealt || 0), Math.round(m.since || 0), m.evolved ? 1 : 0]),
              ph: G.Photo && G.Ranking && G.DB.save ? G.Ranking.encPh(G.Photo.mine()) : '' };
@@ -1120,6 +1121,7 @@ G.Game = (() => {
     G.Judgment.update(dt, pl, time);
     G.Eternatus.update(dt, pl, time);
     G.Powers.update(dt, pl);
+    if (G.BattleForms) G.BattleForms.update(dt, pl);    // formas de combate (systems/battleforms.js)
     G.Consum.update(dt, pl);
     G.Events.update(dt, awake, time);
     G.Weather.update(dt, time, pl);

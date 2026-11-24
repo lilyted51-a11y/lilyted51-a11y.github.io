@@ -119,7 +119,10 @@ G.Player = class Player {
   /** ¿Le toca ya un salto (por nivel) que aún no ha dado? */
   growDue() { return Player.GROW_LEVELS.filter(l => this.level >= l).length > this.grown; }
   /** Su Pokémon sin el poder puesto (Mega o Tera): para los ataques que le pueden salir (levelup.js). */
-  get ownMon() { return this.megaSave ? this.megaSave.mon : this.teraSave ? Object.assign({}, this.mon, { types: this.teraSave }) : this.mon; }
+  get ownMon() {
+    const m = this.megaSave ? this.megaSave.mon : this.teraSave ? Object.assign({}, this.mon, { types: this.teraSave }) : this.mon;
+    return G.BattleForms ? G.BattleForms.ownMon(this, m) : m;      // (sin la forma de combate, systems/battleforms.js)
+  }
   /** A qué puede evolucionar ahora: entradas de G.DEX (data/evolutions.js). */
   evoOptions() { return ((G.EVOS || {})[this.dex] || []).map(d => G.DEX_BY[d]).filter(m => m && G.SPRITE_META[m.dex]); }
   /**
@@ -130,6 +133,7 @@ G.Player = class Player {
   evolveTo(dex, keepLook) {
     // (Con un poder puesto, se quita antes: si no, al acabar el poder se deshacía la evolución.)
     if (this.powerOn && G.Powers) G.Powers.stop(this, true);
+    if (G.BattleForms) G.BattleForms.reset(this);          // (forma de combate: a la base; luego se recalcula)
     const to = G.Mons.monFor(dex), from = this.mon;
     if (!to) return false;
     const dHp = Math.max(0, Math.round(to.hp - from.hp));
@@ -162,6 +166,7 @@ G.Player = class Player {
    */
   stepLadder() {
     if (this.powerOn && G.Powers) G.Powers.stop(this, true);
+    if (G.BattleForms) G.BattleForms.reset(this);
     const t = this.ladder && this.ladder[Math.min(this.ladder.length - 1, this.grown + 1)];
     if (!t) { this.grow(); return; }
     const dHp = Math.max(0, Math.round(t.hp - this.mon.hp));
@@ -176,6 +181,7 @@ G.Player = class Player {
 
   /** Sin escalera ni evolución (p. ej. tras evolucionar a la última fase antes de tiempo): más vida y ataque. */
   grow() {
+    if (G.BattleForms) G.BattleForms.reset(this);
     const more = Math.round(this.maxHp * 0.12);
     this.maxHp += more;
     this.hp = Math.min(this.maxHp, this.hp + more + this.maxHp * 0.25);
@@ -395,6 +401,8 @@ G.Player = class Player {
     if (this.invuln > 0 || this.dead) return;
     // Protección, Reflejo y Pantalla Luz (systems/moves2.js, 24-11-2026). Contra Arceus (pure) no valen.
     if (G.Moves2) { amount = G.Moves2.incoming(this, amount, cat, pure); if (!(amount > 0)) return; }
+    // Formas de combate (systems/battleforms.js): Disfraz y Cara de Hielo paran un golpe; Tragamisil escupe.
+    if (G.BattleForms && G.BattleForms.block(this, type, cat, pure)) return;
     // Habilidad (data/ability-fx.js): absorber un tipo, esquivar o recibir menos.
     const ab = this.abil, cls = cat === 'physical' ? 'p' : cat === 'special' ? 's' : '';
     if (ab && !pure) {
