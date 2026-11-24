@@ -594,8 +594,184 @@
       cd: 0.7, dmg: 22, speed: 330, life: 1.6, size: 7, homing: 6 },
     { id: 'night-slash', name: 'Tajo Umbrío', type: 'dark', kind: 'spin',
       desc: 'Cortes en giro que alcanzan a todo lo que te rodea.',
-      cd: 1.0, dmg: 11, count: 3, radius: 62 }
+      cd: 1.0, dmg: 11, count: 3, radius: 62 },
+
+    // 24-11-2026 (copia local): movimientos nuevos con formas de atacar nuevas
+    // (como las MT de la Gran Actualización del juego oficial). Cómo atacan: systems/moves2.js.
+    //   rush (saltos en cadena) · explode · storm (rayos del cielo) · cross · punch (tres directos)
+    //   wave (ola) · tremor (anillo) · leap (salto con onda) · scissor (dos tajos en X)
+    //   Los que no pegan son `buff` con `act`: protect · decoy · weather · rest · screen.
+    // phys: físico (si no, especial) · evo: carta con la que evolucionan · sig: exclusivo de esos
+    // Pokémon (nº de la Pokédex, con sus formas; no sale en su tipo ni como MT) · flee: te mueve
+    // (Arceus te lo arranca, ver judgment.js) · minCd: recarga mínima · ladder: su escalera.
+    { id: 'extreme-speed', name: 'Velocidad Extrema', type: 'normal', kind: 'rush', phys: 1, evo: 'spd', flee: 1,
+      desc: 'Vas de un enemigo a otro tan deprisa que no te pueden tocar.',
+      cd: 1.1, dmg: 19, count: 4, radius: 170 },
+    { id: 'protect', name: 'Protección', type: 'normal', kind: 'buff', act: 'protect', ladder: 'protect',
+      desc: 'No hace daño: un escudo te deja intocable 1,5 s. Su recarga nunca baja de 5 s.',
+      cd: 7, dur: 1.5, minCd: 5 },
+    { id: 'double-team', name: 'Doble Equipo', type: 'normal', kind: 'buff', act: 'decoy', ladder: 'decoy',
+      desc: 'No hace daño: dejas una copia de ti que atrae a los enemigos de alrededor.',
+      cd: 6, dur: 4, radius: 260 },
+    { id: 'explosion', name: 'Explosión', type: 'normal', kind: 'explode', phys: 1, evo: 'hp',
+      desc: 'Estallas en una explosión enorme; gasta un cuarto de la vida que te queda (nunca te deja KO).',
+      cd: 2.6, dmg: 55, radius: 118, knock: 220 },
+    { id: 'judgment', name: 'Sentencia', type: 'normal', kind: 'storm', evo: 'cd', sig: [493],
+      desc: 'Rayos de luz caen del cielo sobre muchos enemigos de la pantalla.',
+      cd: 1.5, dmg: 23, count: 5, radius: 42 },
+    { id: 'fire-blast', name: 'Llamarada', type: 'fire', kind: 'cross', evo: 'atk',
+      desc: 'Estalla una cruz de fuego sobre el enemigo y quema.',
+      cd: 1.3, dmg: 34, radius: 72, width: 24, burn: 1 },
+    { id: 'sunny-day', name: 'Día Soleado', type: 'fire', kind: 'buff', act: 'weather', wx: 'sun', ladder: 'weather',
+      desc: 'No hace daño: sale el sol un rato (Fuego ×1,5, Agua ×0,5), aunque luego cambies de ataque.',
+      cd: 9, dur: 12 },
+    { id: 'fire-punch', name: 'Puño Fuego', type: 'fire', kind: 'punch', phys: 1, evo: 'atk',
+      desc: 'Tres directos de fuego seguidos que queman.',
+      cd: 0.95, dmg: 13, count: 3, radius: 56, burn: 1 },
+    { id: 'surf', name: 'Surf', type: 'water', kind: 'wave', evo: 'spd',
+      desc: 'Una ola grande sale hacia donde apuntas y se lleva a los enemigos por delante.',
+      cd: 1.7, dmg: 30, radius: 360, width: 84, speed: 430, knock: 1 },
+    { id: 'rain-dance', name: 'Danza Lluvia', type: 'water', kind: 'buff', act: 'weather', wx: 'rain', ladder: 'weather',
+      desc: 'No hace daño: llueve un rato (Agua ×1,5, Eléctrico ×1,2, Fuego ×0,5), aunque luego cambies de ataque.',
+      cd: 9, dur: 12 },
+    { id: 'seed-flare', name: 'Fulgor Semilla', type: 'grass', kind: 'cross', evo: 'rgn', sig: [492, 1492],
+      desc: 'Una explosión de semillas en cruz sobre un enemigo.',
+      cd: 1.3, dmg: 35, radius: 74, width: 24 },
+    { id: 'thunder', name: 'Trueno', type: 'electric', kind: 'storm', evo: 'cd',
+      desc: 'Caen rayos sobre enemigos al azar de la pantalla.',
+      cd: 1.4, dmg: 21, count: 4, radius: 38 },
+    { id: 'thunder-punch', name: 'Puño Trueno', type: 'electric', kind: 'punch', phys: 1, evo: 'cd',
+      desc: 'Tres directos eléctricos; el último salta a dos enemigos cercanos.',
+      cd: 0.95, dmg: 13, count: 3, radius: 56, chain: 2 },
+    { id: 'plasma-fists', name: 'Puños Plasma', type: 'electric', kind: 'punch', phys: 1, evo: 'spd', sig: [807, 1807],
+      desc: 'Tres puñetazos de plasma; el último electrocuta a todos los de alrededor.',
+      cd: 0.9, dmg: 14, count: 3, radius: 58, zap: 72 },
+    { id: 'ice-punch', name: 'Puño Hielo', type: 'ice', kind: 'punch', phys: 1, evo: 'spd',
+      desc: 'Tres directos helados que frenan; el último deja congelado un momento.',
+      cd: 0.95, dmg: 13, count: 3, radius: 56, slow: 0.3, freeze: 0.7 },
+    { id: 'glaciate', name: 'Mundo Gélido', type: 'ice', kind: 'tremor', evo: 'hp', sig: [646, 1646, 2646],
+      desc: 'Un anillo de hielo sale de ti, golpea a todos los que alcanza y los frena.',
+      cd: 1.5, dmg: 16, radius: 138, slow: 0.5 },
+    { id: 'drain-punch', name: 'Puño Drenaje', type: 'fighting', kind: 'punch', phys: 1, evo: 'rgn',
+      desc: 'Tres directos que te curan con cada golpe.',
+      cd: 0.95, dmg: 13, count: 3, radius: 56, drain: 1.5 },
+    { id: 'earthquake', name: 'Terremoto', type: 'ground', kind: 'tremor', phys: 1, evo: 'atk',
+      desc: 'El suelo tiembla en un anillo que sale de ti y golpea a todo lo que alcanza.',
+      cd: 1.5, dmg: 22, radius: 145 },
+    { id: 'acrobatics', name: 'Acróbata', type: 'flying', kind: 'leap', phys: 1, evo: 'spd', flee: 1,
+      desc: 'Saltas por encima del enemigo y caes con una onda; sin objetos equipados pega ×1,5.',
+      cd: 1.1, dmg: 23, radius: 56, bare: 1.5 },
+    { id: 'rest', name: 'Descanso', type: 'psychic', kind: 'buff', act: 'rest', ladder: 'rest',
+      desc: 'No hace daño: te cura mucho, pero te quedas dormido un rato sin moverte ni atacar.',
+      cd: 10, amount: 0.45, stun: 2.4 },
+    { id: 'reflect', name: 'Reflejo', type: 'psychic', kind: 'buff', act: 'screen', guard: 'physical', ladder: 'screen',
+      desc: 'No hace daño: una pared de luz te quita un 35 % del daño físico durante un rato.',
+      cd: 8, dur: 10, amount: 0.35 },
+    { id: 'light-screen', name: 'Pantalla Luz', type: 'psychic', kind: 'buff', act: 'screen', guard: 'special', ladder: 'screen',
+      desc: 'No hace daño: una pared de luz te quita un 35 % del daño especial durante un rato.',
+      cd: 8, dur: 10, amount: 0.35 },
+    { id: 'x-scissor', name: 'Tijera X', type: 'bug', kind: 'scissor', phys: 1, evo: 'cd',
+      desc: 'Dos tajos cruzados en X: lo que pilles en el centro se lleva los dos.',
+      cd: 0.8, dmg: 19, radius: 104, width: 22 },
+    { id: 'sandstorm', name: 'Tormenta Arena', type: 'rock', kind: 'buff', act: 'weather', wx: 'sand', ladder: 'weather',
+      desc: 'No hace daño: se levanta una tormenta de arena (Roca, Tierra y Acero ×1,3; los demás sufren, tú también) un rato.',
+      cd: 9, dur: 12 },
+    { id: 'stone-axe', name: 'Hachazo Pétreo', type: 'rock', kind: 'scissor', phys: 1, sig: [900],
+      desc: 'Dos hachazos de piedra cruzados: lo que pilles en el centro se lleva los dos.',
+      cd: 0.95, dmg: 24, radius: 104, width: 24 },
+    { id: 'shadow-force', name: 'Golpe Umbrío', type: 'ghost', kind: 'leap', phys: 1, evo: 'spd', flee: 1, vanish: 1,
+      desc: 'Desapareces y caes sobre el enemigo con una onda de sombra.',
+      cd: 1.25, dmg: 28, radius: 62 }
   ];
+
+  // 24-11-2026 (copia local): escaleras de las formas de atacar nuevas (systems/moves2.js).
+  Object.assign(LADDERS, {
+    rush: [
+      { t: '+1 salto',                      m: { count: 1 } },
+      { t: '+40% daño',                     m: { dmg: 1.40 } },
+      { t: '-25% recarga',                  m: { cd: 0.75 } },
+      { t: '+2 saltos y +30% daño',         m: { count: 2, dmg: 1.30 } }
+    ],
+    explode: [
+      { t: '+40% daño',                     m: { dmg: 1.40 } },
+      { t: '+20% radio',                    m: { radius: 1.20 } },
+      { t: '-25% recarga',                  m: { cd: 0.75 } },
+      { t: '+50% daño',                     m: { dmg: 1.50 } }
+    ],
+    storm: [
+      { t: '+1 rayo',                       m: { count: 1 } },
+      { t: '+45% daño',                     m: { dmg: 1.45 } },
+      { t: '+25% radio',                    m: { radius: 1.25 } },
+      { t: '+2 rayos y -20% recarga',       m: { count: 2, cd: 0.80 } }
+    ],
+    cross: [
+      { t: '+45% daño',                     m: { dmg: 1.45 } },
+      { t: 'Brazos un 25% más largos',      m: { radius: 1.25 } },
+      { t: '-25% recarga',                  m: { cd: 0.75 } },
+      { t: '+50% daño y brazos más anchos', m: { dmg: 1.50, width: 1.30 } }
+    ],
+    punch: [
+      { t: '+40% daño',                     m: { dmg: 1.40 } },
+      { t: '+1 directo',                    m: { count: 1 } },
+      { t: '-25% recarga',                  m: { cd: 0.75 } },
+      { t: '+50% daño',                     m: { dmg: 1.50 } }
+    ],
+    wave: [
+      { t: '+40% daño',                     m: { dmg: 1.40 } },
+      { t: 'Ola un 20% más ancha',          m: { width: 1.20 } },
+      { t: '-25% recarga',                  m: { cd: 0.75 } },
+      { t: '+50% daño y arrastra más',      m: { dmg: 1.50, knock: 1.30 } }
+    ],
+    tremor: [
+      { t: '+40% daño',                     m: { dmg: 1.40 } },
+      { t: '+20% radio',                    m: { radius: 1.20 } },
+      { t: '-25% recarga',                  m: { cd: 0.75 } },
+      { t: '+50% daño',                     m: { dmg: 1.50 } }
+    ],
+    leap: [
+      { t: '+40% daño',                     m: { dmg: 1.40 } },
+      { t: 'Onda un 25% más grande',        m: { radius: 1.25 } },
+      { t: '-25% recarga',                  m: { cd: 0.75 } },
+      { t: '+50% daño',                     m: { dmg: 1.50 } }
+    ],
+    scissor: [
+      { t: '+40% daño',                     m: { dmg: 1.40 } },
+      { t: 'Tajos un 25% más largos',       m: { radius: 1.25 } },
+      { t: '-25% recarga',                  m: { cd: 0.75 } },
+      { t: '+50% daño',                     m: { dmg: 1.50 } }
+    ],
+    // Los que no pegan (buff con `act`).
+    protect: [
+      { t: '+20% duración',                 m: { dur: 1.20 } },
+      { t: '-15% recarga',                  m: { cd: 0.85 } },
+      { t: '+20% duración',                 m: { dur: 1.20 } },
+      { t: '-15% recarga y +20% duración',  m: { cd: 0.85, dur: 1.20 } }
+    ],
+    decoy: [
+      { t: '+30% duración',                 m: { dur: 1.30 } },
+      { t: 'Atrae desde un 30% más lejos',  m: { radius: 1.30 } },
+      { t: '-20% recarga',                  m: { cd: 0.80 } },
+      { t: '+30% duración y alcance',       m: { dur: 1.30, radius: 1.30 } }
+    ],
+    weather: [
+      { t: '+30% duración',                 m: { dur: 1.30 } },
+      { t: '-20% recarga',                  m: { cd: 0.80 } },
+      { t: '+30% duración',                 m: { dur: 1.30 } },
+      { t: '-20% recarga y +20% duración',  m: { cd: 0.80, dur: 1.20 } }
+    ],
+    rest: [
+      { t: '+20% curación',                 m: { amount: 1.20 } },
+      { t: 'Duermes un 25% menos',          m: { stun: 0.75 } },
+      { t: '-20% recarga',                  m: { cd: 0.80 } },
+      { t: '+20% curación y duermes menos', m: { amount: 1.20, stun: 0.80 } }
+    ],
+    screen: [
+      { t: '+30% duración',                 m: { dur: 1.30 } },
+      { t: '-20% recarga',                  m: { cd: 0.80 } },
+      { t: '+15% de protección',            m: { amount: 1.15 } },
+      { t: '+30% duración y +15% de protección', m: { dur: 1.30, amount: 1.15 } }
+    ]
+  });
 
   // Cuerpo a cuerpo (12-10-2026): +20 % de daño y +25 % de alcance y de arco
   // (y -25 % de daño recibido mientras sea tu ataque activo, en player.js).
@@ -609,7 +785,7 @@
 
   // Pool de movimientos por tipo. El pool `normal` lo tienen todos.
   const POOL = {};
-  for (const m of RAW) (POOL[m.type] = POOL[m.type] || []).push(m.id);
+  for (const m of RAW) if (!m.sig) (POOL[m.type] = POOL[m.type] || []).push(m.id);
 
   /*
    * Físico o especial (G.Stats), como en los juegos. Los de estado que aquí sí
@@ -636,7 +812,7 @@
 
   const BY_ID = {};
   for (const m of RAW) {
-    m.cat = m.kind === 'buff' ? null : PHYSICAL.has(m.id) ? 'physical' : 'special';
+    m.cat = m.kind === 'buff' ? null : PHYSICAL.has(m.id) || m.phys ? 'physical' : 'special';
     m.ups = LADDERS[m.kind];
     m.maxLvl = m.ups.length + 1;
     BY_ID[m.id] = m;
@@ -791,6 +967,20 @@
     shove:      { t: '×1,8 daño, más radio y empuja más', m: { dmg: 1.8, radius: 1.25, knock: 1.4 } },
     stun:       { t: '×1,8 daño, más radio y aturde más rato', m: { dmg: 1.8, radius: 1.3, stun: 1.4 } }
   };
+  // 24-11-2026 (copia local): evolución de los movimientos con formas de atacar nuevas (su carta va en `evo`).
+  for (const m of RAW) if (m.evo) EVO[m.id] = m.evo;
+  for (const m of RAW) if (m.ladder) m.ups = LADDERS[m.ladder];          // (los que no pegan: su propia escalera)
+  Object.assign(EVO_MODS, {
+    rush:    { t: '×1,7 daño y +3 saltos', m: { dmg: 1.7, count: 3, radius: 1.15 } },
+    explode: { t: '×1,8 daño y un 30% más de radio', m: { dmg: 1.8, radius: 1.3 } },
+    storm:   { t: '×1,7 daño, +3 rayos y más radio', m: { dmg: 1.7, count: 3, radius: 1.2 } },
+    cross:   { t: '×1,8 daño y brazos más largos y anchos', m: { dmg: 1.8, radius: 1.3, width: 1.35 } },
+    punch:   { t: '×1,8 daño y +2 directos', m: { dmg: 1.8, count: 2 } },
+    wave:    { t: '×1,8 daño, ola más ancha y arrastra más', m: { dmg: 1.8, width: 1.35, knock: 1.4 } },
+    tremor:  { t: '×1,8 daño y un 30% más de radio', m: { dmg: 1.8, radius: 1.3 } },
+    leap:    { t: '×1,8 daño y onda más grande', m: { dmg: 1.8, radius: 1.35 } },
+    scissor: { t: '×1,8 daño y tajos más largos', m: { dmg: 1.8, radius: 1.3 } }
+  });
 
   const evoName = name => name + ' +';
 

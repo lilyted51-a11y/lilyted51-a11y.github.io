@@ -5,6 +5,19 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-11-24', title: ["Lo que faltaba de la Gran Actualización", "The rest of the Great Update"], new: [
+    ["21 MT con formas de atacar nuevas: Velocidad Extrema (saltas de enemigo en enemigo), Explosión, Trueno (rayos del cielo), Llamarada (cruz de fuego), Puño Fuego, Puño Trueno, Puño Hielo y Puño Drenaje (tres directos), Surf (una ola que arrastra), Terremoto (un anillo que sale de ti), Acróbata y Golpe Umbrío (saltas y caes con una onda) y Tijera X (dos tajos en X). Están en los ataques de su tipo y en la Tienda Kecleon.",
+     "21 TMs with new ways to attack: Extreme Speed (you jump from enemy to enemy), Explosion, Thunder (bolts from the sky), Fire Blast (a cross of fire), Fire Punch, Thunder Punch, Ice Punch and Drain Punch (three jabs), Surf (a wave that drags), Earthquake (a ring spreading from you), Acrobatics and Shadow Force (you leap and land with a shockwave) and X-Scissor (two slashes in an X). They are among the moves of their type and in the Kecleon Shop."],
+    ["Y los que no pegan: Protección (1,5 s intocable), Doble Equipo (una copia tuya atrae a los enemigos), Día Soleado, Danza Lluvia y Tormenta Arena (el clima un rato, aunque cambies de ataque), Descanso (te cura mucho pero te duermes), Reflejo y Pantalla Luz (−35 % del daño físico o especial).",
+     "And the ones that don't hit: Protect (1.5 s untouchable), Double Team (a copy of you draws enemies in), Sunny Day, Rain Dance and Sandstorm (the weather for a while, even if you switch attacks), Rest (heals a lot but you fall asleep), Reflect and Light Screen (−35% physical or special damage)."],
+    ["Ataques exclusivos con forma nueva: Sentencia de Arceus (rayos de luz), Fulgor Semilla de Shaymin (cruz de semillas), Puños Plasma de Zeraora, Mundo Gélido de Kyurem (anillo de hielo) y Hachazo Pétreo de Kleavor.",
+     "Signature moves with a new shape: Arceus's Judgment (beams of light), Shaymin's Seed Flare (a cross of seeds), Zeraora's Plasma Fists, Kyurem's Glaciate (a ring of ice) and Kleavor's Stone Axe."]
+  ], chg: [
+    ["Protección: por mucha reducción de recarga que lleves, su recarga nunca baja de 5 s. Y contra Arceus no vale.",
+     "Protect: however much cooldown reduction you have, its cooldown never goes below 5 s. And it doesn't work against Arceus."],
+    ["Surf: la ola llega a 360 y es estrecha; pega una vez a cada uno, como los demás ataques de zona.",
+     "Surf: the wave reaches 360 and is narrow; it hits each enemy once, like other area moves."]
+  ], fix: [] },
   { d: '2026-11-23', title: ["La Gran Actualización: Eternatus y sus poderes, dificultades, Vestidor y estelas, huevos, Maestría, desafío semanal, Casino Rocket, grietas y Sentencia nuevas", "The Great Update: Eternatus and its powers, difficulties, Dressing Room and trails, eggs, Mastery, weekly challenge, Rocket Casino, new rifts and Judgment"], new: [
     ["Vestidor, en el menú (y con un botón en la ficha de cada Pokémon): para cada Pokémon eliges su versión normal o shiny, su aspecto (las formas que sólo cambian el dibujo), su skin, un efecto (brillos, aura de su tipo, halo de luz o aura oscura) y su estela, y lo ves dando vueltas antes de jugar.",
      "Dressing Room, in the menu (and with a button on each Pokémon's page): for each Pokémon you choose its normal or shiny version, its look (forms that only change the sprite), its skin, an effect (sparkles, type aura, halo of light or dark aura) and its trail, and you can watch it walk around before playing."],

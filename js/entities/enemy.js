@@ -1022,7 +1022,8 @@
       rebuildGrid();
       for (const e of list) {
         if (e.remote) e.netUpdate(dt);
-        else e.update(dt, nearestPlayer(players, e.x, e.y) || pl);
+        // (Doble Equipo, systems/moves2.js: su copia atrae a los de alrededor.)
+        else e.update(dt, (G.Moves2 && G.Moves2.lure(e)) || nearestPlayer(players, e.x, e.y) || pl);
       }
       if (!G.Coop.active || G.Coop.isHost) separate(dt);
       for (let i = list.length - 1; i >= 0; i--) {

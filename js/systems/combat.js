@@ -20,6 +20,7 @@ G.Combat = (() => {
 
   function tick(dt, pl, now) {
     if (pl.dead) return;
+    if (G.Moves2 && G.Moves2.asleep(pl)) return;          // Descanso: dormido no se ataca (systems/moves2.js)
     // Vínculos: todos los movimientos del hueco activo, cada uno con su recarga.
     for (const m of pl.activeGroup()) tickMove(dt, pl, m, now);
   }
@@ -35,7 +36,8 @@ G.Combat = (() => {
       return;
     }
     // (Bromista: los potenciadores se recargan antes, ver data/ability-fx.js.)
-    m.t = Math.max(0.05, m.cd * pl.cdMul * (m.kind === 'buff' && pl.abil && pl.abil.statusCd || 1));
+    // (minCd: recarga mínima, por mucha reducción que lleves; Protección, 5 s.)
+    m.t = Math.max(m.minCd || 0.05, m.cd * pl.cdMul * (m.kind === 'buff' && pl.abil && pl.abil.statusCd || 1));
     pl.cast(m);
     if (G.Coop.active) G.Coop.cast(pl, m);
     // Vínculo: su icono destella en el HUD al lanzarse (uno que explota pegado al
@@ -69,16 +71,22 @@ G.Combat = (() => {
       case 'vortex':     vortex(pl, m); break;
       case 'shove':      shove(pl, m); break;
       case 'stun':       stunZone(pl, m); break;
+      default:           if (G.Moves2) G.Moves2.run(pl, m, ghost);       // formas nuevas (24-11-2026, systems/moves2.js)
     }
   }
 
   const TARGETED = ['melee', 'beam', 'projectile', 'boomerang', 'chain', 'meteor', 'dash', 'cone',
-                    'homing', 'bounce', 'charge', 'spin', 'quake', 'vortex', 'shove', 'stun'];
+                    'homing', 'bounce', 'charge', 'spin', 'quake', 'vortex', 'shove', 'stun',
+                    // 24-11-2026 (copia local): formas nuevas (systems/moves2.js)
+                    'rush', 'explode', 'storm', 'cross', 'punch', 'wave', 'tremor', 'leap', 'scissor'];
   // Con "Apuntar a mano" éstos se lanzan hacia donde apuntas aunque no haya
   // nadie (los decide el jugador); la cadena y los meteoros siguen esperando blanco.
-  const FREE_AIM = ['melee', 'beam', 'projectile', 'boomerang', 'dash', 'cone', 'homing', 'bounce', 'charge', 'spin', 'quake', 'shove'];
+  const FREE_AIM = ['melee', 'beam', 'projectile', 'boomerang', 'dash', 'cone', 'homing', 'bounce', 'charge', 'spin', 'quake', 'shove',
+                    'punch', 'wave', 'tremor', 'scissor'];
   function needsTarget(m, pl) { return TARGETED.includes(m.kind) && !(pl && pl.manualAim && FREE_AIM.includes(m.kind)); }
   function reach(m) {
+    const r2 = G.Moves2 && G.Moves2.reach(m);              // formas nuevas (systems/moves2.js)
+    if (r2) return r2;
     if (m.kind === 'melee') return m.radius + 30;
     if (m.kind === 'beam') return m.radius + 20;
     if (m.kind === 'boomerang') return m.radius + 40;
@@ -212,6 +220,8 @@ G.Combat = (() => {
   }
 
   function buff(pl, m) {
+    // Los que no pegan y no son de subir un stat (Protección, Doble Equipo, climas...): systems/moves2.js.
+    if (m.act) { if (G.Moves2) G.Moves2.run(pl, m, ghost); return; }
     pl.addBuff(m.stat, m.amount, m.dur, m.stacks | 0);
     const col = G.U.TYPE_COLOR[m.type];
     G.FX.ring(pl.x, pl.y, pl.r * 2.4, pl.r * 1.1, col, 0.35, 2.5);
@@ -547,6 +557,7 @@ G.Combat = (() => {
 
   const NEW_FIELDS = new Set(['charge', 'spin', 'quake', 'vortex', 'stunzone']);
   function updateFields(dt) {
+    if (G.Moves2) G.Moves2.update(dt);                    // los campos de las formas nuevas
     for (let i = fields.length - 1; i >= 0; i--) {
       const f = fields[i];
       f.t += dt;
@@ -652,6 +663,7 @@ G.Combat = (() => {
       }
       ctx.restore();
     }
+    if (G.Moves2) G.Moves2.drawGround(ctx);
   }
 
   /** Lo de los campos que va por encima (meteoros cayendo, torretas). */
@@ -669,9 +681,10 @@ G.Combat = (() => {
         G.VFX.draw(ctx, f.vis.proj, f.vis.pal, f.x, f.y - 16 + bob, { scale: 1.5, alpha: fade, frame: Math.floor(now * 8) });
       }
     }
+    if (G.Moves2) G.Moves2.drawAir(ctx);
   }
 
-  function clearFields(owner) { fields = owner ? fields.filter(f => f.owner !== owner) : []; }
+  function clearFields(owner) { fields = owner ? fields.filter(f => f.owner !== owner) : []; if (G.Moves2) G.Moves2.clear(owner); }
 
   function orbit(pl, m, dt, now, isGhost = false) {
     const col = G.U.TYPE_COLOR[m.type];
@@ -742,7 +755,8 @@ G.Combat = (() => {
   /** Objetos que cambian un golpe: Guante de Boxeo (físicos cuerpo a cuerpo) y Gafa Protectora (el clima no debilita tu ataque). */
   function itemK(pl, type, cat, kind) {
     let k = 1;
-    if (cat === 'physical' && (kind === 'melee' || kind === 'dash') && has(pl, 'punchingglove')) k *= 1.3;
+    // (Y las formas nuevas de contacto: Puñetazo, Tijera, Salto y Saltos en cadena, ver systems/moves2.js.)
+    if (cat === 'physical' && (kind === 'melee' || kind === 'dash' || (G.Moves2 && G.Moves2.CONTACT.has(kind))) && has(pl, 'punchingglove')) k *= 1.3;
     if (type && has(pl, 'safetygoggles')) { const w = G.Weather.mult(type); if (w < 1) k /= w; }
     if (pl.tera) k *= G.Powers.teraK(pl, type);          // Teracristal (systems/powers.js)
     return k;
@@ -922,5 +936,7 @@ G.Combat = (() => {
   }
 
   return { tick, resolve, ghostCast, ghostOrbit, updateFields, drawGroundFields, drawAirFields, clearFields,
-           get fieldCount() { return fields.length; } };
+           get fieldCount() { return fields.length; },
+           // Para las formas nuevas (systems/moves2.js): el mismo golpe (tipo, crítico, objetos, Dinamax...).
+           api: { hit, spotFor, segDist2, dice, reach } };
 })();

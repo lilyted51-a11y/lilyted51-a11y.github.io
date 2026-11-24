@@ -362,11 +362,12 @@ G.Player = class Player {
     }
     const anim = { melee: 'Attack', beam: 'Shoot', projectile: 'Shoot', nova: 'Attack',
                    aura: 'Charge', buff: 'Charge', orbit: 'Charge', boomerang: 'Shoot', chain: 'Shoot',
-                   mine: 'Charge', meteor: 'Charge', turret: 'Charge', dash: 'Attack', trail: 'Walk', cone: 'Shoot' }[m.kind] || 'Attack';
+                   mine: 'Charge', meteor: 'Charge', turret: 'Charge', dash: 'Attack', trail: 'Walk', cone: 'Shoot' }[m.kind]
+                 || (G.Moves2 && G.Moves2.ANIM[m.kind]) || 'Attack';      // formas nuevas (systems/moves2.js)
     // Las familias nuevas suenan como la parecida de las de siempre.
     const SND = { boomerang: 'projectile', chain: 'beam', mine: 'nova', meteor: 'nova', turret: 'buff', dash: 'melee', trail: 'aura', cone: 'projectile' };
     // El rastro no suena a cada charco (sería un zumbido constante).
-    if (m.kind !== 'trail') G.Audio.sfx('shot', { kind: SND[m.kind] || m.kind, type: m.type });
+    if (m.kind !== 'trail') G.Audio.sfx('shot', { kind: SND[m.kind] || (G.Moves2 && G.Moves2.SND[m.kind]) || m.kind, type: m.type });
     if (m.kind === 'trail') return;
     // No reinicies una animación que va por la mitad: se vería a tirones.
     if (this.anim.busy() && this.anim.progress() < 0.65) return;
@@ -392,6 +393,8 @@ G.Player = class Player {
   }
   hurt(amount, type = null, pure = false, cat = null) {
     if (this.invuln > 0 || this.dead) return;
+    // Protección, Reflejo y Pantalla Luz (systems/moves2.js, 24-11-2026). Contra Arceus (pure) no valen.
+    if (G.Moves2) { amount = G.Moves2.incoming(this, amount, cat, pure); if (!(amount > 0)) return; }
     // Habilidad (data/ability-fx.js): absorber un tipo, esquivar o recibir menos.
     const ab = this.abil, cls = cat === 'physical' ? 'p' : cat === 'special' ? 's' : '';
     if (ab && !pure) {
@@ -571,6 +574,9 @@ G.Player = class Player {
       else if (!G.Coop.active || G.Coop.isHost) G.Weather.debugStart(this.abil.summon, 60);
       else G.Coop.toHost(['wxq', this.abil.summon]);
     }
+
+    // Descanso (systems/moves2.js): dormido no te mueves ni apuntas.
+    if (G.Moves2 && G.Moves2.asleep(this)) { this.walking = false; this.anim.loop('Idle', 0.25); return; }
 
     // --- movimiento con colisiones ---
     // (En cooperativo la pausa no para el juego: sólo te quedas quieto.)
@@ -761,7 +767,9 @@ G.Player = class Player {
 
     if (G.Mastery) G.Mastery.drawAura(ctx, this);     // aura de maestro (100.000 de maestría)
     const alpha = this.invuln > 0 && !this.dead ? (Math.floor(this.invuln * 18) % 2 ? 0.45 : 1) : 1;
-    this.anim.draw(ctx, this.x, this.y, { flash: this.flash > 0, softFlash: true, alpha, color: '#ffcb3d' });
+    // Salto (Acróbata, Golpe Umbrío; systems/moves2.js): en el aire, o desaparecido.
+    const air = G.Moves2 && G.Moves2.airOf(this);
+    this.anim.draw(ctx, this.x, this.y - (air ? air.lift : 0), { flash: this.flash > 0, softFlash: true, alpha: alpha * (air ? air.alpha : 1), color: '#ffcb3d' });
     if (G.Powers) G.Powers.drawOn(ctx, this);          // aura del poder y corona Tera
 
     // Arcos de buff alrededor de los pies.
