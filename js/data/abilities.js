@@ -1312,6 +1312,7 @@ G.DEX_ABIL = {
   1017:["defiant",0,0],
   1018:["stamina","sturdy","stalwart"],
   1019:["supersweet-syrup","regenerator","sticky-hold"],
+  1020:["protosynthesis",0,0],
   1021:["protosynthesis",0,0],
   1022:["quark-drive",0,0],
   1023:["quark-drive",0,0],

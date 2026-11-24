@@ -33,18 +33,24 @@ G.Dress = (() => {
   }
 
   // ---------------- aspecto ----------------
-  // Formas que sólo cambian el dibujo: las de la misma especie con los mismos tipos que no sean
-  // regionales ni formas de poder (ésas son de Eternatus: systems/powers.js).
-  const NOT_LOOK = /^(Mega |Primal |Origin |White |Black |Ultra |Eternatus|Terastal |Alolan |Galarian |Hisuian |Paldean )|Crowned|Unbound|Complete/;
+  // Formas que sólo cambian el dibujo (25-11-2026): las de clase «look» del juego oficial (data/forms.js: las letras
+  // de Unown, los motivos de Vivillon, las Alcremie, los disfraces de Pikachu, las hembras...; ~227), y dos nuestras
+  // que el oficial no tiene: Xerneas Neutral y Dialga Primigenio (de Mystery Dungeon; antes salía en el gacha).
+  // (Antes se buscaban por nombre, mismos tipos y dex % 1000: fallaba con las especies 1000-1025 y los números del
+  // oficial.) Van por número: Unown B…Z, !, ?; las Alcremie, por crema y adorno.
+  const EXTRA = { 483: [2483], 716: [1716] };
   const looksCache = {};
   function looks(dex) {
     dex = +dex;
     if (looksCache[dex]) return looksCache[dex];
-    const base = G.DEX_BY[dex];
-    const same = (a, b) => a.length === b.length && a.every((t, i) => t === b[i]);
-    const l = !base || dex > 1025 ? [] : G.DEX.filter(p => p.dex > 1025 && p.dex % 1000 === dex && !NOT_LOOK.test(p.name)
-      && same(p.types, base.types) && (!G.SPRITE_META || G.SPRITE_META[p.dex]));
+    const ids = ((G.FORMS_OF && G.FORMS_OF[dex]) || []).filter(d => G.FORMS[d].k === 'look').concat(EXTRA[dex] || []);
+    const l = !G.DEX_BY[dex] || dex > 1025 ? [] : ids.map(d => G.DEX_BY[d]).filter(p => p && (!G.SPRITE_META || G.SPRITE_META[p.dex]));
     return (looksCache[dex] = l);
+  }
+  /** Grupo de un aspecto en el Vestidor ('' = sin grupo): las 62 Alcremie, por su crema. */
+  function lookGroup(d) {
+    const f = G.FORMS && G.FORMS[d], m = f && f.d === 869 && /^(.+)-[a-z]+-sweet$/.exec(f.fk || '');
+    return m ? m[1] : '';
   }
   function lookOf(s, dex) { const lk = +get(s, dex).lk || 0; return lk && looks(dex).some(p => p.dex === lk) ? lk : 0; }
 
@@ -115,5 +121,5 @@ G.Dress = (() => {
     }
   }
 
-  return { get, set, shinyOf, setShiny, looks, lookOf, ownsTrail, trailOf, fxOf, ownedTrails, applyRun, setLook, netCode, applyNet, clean };
+  return { get, set, shinyOf, setShiny, looks, lookGroup, lookOf, ownsTrail, trailOf, fxOf, ownedTrails, applyRun, setLook, netCode, applyNet, clean };
 })();

@@ -276,7 +276,7 @@ G.MenuUI = (() => {
         // Por número, o por nombre (sin tildes); de los que no tienes no se busca el nombre.
         // Copia local: también por el nombre del parche zh-tw (PSZH_DICT).
         const zh = window.PSZH_DICT && window.PSZH_DICT[p.name];
-        if (num != null ? p.dex !== num : !(own && ([p.name, G.T(p.name)].some(name => name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes(q)) || (zh && zh.includes(f.q.trim()))))) return false;
+        if (num != null ? p.dex !== num && baseOf(p.dex) !== num : !(own && ([p.name, G.T(p.name)].some(name => name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes(q)) || (zh && zh.includes(f.q.trim()))))) return false;
       } else if (dexGen && p.gen !== dexGen) return false;
       if (f.status === 'own' && !own) return false;
       if (f.status === 'miss' && own) return false;
@@ -287,7 +287,7 @@ G.MenuUI = (() => {
       return true;
     });
     const at = p => (s.owned[p.dex] && s.owned[p.dex].at) || 0, used = p => +(s.pused || {})[p.dex] || 0;
-    const by = { num: (a, b) => a.dex - b.dex, name: (a, b) => G.T(a.name).localeCompare(G.T(b.name), G.I18n.locale),
+    const by = { num: (a, b) => baseOf(a.dex) - baseOf(b.dex) || a.dex - b.dex, name: (a, b) => G.T(a.name).localeCompare(G.T(b.name), G.I18n.locale),
                  rar: (a, b) => b.rarity - a.rarity || a.dex - b.dex, new: (a, b) => at(b) - at(a) || a.dex - b.dex,
                  used: (a, b) => used(b) - used(a) || a.dex - b.dex }[f.sort];
     // Los que no tienes no tienen nombre a la vista: al ordenar por nombre van al final.
@@ -337,13 +337,18 @@ G.MenuUI = (() => {
     gridIO.observe(more);
   }
 
+  // (25-11-2026) Las formas (regionales, y las que tengas de las demás) van detrás de su especie y con su número,
+  // como en el juego oficial (Vulpix de Alola, Nº 037): no con el nuestro (1037, 500020...).
+  const baseOf = d => (G.formBase ? G.formBase(d) : d);
+  const noOf = d => String(baseOf(d)).padStart(3, '0');
+
   function dexCell(p) {
     const s = G.DB.save;
     const own = giftTo ? true : !!s.owned[p.dex], sh = !!(s.shiny && s.shiny[p.dex]);   // copia local: regalando se ve todo
     const cell = document.createElement('div');
     cell.className = 'cell' + (own ? '' : ' locked') + (p.dex === dexSel ? ' on' : '');
     cell.dataset.pad = '1';
-    cell.insertAdjacentHTML('beforeend', `<span class="no">${String(p.dex).padStart(3, '0')}${G.DB.isFav(p.dex) ? ' ' + G.Icons.html('star', 10) : ''}</span>`);
+    cell.insertAdjacentHTML('beforeend', `<span class="no">${noOf(p.dex)}${G.DB.isFav(p.dex) ? ' ' + G.Icons.html('star', 10) : ''}</span>`);
     if (p.dex === s.partner) cell.insertAdjacentHTML('beforeend', `<span class="badge-r" title="Compañero">${G.Icons.html('crown', 14)}</span>`);
     else if (sh) cell.insertAdjacentHTML('beforeend', `<span class="badge-r" title="Tienes su shiny">${G.Icons.html('shiny', 12)}</span>`);
     const useShiny = sh && p.dex === s.partner && s.partnerShiny;
@@ -400,7 +405,7 @@ G.MenuUI = (() => {
           <button class="${viewShiny ? '' : 'on'}" data-v="0">Normal</button>
           <button class="${viewShiny ? 'on' : ''}" data-v="1">${G.Icons.html('shiny', 12)} Shiny</button></div>` : ''}
       <div class="center">
-        <div style="color:var(--muted);font-size:13px">Nº ${String(p.dex).padStart(3, '0')} · ${GEN_NAMES[p.gen - 1]}</div>
+        <div style="color:var(--muted);font-size:13px">Nº ${noOf(p.dex)} · ${GEN_NAMES[p.gen - 1]}</div>
         <h3>${own || G.DexLog.seenOf(dex) ? p.name : '???'}</h3>
         ${own ? `<button id="dex-fav" class="chip${G.DB.isFav(dex) ? ' on' : ''}" type="button">${G.Icons.html(G.DB.isFav(dex) ? 'star' : 'starDim', 12)} ${G.DB.isFav(dex) ? 'Favorito' : 'Marcar como favorito'}</button>` : ''}
         <div style="color:${G.Gacha.RARITY_COLOR[p.rarity]}">${G.UI.stars(p.rarity, 24)} ${G.Gacha.RARITY_NAME[p.rarity]}</div>
@@ -687,7 +692,7 @@ G.MenuUI = (() => {
       const c = document.createElement('div');
       c.className = 'pick-card' + (d === upgDex ? ' on' : '');
       c.appendChild(G.UI.spriteCanvas(d, 64, 52, { scale: 1.5, shiny: d === s.partner && !!s.partnerShiny && G.DB.ownsShiny(d) }));
-      c.insertAdjacentHTML('beforeend', `<b>${p.name}</b><small>${d === s.partner ? '(compañero)' : 'Nº ' + String(d).padStart(3, '0')}</small>${lv(d) ? `<span class="lv">${lv(d)} niveles</span>` : ''}`);
+      c.insertAdjacentHTML('beforeend', `<b>${p.name}</b><small>${d === s.partner ? '(compañero)' : 'Nº ' + noOf(d)}</small>${lv(d) ? `<span class="lv">${lv(d)} niveles</span>` : ''}`);
       c.onclick = () => {
         upgDex = d; G.Audio.sfx('select');
         box.querySelectorAll('.pick-card').forEach(x => x.classList.toggle('on', x === c));

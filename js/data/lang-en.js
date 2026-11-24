@@ -2019,6 +2019,7 @@ G.I18n.add({
   // 24-11-2026 (copia local): especies y formas nuevas (tools/add_species.py, tools/add_forms.py)
   "Ferrodada": "Iron Treads",
   "Electrofuria": "Raging Bolt",
+  "Flamariete": "Gouging Fire",
   "Furioseta": "Brute Bonnet",
   "Ferrocuello": "Iron Jugulis",
   "Ferromole": "Iron Boulder",
@@ -2102,5 +2103,16 @@ G.I18n.add({
   "×1,8 daño, ola más ancha y arrastra más": "×1.8 damage, wider wave and drags further",
   "×1,8 daño y onda más grande": "×1.8 damage and bigger shockwave",
   "×1,8 daño y tajos más largos": "×1.8 damage and longer slashes",
-  "¡Protegido!": "Protected!"
+  "¡Protegido!": "Protected!",
+  // 25-11-2026 (copia local): colección (aspectos del Vestidor en rejilla, cremas de Alcremie)
+  "Este aspecto no tiene versión shiny: se ve normal.": "This look has no shiny version: it shows as normal.",
+  "Crema vainilla": "Vanilla Cream",
+  "Crema rubí": "Ruby Cream",
+  "Crema matcha": "Matcha Cream",
+  "Crema menta": "Mint Cream",
+  "Crema limón": "Lemon Cream",
+  "Crema salada": "Salted Cream",
+  "Mezcla rubí": "Ruby Swirl",
+  "Mezcla caramelo": "Caramel Swirl",
+  "Mezcla tricolor": "Rainbow Swirl"
 });

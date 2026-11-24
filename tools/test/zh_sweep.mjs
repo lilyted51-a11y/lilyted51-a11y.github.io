@@ -158,10 +158,11 @@ await A.ev(`(() => { G.UI.toast(G.T('Sin conexión: con tu cuenta, abrir huevos 
 await A.ev(`G.UI.hideAll(); document.getElementById('btn-news').click(); 1`); await sleep(1500); await grab('novedades'); await misses('novedades'); await click('#news-close');
 
 // ---------- Vestidor y estelas (23-11-2026): cada Pokémon, versión, aspecto, skin, efectos, estelas, tienda y ficha ----------
-await A.ev(`(() => { const s = G.DB.save; s.owned[412] = { at: 1 }; s.shiny[25] = { at: 1 }; for (const d of [666, 201, 1025]) s.owned[d] = { at: 1 }; for (const t of G.Trails.LIST) s.trails[t.id] = Date.now(); G.Dress.set(s, 352, { tr: 'arcoiris', fx: 'aura' }); G.UI.hideAll(); G.MenuUI.open(); return 1; })()`); await sleep(500);
-for (const d of [352, 25, 412, 94, 666, 201, 1025]) {   // (24-11-2026: aspectos nuevos de Vivillon y Unown, y Pecharunt)
+await A.ev(`(() => { const s = G.DB.save; s.owned[412] = { at: 1 }; s.shiny[25] = { at: 1 }; for (const d of [666, 201, 1025, 869, 3, 1020, 500020, 500618]) s.owned[d] = { at: 1 }; s.shiny[869] = { at: 1 }; s.shiny[3] = { at: 1 }; for (const t of G.Trails.LIST) s.trails[t.id] = Date.now(); G.Dress.set(s, 352, { tr: 'arcoiris', fx: 'aura' }); G.UI.hideAll(); G.MenuUI.open(); return 1; })()`); await sleep(500);
+// (25-11-2026: aspectos en rejilla: Alcremie con sus cremas, Pikachu con sus disfraces, Venusaur hembra; Gouging Fire y regionales)
+for (const d of [352, 25, 412, 94, 666, 201, 1025, 869, 3, 1020, 500020, 500618]) {   // (24-11-2026: aspectos nuevos de Vivillon y Unown, y Pecharunt)
   await A.ev(`G.WardrobeUI.open(${d}, 'dex'); 1`); await sleep(1000); await grab('Vestidor ' + d);
-  await clickAll('#wd-opts .chip[data-k=sh]:not([disabled])'); await clickAll('#wd-opts .chip[data-k=lk]'); await clickAll('#wd-opts .chip[data-k=sk]'); await clickAll('#wd-opts .chip[data-k=fx]');
+  await clickAll('#wd-opts .chip[data-k=sh]:not([disabled])'); await clickAll('#wd-opts .wd-lgroups .chip'); await clickAll('#wd-opts .wd-look'); await clickAll('#wd-opts .chip[data-k=sk]'); await clickAll('#wd-opts .chip[data-k=fx]');
 }
 await clickAll('#wd-opts .chip[data-k=tr]');
 await A.ev(`(() => { const q = document.getElementById('wd-q'); q.value = 'zzzz'; q.dispatchEvent(new Event('input')); return 1; })()`); await sleep(500); await grab('Vestidor sin resultados');

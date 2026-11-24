@@ -132,13 +132,69 @@ G.DB = (() => {
       photos: {},             // 'especie/expresión' -> fecha: fotos compradas en la Tienda Kecleon
       frames: {},             // id -> fecha: marcos comprados
       play: {},               // aparato -> segundos jugados en partida (24-11-2026: horas del perfil; ver playSecs)
+      dexmap: Date.now(),     // cuándo pasó a la numeración nueva (25-11-2026: el 1020 es Gouging Fire; ver remapDex)
       stats: { runs: 0, bestTime: 0, bestLevel: 0, totalKills: 0, pulls: 0, coinsEarned: 0, shinies: 0,
                bossesTotal: 0, riftWins: 0, evolutions: 0, missionsDone: 0, groupRuns: 0, bestGroupTime: 0 }
     };
   }
 
+  /*
+   * Números de la Pokédex (25-11-2026, copia local). El 1020 era nuestro Raticate de Alola (de cuando las formas
+   * iban con especie + 1000) y ahora es Gouging Fire, como en el juego oficial; el Raticate de Alola es el 500020
+   * (su número en el oficial). Toda copia que se carga pasa por migrate (la de este navegador, la de la nube, la de
+   * otra pestaña, la de una cuenta local vieja): si no lleva s.dexmap, todo lo apuntado con el 1020 (tenerlo, su
+   * shiny, mejoras, maestría, naturaleza, MT, veto, Vestidor, huevos, compañero...) se junta con lo del 500020 con
+   * las reglas de merge (lo conseguido, lo más antiguo; los números, el mayor; lo elegido, lo más reciente) y se
+   * apunta s.dexmap = cuándo. Así se puede repetir sin cambiar nada, y al juntar con una copia de otro aparato aún
+   * sin pasar, ésa se pasa antes (migrate) y la suma no duplica nada. Al juntar, dexmap = el más antiguo.
+   * Un aparato con el juego viejo (en mitad de una partida al publicar) no sabe nada de esto y puede volver a meter
+   * un 1020 de Raticate en una copia ya pasada: se nota porque su owned/shiny[1020] es de antes de dexmap (Gouging
+   * Fire sólo se consigue después), y se vuelve a pasar.
+   * (Las fotos del perfil no se tocan: la cara del 1020 ya era la de Gouging Fire.)
+   */
+  const DEX_OLD = 1020, DEX_NEW = 500020;
+  function remapDex(s) {
+    const t = +s.dexmap || 0;
+    const stale = o => isObj(o) && isObj(o[DEX_OLD]) && (+o[DEX_OLD].at || 0) < t;
+    if (t && !stale(s.owned) && !stale(s.shiny)) return;
+    const a = DEX_OLD, b = DEX_NEW;
+    /** o[a] se junta en o[b] con fn(lo del 1020, lo del 500020). */
+    const mv = (o, fn) => { if (!isObj(o) || !(a in o)) return; o[b] = b in o ? fn(o[a], o[b]) : o[a]; delete o[a]; };
+    const earliest = (x, y) => (!isObj(y) ? x : !isObj(x) ? y : (+x.at || 0) < (+y.at || 0) ? x : y);
+    const max = (x, y) => Math.max(+x || 0, +y || 0);
+    const maxEach = (x, y) => { const r = Object.assign({}, isObj(y) ? y : {}); if (isObj(x)) for (const k in x) r[k] = Math.max(+r[k] || 0, +x[k] || 0); return r; };
+    const later = (x, y) => (Array.isArray(x) && (!Array.isArray(y) || (+x[1] || 0) > (+y[1] || 0)) ? x : y);
+    const keep = (x, y) => y;
+    for (const k of ['owned', 'shiny']) mv(s[k], earliest);
+    for (const k of ['pused', 'pseen', 'pdef', 'mast']) mv(s[k], max);
+    for (const k of ['pupg', 'mstat']) mv(s[k], maxEach);
+    for (const k of ['pnat', 'pabil', 'pskin', 'pdress']) mv(s[k], later);
+    for (const k of ['pstart', 'pstart2', 'psitem', 'pbind', 'pban']) mv(s[k], keep);
+    mv(s.dfav, (x, y) => (Math.abs(+x || 0) > Math.abs(+y || 0) ? x : y));
+    mv(s.ptm, (x, y) => [...new Set([].concat(Array.isArray(y) ? y : [], Array.isArray(x) ? x : []))]);
+    // Claves con el número dentro: 'dex:movimiento' (MT enseñadas/borradas) y 'pban:dex' (cuándo se cambió).
+    const ren = (o, re, to, fn) => {
+      if (!isObj(o)) return;
+      for (const k of Object.keys(o)) {
+        if (!re.test(k)) continue;
+        const nk = k.replace(re, to);
+        o[nk] = nk in o ? fn(o[k], o[nk]) : o[k];
+        delete o[k];
+      }
+    };
+    ren(s.ptmT, /^1020:/, b + ':', (x, y) => (Math.abs(+x || 0) > Math.abs(+y || 0) ? x : y));
+    ren(s.pickT, /:1020$/, ':' + b, max);
+    if (+s.partner === a) s.partner = b;
+    if (+s.starter === a) s.starter = b;
+    if (isObj(s.profile) && Array.isArray(s.profile.favs)) s.profile.favs = s.profile.favs.map(d => (+d === a ? b : d));
+    if (isObj(s.eggs)) for (const id in s.eggs) if (isObj(s.eggs[id]) && +s.eggs[id].d === a) s.eggs[id].d = b;
+    if (isObj(s.eggsOpen)) for (const id in s.eggsOpen) if (Array.isArray(s.eggsOpen[id]) && +s.eggsOpen[id][0] === a) s.eggsOpen[id][0] = b;
+    s.dexmap = t || Date.now();
+  }
+
   /** Rellena campos que falten en partidas de versiones anteriores. */
   function migrate(s, name) {
+    remapDex(s);              // (antes de rellenar: una partida sin dexmap es de la numeración vieja)
     const base = newSave(name || s.name);
     for (const k in base) if (s[k] == null) s[k] = base[k];
     for (const k in base.stats) if (s.stats[k] == null) s.stats[k] = base.stats[k];
@@ -519,6 +575,9 @@ G.DB = (() => {
     // de los dos aparatos (nunca vuelve), lo más aguantado y el ticket ya cobrado.
     r.chal = mergeChal(a.chal, b.chal);
     r.play = mergePlay(a.play, b.play);
+    // Numeración nueva (remapDex): la fecha más antigua de las dos (las dos copias ya pasaron por migrate).
+    const dm = [+a.dexmap || 0, +b.dexmap || 0].filter(Boolean);
+    if (dm.length) r.dexmap = Math.min(...dm);
     for (const k in older.stats || {}) r.stats[k] = Math.max(r.stats[k] || 0, older.stats[k] || 0);
     // Maestría: el mayor de cada número de cada Pokémon (systems/mastery.js).
     r.mast = r.mast || {};
@@ -1231,7 +1290,7 @@ G.DB = (() => {
 
   return {
     ready, register, login, loginWithGoogle, playAsGuest, logout, commit, deleteAccount, flush: pushNow, saveNow, pull: pullCloud, touchPick,
-    owns, grant, ownsShiny, grantShiny, merge, setName, upgradesOf, isFav, setFav, addPlay, playSecs, mergePlay,
+    owns, grant, ownsShiny, grantShiny, merge, migrate, setName, upgradesOf, isFav, setFav, addPlay, playSecs, mergePlay,
     onSync(fn) { listeners.add(fn); },
     /** Se ha traído de la nube lo guardado en otro aparato (al volver al juego). */
     onPull(fn) { pulled.add(fn); },
