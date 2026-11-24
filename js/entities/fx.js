@@ -107,9 +107,13 @@ G.FX = (() => {
     }
   }
 
-  /** Rayo recto. fx: { pal, beam } — beam = forma que viaja por él o 'lightning'. */
+  /**
+   * Rayo recto. fx: { pal, beam, fade } — beam = forma que viaja por él o 'lightning'; fade: se desvanece hacia la
+   * punta (los que caen del cielo). La punta va redondeada (25-11-2026, como el juego oficial: antes acababa en un
+   * corte recto).
+   */
   function beam(x, y, angle, len, width, color, fx = {}) {
-    beams.push({ x, y, angle, len, width, pal: fx.pal || 'normal', shape: fx.beam || null, t: 0, life: 0.2, seed: Math.random() * 100 });
+    beams.push({ x, y, angle, len, width, pal: fx.pal || 'normal', shape: fx.beam || null, fade: !!fx.fade, t: 0, life: 0.2, seed: Math.random() * 100 });
     sp('impact', fx.pal || 'normal', x + Math.cos(angle) * 10, y + Math.sin(angle) * 10, { life: 0.12, scale: 1 });
     sp('impact', fx.pal || 'normal', x + Math.cos(angle) * len, y + Math.sin(angle) * len, { life: 0.18, scale: 1.5 });
   }
@@ -175,9 +179,15 @@ G.FX = (() => {
       }
     } else {
       // Cuerpo del rayo a bloques, con el borde vibrando.
+      const a0 = ctx.globalAlpha;
       for (let d = 0; d < b.len; d += seg) {
         const wob = 0.7 + 0.3 * Math.sin(d * 0.18 + now * 30 + b.seed);
-        const hw = Math.max(PX, snap(b.width / 2 * wob * (0.6 + 0.4 * k)));
+        let hw = Math.max(PX, snap(b.width / 2 * wob * (0.6 + 0.4 * k)));
+        // Punta redondeada: en el último tramo (tan largo como medio ancho) se estrecha como un círculo.
+        const rem = b.len - d, R = Math.max(PX, b.width / 2);
+        if (rem < R) hw = Math.max(PX, snap(hw * Math.sqrt(Math.max(0, 1 - Math.pow(1 - rem / R, 2)))));
+        // Los del cielo se desvanecen arriba (el último 40 %), a escalones como el resto.
+        if (b.fade) { const u = d / b.len; ctx.globalAlpha = a0 * (u < 0.6 ? 1 : step(1 - (u - 0.6) / 0.4)); }
         ctx.fillStyle = P[1]; ctx.fillRect(d, -hw - PX, seg, hw * 2 + PX * 2);
         ctx.fillStyle = P[2]; ctx.fillRect(d, -hw, seg, hw * 2);
         ctx.fillStyle = P[3]; ctx.fillRect(d, -snap(hw * 0.55), seg, snap(hw * 0.55) * 2);
@@ -191,6 +201,7 @@ G.FX = (() => {
           G.VFX.draw(ctx, b.shape, b.pal, d, yo, { angle: 0.0001, scale: 1.5, frame: (d / gap + now * 12) | 0 });
         }
       }
+      ctx.globalAlpha = a0;
     }
     ctx.restore();
   }

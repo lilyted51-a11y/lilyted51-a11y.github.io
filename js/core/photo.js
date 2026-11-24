@@ -346,6 +346,7 @@ G.Photo = (() => {
     const s = sv(), p = dailyPhotos().find(x => x.key === key);
     if (!s || !p) return { ok: false, error: 'Esa foto ya no está a la venta.' };
     if (s.photos && s.photos[key]) return { ok: false, error: 'Ya tienes esta foto.' };
+    if (G.Shop && G.Shop.offline && G.Shop.offline()) return { ok: false, error: G.Shop.NET_ERR };   // (con cuenta, comprar necesita conexión: data/shop.js)
     if (s.coins < PHOTO_PRICE) return { ok: false, error: 'No tienes Pokémonedas suficientes.' };
     s.coins -= PHOTO_PRICE;
     s.photos = s.photos || {};
@@ -357,6 +358,7 @@ G.Photo = (() => {
     const s = sv();
     if (!s || !weeklyFrames().includes(id)) return { ok: false, error: 'Ese marco ya no está a la venta.' };
     if (s.frames && s.frames[id]) return { ok: false, error: 'Ya tienes este marco.' };
+    if (G.Shop && G.Shop.offline && G.Shop.offline()) return { ok: false, error: G.Shop.NET_ERR };
     if (s.coins < FRAME_PRICE) return { ok: false, error: 'No tienes Pokémonedas suficientes.' };
     s.coins -= FRAME_PRICE;
     s.frames = s.frames || {};

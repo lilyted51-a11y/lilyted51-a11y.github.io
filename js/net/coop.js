@@ -169,7 +169,8 @@ G.Coop = (() => {
             // Vestidor (23-11-2026): estela, efecto y aspecto, para que los demás los vean.
             ...(G.Dress ? G.Dress.netCode(local) : ['', '', 0]),
             local.aura ? 1 : 0,                  // aura de maestro (systems/mastery.js)
-            G.BattleForms ? G.BattleForms.netCode(local) : 0];   // forma de combate puesta (systems/battleforms.js)
+            G.BattleForms ? G.BattleForms.netCode(local) : 0,    // forma de combate puesta (systems/battleforms.js)
+            r1(local.spd || 0)];                 // su velocidad de verdad (Arceus le persigue con ella: systems/judgment.js)
   }
 
   /** Número que llega por la red: si no es un número de verdad vale `def`, y si se pasa se queda en el tope. */
@@ -231,7 +232,8 @@ G.Coop = (() => {
              tr: typeof a[20] === 'string' ? a[20].slice(0, 24) : '', fx: typeof a[21] === 'string' ? a[21].slice(0, 12) : '',
              lk: Math.floor(num(a[22], 0, 0, 2e6)),
              au: a[23] === 1 ? 1 : 0,              // aura de maestro (systems/mastery.js)
-             bf: Math.floor(num(a[24], 0, 0, 2e6)) };   // forma de combate (G.BattleForms.applyNet sólo acepta las que existen)
+             bf: Math.floor(num(a[24], 0, 0, 2e6)),     // forma de combate (G.BattleForms.applyNet sólo acepta las que existen)
+             sp: num(a[25], 0, 0, 1500) };              // su velocidad (25-11-2026; 0 = no la manda)
   }
 
   /** Anfitrión: dónde mira un invitado (él mismo, o el compañero vivo que mira estando caído). */
@@ -512,6 +514,9 @@ G.Coop = (() => {
           G.World.breakAt(ev[1], ev[2]);
           emit(['pb', ev[1], ev[2]], from);
           break;
+        case 'wd':
+          if (G.World.digWall(num(ev[1], NaN, -1e6, 1e6), num(ev[2], NaN, -1e6, 1e6), true)) emit(['wd', ev[1], ev[2]], from);
+          break;
         case 'ou': {
           // Esfera de un invitado: se aplica aquí (los enemigos son del anfitrión) y se avisa a los demás.
           const x = num(ev[2], 0, -1e6, 1e6), y = num(ev[3], 0, -1e6, 1e6), z = num(ev[4], 1, 1, 1.5);
@@ -633,6 +638,7 @@ G.Coop = (() => {
         G.Audio.sfx('break');
         break;
       case 'pb': G.World.breakAt(ev[1], ev[2]); break;
+      case 'wd': G.World.digWall(num(ev[1], NaN, -1e6, 1e6), num(ev[2], NaN, -1e6, 1e6), true); break;
       case 'say': G.Spawner.say(ev[1], ev[2]); break;
       case 'heal': if (!local.dead) { local.heal(local.maxHp * ev[1]); G.FX.ring(local.x, local.y, 6, 60, '#5fe08a', 0.4, 3); } break;
       case 'lu': if (!ev[2] || ev[2] > seenSeq) { seenSeq = ev[2] || seenSeq; api.levelStart(ev[1]); } break;
@@ -694,6 +700,11 @@ G.Coop = (() => {
   function propBroken(p) {
     if (host) emit(['pb', p.tx, p.ty]);
     else outEv.push(['pb', p.tx, p.ty]);
+  }
+  /** Un muro roto por un Dinamax (world.js digWall, 25-11-2026): a los demás. */
+  function wallDug(tx, ty) {
+    if (host) emit(['wd', tx, ty]);
+    else outEv.push(['wd', tx, ty]);
   }
 
   /** Anfitrión: alguien ha cogido un objeto. Devuelve true si es para ti. */
@@ -945,7 +956,7 @@ G.Coop = (() => {
   return {
     ANIMS, COLORS, begin, end, leave, keeps, successor, tick, players, puppets, allDown, xpFactor, scaleRate, scaleHp,
     cast, hit, status, hurtShown, enemyAdded, enemyGone, enemyShot, pickupAdded, pickupGone, say,
-    propBroken, collected, shinyCaught, orbUsed, levelStart, localPicked, over, holdStart, holdEnd,
+    propBroken, wallDug, collected, shinyCaught, orbUsed, levelStart, localPicked, over, holdStart, holdEnd,
     /** Anfitrión: evento para todos. Invitado: evento para el anfitrión. */
     broadcast(ev) { emit(ev); },
     toHost(ev) { if (active && !host) { outEv.push(ev); flushClient(true); } },

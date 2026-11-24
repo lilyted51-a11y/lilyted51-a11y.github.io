@@ -2260,5 +2260,8 @@ G.I18n.add({
   "También en shiny.": "Also in shiny.",
   "También en su forma primigenia.": "Also in its Primal form.",
   "También al megaevolucionar.": "Also when it Mega Evolves.",
-  "Esa skin ya no está a la venta.": "That skin is no longer for sale."
+  "Esa skin ya no está a la venta.": "That skin is no longer for sale.",
+  // 25-11-2026 (copia local): auditoría de las novedades oficiales 13-16/11
+  "Sin conexión: con tu cuenta, comprar necesita internet.": "No connection: with your account, buying needs internet.",
+  "Tu poder se adapta a {x}: {x}": "Your power adapts to {x}: {x}"
 });

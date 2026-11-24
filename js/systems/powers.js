@@ -184,6 +184,30 @@ G.Powers = (() => {
 
   // ---------------- usar ----------------
 
+  /**
+   * Tu Pokémon ha evolucionado después de elegir el poder (25-11-2026, como el juego oficial): el poder se adapta
+   * al nuevo. La Mega (o forma de poder) de antes, si el nuevo no la tiene, pasa a la suya; si no tiene ninguna,
+   * a Dinamax (o su Gigamax). Un Gigamax de antes (Eevee, Pikachu, Meowth) pasa al del nuevo o a Dinamax normal.
+   * Antes seguía con la forma de la especie anterior (un Vaporeon que se hacía Eevee Gigamax) o dejaba de ir.
+   */
+  function evolved(pl) {
+    if (!pl || !pl.powerId) return;
+    const before = pl.powerId + ':' + pl.powerArg;
+    if (pl.powerId === 'mega') {
+      const forms = megaForms(pl.dex);
+      if (!forms.some(f => f.dex === pl.powerArg)) {
+        if (forms.length) pl.powerArg = forms[0].dex;
+        else { pl.powerId = 'dyna'; pl.powerArg = gmaxOf(gmaxForm(pl.dex)) ? gmaxForm(pl.dex) : 0; }
+      }
+    } else if (pl.powerId === 'dyna' && pl.powerArg) {
+      const gm = gmaxForm(pl.dex);
+      if (gm !== pl.powerArg) pl.powerArg = gm && gmaxOf(gm) ? gm : 0;
+    }
+    if (before === pl.powerId + ':' + pl.powerArg) return;
+    if (pl.powerArg && G.SPRITE_META[pl.powerArg]) G.Sprites.preload([pl.powerArg], 8000, pl.shiny);
+    G.Spawner.say(G.I18n.f('Tu poder se adapta a {x}: {x}', G.T(pl.mon.name, 'mon'), G.T(pl.powerId === 'mega' ? G.DEX_BY[pl.powerArg].name : powerName(pl), pl.powerId === 'mega' ? 'mon' : undefined)), 3, true);
+  }
+
   const ready = pl => !!(pl && pl.powerId && !pl.powerOn && !(pl.powerCd > 0) && !pl.dead);
 
   function use(pl) {
@@ -342,6 +366,15 @@ G.Powers = (() => {
       e.hurt(e.hp + e.maxHp, '#ff3b5c', e.x - pl.x, e.y - pl.y, 200);
     }
     for (const p of G.World.propsInCircle(pl.x, pl.y, pl.r * 1.6)) if (p.type !== 'bigchest' && p.type !== 'altar' && p.type !== 'spring') G.World.breakProp(p);
+    // Y los muros que pisa (25-11-2026, como el juego oficial): se rompen y dejan escombros (world.js digWall).
+    if (G.World.digWall) {
+      const TSz = G.World.TS, R = pl.r * 1.3;
+      for (let ty = Math.floor((pl.y - R) / TSz); ty <= Math.floor((pl.y + R) / TSz); ty++)
+        for (let tx = Math.floor((pl.x - R) / TSz); tx <= Math.floor((pl.x + R) / TSz); tx++) {
+          const cx = tx * TSz + TSz / 2, cy = ty * TSz + TSz / 2;
+          if ((cx - pl.x) ** 2 + (cy - pl.y) ** 2 <= (R + TSz * 0.5) ** 2 && G.World.isWall(cx, cy)) G.World.digWall(tx, ty);
+        }
+    }
   }
   /** Cada golpe salpica a los de alrededor (lo llama combat.js con el daño que ha hecho). */
   function splash(pl, e, dmg) {
@@ -708,7 +741,7 @@ G.Powers = (() => {
 
   return {
     DEF, TYPES, offer, use, stop, update, splash, teraK, netCode, applyNet, drawOn, drawZ, drawHud, touchButton, megaForms, gmaxForm, gmaxOf,
-    ready, powerName, get pending() { return pending; },
+    ready, powerName, evolved, get pending() { return pending; },
     /** Para pruebas: elegir un poder sin la pantalla (dyna con la forma Gigamax como arg = Gigamax). */
     debugSet(pl, id, arg) { set(pl, id, arg); }
   };

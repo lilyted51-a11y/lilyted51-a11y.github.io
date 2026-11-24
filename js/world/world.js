@@ -38,6 +38,7 @@ G.World = (() => {
   const VOID = 3;
   const KIND = ['floor', 'wall', 'liquid', 'void'];
   const holes = new Set();                 // agujeros del suelo: "tx,ty"
+  const dug = new Set();                   // paredes que ha roto un Dinamax: "tx,ty" (digWall)
 
   let seed = 1, biome = 0;
   let arena = null;                        // { tx, ty, r } en tiles
@@ -109,7 +110,8 @@ G.World = (() => {
           props: [], propAt: new Map(), liquids: [] };
     for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
       const tx = cx * N + i, ty = cy * N + j;
-      const t = terrainRaw(tx, ty);
+      let t = terrainRaw(tx, ty);
+      if (t === WALL && dug.size && dug.has(tx + ',' + ty)) t = FLOOR;   // (rota por un Dinamax)
       c.terr[j * N + i] = t;
       if (t === LIQUID) c.liquids.push(tx, ty);
     }
@@ -612,7 +614,7 @@ G.World = (() => {
 
   function reset(s) {
     seed = (s | 0) || 1;
-    data.clear(); images.clear(); broken.clear(); usedAltars.clear(); holes.clear();
+    data.clear(); images.clear(); broken.clear(); usedAltars.clear(); holes.clear(); dug.clear();
     fade = null; arena = null;
   }
 
@@ -684,6 +686,8 @@ G.World = (() => {
     kindAt, isWall, isLiquid, isFree, collide, projectileBlock, clearShot, propsInCircle, nearestBreakable,
     damageProp, breakAt, specialsNear, update,
     breakProp(p) { if (!broken.has(p.tx + ',' + p.ty)) destroyProp(p); },
+    /** Se vuelve a pintar el suelo (la gráfica del navegador se ha reiniciado y las imágenes horneadas se perdieron). */
+    repaint() { images.clear(); fade = null; },
     /** ¿Vacío aquí? (fuera de la Sala del Origen o en uno de sus agujeros) */
     isVoid(x, y) { return terrainAt(tileOf(x), tileOf(y)) === VOID; },
     /**
@@ -698,6 +702,31 @@ G.World = (() => {
       const c = data.get(cx + ',' + cy);
       if (c) c.terr[(ty - cy * N) * N + (tx - cx * N)] = VOID;
       for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++) images.delete(Math.floor((tx + a) / N) + ',' + Math.floor((ty + b) / N));
+    },
+    /**
+     * Dinamax (systems/powers.js, 25-11-2026, como el juego oficial): un Pokémon gigante también rompe los muros que
+     * pisa y deja escombros. Esa casilla pasa a ser suelo (también si la zona se vuelve a generar) y se rehace la
+     * imagen de su chunk y de los de al lado. Las arenas (grieta, Eternatus, Sentencia) no se rompen.
+     * En grupo se manda a los demás (coop.js 'wd'). → true si había muro.
+     */
+    digWall(tx, ty, fromNet = false) {
+      tx = Math.floor(tx); ty = Math.floor(ty);
+      if (!Number.isFinite(tx) || !Number.isFinite(ty)) return false;
+      if (arena && arenaDist(tx, ty) < arena_outer()) return false;
+      if (terrainAt(tx, ty) !== WALL) return false;
+      dug.add(tx + ',' + ty);
+      const cx = Math.floor(tx / N), cy = Math.floor(ty / N);
+      const c = data.get(cx + ',' + cy);
+      if (c) c.terr[(ty - cy * N) * N + (tx - cx * N)] = FLOOR;
+      for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++) images.delete(Math.floor((tx + a) / N) + ',' + Math.floor((ty + b) / N));
+      if (G.Coop.active && !fromNet) G.Coop.wallDug(tx, ty);
+      // Escombros: trozos de roca que saltan y se quedan un momento por el suelo.
+      const x = tx * TS + TS / 2, y = ty * TS + TS / 2, B = G.Tiles.BIOMES[biome] || {}, rk = B.rock || ['#6b6258', '#8f857a', '#b3a99d'];
+      G.FX.burst(x, y - 10, rk[1], 18, 190);
+      G.FX.burst(x, y - 4, rk[2] || rk[1], 10, 110);
+      G.FX.ring(x, y, 4, TS, rk[0], 0.35, 3);
+      G.Audio.sfx('break');
+      return true;
     },
     /** Un altar usado: se apunta para que siga apagado si la zona se vuelve a generar. */
     altarUsed(p) { p.used = true; usedAltars.add(p.tx + ',' + p.ty); },

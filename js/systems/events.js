@@ -164,7 +164,10 @@ G.Events = (() => {
       const a = Math.random() * 6.2832, d = G.U.rand(170, 560);
       const x = at[0] + Math.cos(a) * d, y = at[1] + Math.sin(a) * d * 0.85;
       if (!G.World.isFree(x, y, 20) || bushes.some(b => G.U.dist2(b.x, b.y, x, y) < 90 * 90)) continue;
-      bushes.push({ x: Math.round(x), y: Math.round(y), kind: kinds[i++], shaken: false });
+      // show: la baya que se le ve (25-11-2026, como el juego oficial: se ve qué bayas tiene cada uno). Los del
+      // enjambre también enseñan una, cualquiera: por eso hay que tener cuidado.
+      const kind = kinds[i++];
+      bushes.push({ x: Math.round(x), y: Math.round(y), kind, show: kind === 'combee' ? G.U.pick(MB) : kind, shaken: false });
     }
     if (bushes.length < 6) return false;
     makeMunch({ x: at[0], y: at[1], want, bushes });
@@ -239,7 +242,7 @@ G.Events = (() => {
   function munchNet() {
     const M = munch;
     return ['ev', 'mp', Math.round(M.x), Math.round(M.y), M.want, M.got, Math.round(M.t), ...MB.map(k => M.carry[k]),
-            ...M.bushes.flatMap(b => [b.x, b.y, b.shaken ? 1 : 0])];
+            ...M.bushes.flatMap(b => [b.x, b.y, (b.shaken ? 1 : 0) + 2 * (MB.indexOf(b.show) + 1)])];   // (sacudido + 2 × la baya que se ve)
   }
 
   function munchDone() {
@@ -400,7 +403,7 @@ G.Events = (() => {
       case 'mp': {
         const [, , x, y, want, got, t] = ev, carry = ev.slice(7, 11), bs = ev.slice(11), bushes = [];
         if (!MB.includes(want)) break;
-        for (let i = 0; i + 2 < bs.length; i += 3) bushes.push({ x: bs[i], y: bs[i + 1], shaken: !!bs[i + 2] });
+        for (let i = 0; i + 2 < bs.length; i += 3) { const v = bs[i + 2] | 0; bushes.push({ x: bs[i], y: bs[i + 1], shaken: !!(v & 1), show: MB[(v >> 1) - 1] || null }); }
         if (!munch) { makeMunch({ x, y, want, bushes }); G.Sprites.preload([MUNCH_DEX]); }
         Object.assign(munch, { x, y, want, got, t, bushes });
         MB.forEach((k, i) => { munch.carry[k] = carry[i] | 0; });
@@ -488,9 +491,10 @@ G.Events = (() => {
           ctx.beginPath(); ctx.arc(b.x + dx + wig, b.y + dy, r, 0, 6.2832); ctx.fill();
           ctx.strokeStyle = '#1b3a22'; ctx.lineWidth = 1.5; ctx.stroke();
         });
-        if (!sh) {                                   // bayas escondidas (no se sabe cuáles)
-          ctx.fillStyle = '#ffffffaa';
-          for (const [dx, dy] of [[-8, -14], [7, -18], [2, -6]]) { ctx.beginPath(); ctx.arc(b.x + dx + wig, b.y + dy, 2.2, 0, 6.2832); ctx.fill(); }
+        if (!sh) {                                   // sus bayas, del color de la que tiene (o la que enseña el enjambre)
+          ctx.fillStyle = b.show ? MB_COL[b.show] : '#ffffffaa';
+          ctx.strokeStyle = '#1b3a22'; ctx.lineWidth = 1;
+          for (const [dx, dy] of [[-8, -14], [7, -18], [2, -6]]) { ctx.beginPath(); ctx.arc(b.x + dx + wig, b.y + dy, 3, 0, 6.2832); ctx.fill(); ctx.stroke(); }
         }
         ctx.restore();
       } });
@@ -600,7 +604,7 @@ G.Events = (() => {
       if (!munch) return null;
       const M = munch;
       return { x: M.x, y: M.y, want: M.want, got: M.got, need: MUNCH_NEED, carry: M.carry[M.want] || 0, t: M.t,
-               bushes: M.bushes.map(b => ({ x: b.x, y: b.y, shaken: b.shaken, kind: authority() ? b.kind : null })) };
+               bushes: M.bushes.map(b => ({ x: b.x, y: b.y, shaken: b.shaken, kind: authority() ? b.kind : null, show: b.show || null })) };
     },
     _dbg() { return lost && { x: lost.x, y: lost.y, tx: lost.tx, ty: lost.ty, state: lost.state, hp: lost.hp }; },
     /** Copia local (bot): el Pokémon perdido, dónde está la marca y si te sigue a ti. */

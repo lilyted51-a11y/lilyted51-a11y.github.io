@@ -76,15 +76,55 @@ G.Rift = (() => {
   function open() {
     const alive = G.Game.everyone().filter(p => !p.dead);
     const near = G.U.pick(alive.length ? alive : [G.Game.player]);
-    for (let i = 0; i < 24; i++) {
-      const a = Math.random() * 6.2832, d = G.U.rand(380, 560);
-      const x = near.x + Math.cos(a) * d, y = near.y + Math.sin(a) * d * 0.85;
-      if (!G.World.isFree(x, y, 22)) continue;
-      show(x, y, TTL);
-      if (G.Coop.isHost) G.Coop.broadcast(['rift', Math.round(x), Math.round(y), TTL]);
-      return true;
+    // Sólo donde se llega andando desde el jugador (25-11-2026, como el juego oficial desde el 16-11): antes podía
+    // salir en un hueco cerrado por paredes o detrás de un paso por el que no caben los Pokémon grandes. Primero
+    // por un camino ancho (2×2 casillas libres); si no hay ninguno, por cualquiera; y si tampoco, como antes.
+    const tries = [reach(near, true), reach(near, false), null];
+    for (const ok of tries) {
+      for (let i = 0; i < 24; i++) {
+        const a = Math.random() * 6.2832, d = G.U.rand(380, 560);
+        const x = near.x + Math.cos(a) * d, y = near.y + Math.sin(a) * d * 0.85;
+        if (!G.World.isFree(x, y, 22)) continue;
+        if (ok && !ok(x, y)) continue;
+        show(x, y, TTL);
+        if (G.Coop.isHost) G.Coop.broadcast(['rift', Math.round(x), Math.round(y), TTL]);
+        return true;
+      }
     }
     return false;
+  }
+
+  /**
+   * Casillas a las que se llega andando desde `p` (recorrido en anchura hasta REACH_R casillas: la grieta sale a
+   * 380-560 px, unas 12-18). wide: sólo por sitios donde cabe un Pokémon grande (cada casilla del camino, dentro
+   * de un cuadro de 2×2 libre). → (x, y) => ¿se llega?
+   */
+  const REACH_R = 24;
+  function reach(p, wide) {
+    const TSz = G.World.TS, N = REACH_R * 2 + 1;
+    const px = Math.floor(p.x / TSz), py = Math.floor(p.y / TSz), ox = px - REACH_R, oy = py - REACH_R;
+    const open = new Uint8Array(N * N);
+    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) open[j * N + i] = G.World.walkable(ox + i, oy + j) ? 1 : 0;
+    const ok = (i, j) => i >= 0 && j >= 0 && i < N && j < N && open[j * N + i] === 1;
+    const roomy = (i, j) => {
+      for (const [a, b] of [[0, 0], [-1, 0], [0, -1], [-1, -1]]) if (ok(i + a, j + b) && ok(i + a + 1, j + b) && ok(i + a, j + b + 1) && ok(i + a + 1, j + b + 1)) return true;
+      return false;
+    };
+    const seen = new Uint8Array(N * N), q = new Int32Array(N * N);
+    let h = 0, t = 0;
+    seen[REACH_R * N + REACH_R] = 1; q[t++] = REACH_R * N + REACH_R;     // (donde está el jugador siempre cuenta)
+    while (h < t) {
+      const c = q[h++], i = c % N, j = (c - i) / N;
+      for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const ni = i + a, nj = j + b, k = nj * N + ni;
+        if (!ok(ni, nj) || seen[k] || (wide && !roomy(ni, nj))) continue;
+        seen[k] = 1; q[t++] = k;
+      }
+    }
+    return (x, y) => {
+      const i = Math.floor(x / TSz) - ox, j = Math.floor(y / TSz) - oy;
+      return i >= 0 && j >= 0 && i < N && j < N && seen[j * N + i] === 1;
+    };
   }
 
   /** Aparece la grieta (también la que manda el anfitrión). */

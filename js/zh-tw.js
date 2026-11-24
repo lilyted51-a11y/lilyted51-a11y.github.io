@@ -932,6 +932,11 @@
   "Also when it Mega Evolves.": "超級進化後也適用。",
   "Esa skin ya no está a la venta.": "這個裝扮已下架。",
   "That skin is no longer for sale.": "這個裝扮已下架。",
+  // 25-11-2026 (copia local): auditoría de las novedades oficiales 13-16/11 (compras con conexión, poder al evolucionar)
+  "Sin conexión: con tu cuenta, comprar necesita internet.": "沒有連線：使用帳號時，購買需要網路。",
+  "No connection: with your account, buying needs internet.": "沒有連線：使用帳號時，購買需要網路。",
+  "Tu poder se adapta a {x}: {x}": "你的力量配合{x}改變了：{x}",
+  "Your power adapts to {x}: {x}": "你的力量配合{x}改變了：{x}",
   // 25-11-2026 (copia local): formas de combate (systems/battleforms.js)
   "¡{x} cambia de forma!": "{x}的形態改變了！",
   "{x} changes form!": "{x}的形態改變了！",

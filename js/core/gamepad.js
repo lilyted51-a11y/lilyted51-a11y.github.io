@@ -28,12 +28,22 @@ G.Pad = (() => {
   let prev = [], vec = [0, 0], aimVec = [0, 0], aimAt = 0, name = '';
   let focus = null, focusScope = null, showing = false;
   let navDir = null, navT = 0;
+  // Sticks en los menús (25-11-2026, como el juego oficial desde el 16-11): un mando con deriva (o un volante, unos
+  // pedales) que no vuelve al centro desplazaba solas las listas de la Colección y de la Tienda. Ahora, al entrar
+  // en un menú, cada stick no cuenta hasta que se suelta (vuelve al centro) una vez. La cruceta vale siempre.
+  let lArmed = false, rArmed = false, wasUi = false;
 
   const enabled = () => G.Settings.get('gamepad') !== false;
+  /** El mando: mejor uno con la distribución estándar (un volante o unos pedales también salen como mando). */
   function pad() {
     if (!navigator.getGamepads) return null;
-    for (const p of navigator.getGamepads()) if (p && p.connected) return p;
-    return null;
+    let any = null;
+    for (const p of navigator.getGamepads()) {
+      if (!p || !p.connected) continue;
+      if (p.mapping === 'standard') return p;
+      any = any || p;
+    }
+    return any;
   }
 
   addEventListener('gamepadconnected', e => {
@@ -244,12 +254,19 @@ G.Pad = (() => {
     const m = Math.hypot(x, y);
     if (m < DEAD) x = y = 0;
     else { const k = Math.min(1, (m - DEAD) / (1 - DEAD)) / m; x *= k; y *= k; }
+    const ui = uiMode();
+    // Menús: el stick que no se ha soltado desde que entraste no cuenta (deriva); la cruceta, sí.
+    if (ui && !wasUi) { lArmed = false; rArmed = false; }
+    wasUi = ui;
+    if (m < DEAD) lArmed = true;
+    if (Math.abs(p.axes[3] || 0) <= DEAD) rArmed = true;
+    if (ui && !lArmed) x = y = 0;
     if (now[BT.LEFT]) x = -1; else if (now[BT.RIGHT]) x = 1;
     if (now[BT.UP]) y = -1; else if (now[BT.DOWN]) y = 1;
     const l = Math.hypot(x, y);
     if (l > 1) { x /= l; y /= l; }
 
-    if (uiMode()) {
+    if (ui) {
       vec = [0, 0];
       // Mover la selección: al empujar, y repitiendo si se mantiene.
       const dir = Math.hypot(x, y) < 0.5 ? null : Math.abs(x) > Math.abs(y) ? (x > 0 ? 'r' : 'l') : (y > 0 ? 'd' : 'u');
@@ -260,7 +277,7 @@ G.Pad = (() => {
       if (hit(BT.START)) G.Input.virtual('escape');
       if (hit(BT.Y)) G.Input.virtual('pady');            // cambiar las cartas (G.Keys 'reroll', aunque se cambie la R)
       const ry = p.axes[3] || 0;
-      if (Math.abs(ry) > DEAD) scrollLists(ry, dt);
+      if (rArmed && Math.abs(ry) > DEAD) scrollLists(ry, dt);
     } else {
       if (showing) hideFocus();
       navDir = null;

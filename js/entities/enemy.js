@@ -47,6 +47,8 @@
   // mismo (ni % de la vida ni según tu nivel): envenenar y huir no sirve para
   // tumbar a los legendarios; hay que pegarles. A Arceus no le afectan.
   const JUDGE_DOT = 1.5;
+  /** Lo más que quita un golpe a un jefe del mapa (parte de su vida; ver hurt). */
+  const BOSS_HIT = 0.1;
 
   class Enemy {
     constructor(def, x, y, sc, boss = false) {
@@ -133,6 +135,18 @@
       if (this.eternatus && !this.remote) { amount = G.Eternatus.filterHit(this, amount); if (!(amount > 0)) return; }
       // El legendario de la grieta (quien manda): un 10 % como mucho y sin saltarse fases (systems/legend.js).
       if (this.legend && !this.remote) { amount = G.Legend.filterHit(this, amount); if (!(amount > 0)) return; }
+      // Los jefes del mapa (25-11-2026, como el juego oficial): con mucho daño les quitas más, pero ningún golpe les
+      // quita más del 10 % de su vida ni les hace saltarse la furia (a la mitad de la vida, bossMove). Antes un
+      // golpe muy fuerte los tumbaba de una vez.
+      if (this.boss && !this.legend && !this.eternatus && !this.judge && !this.arceus && !this.remote) {
+        amount = Math.min(amount, this.maxHp * BOSS_HIT);
+        // (Al cruzar la mitad se queda justo debajo y se enfurece ya: varios golpes en un mismo fotograma no se la saltan.)
+        if (!(this.ai && this.ai.fury) && this.hp - amount < this.maxHp * 0.5) {
+          amount = Math.max(1, Math.min(amount, this.hp - this.maxHp * 0.5 + 1));
+          if (!this.ai) this.bossInit();
+          this.enrage();
+        }
+      }
       const d = Math.max(1, Math.round(amount));
       // Arceus en la Sentencia: no cae nunca; el golpe suma a su cuenta de daño
       // (la lleva quien manda: el invitado se lo manda al anfitrión).
