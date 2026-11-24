@@ -10,7 +10,8 @@ const source = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8')
 const G = {};
 for (const f of ['js/data/pokedex.js', 'js/data/moves.js', 'js/data/tms.js']) new Function('G', source(f))(G);
 const M = G.Moves, DEX = new Set(G.DEX.map(p => p.dex));
-const block = source('js/data/moves.js').split('24-11-2026 (copia local): movimientos nuevos con formas de atacar que ya existían')[1].split('];')[0];
+const block = source('js/data/moves.js').split('24-11-2026 (copia local): movimientos nuevos con formas de atacar que ya existían')[1].split('];')[0]
+  .split('24-11-2026 (copia local): movimientos nuevos con formas de atacar nuevas')[0];   // (el bloque de moves2.js va detrás)
 const NEW = [...block.matchAll(/\{ id: '([a-z-]+)'/g)].map(r => r[1]);
 const OLD_KINDS = new Set(['projectile', 'melee', 'beam', 'orbit', 'nova', 'aura', 'buff', 'boomerang', 'chain', 'mine', 'meteor', 'turret',
   'dash', 'trail', 'cone', 'homing', 'bounce', 'charge', 'spin', 'quake', 'vortex', 'shove', 'stun']);
