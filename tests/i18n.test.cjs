@@ -100,7 +100,9 @@ for (const [i, lang] of langs.entries()) {
   });
 }
 test('locale precedence, aliases and blocked storage', () => {
-  for (const [input, expected] of [['zh-TW', 'zh-Hant'], ['zh-HK', 'zh-Hant'], ['zh-Hant-HK', 'zh-Hant'],
+  // Copia local: con el navegador en chino tradicional el juego va en español por debajo y lo traduce el parche
+  // js/zh-tw.js (locales.js); 繁體中文 de los Ajustes sigue existiendo para quien lo elija a mano.
+  for (const [input, expected] of [['zh-TW', 'es'], ['zh-HK', 'es'], ['zh-Hant-HK', 'es'],
     ['zh-CN', 'zh-Hans'], ['zh-SG', 'zh-Hans'], ['zh', 'zh-Hans'], ['zh-Hans-TW', 'zh-Hans'],
     ['pt', 'pt-BR'], ['pt-PT', 'pt-BR'], ['fr-CA', 'fr'], ['it-IT', 'it'], ['ja-JP', 'en']]) {
     assert.equal(boot(null, input).G.I18n.lang, expected, input);

@@ -111,15 +111,17 @@ test('mixed formats arrive unchanged; capabilities and corrupt packets never rea
   assert.deepEqual(got, [['a', frame()], ['a', client()]]);
   assert.equal(N.stats.binaryRecv, 1); assert.equal(N.stats.invalidBinary, 3);
 });
-test('byte counters count successful payloads; failed frames never enable database relay', () => {
+// Copia local: el relé por la base de datos está ENCENDIDO como último recurso (net.js, ALLOW_RELAY): un envío
+// que falla por el canal directo sale por el relé, y no cuenta como bytes enviados por el canal.
+test('byte counters count successful payloads; a failed frame falls back to the database relay (copia local)', () => {
   const { N, pcs, cap, relay } = network(), dc = pcs[0].dc, f = frame(); cap(dc);
   N.send('a', f);
   assert.equal(N.stats.sentBytes, C.encode(f).byteLength);
   assert.equal(N.stats.jsonBytes, Buffer.byteLength(JSON.stringify(f)));
   assert.equal(N.stats.binarySent, 1);
   const before = N.stats.sentBytes; dc.fail = true; N.send('a', f);
-  assert.equal(N.stats.sentBytes, before); assert.equal(relay.length, 0);
-  N.send('a', { k: 'start', seed: 1 }); assert.equal(relay.length, 1);
+  assert.equal(N.stats.sentBytes, before); assert.equal(relay.length, 1); assert.equal(N.stats.relaySent, 1);
+  N.send('a', { k: 'start', seed: 1 }); assert.equal(relay.length, 2);
 });
 test('reconnect resets capability, so a replaced/old peer never receives binary', () => {
   const { N, pcs, cap } = network(); cap(pcs[0].dc);
@@ -146,7 +148,7 @@ test('real Coop.tick frames pass through the codec without changing gameplay fie
     G.EnemyMgr = { all: () => [{ id: 123, x: 50, y: -10, hp: 125.1, anim: { cur: 'Walk', dir: 3 }, burn: 1 }] };
     G.Judgment = { netState: () => [12, -23, 1, 4] };
     new Function('G', 'document', source('js/net/coop.js'))(G, { addEventListener() {} });
-    const local = { x: 0, y: 0, moveAngle: 1.234, walking: true, hp: 234, maxHp: 300,
+    const local = { dex: 25, shiny: false, x: 0, y: 0, moveAngle: 1.234, walking: true, hp: 234, maxHp: 300,
       magnet: 78, aim: -1.43, xpMul: 1.2, reviveT: 0, activeGroup: () => [{ id: 'thundershock', lvl: 3 }] };
     G.Coop.begin({ host: 'host', members: [{ uid: 'host', name: 'Aarón', dex: 25 }, { uid: 'guest', name: '皮卡丘', dex: 25 }] }, local,
       { team: () => ({ time: 145.12, level: 7, xp: 123.45, xpNext: 300, kills: 52, bosses: 2, coins: 40, t1: 1, t10: 0 }), choosing: () => false });
@@ -154,7 +156,8 @@ test('real Coop.tick frames pass through the codec without changing gameplay fie
     assert.equal(sent.length, 1);
     assert.deepEqual(C.decode(C.encode(sent[0])), sent[0]);
     if (host) { assert.deepEqual(sent[0].e, [[123, 50, -10, 126, 1, 3, 1]]); assert.ok('ho' in sent[0]); }
-    else { assert.equal(sent[0].p.length, 17); assert.equal(sent[0].p[15], ''); assert.equal(sent[0].p[16], 1); }   // 16.º: a quién mira estando caído; 17.º: zoom (Luminosfera)
+    // Copia local: el estado lleva más cosas (su Pokémon, shiny, a quién mira, zoom, poder, Vestidor, aura, forma, velocidad).
+    else { assert.equal(sent[0].p.length, 26); assert.equal(sent[0].p[15], 25); assert.equal(sent[0].p[17], ''); assert.equal(sent[0].p[18], 1); }
   }
 });
 
@@ -186,7 +189,10 @@ const goodTurn = () => turnReply({ expiresAt: Date.now() / 1000 + 7200, iceServe
   { urls: ['turn:turn.pokesurvivor.com:3478?transport=udp', 'turn:evil.example:3478', 'stun:x'], username: 'u', credential: 'c' },
   { urls: ['turn:turn.pokesurvivor.com:3478?transport=tcp'], username: '', credential: 'c' }] });
 
-test('own TURN: first try is direct only; a failed pair retries at once with clean TURN servers', async () => {
+// Copia local: sin servidor TURN propio (era de pago; CLAUDE.md, «Servidores»). net.js lleva TURN_API = '' y
+// esta parte no se usa: estas pruebas del juego oficial se saltan en vez de fallar siempre.
+const SIN_TURN = { skip: 'copia local: sin TURN propio (TURN_API vacío en net.js)' };
+test('own TURN: first try is direct only; a failed pair retries at once with clean TURN servers', SIN_TURN, async () => {
   const { N, pcs, calls, signals } = turnNetwork(goodTurn);
   N.open('room', true, 'host'); N.syncMembers(['host', 'a', 'b']); await settle();
   assert.equal(calls.length, 1, 'credentials are fetched on entering, so a retry never waits for them');
@@ -204,7 +210,7 @@ test('own TURN: first try is direct only; a failed pair retries at once with cle
   assert.equal(offers.at(-1)[1].sig.t, 1);
   assert.equal(pcs.length, 3, 'only the failed pair reserves TURN');
 });
-test('own TURN: refused or broken answers still ask the guest for theirs, then wait as before', async () => {
+test('own TURN: refused or broken answers still ask the guest for theirs, then wait as before', SIN_TURN, async () => {
   for (const respond of [() => turnReply({ error: 'user_denied' }, 403), () => { throw Error('offline'); },
     () => turnReply({ expiresAt: 1, iceServers: [] })]) {
     const { N, pcs, calls, timers, signals } = turnNetwork(respond);
@@ -217,7 +223,7 @@ test('own TURN: refused or broken answers still ask the guest for theirs, then w
     assert.equal(timers.at(-1), 15000); assert.equal(pcs.length, 2); assert.equal(calls.length, 1);
   }
 });
-test('own TURN: a server that failed is asked again soon (not after a minute); a refused account, in half an hour', async () => {
+test('own TURN: a server that failed is asked again soon (not after a minute); a refused account, in half an hour', SIN_TURN, async () => {
   const realNow = Date.now;
   try {
     for (const [respond, wait] of [[() => { throw Error('timeout'); }, 10000], [() => turnReply({}, 502), 10000],
@@ -233,7 +239,7 @@ test('own TURN: a server that failed is asked again soon (not after a minute); a
     }
   } finally { Date.now = realNow; }
 });
-test('own TURN: guests have theirs ready on entering and use it only when the host asks for it', async () => {
+test('own TURN: guests have theirs ready on entering and use it only when the host asks for it', SIN_TURN, async () => {
   const { N, pcs, calls, offer, timers } = turnNetwork(goodTurn, { user: { uid: 'guest', getIdToken: async () => 'token' }, host: false });
   N.open('room', false, 'host'); await settle();
   assert.equal(calls.length, 1);
@@ -242,13 +248,13 @@ test('own TURN: guests have theirs ready on entering and use it only when the ho
   offer(true); await settle();
   assert.equal(calls.length, 1); assert.equal(pcs[1].cfg.iceServers.length, 2); assert.equal(timers.at(-1), 15000);
 });
-test('own TURN: a guest without it still waits the TURN time when the host brings one', async () => {
+test('own TURN: a guest without it still waits the TURN time when the host brings one', SIN_TURN, async () => {
   const { N, pcs, offer, timers } = turnNetwork(() => turnReply({ error: 'user_denied' }, 403), { user: { uid: 'guest', getIdToken: async () => 'token' }, host: false });
   N.open('room', false, 'host'); await settle();
   offer(true); await settle();
   assert.equal(pcs[0].cfg.iceServers.length, 1); assert.equal(timers.at(-1), 15000);
 });
-test('own TURN: players without an account never ask, but the guest is still asked for theirs', async () => {
+test('own TURN: players without an account never ask, but the guest is still asked for theirs', SIN_TURN, async () => {
   for (const user of [null, { uid: 'anon', isAnonymous: true }]) {
     const { N, pcs, calls, timers, signals } = turnNetwork(() => assert.fail('no request'), { user });
     N.open('room', true, 'host'); N.syncMembers(['host', 'a']); await settle();
@@ -259,7 +265,7 @@ test('own TURN: players without an account never ask, but the guest is still ask
     assert.equal(timers.at(-1), 15000); assert.equal(pcs.length, 2);
   }
 });
-test('own TURN: a pair that needed it starts with it next time, and after 2 such guests everyone does', async () => {
+test('own TURN: a pair that needed it starts with it next time, and after 2 such guests everyone does', SIN_TURN, async () => {
   const { N, pcs } = turnNetwork(goodTurn);
   N.open('room', true, 'host'); N.syncMembers(['host', 'a']); await settle();
   pcs[0].fail(); await settle();

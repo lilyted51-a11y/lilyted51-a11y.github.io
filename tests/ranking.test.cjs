@@ -79,7 +79,10 @@ test('el histórico enseña lo que ya se sabe del semanal (leído después): ya 
   assert.deepEqual((await R.top('s', 'w', null, false)).map(r => r.id), ['M']);
 });
 
-test('sello del ranking: va con la marca (con rt); sin él, o sin el de un compañero, no se sube nada', async () => {
+// Copia local: no hay servidor que selle las marcas (ice.pokesurvivor.com es del juego oficial; CLAUDE.md,
+// «Sincronizar»: el sello no se toma). ranking.js newSeal() no pide nada: estas pruebas se saltan.
+const SIN_SELLO = { skip: 'copia local: sin sello del servidor oficial (ranking.js, newSeal)' };
+test('sello del ranking: va con la marca (con rt); sin él, o sin el de un compañero, no se sube nada', SIN_SELLO, async () => {
   const { R, docs } = await sealed();
   await R.submitSolo({ t: 900, lv: 50, kills: 100, dex: 25, shiny: false, dmg: 0 });
   const e = docs.get('lb/' + R.board('s', 'a') + '/e/U1');
@@ -99,7 +102,7 @@ test('sello del ranking: va con la marca (con rt); sin él, o sin el de un compa
   }
 });
 
-test('sello del ranking: con el servidor fallando, se insiste (hasta 8 veces, dentro de los 90 s que dan las reglas)', async () => {
+test('sello del ranking: con el servidor fallando, se insiste (hasta 8 veces, dentro de los 90 s que dan las reglas)', SIN_SELLO, async () => {
   // Falla las 4 primeras veces (sin respuesta, 502...) y a la 5.ª contesta.
   let calls = 0;
   const x = env({ fetch: async () => {
@@ -150,7 +153,7 @@ test('#356: "Friends only" in damage also shows friends outside the damage top 5
   assert.deepEqual(got.rows.map(r => [r.id, r.d]), [['U1', 5000]]);
 });
 
-test('#356: a run that could not get its seal says so instead of failing silently', async () => {
+test('#356: a run that could not get its seal says so instead of failing silently', SIN_SELLO, async () => {
   const x = await sealed({ sealStatus: 500 });
   const said = [];
   x.G.UI.toast = m => said.push(m);

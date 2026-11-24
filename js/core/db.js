@@ -198,6 +198,9 @@ G.DB = (() => {
     const base = newSave(name || s.name);
     for (const k in base) if (s[k] == null) s[k] = base[k];
     for (const k in base.stats) if (s.stats[k] == null) s.stats[k] = base.stats[k];
+    // (25-11-2026) merge() siempre deja pickT ({} si nadie eligió nada); sin él aquí, la copia de la nube y la
+    // juntada salían «distintas» y cada lectura (al volver, al reintentar) costaba una escritura de más.
+    if (!s.pickT || typeof s.pickT !== 'object' || Array.isArray(s.pickT)) s.pickT = {};
     // v1 -> v2: había un único banner (Kanto) con el pity como número.
     if (typeof s.pity === 'number') s.pity = { 1: s.pity };
     // v2 -> v3: las mejoras eran de la cuenta; pasan al compañero de entonces.
